@@ -1,0 +1,1472 @@
+{
+    "autopista": "Autopista Central",
+    "codigo": "AC",
+    "tipoCobro": "PORTICO",
+    "porticos": [
+        {
+            "nombre": "Los Guindos - La Capilla",
+            "codigo": "PA2",
+            "sentido": "SN",
+            "latitud": -33.647305,
+            "longitud": -70.711589,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [{ "tipoTarifa": "TBFP", "valor": 868.37 }]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [{ "tipoTarifa": "TBFP", "valor": 1736.74 }]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [{ "tipoTarifa": "TBFP", "valor": 2605.11 }]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": [{ "inicio": "07:30:00", "fin": "09:30:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "SABADO_FESTIVO",
+                        "tramos": [{ "inicio": "07:30:00", "fin": "09:30:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "DOMINGO",
+                        "tramos": [{ "inicio": "18:30:00", "fin": "20:30:00" }]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "La Capilla - Colón",
+            "codigo": "PA3",
+            "sentido": "SN",
+            "latitud": -33.622674,
+            "longitud": -70.71459,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 585.09 },
+                        { "tipoTarifa": "TBP", "valor": 1170.18 },
+                        { "tipoTarifa": "TS", "valor": 1755.28 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1170.18 },
+                        { "tipoTarifa": "TBP", "valor": 2340.37 },
+                        { "tipoTarifa": "TS", "valor": 3510.56 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1755.27 },
+                        { "tipoTarifa": "TBP", "valor": 3510.56 },
+                        { "tipoTarifa": "TS", "valor": 5265.84 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": [
+                            { "inicio": "06:30:00", "fin": "07:00:00" },
+                            { "inicio": "07:30:00", "fin": "08:00:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "DOMINGO",
+                        "tramos": [{ "inicio": "18:00:00", "fin": "20:00:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": [{ "inicio": "07:00:00", "fin": "07:30:00" }]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Colón - Las Acacias",
+            "codigo": "PA5",
+            "sentido": "SN",
+            "latitud": -33.582641,
+            "longitud": -70.71384,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 334.63 },
+                        { "tipoTarifa": "TBP", "valor": 669.27 },
+                        { "tipoTarifa": "TS", "valor": 1003.9 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 669.27 },
+                        { "tipoTarifa": "TBP", "valor": 1338.54 },
+                        { "tipoTarifa": "TS", "valor": 2007.81 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1003.9 },
+                        { "tipoTarifa": "TBP", "valor": 2007.82 },
+                        { "tipoTarifa": "TS", "valor": 3011.72 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": [
+                            { "inicio": "06:30:00", "fin": "07:00:00" },
+                            { "inicio": "08:00:00", "fin": "09:30:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "DOMINGO",
+                        "tramos": [{ "inicio": "18:00:00", "fin": "20:00:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": [{ "inicio": "07:00:00", "fin": "08:00:00" }]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Las Acacias - A. Vespucio",
+            "codigo": "PA7",
+            "sentido": "SN",
+            "latitud": -33.54786,
+            "longitud": -70.696951,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 452.06 },
+                        { "tipoTarifa": "TBP", "valor": 904.14 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 904.13 },
+                        { "tipoTarifa": "TBP", "valor": 1808.28 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1356.2 },
+                        { "tipoTarifa": "TBP", "valor": 2712.42 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": [{ "inicio": "07:30:00", "fin": "09:30:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "DOMINGO",
+                        "tramos": [{ "inicio": "18:30:00", "fin": "20:30:00" }]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Americo Vespucio - Departamental",
+            "codigo": "PA30",
+            "sentido": "SN",
+            "latitud": -33.507245,
+            "longitud": -70.669304,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 392.83 },
+                        { "tipoTarifa": "TBP", "valor": 785.66 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 785.66 },
+                        { "tipoTarifa": "TBP", "valor": 1571.33 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1178.49 },
+                        { "tipoTarifa": "TBP", "valor": 2357.0 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    { "tipoTarifa": "TBP", "tipoDia": "LABORAL", "tramos": [] },
+                    { "tipoTarifa": "TS", "tipoDia": "LABORAL", "tramos": [] }
+                ]
+            }
+        },
+        {
+            "nombre": "Departamental - Carlos Valdovinos",
+            "codigo": "PA10",
+            "sentido": "SN",
+            "latitud": -33.495613,
+            "longitud": -70.663846,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 285.79 },
+                        { "tipoTarifa": "TBP", "valor": 571.58 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 571.58 },
+                        { "tipoTarifa": "TBP", "valor": 1143.16 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 857.37 },
+                        { "tipoTarifa": "TBP", "valor": 1714.75 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": [{ "inicio": "07:30:00", "fin": "09:30:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "SABADO_FESTIVO",
+                        "tramos": [{ "inicio": "07:30:00", "fin": "09:30:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "DOMINGO",
+                        "tramos": [{ "inicio": "18:30:00", "fin": "20:30:00" }]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Carlos Valdovinos - Alameda",
+            "codigo": "PA31",
+            "sentido": "SN",
+            "latitud": -33.468976,
+            "longitud": -70.656208,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 368.93 },
+                        { "tipoTarifa": "TBP", "valor": 737.86 },
+                        { "tipoTarifa": "TS", "valor": 1106.79 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 737.86 },
+                        { "tipoTarifa": "TBP", "valor": 1475.72 },
+                        { "tipoTarifa": "TS", "valor": 2213.58 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1106.79 },
+                        { "tipoTarifa": "TBP", "valor": 2213.59 },
+                        { "tipoTarifa": "TS", "valor": 3320.38 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+						[
+							{ "inicio": "06:30:00", "fin": "08:30:00" },
+							{ "inicio": "09:00:00", "fin": "14:00:00" },
+							{ "inicio": "17:00:00", "fin": "19:00:00" }
+						]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "SABADO_FESTIVO",
+                        "tramos": [{ "inicio": "10:00:00", "fin": "13:00:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "DOMINGO",
+                        "tramos": [{ "inicio": "18:30:00", "fin": "20:30:00" }]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": [{ "inicio": "08:30:00", "fin": "09:30:00" }]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Alameda - Río Mapocho",
+            "codigo": "PA13",
+            "sentido": "SN",
+            "latitud": -33.448916,
+            "longitud": -70.65959,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 181.86 },
+                        { "tipoTarifa": "TBP", "valor": 363.73 },
+                        { "tipoTarifa": "TS", "valor": 545.60 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 363.73 },
+                        { "tipoTarifa": "TBP", "valor": 727.47 },
+                        { "tipoTarifa": "TS", "valor": 1091.20 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 545.60 },
+                        { "tipoTarifa": "TBP", "valor": 1091.20 },
+                        { "tipoTarifa": "TS", "valor": 1636.80 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "06:30:00", "fin": "08:30:00" },
+                            { "inicio": "09:00:00", "fin": "14:00:00" },
+                            { "inicio": "17:00:00", "fin": "19:00:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "SABADO_FESTIVO",
+                        "tramos": 
+                        [
+                            { "inicio": "10:00:00", "fin": "13:00:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "DOMINGO",
+                        "tramos": 
+                        [
+                            { "inicio": "18:30:00", "fin": "20:30:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "08:30:00", "fin": "09:00:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Río Mapocho - 14 de la Fama",
+            "codigo": "PA16",
+            "sentido": "SN",
+            "latitud": -33.417172,
+            "longitud": -70.67872,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 425.04 },
+                        { "tipoTarifa": "TBP", "valor": 850.10 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 850.09 },
+                        { "tipoTarifa": "TBP", "valor": 1700.20 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1275.14 },
+                        { "tipoTarifa": "TBP", "valor": 2550.30 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:30:00", "fin": "09:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "14 de la Fama - A.Vespucio Norte",
+            "codigo": "PA17",
+            "sentido": "SN",
+            "latitud": -33.368567,
+            "longitud": -70.699087,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 462.46 },
+                        { "tipoTarifa": "TBP", "valor": 924.92 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 924.92 },
+                        { "tipoTarifa": "TBP", "valor": 1849.85 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1387.38 },
+                        { "tipoTarifa": "TBP", "valor": 2774.78 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:00:00", "fin": "10:00:00" },
+                            { "inicio": "10:30:00", "fin": "15:00:00" },
+                            { "inicio": "16:30:00", "fin": "19:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Río Mapocho - Ruta 5 Norte",
+            "codigo": "PA28",
+            "sentido": "SN",
+            "latitud": -33.382206,
+            "longitud": -70.69556,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 512.34 },
+                        { "tipoTarifa": "TBP", "valor": 1024.69 },
+                        { "tipoTarifa": "TS", "valor": 1537.04 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 768.51 },
+                        { "tipoTarifa": "TBP", "valor": 1537.04 },
+                        { "tipoTarifa": "TS", "valor": 2304.55 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1024.69 },
+                        { "tipoTarifa": "TBP", "valor": 2049.39 },
+                        { "tipoTarifa": "TS", "valor": 3074.08 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:00:00", "fin": "07:30:00" },
+                            { "inicio": "08:30:00", "fin": "09:30:00" },
+                            { "inicio": "10:00:00", "fin": "10:30:00" },
+                            { "inicio": "18:00:00", "fin": "19:00:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:30:00", "fin": "08:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Alameda - Río Mapocho",
+            "codigo": "PA25",
+            "sentido": "SN",
+            "latitud": -33.446579,
+            "longitud": -70.692065,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 421.93 },
+                        { "tipoTarifa": "TBP", "valor": 843.86 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 632.89 },
+                        { "tipoTarifa": "TBP", "valor": 1265.79 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 843.86 },
+                        { "tipoTarifa": "TBP", "valor": 1687.73 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:00:00", "fin": "09:30:00" },
+                            { "inicio": "14:30:00", "fin": "15:00:00" },
+                            { "inicio": "19:00:00", "fin": "19:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "C. Valdovinos - Alameda",
+            "codigo": "PA23",
+            "sentido": "SN",
+            "latitud": -33.469038,
+            "longitud": -70.688105,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 287.86 },
+                        { "tipoTarifa": "TBP", "valor": 575.74 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 431.80 },
+                        { "tipoTarifa": "TBP", "valor": 863.61 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 575.73 },
+                        { "tipoTarifa": "TBP", "valor": 1151.48 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:00:00", "fin": "10:00:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "A. Vespucio - C. Valdovinos",
+            "codigo": "PA21",
+            "sentido": "SN",
+            "latitud": -33.506386,
+            "longitud": -70.697222,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 512.34 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 768.51 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1024.69 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": []
+            }
+        },
+        {
+            "nombre": "Ruta 5 Sur - A. Vespucio",
+            "codigo": "PA19",
+            "sentido": "SN",
+            "latitud": -33.551379,
+            "longitud": -70.709056,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 412.57 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 618.86 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 825.15 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": []
+            }
+        },
+        {
+            "nombre": "La Capilla - Los Guindos",
+            "codigo": "PA1",
+            "sentido": "NS",
+            "latitud": -33.695529,
+            "longitud": -70.723646,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 868.37 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1736.74 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 2605.11 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": []
+            }
+        },
+        {
+            "nombre": "Calera de Tango - La Capilla",
+            "codigo": "PA4",
+            "sentido": "NS",
+            "latitud": -33.624429,
+            "longitud": -70.714529,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 129.90 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 259.81 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 389.71 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": []
+            }
+        },
+        {
+            "nombre": "Colón - Calera de Tango",
+            "codigo": "PA37",
+            "sentido": "NS",
+            "latitud": -33.596873,
+            "longitud": -70.715804,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 455.18 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 910.37 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1365.56 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": []
+            }
+        },
+        {
+            "nombre": "Lo Blanco - Colón",
+            "codigo": "PA6",
+            "sentido": "NS",
+            "latitud": -33.582356,
+            "longitud": -70.713988,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 157.96 },
+                        { "tipoTarifa": "TBP", "valor": 315.93 },
+                        { "tipoTarifa": "TS", "valor": 473.89 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 315.92 },
+                        { "tipoTarifa": "TBP", "valor": 631.86 },
+                        { "tipoTarifa": "TS", "valor": 947.78 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 473.89 },
+                        { "tipoTarifa": "TBP", "valor": 947.79 },
+                        { "tipoTarifa": "TS", "valor": 1421.68 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "10:00:00", "fin": "10:30:00" },
+                            { "inicio": "19:30:00", "fin": "20:30:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "17:30:00", "fin": "19:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Las Acacias - Lo Blanco",
+            "codigo": "PA32",
+            "sentido": "NS",
+            "latitud": -33.558861,
+            "longitud": -70.710593,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 176.67 },
+                        { "tipoTarifa": "TBP", "valor": 353.34 },
+                        { "tipoTarifa": "TS", "valor": 530.01 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 353.34 },
+                        { "tipoTarifa": "TBP", "valor": 706.68 },
+                        { "tipoTarifa": "TS", "valor": 1060.02 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 530.01 },
+                        { "tipoTarifa": "TBP", "valor": 1060.02 },
+                        { "tipoTarifa": "TS", "valor": 1590.04 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "18:30:00", "fin": "20:30:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "17:30:00", "fin": "19:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "A. Vespucio - Las Acacias",
+            "codigo": "PA8",
+            "sentido": "NS",
+            "latitud": -33.507112,
+            "longitud": -70.669405,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 452.06 },
+                        { "tipoTarifa": "TBP", "valor": 904.14 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 904.13 },
+                        { "tipoTarifa": "TBP", "valor": 1808.28 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1356.20 },
+                        { "tipoTarifa": "TBP", "valor": 2712.42 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "18:00:00", "fin": "20:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Departamental - A. Vespucio",
+            "codigo": "PA9",
+            "sentido": "NS",
+            "latitud": -33.547563,
+            "longitud": -70.696807,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 392.83 },
+                        { "tipoTarifa": "TBP", "valor": 785.66 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 785.66 },
+                        { "tipoTarifa": "TBP", "valor": 1571.33 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1178.49 },
+                        { "tipoTarifa": "TBP", "valor": 2357.00 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "18:00:00", "fin": "20:30:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "SABADO_FESTIVO",
+                        "tramos": 
+                        [
+                            { "inicio": "11:00:00", "fin": "15:00:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "C. Valdovinos - Departamental",
+            "codigo": "PA11",
+            "sentido": "NS",
+            "latitud": -33.495326,
+            "longitud": -70.663892,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 285.79 },
+                        { "tipoTarifa": "TBP", "valor": 571.58 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 571.58 },
+                        { "tipoTarifa": "TBP", "valor": 1143.16 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 857.37 },
+                        { "tipoTarifa": "TBP", "valor": 1714.75 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "SABADO_FESTIVO",
+                        "tramos": 
+                        [
+                            { "inicio": "11:00:00", "fin": "15:00:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Alameda - C. Valdovinos",
+            "codigo": "PA12",
+            "sentido": "NS",
+            "latitud": -33.468843,
+            "longitud": -70.656549,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 368.93 },
+                        { "tipoTarifa": "TBP", "valor": 737.86 },
+                        { "tipoTarifa": "TS", "valor": 1106.79 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 737.86 },
+                        { "tipoTarifa": "TBP", "valor": 1475.72 },
+                        { "tipoTarifa": "TS", "valor": 2213.58 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1106.79 },
+                        { "tipoTarifa": "TBP", "valor": 2213.59 },
+                        { "tipoTarifa": "TS", "valor": 3320.38 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:00:00", "fin": "08:30:00" },
+                            { "inicio": "09:00:00", "fin": "09:30:00" },
+                            { "inicio": "15:00:00", "fin": "15:30:00" },
+                            { "inicio": "16:00:00", "fin": "16:30:00" },
+                            { "inicio": "18:30:00", "fin": "19:30:00" },
+                            { "inicio": "20:00:00", "fin": "20:30:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "SABADO_FESTIVO",
+                        "tramos": 
+                        [
+                            { "inicio": "11:00:00", "fin": "15:00:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "10:00:00", "fin": "10:30:00" },
+                            { "inicio": "11:00:00", "fin": "11:30:00" },
+                            { "inicio": "15:30:00", "fin": "16:00:00" },
+                            { "inicio": "19:30:00", "fin": "20:00:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Río Mapocho - Alameda",
+            "codigo": "PA14",
+            "sentido": "NS",
+            "latitud": -33.448398,
+            "longitud": -70.660064,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 181.86 },
+                        { "tipoTarifa": "TBP", "valor": 363.73 },
+                        { "tipoTarifa": "TS", "valor": 545.60 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 363.73 },
+                        { "tipoTarifa": "TBP", "valor": 727.47 },
+                        { "tipoTarifa": "TS", "valor": 1091.20 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 545.60 },
+                        { "tipoTarifa": "TBP", "valor": 1091.20 },
+                        { "tipoTarifa": "TS", "valor": 1636.80 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:00:00", "fin": "08:30:00" },
+                            { "inicio": "09:00:00", "fin": "09:30:00" },
+                            { "inicio": "15:00:00", "fin": "15:30:00" },
+                            { "inicio": "16:00:00", "fin": "16:30:00" },
+                            { "inicio": "18:30:00", "fin": "19:30:00" },
+                            { "inicio": "20:00:00", "fin": "20:30:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "SABADO_FESTIVO",
+                        "tramos": 
+                        [
+                            { "inicio": "11:00:00", "fin": "15:00:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "10:00:00", "fin": "10:30:00" },
+                            { "inicio": "11:00:00", "fin": "11:30:00" },
+                            { "inicio": "15:30:00", "fin": "16:00:00" },
+                            { "inicio": "19:30:00", "fin": "20:00:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "14 de la Fama - Río Mapocho",
+            "codigo": "PA15",
+            "sentido": "NS",
+            "latitud": -33.426531,
+            "longitud": -70.668868,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 425.04 },
+                        { "tipoTarifa": "TBP", "valor": 850.10 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 850.09 },
+                        { "tipoTarifa": "TBP", "valor": 1700.20 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1275.14 },
+                        { "tipoTarifa": "TBP", "valor": 2550.30 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:30:00", "fin": "08:00:00" },
+                            { "inicio": "08:30:00", "fin": "09:00:00" },
+                            { "inicio": "18:30:00", "fin": "20:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "A. Vespucio Norte - 14 de la Fama",
+            "codigo": "PA18",
+            "sentido": "NS",
+            "latitud": -33.368289,
+            "longitud": -70.699428,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 462.46 },
+                        { "tipoTarifa": "TBP", "valor": 924.92 },
+                        { "tipoTarifa": "TS", "valor": 1387.38 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 924.92 },
+                        { "tipoTarifa": "TBP", "valor": 1849.85 },
+                        { "tipoTarifa": "TS", "valor": 2774.77 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1387.38 },
+                        { "tipoTarifa": "TBP", "valor": 2774.78 },
+                        { "tipoTarifa": "TS", "valor": 4162.16 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "07:00:00", "fin": "08:30:00" },
+                            { "inicio": "09:30:00", "fin": "10:00:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "17:30:00", "fin": "18:00:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "A. Vespucio - Ruta 5 Sur",
+            "codigo": "PA20",
+            "sentido": "NS",
+            "latitud": -33.536463,
+            "longitud": -70.707654,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 412.57 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 618.86 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 825.15 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": []
+            }
+        },
+        {
+            "nombre": "C. Valdovinos - A. Vespucio",
+            "codigo": "PA22",
+            "sentido": "NS",
+            "latitud": -33.505582,
+            "longitud": -70.69701,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 512.34 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 768.51 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1024.69 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": []
+            }
+        },
+        {
+            "nombre": "Alameda - C. Valdovinos",
+            "codigo": "PA24",
+            "sentido": "NS",
+            "latitud": -33.469813,
+            "longitud": -70.688239,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 287.86 },
+                        { "tipoTarifa": "TBP", "valor": 575.74 },
+                        { "tipoTarifa": "TS", "valor": 863.61 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 431.80 },
+                        { "tipoTarifa": "TBP", "valor": 863.61 },
+                        { "tipoTarifa": "TS", "valor": 1295.41 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 575.73 },
+                        { "tipoTarifa": "TBP", "valor": 1151.48 },
+                        { "tipoTarifa": "TS", "valor": 1727.22 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "18:00:00", "fin": "18:30:00" },
+                            { "inicio": "19:00:00", "fin": "20:30:00" }
+                        ]
+                    },
+                    {
+                        "tipoTarifa": "TS",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "18:30:00", "fin": "19:00:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Río Mapocho - Alameda",
+            "codigo": "PA26",
+            "sentido": "NS",
+            "latitud": -33.44742,
+            "longitud": -70.692298,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 421.93 },
+                        { "tipoTarifa": "TBP", "valor": 843.86 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 632.89 },
+                        { "tipoTarifa": "TBP", "valor": 1265.79 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 843.86 },
+                        { "tipoTarifa": "TBP", "valor": 1687.73 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "18:30:00", "fin": "20:30:00" }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "nombre": "Ruta 5 Norte - Río Mapocho",
+            "codigo": "PA29",
+            "sentido": "NS",
+            "latitud": -33.381887,
+            "longitud": -70.695469,
+            "reglas": [
+                {
+                    "aplicaA": ["AUTO", "MOTO", "CAMIONETA"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 512.34 },
+                        { "tipoTarifa": "TBP", "valor": 1024.69 }
+                    ]
+                },
+                {
+                    "aplicaA": ["BUS", "CAMION"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 768.51 },
+                        { "tipoTarifa": "TBP", "valor": 1537.04 }
+                    ]
+                },
+                {
+                    "aplicaA": ["CAMION_REMOLQUE"],
+                    "valores": [
+                        { "tipoTarifa": "TBFP", "valor": 1024.69 },
+                        { "tipoTarifa": "TBP", "valor": 2049.39 }
+                    ]
+                }
+            ],
+            "calendario": {
+                "reglas": [
+                    {
+                        "tipoTarifa": "TBP",
+                        "tipoDia": "LABORAL",
+                        "tramos": 
+                        [
+                            { "inicio": "17:00:00", "fin": "20:30:00" }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

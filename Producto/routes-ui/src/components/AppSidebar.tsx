@@ -1,0 +1,233 @@
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import logoTagOk from "@/assets/logo_tagok.svg";
+import {
+  Home as HomeIcon,
+  Map as MapIcon,
+  Users as UsersIcon,
+  BarChart3,
+  Building2,
+  MapPin,
+  Receipt,
+  DatabaseBackup,
+  LogOut,
+  LogIn,
+  ChevronsUpDown,
+  ShieldCheck,
+  ScrollText,
+} from "lucide-react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/app/context/auth-context";
+import { supabase } from "@/app/lib/supabase";
+import {
+  puedeAcceder,
+  resolverRol,
+  ROL_LABEL,
+  type Seccion,
+} from "@/app/auth/roles";
+import { iniciales } from "@/features/admin/lib/format";
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  /** Sección que gatea el ítem; si se omite, es general (cualquier sesión). */
+  seccion?: Seccion;
+}
+
+const NAV_GENERAL: NavItem[] = [
+  { to: "/", label: "Inicio", icon: HomeIcon },
+  { to: "/mapa", label: "Mapa", icon: MapIcon },
+];
+
+const NAV_ADMIN: NavItem[] = [
+  { to: "/usuarios", label: "Usuarios", icon: UsersIcon, seccion: "usuarios" },
+  { to: "/autopistas", label: "Concesionarios", icon: Building2, seccion: "concesionarios" },
+  { to: "/porticos", label: "Pórticos", icon: MapPin, seccion: "porticos" },
+  { to: "/tarifas", label: "Tarifas", icon: Receipt, seccion: "tarifas" },
+  { to: "/reportes", label: "Reportes", icon: BarChart3, seccion: "reportes" },
+  { to: "/auditoria", label: "Auditoría", icon: ScrollText, seccion: "auditoria" },
+  { to: "/carga-masiva", label: "Carga masiva", icon: DatabaseBackup, seccion: "carga-masiva" },
+];
+
+function isItemActive(currentPath: string, to: string): boolean {
+  if (to === "/") return currentPath === "/";
+  return currentPath === to || currentPath.startsWith(`${to}/`);
+}
+
+export function AppSidebar() {
+  const { pathname } = useLocation();
+  const { user } = useAuth();
+  const rol = resolverRol(user);
+
+  const navAdmin = NAV_ADMIN.filter(
+    (item) => !item.seccion || puedeAcceder(rol, item.seccion),
+  );
+
+  return (
+    <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <Link
+          to="/"
+          className="flex justify-center items-center px-2 py-3"
+        >
+          <div className="flex flex-col items-center leading-tight overflow-hidden transition-all duration-300 ease-in-out max-w-[170px] opacity-100 group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0">
+            <img src={logoTagOk} alt="TAG OK" className="h-14 w-auto object-contain max-w-[170px]" />
+            <span className="text-[11px] text-muted-foreground mt-1 whitespace-nowrap">
+              Panel administrador
+            </span>
+          </div>
+        </Link>
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>General</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {NAV_GENERAL.map((item) => (
+                <NavItemButton
+                  key={item.to}
+                  item={item}
+                  active={isItemActive(pathname, item.to)}
+                />
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {navAdmin.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administración</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navAdmin.map((item) => (
+                  <NavItemButton
+                    key={item.to}
+                    item={item}
+                    active={isItemActive(pathname, item.to)}
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </SidebarContent>
+
+      <SidebarFooter>
+        <UserMenu />
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
+
+function NavItemButton({ item, active }: { item: NavItem; active: boolean }) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        tooltip={item.label}
+        className="data-[active=true]:bg-brand-soft data-[active=true]:text-brand data-[active=true]:hover:bg-brand-soft data-[active=true]:hover:text-brand dark:data-[active=true]:bg-brand-soft/30"
+      >
+        <Link to={item.to}>
+          <item.icon />
+          <span>{item.label}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+function UserMenu() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const rol = resolverRol(user);
+  const rolLabel = rol ? ROL_LABEL[rol] : "Usuario";
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
+
+  if (!user) {
+    return (
+      <Button asChild variant="outline" size="sm" className="w-full justify-start">
+        <Link to="/login">
+          <LogIn className="h-4 w-4" />
+          <span className="group-data-[collapsible=icon]:hidden">
+            Iniciar sesión
+          </span>
+        </Link>
+      </Button>
+    );
+  }
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Avatar className="h-8 w-8 rounded-md border border-border">
+                <AvatarFallback className="bg-muted text-xs font-semibold rounded-md">
+                  {iniciales(user.email)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{user.email}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {rolLabel}
+                </span>
+              </div>
+              <ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="right"
+            align="end"
+            className="w-56"
+          >
+            <DropdownMenuLabel className="flex flex-col gap-1">
+              <span className="text-sm font-medium truncate">{user.email}</span>
+              {rol && (
+                <Badge variant="outline" className="w-fit gap-1">
+                  <ShieldCheck className="h-3 w-3" /> {rolLabel}
+                </Badge>
+              )}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="h-4 w-4" />
+              Cerrar sesión
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}

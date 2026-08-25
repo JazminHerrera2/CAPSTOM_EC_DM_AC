@@ -1,0 +1,33 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "com.roony.Main",
+            "projectName": "osm-importer"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-RoutesServiceApplication<routes-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.tagok.routes_service.RoutesServiceApplication",
+            "projectName": "routes-service",
+            "vmArgs": "-Dspring.profiles.active=local",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-HistoryServiceApplication<history-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.tagok.history_service.HistoryServiceApplication",
+            "projectName": "history-service",
+            "vmArgs": "-Dspring.profiles.active=local",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
