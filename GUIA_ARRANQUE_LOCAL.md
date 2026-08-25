@@ -31,7 +31,7 @@ Para dejar funcionando esta copia del proyecto se realizaron estas tareas:
 3. Se instaló Docker Desktop y se comprobó que pudiera ejecutar contenedores Linux.
 4. Se creó el `.env` de la raíz con las conexiones internas de Docker.
 5. Se detectó que la copia descargada no tenía metadata de Git y contenía archivos que eran solamente punteros de Git LFS.
-6. Se reconstruyeron los archivos del frontend que faltaban: `package.json`, `package-lock.json` y los archivos `tsconfig`.
+6. Se recuperaron desde Git LFS los 55 archivos oficiales, incluidos `package.json`, `package-lock.json` y los archivos `tsconfig` del frontend.
 7. Se añadió un modo local para que el Gateway no dependa de Supabase durante el arranque.
 8. Se añadió un usuario administrador local en el panel web cuando se abre desde `localhost`.
 9. Se construyeron y levantaron las imágenes de frontend, Gateway, servicios, bases de datos y Kafka.
@@ -88,7 +88,7 @@ rg -l "^version https://git-lfs.github.com/spec/v1$" Producto
 
 Si el comando muestra archivos JSON de `Producto/porticos` o de `datos-calles`, todavía no contienen los datos reales. Ejecuten `git lfs pull` desde una clonación que tenga acceso al repositorio remoto.
 
-En esta copia los 50 JSON que habían llegado como punteros fueron recuperados desde el repositorio oficial `https://github.com/diegoiarm/tag-ok-mvp`. Aun así, una clonación nueva debe ejecutar `git lfs pull`; de lo contrario, volverá a recibir solamente los punteros.
+En esta copia se recuperaron y verificaron los 55 archivos administrados por Git LFS desde el repositorio oficial `https://github.com/diegoiarm/tag-ok-mvp`. Cincuenta estaban todavía como punteros y los otros cinco archivos del frontend, que se habían reconstruido manualmente, fueron reemplazados por sus versiones oficiales. Una clonación nueva debe ejecutar `git lfs pull`; de lo contrario, volverá a recibir solamente los punteros.
 
 ## 5. Crear el archivo `.env`
 
@@ -460,7 +460,7 @@ Los cambios relevantes para el modo local están en:
 - `Producto/docker-compose.yml`: propaga `AUTH_EXTERNAL_ENABLED` al Gateway.
 - `Producto/gateway-service/src/main/java/com/tagok/gateway_service/security/SecurityConfig.java`: evita descubrimiento remoto de JWT cuando la autenticación externa está desactivada.
 - `Producto/routes-ui/src/app/context/AuthContext.tsx`: usuario administrador local para `localhost`.
-- `Producto/routes-ui/package.json` y archivos `tsconfig`: restauración de configuración faltante del frontend.
+- `Producto/routes-ui/package.json`, `package-lock.json` y archivos `tsconfig`: versiones oficiales recuperadas desde Git LFS.
 - `Producto/tag-ok-app/local.properties`: ruta local del SDK y futuras claves Mapbox; no se debe subir.
 - `GUIA_ARRANQUE_LOCAL.md`: este documento.
 
