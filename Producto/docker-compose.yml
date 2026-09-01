@@ -140,7 +140,11 @@ services:
       AUTH_EXTERNAL_ENABLED: ${AUTH_EXTERNAL_ENABLED:-false}
 
   frontend-tag:
-      build: ./routes-ui
+      build:
+        context: ./routes-ui
+        args:
+          VITE_SUPABASE_URL: ${SUPABASE_URL}
+          VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
       container_name: frontend-tag
       ports:
         - "80:80"
