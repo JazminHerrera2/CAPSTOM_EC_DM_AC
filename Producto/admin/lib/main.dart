@@ -2261,13 +2261,8 @@ class _PorticosPageState extends State<PorticosPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0EA5E9),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         icon: const Icon(Icons.flash_on, size: 18),
                         label: const Text('Reajuste Masivo IPC'),
@@ -2656,8 +2651,6 @@ class _PorticosPageState extends State<PorticosPage> {
         },
       ),
     );
-  }
-
   void _mostrarDialogoReajusteMasivo(
     BuildContext context,
     List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
@@ -2671,9 +2664,7 @@ class _PorticosPageState extends State<PorticosPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               title: Row(
                 children: const [
                   Icon(Icons.auto_awesome, color: Color(0xFF0EA5E9)),
@@ -2694,25 +2685,17 @@ class _PorticosPageState extends State<PorticosPage> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: pctCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
                         labelText: 'Porcentaje de Reajuste (ej: 4.5 para 4.5%)',
                         suffixText: '%',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'Se aplicará a: ${_selectedHighwayFilter == "Todas" ? "TODAS las autopistas" : _selectedHighwayFilter} (${docs.length} pórticos)',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: Color(0xFF0F172A),
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0F172A)),
                     ),
                   ],
                 ),
@@ -2728,134 +2711,82 @@ class _PorticosPageState extends State<PorticosPage> {
                     foregroundColor: Colors.white,
                   ),
                   icon: isSubmitting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                       : const Icon(Icons.flash_on, size: 18),
-                  label: Text(
-                    isSubmitting
-                        ? 'Procesando...'
-                        : 'Aplicar Reajuste Masivo',
-                  ),
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          final double? pct = double.tryParse(
-                            pctCtrl.text.trim(),
-                          );
-                          if (pct == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Ingresa un porcentaje válido.'),
-                              ),
-                            );
-                            return;
-                          }
+                  label: Text(isSubmitting ? 'Procesando...' : 'Aplicar Reajuste Masivo'),
+                  onPressed: isSubmitting ? null : () async {
+                    final double? pct = double.tryParse(pctCtrl.text.trim());
+                    if (pct == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Ingresa un porcentaje válido.')),
+                      );
+                      return;
+                    }
 
-                          setDialogState(() => isSubmitting = true);
+                    setDialogState(() => isSubmitting = true);
 
-                          try {
-                            final batch = FirebaseFirestore.instance.batch();
-                            final factor = 1.0 + (pct / 100.0);
+                    try {
+                      final batch = FirebaseFirestore.instance.batch();
+                      final factor = 1.0 + (pct / 100.0);
 
-                            for (var doc in docs) {
-                              final rawData = doc.data();
-                              final isNested = rawData.containsKey('datos') &&
-                                  rawData['datos'] is Map;
-                              final data = isNested
-                                  ? Map<String, dynamic>.from(rawData['datos'])
-                                  : rawData;
+                      for (var doc in docs) {
+                        final rawData = doc.data();
+                        final isNested = rawData.containsKey('datos') && rawData['datos'] is Map;
+                        final data = isNested ? Map<String, dynamic>.from(rawData['datos']) : rawData;
 
-                              final double cBase = double.tryParse(
-                                    (data['tarifa_base'] ??
-                                            data['costo'] ??
-                                            '0')
-                                        .toString(),
-                                  ) ??
-                                  0.0;
-                              final double cPunta = double.tryParse(
-                                    (data['tarifa_punta'] ??
-                                            data['costoPunta'] ??
-                                            '0')
-                                        .toString(),
-                                  ) ??
-                                  0.0;
-                              final double cSat = double.tryParse(
-                                    (data['tarifa_saturacion'] ??
-                                            data['costoSaturacion'] ??
-                                            '0')
-                                        .toString(),
-                                  ) ??
-                                  0.0;
+                        final double cBase = double.tryParse((data['tarifa_base'] ?? data['costo'] ?? '0').toString()) ?? 0.0;
+                        final double cPunta = double.tryParse((data['tarifa_punta'] ?? data['costoPunta'] ?? '0').toString()) ?? 0.0;
+                        final double cSat = double.tryParse((data['tarifa_saturacion'] ?? data['costoSaturacion'] ?? '0').toString()) ?? 0.0;
 
-                              final newBase =
-                                  (cBase * factor * 100).roundToDouble() /
-                                      100.0;
-                              final newPunta =
-                                  (cPunta * factor * 100).roundToDouble() /
-                                      100.0;
-                              final newSat =
-                                  (cSat * factor * 100).roundToDouble() /
-                                      100.0;
+                        final newBase = (cBase * factor * 100).roundToDouble() / 100.0;
+                        final newPunta = (cPunta * factor * 100).roundToDouble() / 100.0;
+                        final newSat = (cSat * factor * 100).roundToDouble() / 100.0;
 
-                              if (isNested) {
-                                batch.update(doc.reference, {
-                                  'datos.costo': newBase,
-                                  'datos.tarifa_base': newBase,
-                                  'datos.costoPunta': newPunta,
-                                  'datos.tarifa_punta': newPunta,
-                                  'datos.costoSaturacion': newSat,
-                                  'datos.tarifa_saturacion': newSat,
-                                  'datos.fecha_actualizacion':
-                                      FieldValue.serverTimestamp(),
-                                });
-                              } else {
-                                batch.update(doc.reference, {
-                                  'costo': newBase,
-                                  'tarifa_base': newBase,
-                                  'costoPunta': newPunta,
-                                  'tarifa_punta': newPunta,
-                                  'costoSaturacion': newSat,
-                                  'tarifa_saturacion': newSat,
-                                  'fecha_actualizacion':
-                                      FieldValue.serverTimestamp(),
-                                });
-                              }
-                            }
+                        if (isNested) {
+                          batch.update(doc.reference, {
+                            'datos.costo': newBase,
+                            'datos.tarifa_base': newBase,
+                            'datos.costoPunta': newPunta,
+                            'datos.tarifa_punta': newPunta,
+                            'datos.costoSaturacion': newSat,
+                            'datos.tarifa_saturacion': newSat,
+                            'datos.fecha_actualizacion': FieldValue.serverTimestamp(),
+                          });
+                        } else {
+                          batch.update(doc.reference, {
+                            'costo': newBase,
+                            'tarifa_base': newBase,
+                            'costoPunta': newPunta,
+                            'tarifa_punta': newPunta,
+                            'costoSaturacion': newSat,
+                            'tarifa_saturacion': newSat,
+                            'fecha_actualizacion': FieldValue.serverTimestamp(),
+                          });
+                        }
+                      }
 
-                            await batch.commit();
+                      await batch.commit();
 
-                            await widget.service.logAction(
-                              action: 'REAJUSTE_MASIVO_IPC',
-                              target: _selectedHighwayFilter,
-                              details:
-                                  'Reajuste del $pct% aplicado a ${docs.length} pórticos.',
-                            );
+                      await widget.service.logAction(
+                        action: 'REAJUSTE_MASIVO_IPC',
+                        target: _selectedHighwayFilter,
+                        details: 'Reajuste del $pct% aplicado a ${docs.length} pórticos.',
+                      );
 
-                            Navigator.pop(dialogCtx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '¡Reajuste masivo del $pct% aplicado con éxito a ${docs.length} pórticos!',
-                                ),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          } catch (e) {
-                            setDialogState(() => isSubmitting = false);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error al reajustar: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
+                      Navigator.pop(dialogCtx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('¡Reajuste masivo del $pct% aplicado con éxito a ${docs.length} pórticos!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } catch (e) {
+                      setDialogState(() => isSubmitting = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error al reajustar: $e'), backgroundColor: Colors.red),
+                      );
+                    }
+                  },
                 ),
               ],
             );
