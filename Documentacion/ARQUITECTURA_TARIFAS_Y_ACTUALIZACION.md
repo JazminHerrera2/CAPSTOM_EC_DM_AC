@@ -25,7 +25,7 @@ La plataforma se compone de dos componentes principales interconectados mediante
 ```mermaid
 graph TD
     subgraph Backoffice ["1. Panel de Administración Web (admin)"]
-        A[Operador / Administrador] -->|Edición Manual o Reajuste Masivo por IPC| B[Firestore Database 'porticos']
+        A[Operador / Administrador] -->|Edición Manual de Tarifas| B[Firestore Database 'porticos']
     end
 
     subgraph Database ["2. Base de Datos Centralizada (Firebase)"]
@@ -41,7 +41,6 @@ graph TD
 ### A. Mantenimiento desde el Backoffice (`Producto/admin`):
 * El operador del sistema administra la parametrización económica sin intervención en el código fuente.
 * **Edición Individual**: Mediante el módulo de *Pórticos*, el administrador modifica valores de tarifas base, punta o saturación a través del formulario de edición.
-* **Reajuste Masivo IPC**: Mediante el botón de reajuste automático, el sistema recalcula en lote todas las tarifas de las autopistas según el porcentaje decretado por el MOP.
 
 ### B. Consumo en la App Móvil (`Producto/tag_ok`):
 * La app cliente **no almacena precios estáticos en el teléfono**.
