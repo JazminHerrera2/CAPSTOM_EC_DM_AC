@@ -531,63 +531,102 @@ class _AuditScreenState extends State<AuditScreen> {
     }
   }
 
+  Map<String, dynamic> _cleanAndDecodeJson(String text) {
+    String clean = text.trim();
+    if (clean.contains('```')) {
+      clean = clean.replaceAll(RegExp(r'^```(json)?', multiLine: true), '');
+      clean = clean.replaceAll(RegExp(r'```$', multiLine: true), '');
+      clean = clean.trim();
+    }
+    final firstBrace = clean.indexOf('{');
+    final lastBrace = clean.lastIndexOf('}');
+    if (firstBrace != -1 && lastBrace != -1 && lastBrace >= firstBrace) {
+      clean = clean.substring(firstBrace, lastBrace + 1);
+    }
+    return jsonDecode(clean) as Map<String, dynamic>;
+  }
+
+  Future<GenerateContentResponse> _generateContentWithFallback(
+    String apiKey,
+    String prompt,
+  ) async {
+    final modelsToTry = [
+      'gemini-3.5-flash',
+      'gemini-3.6-flash',
+      'gemini-flash-latest',
+      'gemini-3.5-flash-lite',
+    ];
+
+    Object? lastError;
+
+    for (final modelName in modelsToTry) {
+      try {
+        final model = GenerativeModel(
+          model: modelName,
+          apiKey: apiKey,
+          generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+        );
+        return await model.generateContent([Content.text(prompt)]);
+      } catch (e) {
+        debugPrint('Gemini model [$modelName] failed: $e. Trying next model in fallback list...');
+        lastError = e;
+      }
+    }
+    throw Exception('$lastError');
+  }
+
   Future<Map<String, dynamic>> _extractDataWithGemini(String rawText, String fileName) async {
     final geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
     if (geminiApiKey.isEmpty) {
       throw Exception('Clave de API de Gemini no configurada.');
     }
 
-    final model = GenerativeModel(
-      model: 'gemini-2.5-flash',
-      apiKey: geminiApiKey,
-      generationConfig: GenerationConfig(responseMimeType: 'application/json'),
-    );
-
     final limitedText = rawText.length > 60000 ? rawText.substring(0, 60000) : rawText;
 
     final prompt = '''
-Eres un asistente experto en analizar boletas de peaje y autopistas de Chile.
-A continuación te proporcionaré el texto crudo extraído de un archivo llamado "\$fileName".
-Tu tarea es encontrar y extraer:
-1. La concesionaria de la autopista (ej: Autopista Central, Costanera Norte, Vespucio Sur, Vespucio Norte, etc.). Si no estás seguro, usa "Autopista Desconocida".
-2. La patente principal del vehículo cobrado (por lo general 6 caracteres alfanuméricos).
-3. Una lista de todos los tránsitos/cobros individuales (fecha, hora, pórtico y costo).
-   - Formato de fecha esperado: "YYYY-MM-DD"
-   - Formato de hora esperado: "HH:MM:SS" (si falta, usa "00:00:00")
-   - Costo: número numérico entero o decimal (sin símbolos de peso).
+Eres un asistente experto en analizar comprobantes de pago de TAG, boletas y facturas de autopistas de Chile (ej: Unired, Servipag, Autopista Central, Vespucio Sur, Vespucio Norte, Costanera Norte, etc.).
+A continuación te proporcionaré el texto extraído de un archivo llamado "$fileName".
 
-Texto crudo del archivo:
+Tu tarea es analizar el documento y extraer:
+1. La concesionaria principal o emisor (ej: Unired, Autopista Central, Vespucio Sur, etc.). Si no estás seguro, usa "Autopista Desconocida".
+2. La patente o RUT/Identificador del cliente o vehículo (ej: AB1234 o 20.904.281-9).
+3. La lista de cobros o cuentas pagadas ("crossings"):
+   - Si el archivo contiene el detalle de tránsitos por pórticos individuales, extrae cada tránsito (pórtico, fecha en formato "YYYY-MM-DD", hora "HH:MM:SS" o "00:00:00", y costo numérico).
+   - Si el archivo es un comprobante de pago o resumen de cuenta pagada por autopista (como Unired, Servipag, Sencillito o factura global), genera una entrada en "crossings" por cada empresa/autopista pagada (usa el nombre de la autopista como "portico", la fecha del comprobante en formato "YYYY-MM-DD" como "date", "00:00:00" como "time", y el monto numérico entero o decimal sin puntos de miles ni símbolos de peso como "cost").
+
+Texto del archivo:
 """
-\$limitedText
+$limitedText
 """
 
 Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estricta:
 {
-  "concessionaire": "Nombre de la Autopista",
-  "patent": "ABCD12",
+  "concessionaire": "Nombre del Emisor o Autopista",
+  "patent": "ABCD12 o RUT",
   "crossings": [
     {
-      "date": "2026-03-15",
-      "time": "14:30:00",
-      "portico": "Pórtico Nombre",
-      "cost": 1500.0
+      "date": "2026-08-31",
+      "time": "17:24:00",
+      "portico": "Nombre de Pórtico o Autopista Pagada",
+      "cost": 9053.0
     }
   ]
 }
 ''';
 
-    final response = await model.generateContent([Content.text(prompt)]);
+    final response = await _generateContentWithFallback(geminiApiKey, prompt);
     final responseText = response.text?.trim() ?? '';
     
     try {
-      final parsed = jsonDecode(responseText);
+      final parsed = _cleanAndDecodeJson(responseText);
       if (parsed['crossings'] == null || (parsed['crossings'] as List).isEmpty) {
          throw Exception('La IA no encontró cruces legibles en el archivo.');
       }
       return parsed;
     } catch (e) {
-      debugPrint('Gemini Extraction Error: \$e\\nResponse: \$responseText');
-      throw Exception('Gemini no pudo interpretar correctamente el formato de la boleta.');
+      debugPrint('Gemini Extraction Error: $e\nResponse: $responseText');
+      final msg = e.toString().replaceAll('Exception: ', '');
+      throw Exception('Gemini: $msg');
     }
   }
 
@@ -703,13 +742,6 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
               }).toList(),
             })
             .toList();
-
-        final model = GenerativeModel(
-          model: 'gemini-2.5-flash',
-          apiKey: geminiApiKey,
-          generationConfig: GenerationConfig(responseMimeType: 'application/json'),
-        );
-
         final prompt = '''
 Eres un auditor experto de peajes de autopistas de Santiago de Chile. Tu objetivo es redactar un análisis breve y conciso de auditoría en español ("aiReport") explicando los cobros no conciliados con el GPS del vehículo.
 
@@ -738,11 +770,10 @@ Instrucciones para redactar el "aiReport":
 }
 ''';
 
-        final content = [Content.text(prompt)];
-        final response = await model.generateContent(content);
+        final response = await _generateContentWithFallback(geminiApiKey, prompt);
         final responseText = response.text?.trim() ?? '';
 
-        final Map<String, dynamic> aiResult = jsonDecode(responseText);
+        final Map<String, dynamic> aiResult = _cleanAndDecodeJson(responseText);
         aiReport = aiResult['aiReport'] ?? 'Sin comentarios adicionales.';
       } catch (e) {
         print('Error en auditoría Gemini: $e');
@@ -777,7 +808,7 @@ Instrucciones para redactar el "aiReport":
       'uploadDate': DateTime.now().toIso8601String(),
       'details': auditedDetails,
       'aiReport': aiReport,
-      'auditedBy': 'Gemini 2.5 Flash',
+      'auditedBy': 'Gemini 3.6 Flash',
     });
   }
 
@@ -1064,8 +1095,6 @@ Instrucciones para redactar el "aiReport":
             final PdfDocument document = PdfDocument(inputBytes: fileBytes);
             rawText = PdfTextExtractor(document).extractText();
             document.dispose();
-          } else if (fileNameLower.endsWith('.csv')) {
-            rawText = utf8.decode(fileBytes);
           } else if (fileNameLower.endsWith('.xlsx')) {
             final excel = Excel.decodeBytes(fileBytes);
             for (var table in excel.tables.keys) {
@@ -1074,6 +1103,8 @@ Instrucciones para redactar el "aiReport":
                 rawText += row.map((c) => c?.value?.toString() ?? '').join(' ') + '\\n';
               }
             }
+          } else {
+            rawText = utf8.decode(fileBytes, allowMalformed: true);
           }
 
           if (rawText.isEmpty) throw Exception('No se pudo leer el contenido del archivo.');
