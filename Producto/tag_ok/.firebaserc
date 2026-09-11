@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "tag-ok"
-  }
+    "default": "tag-ok-v2",
+    "tag-ok-v2": "tag-ok-v2"
+  },
+  "targets": {},
+  "etags": {}
 }
