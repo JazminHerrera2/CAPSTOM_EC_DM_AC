@@ -47,24 +47,45 @@ class _AdminCheckState extends State<AdminCheck> {
 
   Future<void> _checkAdmin() async {
     try {
-      // Va a buscar a la colección "administradores" el ID de este usuario
-      final doc = await FirebaseFirestore.instance.collection('administradores').doc(widget.user.uid).get();
-      if (doc.exists) {
-        final data = doc.data() ?? {};
+      // 1. Buscar por UID del documento
+      final docByUid = await FirebaseFirestore.instance.collection('administradores').doc(widget.user.uid).get();
+      if (docByUid.exists) {
+        final data = docByUid.data() ?? {};
         final String role = (data['rol'] ?? data['role'] ?? 'super_admin').toString();
         setState(() {
           _role = role;
           _isAdmin = true;
           _isLoading = false;
         });
-      } else {
-        // Si el usuario no existe en la tabla de admins, lo expulsa.
-        await FirebaseAuth.instance.signOut();
-        setState(() {
-          _isAdmin = false;
-          _isLoading = false;
-        });
+        return;
       }
+
+      // 2. Buscar por email en la colección administradores
+      if (widget.user.email != null) {
+        final queryByEmail = await FirebaseFirestore.instance
+            .collection('administradores')
+            .where('email', isEqualTo: widget.user.email)
+            .limit(1)
+            .get();
+
+        if (queryByEmail.docs.isNotEmpty) {
+          final data = queryByEmail.docs.first.data();
+          final String role = (data['rol'] ?? data['role'] ?? 'super_admin').toString();
+          setState(() {
+            _role = role;
+            _isAdmin = true;
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+
+      // Si no existe en la tabla de admins, lo expulsa.
+      await FirebaseAuth.instance.signOut();
+      setState(() {
+        _isAdmin = false;
+        _isLoading = false;
+      });
     } catch (e) {
       await FirebaseAuth.instance.signOut();
       setState(() => _isLoading = false);
