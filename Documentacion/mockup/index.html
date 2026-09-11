@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mockup Ruta - Pantalla 1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <div class="header">
+            <i class="fa-solid fa-route logo-icon"></i>
+            <h1>Configurar Ruta</h1>
+            <p class="subtitle">Ingresa los datos de tu vehículo para este viaje.</p>
+        </div>
+
+        <div class="form-container">
+            <div class="input-group">
+                <label for="vehicle-type">Tipo de Vehículo</label>
+                <div class="input-wrapper select-wrapper">
+                    <i class="fa-solid fa-car-side"></i>
+                    <select id="vehicle-type">
+                        <option value="" disabled selected>Selecciona una opción</option>
+                        <option value="auto">Automóvil</option>
+                        <option value="camioneta">Camioneta / SUV</option>
+                        <option value="moto">Motocicleta</option>
+                        <option value="camion">Camión</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="plate">Patente</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-id-card"></i>
+                    <input type="text" id="plate" placeholder="Ej: AB-CD-12" style="text-transform: uppercase;">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="tag">Dispositivo TAG</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-rss"></i>
+                    <input type="text" id="tag" placeholder="Ej: 1234567890">
+                </div>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <button class="btn-main" id="btn-to-destinations">
+                <span>Continuar</span>
+                <i class="fa-solid fa-arrow-right icon-arrow"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('plate').addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+
+        document.getElementById('btn-to-destinations').addEventListener('click', function(e) {
+            e.preventDefault();
+            const v = document.getElementById('vehicle-type').value;
+            const p = document.getElementById('plate').value;
+            const t = document.getElementById('tag').value;
+
+            if(!v || !p || !t) {
+                alert("Por favor completa los tres datos.");
+                return;
+            }
+            
+            // Navigate to second page
+            window.location.href = "destinos.html";
+        });
+    </script>
+</body>
+</html>

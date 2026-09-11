@@ -1,0 +1,38 @@
+# TAG OK - Requirements & Environment Setup
+# Versión: 1.0.0
+
+# [ SDK ]
+flutter_sdk: 3.41.9
+dart_sdk: 3.11.5
+
+# [ CORE DEPENDENCIES ]
+# Estas se instalan ejecutando: flutter pub get
+firebase_core: ^4.7.0
+firebase_auth: ^6.4.0
+cloud_firestore: ^6.3.0
+flutter_riverpod: ^2.5.1
+flutter_map: ^7.0.0
+latlong2: ^0.9.0
+flutter_dotenv: ^5.1.0
+geolocator: ^14.0.2
+http: ^1.6.0
+syncfusion_flutter_pdf: ^33.2.5
+
+# [ ENVIRONMENT SETUP ]
+# Se requiere un archivo .env en la raíz del proyecto (Producto/tag_ok/.env)
+# Contenido requerido:
+# MAPBOX_ACCESS_TOKEN=tu_token_de_mapbox_aqui
+
+# [ FIREBASE SETUP ]
+# 1. Tener instalado Firebase CLI
+# 2. Ejecutar 'flutterfire configure' para generar el archivo firebase_options.dart
+# 3. Habilitar Google Auth y Firestore (Modo Nativo)
+
+# [ PERMISSIONS REQUIRED ]
+# Android: ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, INTERNET
+# iOS: NSLocationWhenInUseUsageDescription
+
+# [ COMMANDS ]
+# Instalación de dependencias: flutter pub get
+# Ejecución en desarrollo: flutter run
+# Build Android: flutter build apk --split-per-abi

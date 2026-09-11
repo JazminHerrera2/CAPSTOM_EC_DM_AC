@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mockup Ruta - Pantalla 3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <div class="top-nav">
+            <a href="destinos.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i></a>
+        </div>
+
+        <div class="header" style="text-align: left; padding-left: 24px; padding-bottom: 0;">
+            <h1 style="font-size: 1.4rem;">Opciones de Ruta</h1>
+            <p class="subtitle">Hemos encontrado 2 alternativas para tu viaje.</p>
+        </div>
+
+        <div class="map-line">
+            <div class="dot"></div>
+            <div class="line"></div>
+            <div class="dot dot-end"></div>
+        </div>
+
+        <div class="routes-container">
+            
+            <div class="route-card fastest">
+                <div class="route-header">
+                    <div class="route-time">1 hr 15 min</div>
+                    <div class="route-badge">Más Rápida</div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Por Autopista del Sol / Vespucio Norte</p>
+                
+                <div class="route-metrics">
+                    <div class="metric"><i class="fa-solid fa-archway"></i><span>4 Pórticos</span></div>
+                    <div class="metric"><i class="fa-solid fa-coins"></i><span>$4.500</span></div>
+                    <div class="metric"><i class="fa-solid fa-road"></i><span>120 km</span></div>
+                </div>
+                
+                <button class="btn-select-route" onclick="startJourney('Rápida')">Iniciar esta ruta</button>
+            </div>
+
+            <div class="route-card cheapest">
+                <div class="route-header">
+                    <div class="route-time">1 hr 45 min</div>
+                    <div class="route-badge">Más Económica</div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Por Camino Melipilla / Rutas Secundarias</p>
+                
+                <div class="route-metrics">
+                    <div class="metric"><i class="fa-solid fa-archway"></i><span>1 Pórtico</span></div>
+                    <div class="metric"><i class="fa-solid fa-coins"></i><span>$1.200</span></div>
+                    <div class="metric"><i class="fa-solid fa-road"></i><span>110 km</span></div>
+                </div>
+
+                <button class="btn-select-route" onclick="startJourney('Económica')">Iniciar esta ruta</button>
+            </div>
+
+        </div>
+
+        
+        <!-- SUCCESS OVERLAY -->
+        <div class="success-overlay" id="success-screen">
+            <i class="fa-solid fa-circle-check success-icon"></i>
+            <div class="success-text">¡Buen Viaje!</div>
+            <div class="success-subtext" id="success-message">Has iniciado la ruta.</div>
+        </div>
+
+    </div>
+
+    <script>
+        function startJourney(routeType) {
+            const overlay = document.getElementById('success-screen');
+            const msg = document.getElementById('success-message');
+            
+            msg.innerText = `Has seleccionado la ruta ${routeType}. Cobros TAG activados.`;
+            overlay.classList.add('active');
+
+            // Navegar a la pantalla de mapa
+            setTimeout(() => {
+                window.location.href = "mapa.html?route=" + routeType;
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

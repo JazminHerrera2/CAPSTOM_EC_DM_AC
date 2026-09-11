@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mockup Ruta - Mapa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Specific map styles */
+        .map-container {
+            flex-grow: 1;
+            position: relative;
+            background-image: url('mapa_ruta.png');
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .map-overlay-top {
+            padding: 30px 24px;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0) 100%);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .direction-icon {
+            background: var(--primary);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.5);
+        }
+
+        .direction-text h2 {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+        
+        .direction-text p {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            opacity: 0.9;
+        }
+
+        .map-overlay-bottom {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 24px;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            border: 1px solid var(--surface-border);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .trip-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding: 10px 10px 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-end {
+            width: 100%;
+            padding: 16px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-end:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body style="margin: 0; overflow: hidden;">
+
+    <div class="mobile-container" style="padding: 0; gap: 0;">
+        
+        <div class="map-container">
+            
+            <div class="map-overlay-top">
+                <div class="direction-icon">
+                    <i class="fa-solid fa-arrow-turn-up"></i>
+                </div>
+                <div class="direction-text">
+                    <h2>Continúa por 12 km</h2>
+                    <p id="route-type-display">Navegando ruta activa</p>
+                </div>
+            </div>
+
+            <div class="map-overlay-bottom">
+                <div class="trip-stats">
+                    <div class="stat">
+                        <div class="stat-value">1:15</div>
+                        <div class="stat-label">Tiempo (hrs)</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">120</div>
+                        <div class="stat-label">Km rest.</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" style="color: var(--text-main);">18:45</div>
+                        <div class="stat-label">Llegada</div>
+                    </div>
+                </div>
+                <button class="btn-end" onclick="window.location.href='index.html'">Finalizar viaje</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Get route type from url
+        const params = new URLSearchParams(window.location.search);
+        const routeType = params.get('route');
+        if (routeType) {
+            document.getElementById('route-type-display').innerText = 'Navegando ruta ' + routeType;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mockup Ruta - Pantalla 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="mobile-container">
+        
+        <div class="top-nav">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i></a>
+        </div>
+        
+        <div class="header">
+            <h1>Origen y Destino</h1>
+            <p class="subtitle">¿Hacia dónde te diriges hoy?</p>
+        </div>
+
+        <div class="form-container">
+            <div class="input-group">
+                <label for="punto-a">Punto A (Origen)</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-location-dot" style="color: var(--primary)"></i>
+                    <input type="text" id="punto-a" placeholder="Ej: Las Condes, Santiago">
+                </div>
+            </div>
+
+            <div style="padding-left: 20px; color: var(--text-muted); opacity: 0.5;">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </div>
+
+            <div class="input-group">
+                <label for="punto-b">Punto B (Destino)</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-location-dot" style="color: var(--secondary)"></i>
+                    <input type="text" id="punto-b" placeholder="Ej: Viña del Mar, Valparaíso">
+                </div>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <button class="btn-main" id="btn-find-routes">
+                <span>Buscar rutas</span>
+                <i class="fa-solid fa-map-location-dot icon-arrow"></i>
+                <i class="fa-solid fa-circle-notch loading"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('btn-find-routes').addEventListener('click', function(e) {
+            e.preventDefault();
+            const pa = document.getElementById('punto-a').value;
+            const pb = document.getElementById('punto-b').value;
+
+            if(!pa || !pb) {
+                alert("Ingresa un Origen y un Destino.");
+                return;
+            }
+
+            const btn = this;
+            const textSpan = btn.querySelector('span');
+            const arrowIcon = btn.querySelector('.icon-arrow');
+            const loadingIcon = btn.querySelector('.loading');
+
+            textSpan.textContent = "Calculando...";
+            arrowIcon.style.display = "none";
+            loadingIcon.style.display = "block";
+            btn.style.opacity = "0.8";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                // Navigate to third page after fake loading
+                window.location.href = "rutas.html";
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
