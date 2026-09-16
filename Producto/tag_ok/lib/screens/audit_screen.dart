@@ -36,7 +36,8 @@ class _AuditScreenState extends State<AuditScreen> {
   // Variables de Filtro (Subpestaña 1)
   String _selectedVehicle = 'Todos';
   String _selectedHighway = 'Todas';
-  String _selectedDatePreset = 'Todos'; // 'Todos', 'Hoy', 'Últimos 7 días', 'Este Mes', 'Personalizado'
+  String _selectedDatePreset =
+      'Todos'; // 'Todos', 'Hoy', 'Últimos 7 días', 'Este Mes', 'Personalizado'
   DateTimeRange? _customDateRange;
 
   // Colores globales premium (Dark Mode)
@@ -49,47 +50,49 @@ class _AuditScreenState extends State<AuditScreen> {
   // Clasificación de Autopistas de Santiago
   String _classifyHighway(String tollName) {
     final name = tollName.toLowerCase();
-    
+
     // 0. Rutas de conexión genéricas
     if (name.contains('autopista de conexión') || name.contains('conexión')) {
       return 'Autopista de Conexión';
     }
-    
+
     // 1. Autopista Central (PA y Ruta 5)
-    if (name.startsWith('pa') || name.contains('autopista central') || name.contains('ruta 5')) {
+    if (name.startsWith('pa') ||
+        name.contains('autopista central') ||
+        name.contains('ruta 5')) {
       return 'Autopista Central';
-    } 
-    
+    }
+
     // 2. Costanera Norte
-    if (name.contains('costanera') || 
-        name.contains('vivaceta') || 
-        name.contains('lo saldes') || 
-        name.contains('la dehesa') || 
-        name.contains('estoril') || 
-        name.contains('padre arteaga') || 
+    if (name.contains('costanera') ||
+        name.contains('vivaceta') ||
+        name.contains('lo saldes') ||
+        name.contains('la dehesa') ||
+        name.contains('estoril') ||
+        name.contains('padre arteaga') ||
         name.contains('tranqueras') ||
         name.contains('carrascal') ||
         name.contains('padre hurtado') ||
-        name.startsWith('ev ') || 
+        name.startsWith('ev ') ||
         name.startsWith('sv ')) {
       return 'Costanera Norte';
     }
-    
+
     // 3. Vespucio Oriente (AVO / Kennedy)
-    if (name.contains('avo') || 
-        name.contains('kennedy') || 
-        name.contains('p101') || 
+    if (name.contains('avo') ||
+        name.contains('kennedy') ||
+        name.contains('p101') ||
         name.contains('p102') ||
         name.contains('vespucio oriente')) {
       return 'Vespucio Oriente (AVO)';
     }
 
     // 4. Vespucio Norte
-    if (name.contains('vespucio norte') || 
-        name.contains('guanaco') || 
-        name.contains('el salto') || 
-        name.contains('lo boza') || 
-        name.contains('recabal') || 
+    if (name.contains('vespucio norte') ||
+        name.contains('guanaco') ||
+        name.contains('el salto') ||
+        name.contains('lo boza') ||
+        name.contains('recabal') ||
         name.contains('enea') ||
         name.contains('p14') ||
         name.contains('p13') ||
@@ -99,20 +102,20 @@ class _AuditScreenState extends State<AuditScreen> {
     }
 
     // 5. Vespucio Sur
-    if (name.contains('vespucio sur') || 
-        name.contains('pvs') || 
-        name.contains('velásquez') || 
-        name.contains('velasquez') || 
-        name.contains('gran avenida') || 
-        name.contains('santa rosa') || 
-        name.contains('vicuña mackenna') || 
-        name.contains('alderete') || 
+    if (name.contains('vespucio sur') ||
+        name.contains('pvs') ||
+        name.contains('velásquez') ||
+        name.contains('velasquez') ||
+        name.contains('gran avenida') ||
+        name.contains('santa rosa') ||
+        name.contains('vicuña mackenna') ||
+        name.contains('alderete') ||
         name.contains('2a transversal') ||
         name.contains('los mares') ||
         name.contains('coronel') ||
         name.contains('camino a melipilla') ||
-        RegExp(r'^p[1-4]\.[0-9]').hasMatch(name) || 
-        RegExp(r'^p17').hasMatch(name)) { 
+        RegExp(r'^p[1-4]\.[0-9]').hasMatch(name) ||
+        RegExp(r'^p17').hasMatch(name)) {
       return 'Vespucio Sur';
     }
 
@@ -142,14 +145,35 @@ class _AuditScreenState extends State<AuditScreen> {
   String _formatSpanishDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
-      final weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-      final months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-      
+      final weekdays = [
+        'Lunes',
+        'Martes',
+        'Miércoles',
+        'Jueves',
+        'Viernes',
+        'Sábado',
+        'Domingo',
+      ];
+      final months = [
+        'Enero',
+        'Febrero',
+        'Marzo',
+        'Abril',
+        'Mayo',
+        'Junio',
+        'Julio',
+        'Agosto',
+        'Septiembre',
+        'Octubre',
+        'Noviembre',
+        'Diciembre',
+      ];
+
       final weekday = weekdays[date.weekday - 1];
       final day = date.day;
       final month = months[date.month - 1];
       final year = date.year;
-      
+
       return '$weekday, $day de $month de $year';
     } catch (e) {
       return dateStr;
@@ -175,9 +199,18 @@ class _AuditScreenState extends State<AuditScreen> {
     } else if (_selectedDatePreset == 'Este Mes') {
       start = DateTime(now.year, now.month, 1);
       end = now;
-    } else if (_selectedDatePreset == 'Personalizado' && _customDateRange != null) {
+    } else if (_selectedDatePreset == 'Personalizado' &&
+        _customDateRange != null) {
       start = _customDateRange!.start;
-      end = DateTime(_customDateRange!.end.year, _customDateRange!.end.month, _customDateRange!.end.day, 23, 59, 59, 999);
+      end = DateTime(
+        _customDateRange!.end.year,
+        _customDateRange!.end.month,
+        _customDateRange!.end.day,
+        23,
+        59,
+        59,
+        999,
+      );
     }
 
     if (start != null && end != null) {
@@ -187,7 +220,9 @@ class _AuditScreenState extends State<AuditScreen> {
     }
 
     if (_selectedHighway != 'Todas') {
-      final hasTollInHighway = trip.tolls.any((toll) => _classifyHighway(toll.name) == _selectedHighway);
+      final hasTollInHighway = trip.tolls.any(
+        (toll) => _classifyHighway(toll.name) == _selectedHighway,
+      );
       if (!hasTollInHighway) {
         return false;
       }
@@ -216,12 +251,12 @@ class _AuditScreenState extends State<AuditScreen> {
         .orderBy('uploadDate', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return data;
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList();
+        });
   }
 
   Future<void> _deleteAuditedInvoice(String docId) async {
@@ -232,7 +267,7 @@ class _AuditScreenState extends State<AuditScreen> {
         .collection('audited_invoices')
         .doc(docId)
         .delete();
-        
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Auditoría eliminada del historial')),
@@ -245,13 +280,18 @@ class _AuditScreenState extends State<AuditScreen> {
   Future<void> _generateDemoTrips() async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
     final firestore = FirebaseFirestore.instance;
-    final tripsCollection = firestore.collection('usuarios').doc(userId).collection('trips');
+    final tripsCollection = firestore
+        .collection('usuarios')
+        .doc(userId)
+        .collection('trips');
 
     setState(() => _isExtracting = true);
 
     try {
       // 1. Borrar viajes demo anteriores de JHGK50 en un batch
-      final query = await tripsCollection.where('vehicleName', isEqualTo: 'Hyundai (JHGK50)').get();
+      final query = await tripsCollection
+          .where('vehicleName', isEqualTo: 'Hyundai (JHGK50)')
+          .get();
       if (query.docs.isNotEmpty) {
         final deleteBatch = firestore.batch();
         for (var doc in query.docs) {
@@ -270,23 +310,32 @@ class _AuditScreenState extends State<AuditScreen> {
           'distanceKm': (trip['distanceKm'] as num).toDouble(),
           'duration': trip['duration'],
           'vehicleName': trip['vehicleName'],
-          'tolls': (trip['tolls'] as List).map((t) => {
-            'name': t['name'],
-            'cost': (t['cost'] as num).toDouble(),
-            'timestamp': t['timestamp'],
-          }).toList(),
+          'tolls': (trip['tolls'] as List)
+              .map(
+                (t) => {
+                  'name': t['name'],
+                  'cost': (t['cost'] as num).toDouble(),
+                  'timestamp': t['timestamp'],
+                },
+              )
+              .toList(),
         });
       }
       await insertBatch.commit();
 
       setState(() => _isExtracting = false);
 
-      int totalTollsCount = staticDemoTrips.fold(0, (acc, trip) => acc + (trip['tolls'] as List).length);
+      int totalTollsCount = staticDemoTrips.fold(
+        0,
+        (acc, trip) => acc + (trip['tolls'] as List).length,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('¡Historial demo de la patente JHGK50 (${staticDemoTrips.length} viajes, $totalTollsCount peajes) cargado con éxito!'),
+            content: Text(
+              '¡Historial demo de la patente JHGK50 (${staticDemoTrips.length} viajes, $totalTollsCount peajes) cargado con éxito!',
+            ),
             backgroundColor: const Color(0xFF10B981),
           ),
         );
@@ -336,24 +385,22 @@ class _AuditScreenState extends State<AuditScreen> {
 
       for (final Match match in regExp.allMatches(trimmed)) {
         if (match.start > lastIndex) {
-          spans.add(TextSpan(
-            text: trimmed.substring(lastIndex, match.start),
-          ));
+          spans.add(TextSpan(text: trimmed.substring(lastIndex, match.start)));
         }
-        spans.add(TextSpan(
-          text: match.group(1),
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+        spans.add(
+          TextSpan(
+            text: match.group(1),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-        ));
+        );
         lastIndex = match.end;
       }
 
       if (lastIndex < trimmed.length) {
-        spans.add(TextSpan(
-          text: trimmed.substring(lastIndex),
-        ));
+        spans.add(TextSpan(text: trimmed.substring(lastIndex)));
       }
 
       Widget lineWidget = RichText(
@@ -376,7 +423,10 @@ class _AuditScreenState extends State<AuditScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('• ', style: TextStyle(color: Color(0xFFC084FC), fontSize: 12)),
+                const Text(
+                  '• ',
+                  style: TextStyle(color: Color(0xFFC084FC), fontSize: 12),
+                ),
                 Expanded(child: lineWidget),
               ],
             ),
@@ -412,7 +462,9 @@ class _AuditScreenState extends State<AuditScreen> {
 
     if (cleanDb.contains(cleanBill) || cleanBill.contains(cleanDb)) {
       // Evitar falsos positivos en números de pórtico simples de Vespucio Norte (ej: "1" vs "12" o "17")
-      final billDigits = RegExp(r'^\d+$').firstMatch(billLower.trim())?.group(0);
+      final billDigits = RegExp(
+        r'^\d+$',
+      ).firstMatch(billLower.trim())?.group(0);
       if (billDigits != null) {
         final dbPortNum = RegExp(r'p(\d+)\b').firstMatch(dbLower)?.group(1);
         if (dbPortNum != null) {
@@ -432,10 +484,15 @@ class _AuditScreenState extends State<AuditScreen> {
   ) async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
     final firestore = FirebaseFirestore.instance;
-    final tripsCollection = firestore.collection('usuarios').doc(userId).collection('trips');
+    final tripsCollection = firestore
+        .collection('usuarios')
+        .doc(userId)
+        .collection('trips');
 
     // 1. Borrar viajes anteriores de esta patente en un batch
-    final query = await tripsCollection.where('vehicleName', isEqualTo: 'Hyundai ($patent)').get();
+    final query = await tripsCollection
+        .where('vehicleName', isEqualTo: 'Hyundai ($patent)')
+        .get();
     if (query.docs.isNotEmpty) {
       final deleteBatch = firestore.batch();
       for (var doc in query.docs) {
@@ -487,7 +544,10 @@ class _AuditScreenState extends State<AuditScreen> {
               'timestamp': cTime.toIso8601String(),
             });
           } else {
-            final totalCost = currentTolls.fold(0.0, (acc, t) => acc + (t['cost'] as double));
+            final totalCost = currentTolls.fold(
+              0.0,
+              (acc, t) => acc + (t['cost'] as double),
+            );
             tripsToInsert.add({
               'date': firstTime.toIso8601String(),
               'totalCost': totalCost,
@@ -498,17 +558,22 @@ class _AuditScreenState extends State<AuditScreen> {
             });
 
             firstTime = cTime;
-            currentTolls = [{
-              'name': '${c['portico']} - $concessionaire',
-              'cost': c['cost'],
-              'timestamp': cTime.toIso8601String(),
-            }];
+            currentTolls = [
+              {
+                'name': '${c['portico']} - $concessionaire',
+                'cost': c['cost'],
+                'timestamp': cTime.toIso8601String(),
+              },
+            ];
           }
         }
       }
 
       if (currentTolls.isNotEmpty && firstTime != null) {
-        final totalCost = currentTolls.fold(0.0, (acc, t) => acc + (t['cost'] as double));
+        final totalCost = currentTolls.fold(
+          0.0,
+          (acc, t) => acc + (t['cost'] as double),
+        );
         tripsToInsert.add({
           'date': firstTime.toIso8601String(),
           'totalCost': totalCost,
@@ -546,6 +611,66 @@ class _AuditScreenState extends State<AuditScreen> {
     return jsonDecode(clean) as Map<String, dynamic>;
   }
 
+  String _normalizeInvoiceDate(String rawDate) {
+    final clean = rawDate.trim().split(RegExp(r'\s+')).first;
+    final separator = clean.contains('/')
+        ? '/'
+        : (clean.contains('-') ? '-' : '');
+    if (separator.isEmpty) {
+      throw FormatException('Invalid date format $rawDate');
+    }
+
+    final parts = clean.split(separator);
+    if (parts.length != 3) {
+      throw FormatException('Invalid date format $rawDate');
+    }
+
+    if (parts[0].length == 4) {
+      return '${parts[0].padLeft(4, '0')}-${parts[1].padLeft(2, '0')}-${parts[2].padLeft(2, '0')}';
+    }
+
+    return '${parts[2].padLeft(4, '0')}-${parts[1].padLeft(2, '0')}-${parts[0].padLeft(2, '0')}';
+  }
+
+  String _normalizeInvoiceTime(String rawTime) {
+    final clean = rawTime.trim();
+    if (clean.isEmpty) return '00:00:00';
+
+    final match = RegExp(r'(\d{1,2}):(\d{2})(?::(\d{2}))?').firstMatch(clean);
+    if (match == null) {
+      throw FormatException('Invalid time format $rawTime');
+    }
+
+    final hour = match.group(1)!.padLeft(2, '0');
+    final minute = match.group(2)!;
+    final second = (match.group(3) ?? '00').padLeft(2, '0');
+    return '$hour:$minute:$second';
+  }
+
+  double _parseInvoiceAmount(dynamic rawAmount) {
+    if (rawAmount is num) return rawAmount.toDouble();
+
+    String clean = rawAmount.toString().trim();
+    clean = clean.replaceAll(RegExp(r'[^\d,.\-]'), '');
+
+    if (clean.contains(',') && clean.contains('.')) {
+      clean = clean.replaceAll('.', '').replaceAll(',', '.');
+    } else if (clean.contains(',')) {
+      clean = clean.replaceAll(',', '.');
+    }
+
+    return double.parse(clean);
+  }
+
+  Map<String, dynamic> _normalizeCrossing(Map<String, dynamic> crossing) {
+    return {
+      'date': _normalizeInvoiceDate(crossing['date']?.toString() ?? ''),
+      'time': _normalizeInvoiceTime(crossing['time']?.toString() ?? ''),
+      'portico': (crossing['portico'] ?? 'Sin pórtico').toString().trim(),
+      'cost': _parseInvoiceAmount(crossing['cost']),
+    };
+  }
+
   Future<GenerateContentResponse> _generateContentWithFallback(
     String apiKey,
     String prompt,
@@ -554,6 +679,8 @@ class _AuditScreenState extends State<AuditScreen> {
       'gemini-3.5-flash',
       'gemini-3.6-flash',
       'gemini-flash-latest',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
       'gemini-3.5-flash-lite',
     ];
 
@@ -564,26 +691,36 @@ class _AuditScreenState extends State<AuditScreen> {
         final model = GenerativeModel(
           model: modelName,
           apiKey: apiKey,
-          generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+          generationConfig: GenerationConfig(
+            responseMimeType: 'application/json',
+          ),
         );
         return await model.generateContent([Content.text(prompt)]);
       } catch (e) {
-        debugPrint('Gemini model [$modelName] failed: $e. Trying next model in fallback list...');
+        debugPrint(
+          'Gemini model [$modelName] failed: $e. Trying next model in fallback list...',
+        );
         lastError = e;
       }
     }
     throw Exception('$lastError');
   }
 
-  Future<Map<String, dynamic>> _extractDataWithGemini(String rawText, String fileName) async {
+  Future<Map<String, dynamic>> _extractDataWithGemini(
+    String rawText,
+    String fileName,
+  ) async {
     final geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
     if (geminiApiKey.isEmpty) {
       throw Exception('Clave de API de Gemini no configurada.');
     }
 
-    final limitedText = rawText.length > 60000 ? rawText.substring(0, 60000) : rawText;
+    final limitedText = rawText.length > 60000
+        ? rawText.substring(0, 60000)
+        : rawText;
 
-    final prompt = '''
+    final prompt =
+        '''
 Eres un asistente experto en analizar comprobantes de pago de TAG, boletas y facturas de autopistas de Chile (ej: Unired, Servipag, Autopista Central, Vespucio Sur, Vespucio Norte, Costanera Norte, etc.).
 A continuación te proporcionaré el texto extraído de un archivo llamado "$fileName".
 
@@ -616,11 +753,12 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
 
     final response = await _generateContentWithFallback(geminiApiKey, prompt);
     final responseText = response.text?.trim() ?? '';
-    
+
     try {
       final parsed = _cleanAndDecodeJson(responseText);
-      if (parsed['crossings'] == null || (parsed['crossings'] as List).isEmpty) {
-         throw Exception('La IA no encontró cruces legibles en el archivo.');
+      if (parsed['crossings'] == null ||
+          (parsed['crossings'] as List).isEmpty) {
+        throw Exception('La IA no encontró cruces legibles en el archivo.');
       }
       return parsed;
     } catch (e) {
@@ -644,7 +782,9 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
       return a['time'].compareTo(b['time']);
     });
 
-    final String targetPatentClean = patent.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase();
+    final String targetPatentClean = patent
+        .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+        .toUpperCase();
 
     List<Map<String, dynamic>> auditedDetails = [];
     double totalBilled = 0.0;
@@ -652,9 +792,9 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
     List<Map<String, dynamic>> discrepancies = [];
 
     for (var crossing in extractedCrossings) {
-      final String cDateStr = crossing['date']; 
-      final String cTimeStr = crossing['time']; 
-      final String cPortico = crossing['portico']; 
+      final String cDateStr = crossing['date'];
+      final String cTimeStr = crossing['time'];
+      final String cPortico = crossing['portico'];
       final double cCost = crossing['cost'];
 
       totalBilled += cCost;
@@ -667,8 +807,12 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
         if (tripDateStr == cDateStr) {
           for (var toll in trip.tolls) {
             if (_checkPorticoMatch(toll.name, cPortico)) {
-              final difference = toll.timestamp.difference(cDateTime).inMinutes.abs();
-              if (difference <= 15) { // Ventana flexible de 15 minutos
+              final difference = toll.timestamp
+                  .difference(cDateTime)
+                  .inMinutes
+                  .abs();
+              if (difference <= 15) {
+                // Ventana flexible de 15 minutos
                 isMatched = true;
                 totalMatched += cCost;
                 break;
@@ -692,27 +836,44 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
       }
     }
 
-    final double reconciliationRate = totalBilled > 0 ? (totalMatched / totalBilled) * 100 : 0.0;
-    final String finalStatus = reconciliationRate >= 100 
-        ? 'Conciliado' 
+    final double reconciliationRate = totalBilled > 0
+        ? (totalMatched / totalBilled) * 100
+        : 0.0;
+    final String finalStatus = reconciliationRate >= 100
+        ? 'Conciliado'
         : (reconciliationRate > 0 ? 'Discrepancia Parcial' : 'Sin Registro');
 
     // Determinar periodo
     final firstDate = DateTime.parse(extractedCrossings.first['date']);
     final lastDate = DateTime.parse(extractedCrossings.last['date']);
-    final months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    final months = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
     String period = '';
     if (firstDate.month == lastDate.month) {
       period = '${months[firstDate.month - 1]} ${firstDate.year}';
     } else {
-      period = '${months[firstDate.month - 1]} - ${months[lastDate.month - 1]} ${firstDate.year}';
+      period =
+          '${months[firstDate.month - 1]} - ${months[lastDate.month - 1]} ${firstDate.year}';
     }
 
     String aiReport = '';
 
     // 2. BYPASS INSTANTÁNEO SI HAY 100% DE COINCIDENCIA (AHORRA TIEMPO Y COSTE DE API)
     if (reconciliationRate >= 100) {
-      aiReport = '### ¡Conciliación Perfecta! 🛡️\n\n'
+      aiReport =
+          '### ¡Conciliación Perfecta! 🛡️\n\n'
           'Todos los cobros de la boleta coinciden perfectamente con los viajes registrados en el GPS del vehículo **$patent**.\n\n'
           '* **Cobros Auditados:** ${extractedCrossings.length} tránsitos.\n'
           '* **Total Conciliado:** \$${totalMatched.toStringAsFixed(0)} (100% OK).\n'
@@ -726,23 +887,35 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
         }
 
         // Filtrar viajes GPS para enviar únicamente los días con discrepancias
-        final Set<String> discrepancyDates = discrepancies.map((d) => d['date'] as String).toSet();
+        final Set<String> discrepancyDates = discrepancies
+            .map((d) => d['date'] as String)
+            .toSet();
         final tripsOnDiscrepancyDays = trips
             .where((t) {
               final tripDateStr = DateFormat('yyyy-MM-dd').format(t.date);
               return discrepancyDates.contains(tripDateStr) &&
-                  t.vehicleName.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase().contains(targetPatentClean);
+                  t.vehicleName
+                      .replaceAll(RegExp(r'[^a-zA-Z0-9]'), '')
+                      .toUpperCase()
+                      .contains(targetPatentClean);
             })
-            .map((t) => {
-              'date': DateFormat('yyyy-MM-dd').format(t.date),
-              'tolls': t.tolls.map((toll) => {
-                'name': toll.name,
-                'cost': toll.cost,
-                'timestamp': toll.timestamp.toIso8601String(),
-              }).toList(),
-            })
+            .map(
+              (t) => {
+                'date': DateFormat('yyyy-MM-dd').format(t.date),
+                'tolls': t.tolls
+                    .map(
+                      (toll) => {
+                        'name': toll.name,
+                        'cost': toll.cost,
+                        'timestamp': toll.timestamp.toIso8601String(),
+                      },
+                    )
+                    .toList(),
+              },
+            )
             .toList();
-        final prompt = '''
+        final prompt =
+            '''
 Eres un auditor experto de peajes de autopistas de Santiago de Chile. Tu objetivo es redactar un análisis breve y conciso de auditoría en español ("aiReport") explicando los cobros no conciliados con el GPS del vehículo.
 
 Resumen:
@@ -770,7 +943,10 @@ Instrucciones para redactar el "aiReport":
 }
 ''';
 
-        final response = await _generateContentWithFallback(geminiApiKey, prompt);
+        final response = await _generateContentWithFallback(
+          geminiApiKey,
+          prompt,
+        );
         final responseText = response.text?.trim() ?? '';
 
         final Map<String, dynamic> aiResult = _cleanAndDecodeJson(responseText);
@@ -778,7 +954,8 @@ Instrucciones para redactar el "aiReport":
       } catch (e) {
         print('Error en auditoría Gemini: $e');
         // Fallback local corto si hay error de API o red
-        aiReport = '### Auditoría (Resumen Local) 📋\n\n'
+        aiReport =
+            '### Auditoría (Resumen Local) 📋\n\n'
             'Se detectaron discrepancias entre los cobros y el GPS:\n\n'
             '* **Total Facturado:** \$${totalBilled.toStringAsFixed(0)}\n'
             '* **Total Conciliado:** \$${totalMatched.toStringAsFixed(0)} (${reconciliationRate.toStringAsFixed(1)}% de coincidencia)\n\n'
@@ -798,18 +975,18 @@ Instrucciones para redactar el "aiReport":
         .doc(userId)
         .collection('audited_invoices')
         .add({
-      'concessionaire': concessionaire,
-      'period': period,
-      'patent': patent,
-      'totalBilled': totalBilled,
-      'totalMatched': totalMatched,
-      'status': finalStatus,
-      'reconciliationRate': reconciliationRate,
-      'uploadDate': DateTime.now().toIso8601String(),
-      'details': auditedDetails,
-      'aiReport': aiReport,
-      'auditedBy': 'Gemini 3.6 Flash',
-    });
+          'concessionaire': concessionaire,
+          'period': period,
+          'patent': patent,
+          'totalBilled': totalBilled,
+          'totalMatched': totalMatched,
+          'status': finalStatus,
+          'reconciliationRate': reconciliationRate,
+          'uploadDate': DateTime.now().toIso8601String(),
+          'details': auditedDetails,
+          'aiReport': aiReport,
+          'auditedBy': 'Gemini 3.6 Flash',
+        });
   }
 
   Future<void> _pickAndAuditInvoice() async {
@@ -825,7 +1002,9 @@ Instrucciones para redactar el "aiReport":
       final file = result.files.first;
       final fileBytes = file.bytes;
       if (fileBytes == null) {
-        throw Exception('No se pudieron leer los bytes del archivo seleccionado.');
+        throw Exception(
+          'No se pudieron leer los bytes del archivo seleccionado.',
+        );
       }
 
       setState(() => _isExtracting = true);
@@ -845,7 +1024,9 @@ Instrucciones para redactar el "aiReport":
           final lines = const LineSplitter().convert(csvText);
 
           if (lines.length <= 1) {
-            throw Exception('El archivo CSV está vacío o no contiene suficientes filas.');
+            throw Exception(
+              'El archivo CSV está vacío o no contiene suficientes filas.',
+            );
           }
 
           final sample = lines.first;
@@ -865,11 +1046,13 @@ Instrucciones para redactar el "aiReport":
               final String fCostRaw = fields[10].trim(); // Costo (512,34)
 
               patent = fPatent;
-              final double cost = double.parse(fCostRaw.replaceAll('.', '').replaceAll(',', '.'));
+              final double cost = double.parse(
+                fCostRaw.replaceAll('.', '').replaceAll(',', '.'),
+              );
 
               extractedCrossings.add({
-                'date': fDate,
-                'time': fTime,
+                'date': _normalizeInvoiceDate(fDate),
+                'time': _normalizeInvoiceTime(fTime),
                 'portico': fPortico,
                 'cost': cost,
               });
@@ -891,13 +1074,22 @@ Instrucciones para redactar el "aiReport":
             int idxCost = -1;
 
             for (int i = 0; i < headerRow.length; i++) {
-              final val = headerRow[i]?.value?.toString().toLowerCase().trim() ?? '';
-              if (val.contains('patente')) idxPatent = i;
-              else if (val.contains('fecha')) idxDate = i;
-              else if (val.contains('hora')) idxTime = i;
-              else if (val.contains('portico') || val.contains('pórtico')) idxPortico = i;
-              else if (val.contains('concesionaria')) idxConcession = i;
-              else if (val.contains('valor') || val.contains('monto') || val.contains('importe')) idxCost = i;
+              final val =
+                  headerRow[i]?.value?.toString().toLowerCase().trim() ?? '';
+              if (val.contains('patente'))
+                idxPatent = i;
+              else if (val.contains('fecha'))
+                idxDate = i;
+              else if (val.contains('hora'))
+                idxTime = i;
+              else if (val.contains('portico') || val.contains('pórtico'))
+                idxPortico = i;
+              else if (val.contains('concesionaria'))
+                idxConcession = i;
+              else if (val.contains('valor') ||
+                  val.contains('monto') ||
+                  val.contains('importe'))
+                idxCost = i;
             }
 
             if (idxPatent == -1) idxPatent = 0;
@@ -911,14 +1103,20 @@ Instrucciones para redactar el "aiReport":
               final row = sheet.rows[i];
               if (row.isEmpty || row.length <= idxCost) continue;
 
-              final String fPatent = row[idxPatent]?.value?.toString().trim() ?? '';
+              final String fPatent =
+                  row[idxPatent]?.value?.toString().trim() ?? '';
               final String fDate = row[idxDate]?.value?.toString().trim() ?? '';
               final String fTime = row[idxTime]?.value?.toString().trim() ?? '';
-              final String fPortico = row[idxPortico]?.value?.toString().trim() ?? '';
-              final String fConcession = idxConcession < row.length ? (row[idxConcession]?.value?.toString().trim() ?? '') : '';
-              final String fCostRaw = row[idxCost]?.value?.toString().trim() ?? '';
+              final String fPortico =
+                  row[idxPortico]?.value?.toString().trim() ?? '';
+              final String fConcession = idxConcession < row.length
+                  ? (row[idxConcession]?.value?.toString().trim() ?? '')
+                  : '';
+              final String fCostRaw =
+                  row[idxCost]?.value?.toString().trim() ?? '';
 
-              if (fPatent.isEmpty || fDate.isEmpty || fCostRaw.isEmpty) continue;
+              if (fPatent.isEmpty || fDate.isEmpty || fCostRaw.isEmpty)
+                continue;
 
               patent = fPatent;
               if (fConcession.isNotEmpty) {
@@ -929,28 +1127,13 @@ Instrucciones para redactar el "aiReport":
                 }
               }
 
-              final double cost = double.parse(fCostRaw.replaceAll('.', '').replaceAll(',', '.'));
-
-              String formattedDate = fDate;
-              if (fDate.contains('-')) {
-                final dateParts = fDate.split('-');
-                if (dateParts[0].length == 4) {
-                  formattedDate = fDate;
-                } else {
-                  formattedDate = '\${dateParts[2]}-\${dateParts[1]}-\${dateParts[0]}';
-                }
-              } else if (fDate.contains('/')) {
-                final dateParts = fDate.split('/');
-                if (dateParts[0].length == 4) {
-                  formattedDate = fDate.replaceAll('/', '-');
-                } else {
-                  formattedDate = '\${dateParts[2]}-\${dateParts[1]}-\${dateParts[0]}';
-                }
-              }
+              final double cost = double.parse(
+                fCostRaw.replaceAll('.', '').replaceAll(',', '.'),
+              );
 
               extractedCrossings.add({
-                'date': formattedDate,
-                'time': fTime.length == 5 ? '\$fTime:00' : fTime,
+                'date': _normalizeInvoiceDate(fDate),
+                'time': _normalizeInvoiceTime(fTime),
                 'portico': fPortico,
                 'cost': cost,
               });
@@ -966,13 +1149,15 @@ Instrucciones para redactar el "aiReport":
           final lines = const LineSplitter().convert(text);
 
           // Detectar tipo de boleta en base a su contenido
-          if (text.contains('CN ') || text.contains('COSTANERA') || fileNameLower.contains('costanera')) {
+          if (text.contains('CN ') ||
+              text.contains('COSTANERA') ||
+              fileNameLower.contains('costanera')) {
             concessionaire = 'Costanera Norte';
-            
+
             for (int i = 0; i < lines.length; i++) {
               final line = lines[i].trim();
               // Formato de fecha y hora: DD/MM/AAAA HH:MM
-              if (RegExp(r'^\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}\$').hasMatch(line)) {
+              if (RegExp(r'^\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}$').hasMatch(line)) {
                 if (i + 5 < lines.length) {
                   final String dateTimeStr = line;
                   final String fPortico = lines[i + 2].trim();
@@ -980,18 +1165,20 @@ Instrucciones para redactar el "aiReport":
                   final String fPatent = lines[i + 5].trim();
 
                   if (fCostRaw.contains('\$') && fPatent.length == 6) {
-                    final dateParts = dateTimeStr.split(' ')[0].split('/');
-                    final formattedDate = '\${dateParts[2]}-\${dateParts[1]}-\${dateParts[0]}';
-                    final String fTime = '\${dateTimeStr.split(' ')[1]}:00';
-                    
+                    final dateTimeParts = dateTimeStr.split(RegExp(r'\s+'));
+
                     final double cost = double.parse(
-                      fCostRaw.replaceAll('\$', '').replaceAll('.', '').replaceAll(',', '.').trim()
+                      fCostRaw
+                          .replaceAll('\$', '')
+                          .replaceAll('.', '')
+                          .replaceAll(',', '.')
+                          .trim(),
                     );
 
                     patent = fPatent;
                     extractedCrossings.add({
-                      'date': formattedDate,
-                      'time': fTime,
+                      'date': _normalizeInvoiceDate(dateTimeParts[0]),
+                      'time': _normalizeInvoiceTime(dateTimeParts[1]),
                       'portico': fPortico,
                       'cost': cost,
                     });
@@ -1001,13 +1188,16 @@ Instrucciones para redactar el "aiReport":
                 }
               }
             }
-          } else if (text.contains('VESPUCIO SUR') || text.contains('VS ') || fileNameLower.contains('vespucio_sur') || fileNameLower.contains('vespucio sur')) {
+          } else if (text.contains('VESPUCIO SUR') ||
+              text.contains('VS ') ||
+              fileNameLower.contains('vespucio_sur') ||
+              fileNameLower.contains('vespucio sur')) {
             concessionaire = 'Vespucio Sur';
 
             for (int i = 0; i < lines.length; i++) {
               final line = lines[i].trim();
               // Formato de fecha y hora: DD/MM/AAAA HH:MM
-              if (RegExp(r'^\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}\$').hasMatch(line)) {
+              if (RegExp(r'^\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}$').hasMatch(line)) {
                 if (i + 5 < lines.length) {
                   final String dateTimeStr = line;
                   final String fPortico = lines[i + 2].trim();
@@ -1015,18 +1205,20 @@ Instrucciones para redactar el "aiReport":
                   final String fPatent = lines[i + 5].trim();
 
                   if (fCostRaw.contains('\$') && fPatent.length == 6) {
-                    final dateParts = dateTimeStr.split(' ')[0].split('/');
-                    final formattedDate = '\${dateParts[2]}-\${dateParts[1]}-\${dateParts[0]}';
-                    final String fTime = '\${dateTimeStr.split(' ')[1]}:00';
-                    
+                    final dateTimeParts = dateTimeStr.split(RegExp(r'\s+'));
+
                     final double cost = double.parse(
-                      fCostRaw.replaceAll('\$', '').replaceAll('.', '').replaceAll(',', '.').trim()
+                      fCostRaw
+                          .replaceAll('\$', '')
+                          .replaceAll('.', '')
+                          .replaceAll(',', '.')
+                          .trim(),
                     );
 
                     patent = fPatent;
                     extractedCrossings.add({
-                      'date': formattedDate,
-                      'time': fTime,
+                      'date': _normalizeInvoiceDate(dateTimeParts[0]),
+                      'time': _normalizeInvoiceTime(dateTimeParts[1]),
                       'portico': fPortico,
                       'cost': cost,
                     });
@@ -1036,12 +1228,14 @@ Instrucciones para redactar el "aiReport":
                 }
               }
             }
-          } else if (text.contains('VESPUCIO NORTE') || fileNameLower.contains('vespucio_norte') || fileNameLower.contains('vespucio norte')) {
+          } else if (text.contains('VESPUCIO NORTE') ||
+              fileNameLower.contains('vespucio_norte') ||
+              fileNameLower.contains('vespucio norte')) {
             concessionaire = 'Vespucio Norte';
 
             // Expresión regular global sin espacios para el texto corrido de Syncfusion
             final regex = RegExp(
-              r'([A-Z0-9]{6})(\d{2}-\d{2}-\d{4})(\d{2}:\d{2}:\d{2})(O-P|P-O)(\d+)(Laboral|Domingo|Sábado)(TBFP|TBP|TS)Normal\$\s*([\d\.,]+)'
+              r'([A-Z0-9]{6})(\d{2}-\d{2}-\d{4})(\d{2}:\d{2}:\d{2})(O-P|P-O)(\d+)(Laboral|Domingo|Sábado)(TBFP|TBP|TS)Normal\$\s*([\d\.,]+)',
             );
 
             for (final Match match in regex.allMatches(text)) {
@@ -1053,43 +1247,45 @@ Instrucciones para redactar el "aiReport":
 
               patent = fPatent;
               final double cost = double.parse(
-                fCostRaw.replaceAll('.', '').replaceAll(',', '.').trim()
+                fCostRaw.replaceAll('.', '').replaceAll(',', '.').trim(),
               );
 
-              final dateParts = fDate.split('-');
-              final formattedDate = '\${dateParts[2]}-\${dateParts[1]}-\${dateParts[0]}';
-
               extractedCrossings.add({
-                'date': formattedDate,
-                'time': fTime,
+                'date': _normalizeInvoiceDate(fDate),
+                'time': _normalizeInvoiceTime(fTime),
                 'portico': fPortico,
                 'cost': cost,
               });
             }
           } else {
-            throw Exception('No se pudo identificar la estructura de la autopista en el documento.');
+            throw Exception(
+              'No se pudo identificar la estructura de la autopista en el documento.',
+            );
           }
         }
 
         if (extractedCrossings.isEmpty) {
-          throw Exception('No se detectaron transacciones legibles localmente.');
+          throw Exception(
+            'No se detectaron transacciones legibles localmente.',
+          );
         }
-
       } catch (localParsingError) {
         if (_useAI) {
           // ==========================================
           // FALLBACK A GEMINI (EXTRACCIÓN INTELIGENTE)
           // ==========================================
           if (mounted) {
-             ScaffoldMessenger.of(context).showSnackBar(
-               const SnackBar(
-                 content: Text('Formato no reconocido. Analizando con Inteligencia Artificial...'),
-                 backgroundColor: Color(0xFF8B5CF6),
-                 duration: Duration(seconds: 3),
-               ),
-             );
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Formato no reconocido. Analizando con Inteligencia Artificial...',
+                ),
+                backgroundColor: Color(0xFF8B5CF6),
+                duration: Duration(seconds: 3),
+              ),
+            );
           }
-          
+
           String rawText = '';
           if (fileNameLower.endsWith('.pdf')) {
             final PdfDocument document = PdfDocument(inputBytes: fileBytes);
@@ -1100,23 +1296,30 @@ Instrucciones para redactar el "aiReport":
             for (var table in excel.tables.keys) {
               final sheet = excel.tables[table]!;
               for (var row in sheet.rows) {
-                rawText += row.map((c) => c?.value?.toString() ?? '').join(' ') + '\\n';
+                rawText +=
+                    row.map((c) => c?.value?.toString() ?? '').join(' ') +
+                    '\\n';
               }
             }
           } else {
             rawText = utf8.decode(fileBytes, allowMalformed: true);
           }
 
-          if (rawText.isEmpty) throw Exception('No se pudo leer el contenido del archivo.');
+          if (rawText.isEmpty)
+            throw Exception('No se pudo leer el contenido del archivo.');
 
           final aiExtracted = await _extractDataWithGemini(rawText, file.name);
-          extractedCrossings = (aiExtracted['crossings'] as List).map((e) => Map<String, dynamic>.from(e)).toList();
+          extractedCrossings = (aiExtracted['crossings'] as List)
+              .map((e) => _normalizeCrossing(Map<String, dynamic>.from(e)))
+              .toList();
           patent = aiExtracted['patent'] ?? 'Desconocida';
-          concessionaire = aiExtracted['concessionaire'] ?? 'Autopista Genérica';
-          
+          concessionaire =
+              aiExtracted['concessionaire'] ?? 'Autopista Genérica';
         } else {
           // Re-throw the original error if AI is disabled
-          throw Exception('Error local: \$localParsingError. Activa "Auditar con IA" para soportar formatos desconocidos.');
+          throw Exception(
+            'Error local: \$localParsingError. Activa "Auditar con IA" para soportar formatos desconocidos.',
+          );
         }
       }
 
@@ -1156,9 +1359,9 @@ Instrucciones para redactar el "aiReport":
         double totalMatched = 0.0;
 
         for (var crossing in extractedCrossings) {
-          final String cDateStr = crossing['date']; 
-          final String cTimeStr = crossing['time']; 
-          final String cPortico = crossing['portico']; 
+          final String cDateStr = crossing['date'];
+          final String cTimeStr = crossing['time'];
+          final String cPortico = crossing['portico'];
           final double cCost = crossing['cost'];
 
           totalBilled += cCost;
@@ -1171,8 +1374,12 @@ Instrucciones para redactar el "aiReport":
             if (tripDateStr == cDateStr) {
               for (var toll in trip.tolls) {
                 if (_checkPorticoMatch(toll.name, cPortico)) {
-                  final difference = toll.timestamp.difference(cDateTime).inMinutes.abs();
-                  if (difference <= 15) { // Ventana flexible de 15 minutos
+                  final difference = toll.timestamp
+                      .difference(cDateTime)
+                      .inMinutes
+                      .abs();
+                  if (difference <= 15) {
+                    // Ventana flexible de 15 minutos
                     isMatched = true;
                     totalMatched += cCost;
                     break;
@@ -1195,17 +1402,35 @@ Instrucciones para redactar el "aiReport":
         // 3. DETERMINAR PERIODO DE COBRO
         final firstDate = DateTime.parse(extractedCrossings.first['date']);
         final lastDate = DateTime.parse(extractedCrossings.last['date']);
-        final months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        final months = [
+          'Ene',
+          'Feb',
+          'Mar',
+          'Abr',
+          'May',
+          'Jun',
+          'Jul',
+          'Ago',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dic',
+        ];
         if (firstDate.month == lastDate.month) {
           period = '${months[firstDate.month - 1]} ${firstDate.year}';
         } else {
-          period = '${months[firstDate.month - 1]} - ${months[lastDate.month - 1]} ${firstDate.year}';
+          period =
+              '${months[firstDate.month - 1]} - ${months[lastDate.month - 1]} ${firstDate.year}';
         }
 
-        final double reconciliationRate = totalBilled > 0 ? (totalMatched / totalBilled) * 100 : 0.0;
-        final String finalStatus = reconciliationRate >= 100 
-            ? 'Conciliado' 
-            : (reconciliationRate > 0 ? 'Discrepancia Parcial' : 'Sin Registro');
+        final double reconciliationRate = totalBilled > 0
+            ? (totalMatched / totalBilled) * 100
+            : 0.0;
+        final String finalStatus = reconciliationRate >= 100
+            ? 'Conciliado'
+            : (reconciliationRate > 0
+                  ? 'Discrepancia Parcial'
+                  : 'Sin Registro');
 
         // 4. PERSISTIR EN FIRESTORE
         await firestore
@@ -1213,16 +1438,16 @@ Instrucciones para redactar el "aiReport":
             .doc(userId)
             .collection('audited_invoices')
             .add({
-          'concessionaire': concessionaire,
-          'period': period,
-          'patent': patent,
-          'totalBilled': totalBilled,
-          'totalMatched': totalMatched,
-          'status': finalStatus,
-          'reconciliationRate': reconciliationRate,
-          'uploadDate': DateTime.now().toIso8601String(),
-          'details': auditedDetails,
-        });
+              'concessionaire': concessionaire,
+              'period': period,
+              'patent': patent,
+              'totalBilled': totalBilled,
+              'totalMatched': totalMatched,
+              'status': finalStatus,
+              'reconciliationRate': reconciliationRate,
+              'uploadDate': DateTime.now().toIso8601String(),
+              'details': auditedDetails,
+            });
       }
 
       setState(() {
@@ -1233,12 +1458,15 @@ Instrucciones para redactar el "aiReport":
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_useAI ? 'Auditoría con IA guardada con éxito' : 'Auditoría clásica guardada con éxito'),
+            content: Text(
+              _useAI
+                  ? 'Auditoría con IA guardada con éxito'
+                  : 'Auditoría clásica guardada con éxito',
+            ),
             backgroundColor: const Color(0xFF10B981),
           ),
         );
       }
-
     } catch (e) {
       setState(() => _isExtracting = false);
       if (mounted) {
@@ -1246,19 +1474,33 @@ Instrucciones para redactar el "aiReport":
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: surfaceColor,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: const Row(
               children: [
                 Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
                 SizedBox(width: 10),
-                Text('Fallo de Lectura', style: TextStyle(color: Colors.white, fontSize: 17)),
+                Text(
+                  'Fallo de Lectura',
+                  style: TextStyle(color: Colors.white, fontSize: 17),
+                ),
               ],
             ),
-            content: Text(e.toString().replaceAll('Exception:', ''), style: const TextStyle(color: Color(0xFF94A3B8))),
+            content: Text(
+              e.toString().replaceAll('Exception:', ''),
+              style: const TextStyle(color: Color(0xFF94A3B8)),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('ENTENDIDO', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'ENTENDIDO',
+                  style: TextStyle(
+                    color: primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -1272,19 +1514,22 @@ Instrucciones para redactar el "aiReport":
       final concessionaire = invoice['concessionaire'] ?? 'Autopista';
       final period = invoice['period'] ?? 'Periodo';
       final patent = invoice['patent'] ?? 'Patente';
-      final double totalBilled = (invoice['totalBilled'] as num?)?.toDouble() ?? 0.0;
-      final double totalMatched = (invoice['totalMatched'] as num?)?.toDouble() ?? 0.0;
-      final double reconciliationRate = (invoice['reconciliationRate'] as num?)?.toDouble() ?? 0.0;
+      final double totalBilled =
+          (invoice['totalBilled'] as num?)?.toDouble() ?? 0.0;
+      final double totalMatched =
+          (invoice['totalMatched'] as num?)?.toDouble() ?? 0.0;
+      final double reconciliationRate =
+          (invoice['reconciliationRate'] as num?)?.toDouble() ?? 0.0;
       final status = invoice['status'] ?? 'Desconocido';
       final aiReport = invoice['aiReport'] ?? '';
-      
+
       final detailsList = invoice['details'] as List?;
       final List<Map<String, dynamic>> details = detailsList != null
           ? detailsList.map((e) => Map<String, dynamic>.from(e as Map)).toList()
           : [];
 
       final excel = Excel.createExcel();
-      
+
       // Hoja de Resumen
       excel.rename('Sheet1', 'Resumen');
       final Sheet sheetSummary = excel['Resumen'];
@@ -1314,11 +1559,12 @@ Instrucciones para redactar el "aiReport":
       );
 
       final statusStyle = CellStyle(
-        backgroundColorHex: status.toString().toLowerCase().contains('conciliado') 
-            ? ExcelColor.fromHexString('#D1FAE5') 
+        backgroundColorHex:
+            status.toString().toLowerCase().contains('conciliado')
+            ? ExcelColor.fromHexString('#D1FAE5')
             : ExcelColor.fromHexString('#FEE2E2'),
-        fontColorHex: status.toString().toLowerCase().contains('conciliado') 
-            ? ExcelColor.fromHexString('#065F46') 
+        fontColorHex: status.toString().toLowerCase().contains('conciliado')
+            ? ExcelColor.fromHexString('#065F46')
             : ExcelColor.fromHexString('#991B1B'),
         fontSize: 11,
         bold: true,
@@ -1327,7 +1573,9 @@ Instrucciones para redactar el "aiReport":
       );
 
       // Título del reporte
-      final titleCell = sheetSummary.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0));
+      final titleCell = sheetSummary.cell(
+        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
+      );
       titleCell.value = TextCellValue('Reporte de Auditoría e IA - $patent');
       titleCell.cellStyle = titleStyle;
       sheetSummary.setRowHeight(0, 35.0);
@@ -1341,9 +1589,18 @@ Instrucciones para redactar el "aiReport":
         {'label': 'Concesionaria', 'value': concessionaire},
         {'label': 'Periodo', 'value': period},
         {'label': 'Patente', 'value': patent},
-        {'label': 'Total Facturado', 'value': '\$ ${totalBilled.toStringAsFixed(0)}'},
-        {'label': 'Total Conciliado', 'value': '\$ ${totalMatched.toStringAsFixed(0)}'},
-        {'label': 'Tasa de Conciliación', 'value': '${reconciliationRate.toStringAsFixed(1)}%'},
+        {
+          'label': 'Total Facturado',
+          'value': '\$ ${totalBilled.toStringAsFixed(0)}',
+        },
+        {
+          'label': 'Total Conciliado',
+          'value': '\$ ${totalMatched.toStringAsFixed(0)}',
+        },
+        {
+          'label': 'Tasa de Conciliación',
+          'value': '${reconciliationRate.toStringAsFixed(1)}%',
+        },
         {'label': 'Estado', 'value': status, 'type': 'status'},
       ];
 
@@ -1355,13 +1612,17 @@ Instrucciones para redactar el "aiReport":
         final r = i + 2;
         sheetSummary.setRowHeight(r, 22.0);
 
-        final cellLabel = sheetSummary.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: r));
+        final cellLabel = sheetSummary.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: r),
+        );
         cellLabel.value = TextCellValue(rowData['label'] as String);
         cellLabel.cellStyle = labelStyle;
 
-        final cellVal = sheetSummary.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: r));
+        final cellVal = sheetSummary.cell(
+          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: r),
+        );
         cellVal.value = TextCellValue(rowData['value'] as String);
-        
+
         if (rowData['type'] == 'status') {
           cellVal.cellStyle = statusStyle;
         } else {
@@ -1371,7 +1632,9 @@ Instrucciones para redactar el "aiReport":
 
       // Reporte de IA
       if (aiReport.isNotEmpty) {
-        final aiTitleCell = sheetSummary.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 10));
+        final aiTitleCell = sheetSummary.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 10),
+        );
         aiTitleCell.value = TextCellValue('Reporte Analítico de IA (Gemini)');
         aiTitleCell.cellStyle = CellStyle(
           bold: true,
@@ -1381,7 +1644,9 @@ Instrucciones para redactar el "aiReport":
         );
         sheetSummary.setRowHeight(10, 25.0);
 
-        final aiContentCell = sheetSummary.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 11));
+        final aiContentCell = sheetSummary.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 11),
+        );
         aiContentCell.value = TextCellValue(aiReport);
         aiContentCell.cellStyle = CellStyle(
           fontSize: 10,
@@ -1410,7 +1675,9 @@ Instrucciones para redactar el "aiReport":
       );
 
       for (int c = 0; c < detailHeaders.length; c++) {
-        final cell = sheetDetails.cell(CellIndex.indexByColumnRow(columnIndex: c, rowIndex: 0));
+        final cell = sheetDetails.cell(
+          CellIndex.indexByColumnRow(columnIndex: c, rowIndex: 0),
+        );
         cell.value = TextCellValue(detailHeaders[c]);
         cell.cellStyle = headerStyle;
       }
@@ -1429,7 +1696,9 @@ Instrucciones para redactar el "aiReport":
         sheetDetails.setRowHeight(r, 20.0);
 
         // Fecha
-        final cellFecha = sheetDetails.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: r));
+        final cellFecha = sheetDetails.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: r),
+        );
         cellFecha.value = TextCellValue(crossing['date'] ?? '');
         cellFecha.cellStyle = CellStyle(
           backgroundColorHex: ExcelColor.fromHexString(baseBgColor),
@@ -1439,7 +1708,9 @@ Instrucciones para redactar el "aiReport":
         );
 
         // Hora
-        final cellHora = sheetDetails.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: r));
+        final cellHora = sheetDetails.cell(
+          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: r),
+        );
         cellHora.value = TextCellValue(crossing['time'] ?? '');
         cellHora.cellStyle = CellStyle(
           backgroundColorHex: ExcelColor.fromHexString(baseBgColor),
@@ -1449,7 +1720,9 @@ Instrucciones para redactar el "aiReport":
         );
 
         // Pórtico
-        final cellPortico = sheetDetails.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: r));
+        final cellPortico = sheetDetails.cell(
+          CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: r),
+        );
         cellPortico.value = TextCellValue(crossing['portico'] ?? '');
         cellPortico.cellStyle = CellStyle(
           backgroundColorHex: ExcelColor.fromHexString(baseBgColor),
@@ -1459,7 +1732,9 @@ Instrucciones para redactar el "aiReport":
         );
 
         // Costo
-        final cellCosto = sheetDetails.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: r));
+        final cellCosto = sheetDetails.cell(
+          CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: r),
+        );
         final costVal = (crossing['cost'] as num?)?.toDouble() ?? 0.0;
         cellCosto.value = TextCellValue('\$ ${costVal.toStringAsFixed(0)}');
         cellCosto.cellStyle = CellStyle(
@@ -1470,7 +1745,9 @@ Instrucciones para redactar el "aiReport":
         );
 
         // Estado
-        final cellEstado = sheetDetails.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: r));
+        final cellEstado = sheetDetails.cell(
+          CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: r),
+        );
         final crossingStatus = crossing['status'] ?? '';
         cellEstado.value = TextCellValue(crossingStatus);
 
@@ -1479,9 +1756,11 @@ Instrucciones para redactar el "aiReport":
         if (crossingStatus.toString().toLowerCase().contains('conciliado')) {
           statusBgColor = '#D1FAE5';
           statusTextColor = '#065F46';
-        } else if (crossingStatus.toString().toLowerCase().contains('excedido') || 
-                   crossingStatus.toString().toLowerCase().contains('discrepancia') ||
-                   crossingStatus.toString().toLowerCase().contains('falta')) {
+        } else if (crossingStatus.toString().toLowerCase().contains(
+              'excedido',
+            ) ||
+            crossingStatus.toString().toLowerCase().contains('discrepancia') ||
+            crossingStatus.toString().toLowerCase().contains('falta')) {
           statusBgColor = '#FEE2E2';
           statusTextColor = '#991B1B';
         }
@@ -1495,16 +1774,20 @@ Instrucciones para redactar el "aiReport":
           verticalAlign: VerticalAlign.Center,
         );
       }
-      
+
       final bytes = excel.encode();
       if (bytes == null) {
         throw Exception('Error al codificar el archivo Excel.');
       }
-      
-      final cleanConcessionaire = concessionaire.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+
+      final cleanConcessionaire = concessionaire.replaceAll(
+        RegExp(r'[^a-zA-Z0-9]'),
+        '_',
+      );
       final cleanPeriod = period.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
-      final String fileName = 'reporte_auditoria_${cleanConcessionaire}_${cleanPeriod}_$patent.xlsx';
-      
+      final String fileName =
+          'reporte_auditoria_${cleanConcessionaire}_${cleanPeriod}_$patent.xlsx';
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1513,10 +1796,7 @@ Instrucciones para redactar el "aiReport":
         ),
       );
 
-      await saveFileBytes(
-        bytes: Uint8List.fromList(bytes),
-        fileName: fileName,
-      );
+      await saveFileBytes(bytes: Uint8List.fromList(bytes), fileName: fileName);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -1553,9 +1833,7 @@ Instrucciones para redactar el "aiReport":
         children: [
           _buildSubTabBar(),
           Expanded(
-            child: _activeSubTab == 0 
-                ? _buildReportsTab() 
-                : _buildAuditsTab(),
+            child: _activeSubTab == 0 ? _buildReportsTab() : _buildAuditsTab(),
           ),
         ],
       ),
@@ -1578,7 +1856,11 @@ Instrucciones para redactar el "aiReport":
             child: _buildSubTabItem(0, 'Consumo e Historial', Icons.bar_chart),
           ),
           Expanded(
-            child: _buildSubTabItem(1, 'Auditoría de Boletas', Icons.check_circle_outline),
+            child: _buildSubTabItem(
+              1,
+              'Auditoría de Boletas',
+              Icons.check_circle_outline,
+            ),
           ),
         ],
       ),
@@ -1602,11 +1884,7 @@ Instrucciones para redactar el "aiReport":
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.white : textMuted,
-              size: 16,
-            ),
+            Icon(icon, color: isSelected ? Colors.white : textMuted, size: 16),
             const SizedBox(width: 6),
             Text(
               title,
@@ -1648,7 +1926,7 @@ Instrucciones para redactar el "aiReport":
         // Calcular desglose exacto por autopista
         final Map<String, double> highwayCosts = {};
         final Map<String, int> highwayTollsCount = {};
-        
+
         for (var trip in filteredTrips) {
           for (var toll in trip.tolls) {
             final hw = _classifyHighway(toll.name);
@@ -1700,7 +1978,10 @@ Instrucciones para redactar el "aiReport":
                           totalSpent,
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 12.0,
+                          ),
                           child: Text(
                             'VIAJES COINCIDENTES (${filteredTrips.length})',
                             style: TextStyle(
@@ -1715,16 +1996,20 @@ Instrucciones para redactar el "aiReport":
                       if (filteredTrips.isEmpty)
                         _buildFilteredEmptyState(textMuted)
                       else
-                        ...filteredTrips.map((trip) => Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: _buildTripCard(
-                                context,
-                                trip,
-                                surfaceColor,
-                                textMain,
-                                textMuted,
-                              ),
-                            )),
+                        ...filteredTrips.map(
+                          (trip) => Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: _buildTripCard(
+                              context,
+                              trip,
+                              surfaceColor,
+                              textMain,
+                              textMuted,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -1748,7 +2033,11 @@ Instrucciones para redactar el "aiReport":
             const SizedBox(height: 20),
             Text(
               'Extrayendo datos de boleta...',
-              style: TextStyle(color: textMain, fontSize: 16, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: textMain,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -1791,10 +2080,6 @@ Instrucciones para redactar el "aiReport":
     );
   }
 
-
-
-
-
   Widget _buildUploadCard() {
     final activeColor = _useAI ? const Color(0xFF8B5CF6) : primaryColor;
     return GestureDetector(
@@ -1804,7 +2089,11 @@ Instrucciones para redactar el "aiReport":
         decoration: BoxDecoration(
           color: surfaceColor.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _useAI ? const Color(0xFF8B5CF6).withValues(alpha: 0.4) : Colors.white10),
+          border: Border.all(
+            color: _useAI
+                ? const Color(0xFF8B5CF6).withValues(alpha: 0.4)
+                : Colors.white10,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1816,20 +2105,24 @@ Instrucciones para redactar el "aiReport":
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                _useAI ? Icons.auto_awesome : Icons.cloud_upload_outlined, 
-                color: activeColor, 
-                size: 28
+                _useAI ? Icons.auto_awesome : Icons.cloud_upload_outlined,
+                color: activeColor,
+                size: 28,
               ),
             ),
             const SizedBox(height: 10),
             Text(
               _useAI ? 'Auditar Cuenta con IA' : 'Subir Cuenta de Autopista',
-              style: TextStyle(color: textMain, fontSize: 13, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: textMain,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
-              _useAI 
-                  ? 'Análisis inteligente, semántico y detección de fraude por Gemini' 
+              _useAI
+                  ? 'Análisis inteligente, semántico y detección de fraude por Gemini'
                   : 'Soporta formato oficial mensual (PDF / CSV / XLSX)',
               style: TextStyle(color: textMuted, fontSize: 10),
             ),
@@ -1849,11 +2142,19 @@ Instrucciones para redactar el "aiReport":
       ),
       child: Column(
         children: [
-          Icon(Icons.folder_open_outlined, color: textMuted.withValues(alpha: 0.4), size: 48),
+          Icon(
+            Icons.folder_open_outlined,
+            color: textMuted.withValues(alpha: 0.4),
+            size: 48,
+          ),
           const SizedBox(height: 14),
           Text(
             'Sin boletas auditadas',
-            style: TextStyle(color: textMain, fontSize: 13, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: textMain,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1878,10 +2179,13 @@ Instrucciones para redactar el "aiReport":
 
     String formattedDate = '';
     if (dateStr.isNotEmpty) {
-      formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(dateStr));
+      formattedDate = DateFormat(
+        'dd/MM/yyyy HH:mm',
+      ).format(DateTime.parse(dateStr));
     }
 
-    final details = (invoice['details'] as List? ?? []).cast<Map<String, dynamic>>();
+    final details = (invoice['details'] as List? ?? [])
+        .cast<Map<String, dynamic>>();
 
     Color statusColor = const Color(0xFF10B981); // Verde
     if (status.contains('Discrepancia')) {
@@ -1919,7 +2223,11 @@ Instrucciones para redactar el "aiReport":
                   children: [
                     Text(
                       invoice['concessionaire'] ?? 'Boleta',
-                      style: TextStyle(color: textMain, fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: textMain,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -1939,26 +2247,53 @@ Instrucciones para redactar el "aiReport":
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Total Boleta', style: TextStyle(color: textMuted, fontSize: 10)),
-                    Text('\$${billed.toStringAsFixed(0)} CLP', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Total Boleta',
+                      style: TextStyle(color: textMuted, fontSize: 10),
+                    ),
+                    Text(
+                      '\$${billed.toStringAsFixed(0)} CLP',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Conciliado GPS', style: TextStyle(color: textMuted, fontSize: 10)),
-                    Text('\$${matched.toStringAsFixed(0)} CLP', style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Conciliado GPS',
+                      style: TextStyle(color: textMuted, fontSize: 10),
+                    ),
+                    Text(
+                      '\$${matched.toStringAsFixed(0)} CLP',
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '${rate.toStringAsFixed(0)}% Match',
-                    style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -1989,14 +2324,22 @@ Instrucciones para redactar el "aiReport":
                           IconButton(
                             constraints: const BoxConstraints(),
                             padding: const EdgeInsets.only(right: 12),
-                            icon: const Icon(Icons.table_view_rounded, color: Color(0xFF10B981), size: 18),
+                            icon: const Icon(
+                              Icons.table_view_rounded,
+                              color: Color(0xFF10B981),
+                              size: 18,
+                            ),
                             tooltip: 'Exportar a Excel',
                             onPressed: () => _exportInvoiceToExcel(invoice),
                           ),
                           IconButton(
                             constraints: const BoxConstraints(),
                             padding: EdgeInsets.zero,
-                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.redAccent,
+                              size: 18,
+                            ),
                             tooltip: 'Eliminar',
                             onPressed: () => _deleteAuditedInvoice(id),
                           ),
@@ -2018,14 +2361,20 @@ Instrucciones para redactar el "aiReport":
                           ],
                         ),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.auto_awesome, color: Color(0xFFC084FC), size: 16),
+                              Icon(
+                                Icons.auto_awesome,
+                                color: Color(0xFFC084FC),
+                                size: 16,
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 'REPORTE ANALÍTICO DE IA (GEMINI)',
@@ -2047,12 +2396,18 @@ Instrucciones para redactar el "aiReport":
                   ],
                   Text(
                     'DETALLE DE TRANSACCIONES AUDITADAS (AGRUPADO POR FECHA)',
-                    style: TextStyle(color: textMuted, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                    style: TextStyle(
+                      color: textMuted,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   ...() {
                     // Group details by date
-                    final Map<String, List<Map<String, dynamic>>> groupedDetails = {};
+                    final Map<String, List<Map<String, dynamic>>>
+                    groupedDetails = {};
                     for (var tr in details) {
                       final date = tr['date'] ?? 'Sin Fecha';
                       groupedDetails.putIfAbsent(date, () => []).add(tr);
@@ -2063,19 +2418,30 @@ Instrucciones para redactar el "aiReport":
 
                     return sortedDates.map<Widget>((dateStr) {
                       final dateCrossings = groupedDetails[dateStr]!;
-                      final double dateTotalCost = dateCrossings.fold(0.0, (acc, tr) => acc + (tr['cost'] as num).toDouble());
-                      final bool dateHasDiscrepancy = dateCrossings.any((tr) => tr['status'] != 'Correcto');
-                      final String formattedDateHeader = _formatSpanishDate(dateStr);
+                      final double dateTotalCost = dateCrossings.fold(
+                        0.0,
+                        (acc, tr) => acc + (tr['cost'] as num).toDouble(),
+                      );
+                      final bool dateHasDiscrepancy = dateCrossings.any(
+                        (tr) => tr['status'] != 'Correcto',
+                      );
+                      final String formattedDateHeader = _formatSpanishDate(
+                        dateStr,
+                      );
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.02),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05),
+                          ),
                         ),
                         child: Theme(
-                          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                          data: Theme.of(
+                            context,
+                          ).copyWith(dividerColor: Colors.transparent),
                           child: ExpansionTile(
                             dense: true,
                             visualDensity: VisualDensity.compact,
@@ -2083,51 +2449,90 @@ Instrucciones para redactar el "aiReport":
                             collapsedIconColor: textMuted,
                             title: Text(
                               formattedDateHeader,
-                              style: TextStyle(color: textMain, fontSize: 12, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: textMain,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             subtitle: Text(
                               '${dateCrossings.length} peajes • \$${dateTotalCost.toStringAsFixed(0)} CLP',
                               style: TextStyle(color: textMuted, fontSize: 10),
                             ),
                             leading: Icon(
-                              dateHasDiscrepancy ? Icons.warning_amber_rounded : Icons.check_circle_outline,
-                              color: dateHasDiscrepancy ? Colors.orangeAccent : const Color(0xFF10B981),
+                              dateHasDiscrepancy
+                                  ? Icons.warning_amber_rounded
+                                  : Icons.check_circle_outline,
+                              color: dateHasDiscrepancy
+                                  ? Colors.orangeAccent
+                                  : const Color(0xFF10B981),
                               size: 18,
                             ),
-                            childrenPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            childrenPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
                             children: dateCrossings.map<Widget>((tr) {
-                              final double trCost = (tr['cost'] as num).toDouble();
-                              final String trStatus = tr['status'] ?? 'Correcto';
+                              final double trCost = (tr['cost'] as num)
+                                  .toDouble();
+                              final String trStatus =
+                                  tr['status'] ?? 'Correcto';
                               final bool isCorrect = trStatus == 'Correcto';
 
                               return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 6.0,
+                                ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
                                               Text(
                                                 tr['portico'] ?? 'Pórtico',
-                                                style: TextStyle(color: textMain, fontSize: 11, fontWeight: FontWeight.w600),
+                                                style: TextStyle(
+                                                  color: textMain,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                               ),
                                               const SizedBox(width: 6),
                                               Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 1,
+                                                    ),
                                                 decoration: BoxDecoration(
-                                                  color: isCorrect 
-                                                      ? const Color(0xFF10B981).withValues(alpha: 0.15) 
-                                                      : Colors.redAccent.withValues(alpha: 0.15),
-                                                  borderRadius: BorderRadius.circular(4),
+                                                  color: isCorrect
+                                                      ? const Color(
+                                                          0xFF10B981,
+                                                        ).withValues(
+                                                          alpha: 0.15,
+                                                        )
+                                                      : Colors.redAccent
+                                                            .withValues(
+                                                              alpha: 0.15,
+                                                            ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
                                                 ),
                                                 child: Text(
-                                                  isCorrect ? '✓ Match' : '⚠ Sin registro GPS',
+                                                  isCorrect
+                                                      ? '✓ Match'
+                                                      : '⚠ Sin registro GPS',
                                                   style: TextStyle(
-                                                    color: isCorrect ? const Color(0xFF10B981) : Colors.redAccent,
+                                                    color: isCorrect
+                                                        ? const Color(
+                                                            0xFF10B981,
+                                                          )
+                                                        : Colors.redAccent,
                                                     fontSize: 7,
                                                     fontWeight: FontWeight.bold,
                                                   ),
@@ -2138,7 +2543,10 @@ Instrucciones para redactar el "aiReport":
                                           const SizedBox(height: 2),
                                           Text(
                                             'Hora: ${tr['time']}',
-                                            style: TextStyle(color: textMuted, fontSize: 9),
+                                            style: TextStyle(
+                                              color: textMuted,
+                                              fontSize: 9,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -2146,7 +2554,9 @@ Instrucciones para redactar el "aiReport":
                                     Text(
                                       '\$${trCost.toStringAsFixed(0)}',
                                       style: TextStyle(
-                                        color: isCorrect ? textMain.withValues(alpha: 0.8) : Colors.redAccent,
+                                        color: isCorrect
+                                            ? textMain.withValues(alpha: 0.8)
+                                            : Colors.redAccent,
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -2172,8 +2582,11 @@ Instrucciones para redactar el "aiReport":
   // --- FILTROS DE CONSUMO Y DETALLES DE VIAJES ---
 
   Widget _buildFiltersBar(List<String> vehicles) {
-    final bool hasActiveFilters = _selectedVehicle != 'Todos' || _selectedHighway != 'Todas' || _selectedDatePreset != 'Todos';
-    
+    final bool hasActiveFilters =
+        _selectedVehicle != 'Todos' ||
+        _selectedHighway != 'Todas' ||
+        _selectedDatePreset != 'Todos';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -2190,20 +2603,31 @@ Instrucciones para redactar el "aiReport":
             children: [
               Text(
                 'Filtros de Reporte',
-                style: TextStyle(color: textMain, fontSize: 13, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: textMain,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               if (hasActiveFilters)
                 GestureDetector(
                   onTap: _clearAllFilters,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: primaryColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'Limpiar',
-                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -2216,7 +2640,9 @@ Instrucciones para redactar el "aiReport":
               children: [
                 _buildFilterChip(
                   icon: Icons.calendar_today,
-                  label: _selectedDatePreset == 'Personalizado' && _customDateRange != null
+                  label:
+                      _selectedDatePreset == 'Personalizado' &&
+                          _customDateRange != null
                       ? '${DateFormat('dd/MM').format(_customDateRange!.start)} - ${DateFormat('dd/MM').format(_customDateRange!.end)}'
                       : 'Fecha: $_selectedDatePreset',
                   onTap: _showDateFilterSelector,
@@ -2224,13 +2650,17 @@ Instrucciones para redactar el "aiReport":
                 const SizedBox(width: 8),
                 _buildFilterChip(
                   icon: Icons.directions_car,
-                  label: _selectedVehicle == 'Todos' ? 'Vehículo: Todos' : _selectedVehicle,
+                  label: _selectedVehicle == 'Todos'
+                      ? 'Vehículo: Todos'
+                      : _selectedVehicle,
                   onTap: () => _showVehicleSelector(vehicles),
                 ),
                 const SizedBox(width: 8),
                 _buildFilterChip(
                   icon: Icons.alt_route,
-                  label: _selectedHighway == 'Todas' ? 'Autopistas: Todas' : _selectedHighway,
+                  label: _selectedHighway == 'Todas'
+                      ? 'Autopistas: Todas'
+                      : _selectedHighway,
                   onTap: _showHighwaySelector,
                 ),
               ],
@@ -2255,7 +2685,9 @@ Instrucciones para redactar el "aiReport":
         decoration: BoxDecoration(
           color: isActive ? primaryColor : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isActive ? Colors.transparent : Colors.white10),
+          border: Border.all(
+            color: isActive ? Colors.transparent : Colors.white10,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -2271,7 +2703,11 @@ Instrucciones para redactar el "aiReport":
               ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down, color: isActive ? Colors.white70 : textMuted, size: 14),
+            Icon(
+              Icons.arrow_drop_down,
+              color: isActive ? Colors.white70 : textMuted,
+              size: 14,
+            ),
           ],
         ),
       ),
@@ -2294,24 +2730,44 @@ Instrucciones para redactar el "aiReport":
             children: [
               Text(
                 'Filtrar por Rango de Fechas',
-                style: TextStyle(color: textMain, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: textMain,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
-              ...['Todos', 'Hoy', 'Últimos 7 días', 'Este Mes'].map((preset) => ListTile(
-                title: Text(preset, style: TextStyle(color: textMain, fontSize: 15)),
-                trailing: _selectedDatePreset == preset ? Icon(Icons.check_circle, color: primaryColor) : null,
-                onTap: () {
-                  setState(() {
-                    _selectedDatePreset = preset;
-                    _customDateRange = null;
-                  });
-                  Navigator.pop(context);
-                },
-              )),
+              ...['Todos', 'Hoy', 'Últimos 7 días', 'Este Mes'].map(
+                (preset) => ListTile(
+                  title: Text(
+                    preset,
+                    style: TextStyle(color: textMain, fontSize: 15),
+                  ),
+                  trailing: _selectedDatePreset == preset
+                      ? Icon(Icons.check_circle, color: primaryColor)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _selectedDatePreset = preset;
+                      _customDateRange = null;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
               ListTile(
                 leading: Icon(Icons.date_range, color: primaryColor),
-                title: Text('Rango Personalizado...', style: TextStyle(color: textMain, fontSize: 15, fontWeight: FontWeight.bold)),
-                trailing: _selectedDatePreset == 'Personalizado' ? Icon(Icons.check_circle, color: primaryColor) : null,
+                title: Text(
+                  'Rango Personalizado...',
+                  style: TextStyle(
+                    color: textMain,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                trailing: _selectedDatePreset == 'Personalizado'
+                    ? Icon(Icons.check_circle, color: primaryColor)
+                    : null,
                 onTap: () async {
                   Navigator.pop(context);
                   final picked = await showDateRangePicker(
@@ -2329,7 +2785,9 @@ Instrucciones para redactar el "aiReport":
                             onSurface: textMain,
                           ),
                           scaffoldBackgroundColor: bgColor,
-                          dialogTheme: DialogThemeData(backgroundColor: surfaceColor),
+                          dialogTheme: DialogThemeData(
+                            backgroundColor: surfaceColor,
+                          ),
                           appBarTheme: AppBarTheme(
                             backgroundColor: surfaceColor,
                             iconTheme: const IconThemeData(color: Colors.white),
@@ -2381,12 +2839,21 @@ Instrucciones para redactar el "aiReport":
             children: [
               Text(
                 'Filtrar por Patente o Auto',
-                style: TextStyle(color: textMain, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: textMain,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               ListTile(
-                title: Text('Todos los vehículos', style: TextStyle(color: textMain, fontSize: 15)),
-                trailing: _selectedVehicle == 'Todos' ? Icon(Icons.check_circle, color: primaryColor) : null,
+                title: Text(
+                  'Todos los vehículos',
+                  style: TextStyle(color: textMain, fontSize: 15),
+                ),
+                trailing: _selectedVehicle == 'Todos'
+                    ? Icon(Icons.check_circle, color: primaryColor)
+                    : null,
                 onTap: () {
                   setState(() {
                     _selectedVehicle = 'Todos';
@@ -2398,7 +2865,10 @@ Instrucciones para redactar el "aiReport":
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20.0),
                   child: Center(
-                    child: Text('No hay vehículos detectados en tus viajes', style: TextStyle(color: textMuted, fontSize: 13)),
+                    child: Text(
+                      'No hay vehículos detectados en tus viajes',
+                      style: TextStyle(color: textMuted, fontSize: 13),
+                    ),
                   ),
                 )
               else
@@ -2408,9 +2878,17 @@ Instrucciones para redactar el "aiReport":
                     itemBuilder: (context, index) {
                       final v = vehicles[index];
                       return ListTile(
-                        leading: const Icon(Icons.directions_car, color: Colors.white54),
-                        title: Text(v, style: TextStyle(color: textMain, fontSize: 15)),
-                        trailing: _selectedVehicle == v ? Icon(Icons.check_circle, color: primaryColor) : null,
+                        leading: const Icon(
+                          Icons.directions_car,
+                          color: Colors.white54,
+                        ),
+                        title: Text(
+                          v,
+                          style: TextStyle(color: textMain, fontSize: 15),
+                        ),
+                        trailing: _selectedVehicle == v
+                            ? Icon(Icons.check_circle, color: primaryColor)
+                            : null,
                         onTap: () {
                           setState(() {
                             _selectedVehicle = v;
@@ -2438,7 +2916,7 @@ Instrucciones para redactar el "aiReport":
       'Vespucio Oriente (AVO)',
       'Ruta 68',
       'Ruta 78',
-      'Autopista de Conexión'
+      'Autopista de Conexión',
     ];
 
     showModalBottomSheet(
@@ -2456,7 +2934,11 @@ Instrucciones para redactar el "aiReport":
             children: [
               Text(
                 'Filtrar por Autopista Concesionada',
-                style: TextStyle(color: textMain, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: textMain,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -2466,8 +2948,13 @@ Instrucciones para redactar el "aiReport":
                   itemBuilder: (context, index) {
                     final h = highways[index];
                     return ListTile(
-                      title: Text(h == 'Todas' ? 'Todas las autopistas' : h, style: TextStyle(color: textMain, fontSize: 15)),
-                      trailing: _selectedHighway == h ? Icon(Icons.check_circle, color: primaryColor) : null,
+                      title: Text(
+                        h == 'Todas' ? 'Todas las autopistas' : h,
+                        style: TextStyle(color: textMain, fontSize: 15),
+                      ),
+                      trailing: _selectedHighway == h
+                          ? Icon(Icons.check_circle, color: primaryColor)
+                          : null,
                       onTap: () {
                         setState(() {
                           _selectedHighway = h;
@@ -2523,7 +3010,9 @@ Instrucciones para redactar el "aiReport":
           ...sortedKeys.map((hw) {
             final double cost = costs[hw] ?? 0.0;
             final int count = counts[hw] ?? 0;
-            final double percentage = totalSpent > 0 ? (cost / totalSpent) : 0.0;
+            final double percentage = totalSpent > 0
+                ? (cost / totalSpent)
+                : 0.0;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 14.0),
@@ -2536,14 +3025,22 @@ Instrucciones para redactar el "aiReport":
                       Expanded(
                         child: Text(
                           hw,
-                          style: TextStyle(color: textMain, fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: textMain,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Text(
                         '\$${cost.toStringAsFixed(0)} CLP ($count peajes)',
-                        style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -2564,7 +3061,10 @@ Instrucciones para redactar el "aiReport":
                           height: 6,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [primaryColor, primaryColor.withValues(alpha: 0.7)],
+                              colors: [
+                                primaryColor,
+                                primaryColor.withValues(alpha: 0.7),
+                              ],
                             ),
                             borderRadius: BorderRadius.circular(3),
                           ),
@@ -2589,7 +3089,7 @@ Instrucciones para redactar el "aiReport":
     Color textMain,
     Color textMuted,
   ) {
-    Color progressColor = const Color(0xFF4F46E5); 
+    Color progressColor = const Color(0xFF4F46E5);
     if (progress >= 1.0) {
       progressColor = Colors.redAccent;
     } else if (progress >= 0.9) {
@@ -2714,7 +3214,11 @@ Instrucciones para redactar el "aiReport":
           const SizedBox(height: 16),
           Text(
             'Ningún viaje coincide con los filtros aplicados.',
-            style: TextStyle(color: textMain, fontSize: 15, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: textMain,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -2825,15 +3329,22 @@ Instrucciones para redactar el "aiReport":
                                 Row(
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: primaryColor.withValues(alpha: 0.15),
+                                        color: primaryColor.withValues(
+                                          alpha: 0.15,
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
                                         hw,
                                         style: TextStyle(
-                                          color: primaryColor.withValues(alpha: 0.8),
+                                          color: primaryColor.withValues(
+                                            alpha: 0.8,
+                                          ),
                                           fontSize: 9,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -2841,7 +3352,9 @@ Instrucciones para redactar el "aiReport":
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      DateFormat('HH:mm').format(toll.timestamp),
+                                      DateFormat(
+                                        'HH:mm',
+                                      ).format(toll.timestamp),
                                       style: TextStyle(
                                         color: textMuted,
                                         fontSize: 11,

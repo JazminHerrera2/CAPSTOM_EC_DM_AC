@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "tag-ok-v2"
+  },
+  "targets": {
+    "tag-ok-v2": {
+      "hosting": {
+        "admin": [
+          "tag-ok-v2-admin"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

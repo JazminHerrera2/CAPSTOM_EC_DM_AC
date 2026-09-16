@@ -2651,6 +2651,8 @@ class _PorticosPageState extends State<PorticosPage> {
         },
       ),
     );
+  }
+
   void _mostrarDialogoReajusteMasivo(
     BuildContext context,
     List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
