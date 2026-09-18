@@ -676,15 +676,14 @@ class _AuditScreenState extends State<AuditScreen> {
     String prompt,
   ) async {
     final modelsToTry = [
-      'gemini-3.5-flash',
-      'gemini-3.6-flash',
       'gemini-flash-latest',
       'gemini-2.5-flash',
-      'gemini-2.0-flash',
+      'gemini-3.5-flash',
+      'gemini-3.6-flash',
       'gemini-3.5-flash-lite',
     ];
 
-    Object? lastError;
+    final List<String> attemptErrors = [];
 
     for (final modelName in modelsToTry) {
       try {
@@ -697,13 +696,16 @@ class _AuditScreenState extends State<AuditScreen> {
         );
         return await model.generateContent([Content.text(prompt)]);
       } catch (e) {
+        final attemptSummary = '[$modelName] $e';
         debugPrint(
-          'Gemini model [$modelName] failed: $e. Trying next model in fallback list...',
+          'Gemini model $attemptSummary. Trying next model in fallback list...',
         );
-        lastError = e;
+        attemptErrors.add(attemptSummary);
       }
     }
-    throw Exception('$lastError');
+    throw Exception(
+      'Todos los modelos de Gemini fallaron:\n${attemptErrors.join('\n')}',
+    );
   }
 
   Future<Map<String, dynamic>> _extractDataWithGemini(
