@@ -676,11 +676,8 @@ class _AuditScreenState extends State<AuditScreen> {
     String prompt,
   ) async {
     final modelsToTry = [
-      'gemini-flash-latest',
-      'gemini-2.5-flash',
       'gemini-3.5-flash',
       'gemini-3.6-flash',
-      'gemini-3.5-flash-lite',
     ];
 
     final List<String> attemptErrors = [];
