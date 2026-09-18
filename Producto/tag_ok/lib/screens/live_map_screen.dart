@@ -27,17 +27,19 @@ import '../data/services/history_service.dart';
 /// flotante del bottom nav (reestructuración de navegación que reemplaza
 /// la decisión de docs/06-decision-navegacion.md).
 ///
-/// `HomeScreen` la muestra como contenido de su propio body (flag
-/// `_mostrandoMapa`), no vía `Navigator.push` — así el menú inferior nunca
-/// desaparece. No tiene AppBar propio ni botón de "volver": para salir del
-/// mapa el usuario toca otro ítem del menú inferior, igual que con las
-/// demás pestañas.
+/// `HomeScreen` la mantiene siempre montada dentro de un `Offstage` (flag
+/// `_mostrandoMapa` controla solo la visibilidad, no el montaje), en vez de
+/// construirla/destruirla al cambiar de pestaña o de abrirla vía
+/// `Navigator.push`. Esto es intencional: el GPS y la detección de cruces
+/// de peaje deben seguir corriendo en segundo plano sin importar qué
+/// pestaña esté viendo el usuario, igual que en Fase 1 (donde ese estado
+/// vivía directamente en `HomeScreen`). Si esta pantalla se destruyera al
+/// cambiar de pestaña, `dispose()` cancelaría la suscripción GPS y el
+/// tracking se detendría en medio de un viaje.
 ///
-/// Nota de comportamiento: el tracking GPS y la detección de cruces de
-/// peaje se detienen si el usuario sale de esta pantalla (dispose() cancela
-/// la suscripción cuando `HomeScreen` deja de mostrarla), cosa que antes no
-/// pasaba porque el estado vivía directamente en `HomeScreen` y persistía
-/// entre pestañas.
+/// No tiene AppBar propio ni botón de "volver": para salir de la vista del
+/// mapa el usuario toca otro ítem del menú inferior (el mapa sigue
+/// corriendo detrás, solo deja de mostrarse).
 class LiveMapScreen extends StatefulWidget {
   const LiveMapScreen({super.key});
 

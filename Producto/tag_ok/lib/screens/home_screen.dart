@@ -53,8 +53,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bgColor,
+      // LiveMapScreen se mantiene siempre montado (Offstage) en vez de
+      // construirse/destruirse con el resto de las pestañas: en Fase 1 el
+      // GPS y la detección de cruces de peaje vivían en el estado de
+      // HomeScreen y corrían en segundo plano sin importar qué pestaña se
+      // viera. Si LiveMapScreen se destruyera al cambiar de pestaña
+      // (dispose() cancela la suscripción GPS), el tracking se detendría
+      // en medio de un viaje — justamente lo que NO debe pasar. Las otras
+      // 4 pestañas sí se reconstruyen normalmente al cambiar, igual que en
+      // Fase 1 (nunca fueron persistentes).
       body: SafeArea(
-        child: _buildBodyTab(),
+        child: Stack(
+          children: [
+            Offstage(
+              offstage: _mostrandoMapa,
+              child: _buildBodyTab(),
+            ),
+            Offstage(
+              offstage: !_mostrandoMapa,
+              child: const LiveMapScreen(),
+            ),
+          ],
+        ),
       ),
 
       // Botón central flotante: abre el mapa en tiempo real.
@@ -143,8 +163,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBodyTab() {
-    if (_mostrandoMapa) return const LiveMapScreen();
-
     switch (_selectedIndex) {
       case 0:
         return const InicioDashboardScreen();
