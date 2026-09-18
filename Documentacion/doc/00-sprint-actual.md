@@ -87,3 +87,9 @@ Estas son las más críticas para el componente de IA que se construye aquí:
 - Dashboard "Mi Auto" → Sprint 5.
 - Envío real de notificaciones (push/in-app) → Sprint 5 / EP-08. En este Sprint solo se
   guarda la configuración de vencimiento (fecha + antelación deseada).
+
+## Nota de arquitectura
+
+VEHICULOS de Fase 2 se implementó extendiendo de forma aditiva la colección `vehiculos` ya
+existente de Fase 1 (sin colección nueva) — detalle completo y desviaciones respecto al
+diccionario de datos en `07-desviaciones-diccionario-datos.md`.
