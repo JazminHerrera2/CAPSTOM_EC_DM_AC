@@ -3,7 +3,7 @@ import 'audit_screen.dart';
 import 'herramientas/herramientas_hub_screen.dart';
 import 'inicio_dashboard_screen.dart';
 import 'live_map_screen.dart';
-import 'mi_vehiculo/mi_vehiculo_screen.dart';
+import 'vehiculos_screen.dart';
 
 /// Contenedor de navegación principal (bottom nav + botón central).
 ///
@@ -15,10 +15,9 @@ import 'mi_vehiculo/mi_vehiculo_screen.dart';
 /// - El botón central flotante abre `LiveMapScreen` (antes abría
 ///   directamente "Configurar viaje" — ese flujo ahora vive dentro del
 ///   mapa, con su propio botón).
-/// - "Vehículos" (Fase 1, `VehiculosScreen`) se sacó del bottom nav — ahora
-///   se accede desde el hub de "Herramientas" como "Categoría de vehículo
-///   (TAG)". Este slot del bottom nav ahora es "Mi Vehículo"
-///   (`MiVehiculoScreen`, módulo de Fase 2).
+/// - "Vehículos" (Fase 1, `VehiculosScreen`) vuelve al bottom nav como
+///   "Mis Vehículos", tal como estaba originalmente. El módulo "Mi
+///   Vehículo" de Fase 2 se sacó de la navegación principal.
 /// - "Perfil" se renombró a "Herramientas" y ahora abre un hub de accesos
 ///   en vez de ir directo a la pantalla de perfil.
 class HomeScreen extends StatefulWidget {
@@ -121,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(width: 50), // Espacio para el botón central flotante
 
-              _buildNavIcon(Icons.directions_car_outlined, 2, 'Mi Vehículo'),
+              _buildNavIcon(Icons.directions_car_outlined, 2, 'Vehículos'),
               _buildNavIcon(Icons.build_outlined, 3, 'Herramientas'),
             ],
           ),
@@ -131,7 +130,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNavIcon(IconData icon, int index, String label) {
-    final isSelected = _selectedIndex == index;
+    // Mientras se muestra el mapa (botón central) ningún ítem del nav
+    // queda marcado, ya que el mapa no es una pestaña más.
+    final isSelected = !_mostrandoMapa && _selectedIndex == index;
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       behavior: HitTestBehavior.opaque,
@@ -169,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return const AuditScreen();
       case 2:
-        return const MiVehiculoScreen();
+        return const VehiculosScreen();
       case 3:
         return const HerramientasHubScreen();
       default:

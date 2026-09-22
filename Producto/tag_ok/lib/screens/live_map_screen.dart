@@ -16,7 +16,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:vibration/vibration.dart';
 import 'route_setup_screen.dart';
-import 'mi_vehiculo/mi_vehiculo_screen.dart';
+import 'vehiculos_screen.dart';
 import '../data/models/route_model.dart';
 import '../data/models/trip_history.dart';
 import '../data/services/history_service.dart';
@@ -694,13 +694,24 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
     return Scaffold(
       backgroundColor: bgColor,
       body: _buildMapBody(),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: "configurarViajeBtn",
-        onPressed: _abrirConfigurarViaje,
-        backgroundColor: primaryColor,
-        icon: const Icon(Icons.map_outlined, color: Colors.white),
-        label: const Text('Configurar viaje', style: TextStyle(color: Colors.white)),
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      // Se eleva y se ubica a la izquierda para no tapar la tarjeta
+      // "Vehículo Principal" (_buildBottomInfoCard), que ocupa todo el
+      // ancho inferior de la pantalla. Se oculta una vez que el viaje
+      // ya se inició (botón "INICIAR VIAJE" presionado), incluso si
+      // luego se pausa.
+      floatingActionButton: _hasStartedTrip
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(bottom: 90),
+              child: FloatingActionButton.extended(
+                heroTag: "configurarViajeBtn",
+                onPressed: _abrirConfigurarViaje,
+                backgroundColor: primaryColor,
+                icon: const Icon(Icons.map_outlined, color: Colors.white),
+                label: const Text('Configurar viaje', style: TextStyle(color: Colors.white)),
+              ),
+            ),
     );
   }
 
@@ -1292,10 +1303,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                 Navigator.pop(context);
                 // Antes cambiaba a la pestaña "Vehículos" (setState(_selectedIndex = 2))
                 // dentro de HomeScreen. Como esta pantalla ahora es una ruta
-                // independiente, se navega directo al módulo Mi Vehículo.
+                // independiente, se navega directo a "Mis Vehículos".
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MiVehiculoScreen()),
+                  MaterialPageRoute(builder: (context) => const VehiculosScreen()),
                 );
               },
               child: const Text("REGISTRAR AHORA", style: TextStyle(color: Colors.white)),

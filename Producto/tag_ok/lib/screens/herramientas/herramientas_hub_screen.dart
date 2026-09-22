@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../profile_screen.dart';
-import '../vehiculos_screen.dart';
 import 'placeholder_modulo_screen.dart';
 
 /// Hub de "Herramientas" (antes "Perfil" en el bottom nav). Reestructuración
@@ -82,14 +81,6 @@ class HerramientasHubScreen extends StatelessWidget {
               sprintEstimado: 'Sprint 3',
             ),
           ),
-        ),
-      ),
-      _AccesoHerramienta(
-        titulo: 'Categoría de vehículo (TAG)',
-        icono: Icons.directions_car_outlined,
-        onTap: (context) => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const VehiculosScreen()),
         ),
       ),
     ];

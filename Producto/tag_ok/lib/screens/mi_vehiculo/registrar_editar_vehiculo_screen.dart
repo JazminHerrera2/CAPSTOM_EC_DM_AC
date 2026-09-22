@@ -34,7 +34,11 @@ class _RegistrarEditarVehiculoScreenState
   final _marcaCtrl = TextEditingController();
   final _modeloCtrl = TextEditingController();
   final _anioCtrl = TextEditingController();
-  final _tipoVehiculoCtrl = TextEditingController();
+  // Mismas opciones que la categoría TAG de vehiculos_screen.dart
+  // (AUTO/CAMIONETA/MOTO), para que ambos módulos usen exactamente el
+  // mismo contenido.
+  static const List<String> _tiposVehiculo = ['AUTO', 'CAMIONETA', 'MOTO'];
+  String _tipoVehiculoSel = 'AUTO';
   final _tipoCombustibleCtrl = TextEditingController();
   final _kilometrajeCtrl = TextEditingController();
   final _aliasCtrl = TextEditingController();
@@ -54,7 +58,9 @@ class _RegistrarEditarVehiculoScreenState
       _marcaCtrl.text = v.marca ?? '';
       _modeloCtrl.text = v.modelo ?? '';
       _anioCtrl.text = v.anio?.toString() ?? '';
-      _tipoVehiculoCtrl.text = v.tipoVehiculo ?? '';
+      _tipoVehiculoSel = _tiposVehiculo.contains(v.tipoVehiculo)
+          ? v.tipoVehiculo!
+          : 'AUTO';
       _tipoCombustibleCtrl.text = v.tipoCombustible ?? '';
       _kilometrajeCtrl.text = v.kilometrajeActual?.toString() ?? '';
       _aliasCtrl.text = v.alias ?? '';
@@ -67,7 +73,6 @@ class _RegistrarEditarVehiculoScreenState
     _marcaCtrl.dispose();
     _modeloCtrl.dispose();
     _anioCtrl.dispose();
-    _tipoVehiculoCtrl.dispose();
     _tipoCombustibleCtrl.dispose();
     _kilometrajeCtrl.dispose();
     _aliasCtrl.dispose();
@@ -122,9 +127,7 @@ class _RegistrarEditarVehiculoScreenState
           marca: _marcaCtrl.text.trim().isEmpty ? null : _marcaCtrl.text.trim(),
           modelo: _modeloCtrl.text.trim().isEmpty ? null : _modeloCtrl.text.trim(),
           anio: int.tryParse(_anioCtrl.text.trim()),
-          tipoVehiculo: _tipoVehiculoCtrl.text.trim().isEmpty
-              ? null
-              : _tipoVehiculoCtrl.text.trim(),
+          tipoVehiculo: _tipoVehiculoSel,
           tipoCombustible: _tipoCombustibleCtrl.text.trim().isEmpty
               ? null
               : _tipoCombustibleCtrl.text.trim(),
@@ -197,10 +200,17 @@ class _RegistrarEditarVehiculoScreenState
                 decoration: _decoracion('Año'),
               ),
               const SizedBox(height: 14),
-              TextField(
-                controller: _tipoVehiculoCtrl,
+              DropdownButtonFormField<String>(
+                value: _tipoVehiculoSel,
+                dropdownColor: surfaceColor,
                 style: TextStyle(color: textMain),
-                decoration: _decoracion('Tipo de vehículo (ej: SUV, Sedán)'),
+                decoration: _decoracion('Tipo de vehículo'),
+                items: _tiposVehiculo
+                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                    .toList(),
+                onChanged: (value) {
+                  if (value != null) setState(() => _tipoVehiculoSel = value);
+                },
               ),
               const SizedBox(height: 14),
               TextField(
