@@ -3,7 +3,7 @@ import 'audit_screen.dart';
 import 'herramientas/herramientas_hub_screen.dart';
 import 'inicio_dashboard_screen.dart';
 import 'live_map_screen.dart';
-import 'vehiculos_screen.dart';
+import 'mi_vehiculo/mi_vehiculo_screen.dart';
 
 /// Contenedor de navegación principal (bottom nav + botón central).
 ///
@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return const AuditScreen();
       case 2:
-        return const VehiculosScreen();
+        return const MiVehiculoScreen();
       case 3:
         return const HerramientasHubScreen();
       default:
