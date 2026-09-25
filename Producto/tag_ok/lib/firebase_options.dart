@@ -47,15 +47,37 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static FirebaseOptions get web => FirebaseOptions(
-    apiKey: dotenv.env['WEB_API_KEY'] ?? '',
-    appId: dotenv.env['WEB_APP_ID'] ?? '',
-    messagingSenderId: dotenv.env['MESSAGING_SENDER_ID'] ?? '',
-    projectId: dotenv.env['PROJECT_ID'] ?? '',
-    authDomain: '${dotenv.env['PROJECT_ID'] ?? 'tag-ok'}.firebaseapp.com',
-    storageBucket: dotenv.env['STORAGE_BUCKET'] ?? '',
-    measurementId: 'G-22KGS61ZSB',
-  );
+  /// Lee una variable de entorno obligatoria desde el `.env` cargado.
+  ///
+  /// Si el `.env` desplegado está vacío o incompleto (por ejemplo, el
+  /// placeholder vacío que genera `setup.bat`), esto lanza un [StateError]
+  /// explícito en vez de dejar que Firebase falle en silencio con
+  /// credenciales vacías, lo que antes producía una pantalla en blanco sin
+  /// ningún mensaje de error.
+  static String _requireEnv(String key) {
+    final value = dotenv.env[key];
+    if (value == null || value.isEmpty) {
+      throw StateError(
+        'Falta la variable de entorno "$key" en el archivo .env desplegado. '
+        'Verifica que el build actual se haya compilado con un .env real '
+        '(no vacío) antes de hacer deploy.',
+      );
+    }
+    return value;
+  }
+
+  static FirebaseOptions get web {
+    final projectId = _requireEnv('PROJECT_ID');
+    return FirebaseOptions(
+      apiKey: _requireEnv('WEB_API_KEY'),
+      appId: _requireEnv('WEB_APP_ID'),
+      messagingSenderId: _requireEnv('MESSAGING_SENDER_ID'),
+      projectId: projectId,
+      authDomain: '$projectId.firebaseapp.com',
+      storageBucket: _requireEnv('STORAGE_BUCKET'),
+      measurementId: 'G-22KGS61ZSB',
+    );
+  }
 
   static FirebaseOptions get android => FirebaseOptions(
     apiKey: dotenv.env['ANDROID_API_KEY'] ?? '',
