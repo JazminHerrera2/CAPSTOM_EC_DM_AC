@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/documento_vehicular_model.dart';
 import 'auditoria_service.dart';
+import 'notificacion_service.dart';
 
 /// CRUD de la colección `documentos_vehiculares` (CU3, CU4, CU6, CU7, CU39).
 class DocumentoVehicularService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuditoriaService _auditoriaService = AuditoriaService();
+  final NotificacionService _notificacionService = NotificacionService();
 
   CollectionReference<Map<String, dynamic>> get _documentos =>
       _firestore.collection('documentos_vehiculares');
@@ -22,6 +24,15 @@ class DocumentoVehicularService {
       detalle: 'Documento registrado manualmente',
       origen: 'manual',
     );
+
+    if (documento.fechaVencimiento != null) {
+      await _notificacionService.configurarNotificacionesVencimiento(
+        vehiculoId: documento.vehiculoId,
+        documentoId: docRef.id,
+        nombreDocumento: documento.tipoDocumento.etiqueta,
+        fechaVencimiento: documento.fechaVencimiento!,
+      );
+    }
 
     return docRef.id;
   }
@@ -69,6 +80,15 @@ class DocumentoVehicularService {
       origen: 'ia',
     );
 
+    if (fechaVencimiento != null) {
+      await _notificacionService.configurarNotificacionesVencimiento(
+        vehiculoId: vehiculoId,
+        documentoId: docRef.id,
+        nombreDocumento: tipoDocumento.etiqueta,
+        fechaVencimiento: fechaVencimiento,
+      );
+    }
+
     return docRef.id;
   }
 
@@ -77,9 +97,42 @@ class DocumentoVehicularService {
     String documentoId,
     DateTime fechaVencimiento,
   ) async {
-    await _documentos.doc(documentoId).update({
+    final documentoRef = _documentos.doc(documentoId);
+    final documentoSnapshot = await documentoRef.get();
+
+    if (!documentoSnapshot.exists) {
+      throw StateError('No existe el documento vehicular $documentoId.');
+    }
+
+    final documentoData = documentoSnapshot.data();
+    if (documentoData == null) {
+      throw StateError('El documento vehicular $documentoId no tiene datos válidos.');
+    }
+
+    final rawVehiculoId = documentoData['vehiculo_id'];
+
+    if (rawVehiculoId is! String || rawVehiculoId.trim().isEmpty) {
+      throw StateError(
+        'No se pudo obtener un vehiculo_id válido asociado al documento $documentoId.',
+      );
+    }
+
+    final vehiculoId = rawVehiculoId.trim();
+
+    await documentoRef.update({
       'fecha_vencimiento': Timestamp.fromDate(fechaVencimiento),
     });
+
+    final nombreDocumento = TipoDocumentoVehicularJson.fromFirestore(
+      documentoData['tipo_documento'] ?? '',
+    ).etiqueta;
+
+    await _notificacionService.configurarNotificacionesVencimiento(
+      vehiculoId: vehiculoId,
+      documentoId: documentoId,
+      nombreDocumento: nombreDocumento,
+      fechaVencimiento: fechaVencimiento,
+    );
   }
 
   /// CU3 — documentos asociados a un vehículo.
