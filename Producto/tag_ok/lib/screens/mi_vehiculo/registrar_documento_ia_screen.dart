@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -261,32 +262,71 @@ class _RegistrarDocumentoIaScreenState
         builder: (context) =>
             SmartCaptureReviewScreen(
           resultado: resultado,
-          tiposPermitidos:
-              _tiposDocumentoVehiculo,
-          onConfirm: ({
-            required tipo,
-            required campos,
-            required esManual,
-          }) async {
-            DateTime? parseFecha(
-              String? raw,
-            ) =>
-                raw != null
-                    ? DateTime.tryParse(raw)
-                    : null;
+          tiposPermitidos: _tiposDocumentoVehiculo,
+          onConfirm: ({required tipo, required campos, required esManual}) async {
+            DateTime? parseFecha(String? raw) {
+              if (raw == null || raw.trim().isEmpty) {
+                return null;
+              }
+
+              final valor = raw.trim();
+
+              // Primero intenta formato ISO, por ejemplo: 2026-10-30
+              final isoMatch = RegExp(
+                r'^(\d{4})-(\d{2})-(\d{2})(?:[T ].*)?$',
+              ).firstMatch(valor);
+
+              if (isoMatch != null) {
+                final anio = int.parse(isoMatch.group(1)!);
+                final mes = int.parse(isoMatch.group(2)!);
+                final dia = int.parse(isoMatch.group(3)!);
+
+                final fechaIso = DateTime.tryParse(valor);
+
+                if (fechaIso != null &&
+                    fechaIso.year == anio &&
+                    fechaIso.month == mes &&
+                    fechaIso.day == dia) {
+                  return fechaIso;
+                }
+              }
+
+              // Luego intenta formato DD/MM/AAAA, por ejemplo: 30/10/2026
+              final partes = valor.split('/');
+
+              if (partes.length == 3) {
+                final dia = int.tryParse(partes[0]);
+                final mes = int.tryParse(partes[1]);
+                final anio = int.tryParse(partes[2]);
+
+                if (dia != null && mes != null && anio != null) {
+                  final fecha = DateTime(anio, mes, dia);
+
+                  // DateTime puede ajustar silenciosamente fechas imposibles.
+                  // Por eso verificamos que el resultado coincida con lo ingresado.
+                  if (fecha.day == dia &&
+                      fecha.month == mes &&
+                      fecha.year == anio) {
+                    return fecha;
+                  }
+                }
+              }
+
+              throw FormatException(
+                'Fecha inválida: "$valor". Usa el formato DD/MM/AAAA.',
+              );
+            }
 
             String? archivoPath;
-
-            if (bytesOriginal.isNotEmpty) {
-              final extension =
-                  mimeType ==
-                          'application/pdf'
-                      ? 'pdf'
-                      : 'jpg';
-
-              archivoPath =
-                  await _storageService
-                      .subirArchivo(
+            final storageHabilitado =
+                dotenv.env['FIREBASE_STORAGE_ENABLED'] == 'true';
+            if (storageHabilitado && bytesOriginal.isNotEmpty) {
+              final extension = switch (mimeType) {
+                'application/pdf' => 'pdf',
+                'image/png' => 'png',
+                _ => 'jpg',
+              };
+              archivoPath = await _storageService.subirArchivo(
                 path:
                     'documentos_vehiculares/'
                     '${widget.vehiculoId}/'
