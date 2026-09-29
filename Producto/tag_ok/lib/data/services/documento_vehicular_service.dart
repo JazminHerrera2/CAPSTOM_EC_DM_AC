@@ -1,20 +1,88 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/documento_vehicular_model.dart';
 import 'auditoria_service.dart';
 import 'notificacion_service.dart';
+import 'storage_service.dart';
 
 /// CRUD de la colección `documentos_vehiculares` (CU3, CU4, CU6, CU7, CU39).
 class DocumentoVehicularService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuditoriaService _auditoriaService = AuditoriaService();
   final NotificacionService _notificacionService = NotificacionService();
+  final StorageService _storageService = StorageService();
 
   CollectionReference<Map<String, dynamic>> get _documentos =>
       _firestore.collection('documentos_vehiculares');
 
+  /// Documentos ya registrados del mismo tipo para el vehículo. Debe llamarse
+  /// ANTES de crear el nuevo, para no incluirlo.
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _buscarAnteriores(
+    String vehiculoId,
+    TipoDocumentoVehicular tipo,
+  ) async {
+    final snapshot = await _documentos
+        .where('vehiculo_id', isEqualTo: vehiculoId)
+        .where('tipo_documento', isEqualTo: tipo.valorFirestore)
+        .get();
+    return snapshot.docs;
+  }
+
+  /// Un vehículo tiene un solo documento vigente por tipo: al registrar uno
+  /// nuevo se borran los anteriores (registro, avisos de vencimiento y
+  /// archivo). Ocurre DESPUÉS de guardar el nuevo, así un fallo de red nunca
+  /// deja al vehículo sin documento. Es "best effort": si algo del borrado
+  /// falla se registra en consola y el documento nuevo queda guardado igual.
+  Future<void> _eliminarReemplazados(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> anteriores, {
+    required String nuevoId,
+    required String? nuevoArchivoPath,
+  }) async {
+    for (final anterior in anteriores) {
+      if (anterior.id == nuevoId) continue;
+
+      try {
+        await _notificacionService.eliminarNotificacionesDocumento(anterior.id);
+        await anterior.reference.delete();
+        await _auditoriaService.registrar(
+          usuarioId: null,
+          accion: 'ELIMINAR',
+          tipoEntidad: 'DOCUMENTO_VEHICULAR',
+          entidadId: anterior.id,
+          detalle: 'Documento reemplazado por uno nuevo ($nuevoId)',
+          origen: 'sistema',
+        );
+      } catch (e) {
+        debugPrint('No se pudo eliminar el documento anterior ${anterior.id}: $e');
+        continue;
+      }
+
+      final archivoAnterior = anterior.data()['archivo_path'];
+      if (archivoAnterior is String &&
+          archivoAnterior.trim().isNotEmpty &&
+          archivoAnterior != nuevoArchivoPath &&
+          StorageService.configurado) {
+        try {
+          await _storageService.eliminarArchivo(archivoAnterior.trim());
+        } catch (e) {
+          debugPrint('No se pudo eliminar el archivo anterior $archivoAnterior: $e');
+        }
+      }
+    }
+  }
+
   /// CU3 / CU40 — registro manual (sin IA) de un documento.
   Future<String> crearDocumentoManual(DocumentoVehicularModel documento) async {
+    final anteriores = await _buscarAnteriores(
+      documento.vehiculoId,
+      documento.tipoDocumento,
+    );
     final docRef = await _documentos.add(documento.toJson());
+    await _eliminarReemplazados(
+      anteriores,
+      nuevoId: docRef.id,
+      nuevoArchivoPath: documento.archivoPath,
+    );
 
     await _auditoriaService.registrar(
       usuarioId: null,
@@ -69,7 +137,13 @@ class DocumentoVehicularService {
       fechaRegistro: DateTime.now(),
     );
 
+    final anteriores = await _buscarAnteriores(vehiculoId, tipoDocumento);
     final docRef = await _documentos.add(documento.toJson());
+    await _eliminarReemplazados(
+      anteriores,
+      nuevoId: docRef.id,
+      nuevoArchivoPath: archivoPath,
+    );
 
     await _auditoriaService.registrar(
       usuarioId: null,

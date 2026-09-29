@@ -86,6 +86,21 @@ class StorageService {
     return url;
   }
 
+  /// Elimina un archivo propio del bucket (p. ej. al reemplazar un documento).
+  Future<void> eliminarArchivo(String path) async {
+    final response = await _enviar(
+      () async => http.post(
+        await _endpoint(),
+        headers: {
+          'Authorization': 'Bearer ${await _idToken()}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'action': 'delete', 'path': path}),
+      ),
+    );
+    _verificar(response);
+  }
+
   // ---------------------------------------------------------------------
 
   Future<Uri> _endpoint() async {

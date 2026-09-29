@@ -94,6 +94,13 @@ class NotificacionService {
     }
   }
 
+  /// Borra los avisos de vencimiento de un documento (15 y 7 días).
+  Future<void> eliminarNotificacionesDocumento(String documentoId) async {
+    for (final sufijo in const ['15dias', '7dias']) {
+      await _notificaciones.doc('${documentoId}_$sufijo').delete();
+    }
+  }
+
   String _resolverUsuarioId(Map<String, dynamic> vehiculoData) {
     final rawUsuarioId = vehiculoData['id_usuario'];
 

@@ -11,6 +11,7 @@
 // Acciones:
 //   POST multipart/form-data  { path, file }          -> sube el archivo
 //   POST application/json     { action:"sign", path } -> URL firmada de lectura
+//   POST application/json     { action:"delete", path } -> elimina el archivo
 //
 // Variables de entorno:
 //   FIREBASE_PROJECT_ID          (secreto propio, ver README)
@@ -84,8 +85,19 @@ async function manejar(req: Request): Promise<Response> {
   // ---- Lectura: URL firmada ------------------------------------------
   if (contentType.includes("application/json")) {
     const body = await req.json().catch(() => null);
-    if (body?.action !== "sign") throw new HttpError(400, "action inválida");
+    if (body?.action !== "sign" && body?.action !== "delete") {
+      throw new HttpError(400, "action inválida");
+    }
     const path = validarPath(body.path, uid);
+
+    if (body.action === "delete") {
+      const { error } = await supabase.storage.from(bucket).remove([path]);
+      if (error) {
+        console.error("delete error", error.message);
+        throw new HttpError(500, "No se pudo eliminar el archivo");
+      }
+      return json({ deleted: path });
+    }
 
     const { data, error } = await supabase.storage
       .from(bucket)
