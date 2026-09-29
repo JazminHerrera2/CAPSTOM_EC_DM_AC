@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -318,23 +317,27 @@ class _RegistrarDocumentoIaScreenState
             }
 
             String? archivoPath;
-            final storageHabilitado =
-                dotenv.env['FIREBASE_STORAGE_ENABLED'] == 'true';
-            if (storageHabilitado && bytesOriginal.isNotEmpty) {
+            if (StorageService.configurado && bytesOriginal.isNotEmpty) {
               final extension = switch (mimeType) {
                 'application/pdf' => 'pdf',
                 'image/png' => 'png',
                 _ => 'jpg',
               };
-              archivoPath = await _storageService.subirArchivo(
-                path:
-                    'documentos_vehiculares/'
-                    '${widget.vehiculoId}/'
-                    '${DateTime.now().millisecondsSinceEpoch}.'
-                    '$extension',
-                bytes: bytesOriginal,
-                contentType: mimeType,
-              );
+              // Si la subida falla (sin conexión, sin configurar, etc.) el
+              // documento se guarda igual, solo sin archivo asociado.
+              try {
+                archivoPath = await _storageService.subirArchivo(
+                  path: _storageService.pathDocumentoVehicular(
+                    vehiculoId: widget.vehiculoId,
+                    extension: extension,
+                  ),
+                  bytes: bytesOriginal,
+                  contentType: mimeType,
+                );
+              } catch (e) {
+                debugPrint('No se pudo subir el archivo: $e');
+                archivoPath = null;
+              }
             }
 
             if (esManual) {
