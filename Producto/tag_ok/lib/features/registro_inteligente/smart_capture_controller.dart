@@ -38,9 +38,17 @@ class SmartCaptureController {
     final schema = buildCombinedSchema(tiposPermitidos);
 
     final Part evidenciaPart;
-    final textoExtraido = mimeType.startsWith('image/')
+    var textoExtraido = mimeType.startsWith('image/')
         ? null
         : FileTextExtractor.extraerDeArchivo(nombreArchivo, bytes);
+
+    // Un PDF escaneado (o una foto guardada como PDF) no tiene capa de texto:
+    // la extracción devuelve vacío y Gemini recibiría un mensaje sin
+    // contenido. En ese caso se envía el archivo original para que lo lea
+    // como documento/imagen.
+    if (textoExtraido != null && textoExtraido.trim().length < 30) {
+      textoExtraido = null;
+    }
 
     // TEMP DEBUG (remover después de confirmar el bug): tamaño real de lo
     // que se va a adjuntar a la petición.

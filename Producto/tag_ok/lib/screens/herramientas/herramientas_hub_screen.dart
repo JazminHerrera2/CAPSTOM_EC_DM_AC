@@ -1,4 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../data/models/vehiculo_model.dart';
+import '../../data/services/documento_vehicular_service.dart';
+import '../../data/services/notificacion_service.dart';
+import '../mi_vehiculo/registrar_documento_ia_screen.dart';
 import '../profile_screen.dart';
 import 'placeholder_modulo_screen.dart';
 
@@ -7,14 +13,208 @@ import 'placeholder_modulo_screen.dart';
 /// docs/06-decision-navegacion.md — reemplaza el acceso directo a
 /// ProfileScreen por este hub con accesos a perfil y a los módulos de
 /// Fase 2 todavía no implementados.
-class HerramientasHubScreen extends StatelessWidget {
+class HerramientasHubScreen extends StatefulWidget {
   const HerramientasHubScreen({super.key});
+
+  @override
+  State<HerramientasHubScreen> createState() => _HerramientasHubScreenState();
+}
+
+class _HerramientasHubScreenState extends State<HerramientasHubScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final DocumentoVehicularService _documentoService =
+      DocumentoVehicularService();
+  final NotificacionService _notificacionService = NotificacionService();
 
   static const Color _bgColor = Color(0xFF0F172A);
   static const Color _surfaceColor = Color(0xFF1E293B);
   static const Color _textMain = Color(0xFFF8FAFC);
   static const Color _textMuted = Color(0xFF94A3B8);
   static const Color _primaryColor = Color(0xFF4F46E5);
+
+  Future<void> _probarEstadosVencimiento() async {
+    final ahora = DateTime(2026, 9, 27, 15, 30);
+    final casos = <({String fecha, String esperado, DateTime? valor})>[
+      (
+        fecha: '26/09/2026',
+        esperado: 'Atención requerida',
+        valor: DateTime(2026, 9, 26),
+      ),
+      (
+        fecha: '27/09/2026',
+        esperado: 'Atención requerida',
+        valor: DateTime(2026, 9, 27),
+      ),
+      (
+        fecha: '28/09/2026',
+        esperado: 'Próximo vencimiento',
+        valor: DateTime(2026, 9, 28),
+      ),
+      (
+        fecha: '27/10/2026',
+        esperado: 'Próximo vencimiento',
+        valor: DateTime(2026, 10, 27),
+      ),
+      (
+        fecha: '28/10/2026',
+        esperado: 'Todo al día',
+        valor: DateTime(2026, 10, 28),
+      ),
+      (
+        fecha: 'null',
+        esperado: 'Sin información',
+        valor: null,
+      ),
+    ];
+
+    final resultados = casos.map((caso) {
+      final obtenido = VehiculoModel.calcularEstadoGeneral(
+        [caso.valor],
+        ahora: ahora,
+      );
+      final correcto = obtenido == caso.esperado;
+      return '${caso.fecha}: esperado "${caso.esperado}" | '
+          'obtenido "$obtenido" | ${correcto ? 'OK' : 'ERROR'}';
+    }).toList();
+
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Prueba de estados de vencimiento'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: resultados
+              .map(
+                (resultado) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(resultado),
+                ),
+              )
+              .toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _probarActualizarVencimiento() async {
+    try {
+      await _documentoService.actualizarVencimiento(
+        'Gb76D9tP4Up42FiKrpqP',
+        DateTime(2026, 11, 30),
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Vencimiento actualizado correctamente a 30/11/2026',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error al actualizar vencimiento: $e',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _probarNotificaciones() async {
+    try {
+      final snapshot = await _firestore
+          .collection('vehiculos')
+          .where('patente', isEqualTo: 'TEST26')
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se encontró el vehículo TEST26')),
+        );
+        return;
+      }
+
+      final vehiculoId = snapshot.docs.first.id;
+      final fechaVencimiento = DateTime.now().add(const Duration(days: 30));
+
+      await _notificacionService.configurarNotificacionesVencimiento(
+        vehiculoId: vehiculoId,
+        documentoId: 'documento_prueba_notificaciones',
+        nombreDocumento: 'SOAP de prueba',
+        fechaVencimiento: fechaVencimiento,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Prueba completada: revisa Firestore > notificaciones'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error en prueba de notificaciones: $e')),
+      );
+    }
+  }
+
+  Future<void> _abrirRegistroDocumento() async {
+    try {
+      final snapshot = await _firestore
+          .collection('vehiculos')
+          .where('patente', isEqualTo: 'TEST26')
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se encontró el vehículo TEST26'),
+          ),
+        );
+        return;
+      }
+
+      final vehiculoId = snapshot.docs.first.id;
+
+      if (!mounted) return;
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RegistrarDocumentoIaScreen(
+            vehiculoId: vehiculoId,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al abrir registro de documento: $e'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +283,28 @@ class HerramientasHubScreen extends StatelessWidget {
           ),
         ),
       ),
+      if (kDebugMode) ...[
+        _AccesoHerramienta(
+          titulo: 'DEV - Registrar documento (TEST26)',
+          icono: Icons.description_outlined,
+          onTap: (context) => _abrirRegistroDocumento(),
+        ),
+        _AccesoHerramienta(
+          titulo: 'DEV - Notificaciones',
+          icono: Icons.warning_amber_rounded,
+          onTap: (context) => _probarNotificaciones(),
+        ),
+        _AccesoHerramienta(
+          titulo: 'DEV - Actualizar vencimiento',
+          icono: Icons.edit_calendar_outlined,
+          onTap: (context) => _probarActualizarVencimiento(),
+        ),
+        _AccesoHerramienta(
+          titulo: 'DEV - Estados vencimiento',
+          icono: Icons.fact_check_outlined,
+          onTap: (context) => _probarEstadosVencimiento(),
+        ),
+      ],
     ];
 
     return Scaffold(
