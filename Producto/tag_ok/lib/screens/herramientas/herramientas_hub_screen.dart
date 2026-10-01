@@ -8,7 +8,12 @@ import 'placeholder_modulo_screen.dart';
 /// ProfileScreen por este hub con accesos a perfil y a los módulos de
 /// Fase 2 todavía no implementados.
 class HerramientasHubScreen extends StatelessWidget {
-  const HerramientasHubScreen({super.key});
+  final VoidCallback? onAbrirMantenciones;
+
+  const HerramientasHubScreen({
+    super.key,
+    this.onAbrirMantenciones,
+  });
 
   static const Color _bgColor = Color(0xFF0F172A);
   static const Color _surfaceColor = Color(0xFF1E293B);
@@ -72,16 +77,11 @@ class HerramientasHubScreen extends StatelessWidget {
       _AccesoHerramienta(
         titulo: 'Mantenciones',
         icono: Icons.handyman_outlined,
-        onTap: (context) => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const PlaceholderModuloScreen(
-              titulo: 'Mantenciones',
-              icono: Icons.handyman_outlined,
-              sprintEstimado: 'Sprint 3',
-            ),
-          ),
-        ),
+        onTap: (context) {
+          if (onAbrirMantenciones != null) {
+            onAbrirMantenciones!();
+          }
+        },
       ),
     ];
 
