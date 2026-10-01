@@ -38,6 +38,12 @@
     This is useful to provide a custom configuration to the Flutter loader
     or to give the user feedback during the initialization process.
 
+    La copia usada en este proyecto vive en web/flutter_bootstrap.js (en vez
+    de dejar que `flutter build web` la autogenere) para forzar que CanvasKit
+    se sirva desde el propio hosting ("/canvaskit/") en lugar del CDN externo
+    www.gstatic.com/flutter-canvaskit. Flutter respeta ese archivo si existe
+    en la carpeta "web/" y no genera uno nuevo.
+
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->

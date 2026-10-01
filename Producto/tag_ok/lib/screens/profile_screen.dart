@@ -15,8 +15,23 @@ class ProfileScreen extends StatelessWidget {
     0xFF10B981,
   ); // Verde para el presupuesto
 
+  // Se abre como página propia desde el hub de Herramientas, así que necesita
+  // su propio Scaffold (fondo, Material para InkWell/ripples y botón atrás).
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: bgColor,
+      appBar: AppBar(
+        backgroundColor: bgColor,
+        foregroundColor: textMain,
+        elevation: 0,
+        title: const Text('Mi perfil'),
+      ),
+      body: SafeArea(child: _buildContenido(context)),
+    );
+  }
+
+  Widget _buildContenido(BuildContext context) {
     // Obtenemos el usuario que inició sesión en este momento
     final user = FirebaseAuth.instance.currentUser;
 

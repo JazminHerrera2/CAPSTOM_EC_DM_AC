@@ -1,0 +1,7 @@
+project_id = "auvgnsvzcrszguerorot"
+
+# El gateway de Supabase solo entiende JWT propios de Supabase. Aquí el
+# Authorization lleva el ID Token de Firebase, así que la función lo verifica
+# ella misma contra las claves públicas de Google (ver index.ts).
+[functions.secure-document-upload]
+verify_jwt = false

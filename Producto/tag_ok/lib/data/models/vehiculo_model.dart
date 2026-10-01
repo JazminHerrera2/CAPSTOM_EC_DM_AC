@@ -100,17 +100,21 @@ class VehiculoModel {
     List<DateTime?> fechasVencimiento, {
     DateTime? ahora,
   }) {
-    final hoy = ahora ?? DateTime.now();
-    final fechas = fechasVencimiento.whereType<DateTime>().toList();
+    final fechaActual = ahora ?? DateTime.now();
+    final hoy = DateTime(fechaActual.year, fechaActual.month, fechaActual.day);
+    final fechas = fechasVencimiento
+        .whereType<DateTime>()
+        .map((fecha) => DateTime(fecha.year, fecha.month, fecha.day))
+        .toList();
     if (fechas.isEmpty) return 'Sin información';
 
-    final vencidos = fechas.where((f) => f.isBefore(hoy)).isNotEmpty;
+    final vencidos = fechas.where((f) => !f.isAfter(hoy)).isNotEmpty;
     if (vencidos) return 'Atención requerida';
 
     final proximoLimite = hoy.add(const Duration(days: 30));
-    final proximo = fechas
-        .where((f) => f.isBefore(proximoLimite))
-        .isNotEmpty;
+    final proximo = fechas.any(
+      (fecha) => !fecha.isBefore(hoy) && !fecha.isAfter(proximoLimite),
+    );
     if (proximo) return 'Próximo vencimiento';
 
     return 'Todo al día';

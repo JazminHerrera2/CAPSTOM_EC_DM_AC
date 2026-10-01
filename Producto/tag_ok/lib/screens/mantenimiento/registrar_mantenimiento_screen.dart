@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../data/models/vehiculo_model.dart';
-import '../../data/services/mantenimiento_service.dart';
 import '../../data/services/vehiculo_service.dart';
 
 class RegistrarMantenimientoScreen extends StatefulWidget {
@@ -26,11 +25,9 @@ class _RegistrarMantenimientoScreenState
   final _formKey = GlobalKey<FormState>();
 
   final VehiculoService _vehiculoService = VehiculoService();
-  final MantenimientoService _mantenimientoService =
-      MantenimientoService();
 
   String get _usuarioId =>
-    FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+      FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
 
   String? _vehiculoId;
   String _tipoMantenimiento = 'Cambio de aceite';
@@ -41,8 +38,6 @@ class _RegistrarMantenimientoScreenState
   final _costoController = TextEditingController();
   final _descripcionController = TextEditingController();
   final _observacionesController = TextEditingController();
-
-  bool _guardando = false;
 
   final List<String> _tiposMantenimiento = const [
     'Cambio de aceite',
@@ -83,119 +78,32 @@ class _RegistrarMantenimientoScreenState
     }
   }
 
-  double? _obtenerCosto() {
-    final texto = _costoController.text
-        .trim()
-        .replaceAll('.', '')
-        .replaceAll(',', '.')
-        .replaceAll('\$', '');
-
-    if (texto.isEmpty) {
-      return null;
-    }
-
-    return double.tryParse(texto);
-  }
-
   Future<void> _guardar() async {
-    debugPrint('=== GUARDAR MANTENCION ===');
-    debugPrint('Vehiculo ID: $_vehiculoId');
-    debugPrint('Kilometraje: ${_kilometrajeController.text}');
-
     final formularioValido =
         _formKey.currentState?.validate() ?? false;
 
-    debugPrint('Formulario valido: $formularioValido');
-
     if (!formularioValido) {
-      debugPrint('DETENIDO: formulario invalido');
       return;
     }
 
     if (_vehiculoId == null) {
-      debugPrint('DETENIDO: no hay vehiculo seleccionado');
-
-      if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Selecciona un vehículo.'),
         ),
       );
-
       return;
     }
 
-    final kilometraje =
-        int.tryParse(_kilometrajeController.text.trim());
-
-    if (kilometraje == null) {
-      debugPrint('DETENIDO: kilometraje invalido');
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ingresa un kilometraje válido.'),
+    // Diseño UI solamente.
+    // La integración y persistencia se realizará posteriormente.
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Formulario listo para registrar mantención.',
         ),
-      );
-
-      return;
-    }
-
-    setState(() {
-      _guardando = true;
-    });
-
-    debugPrint('Intentando guardar en Firestore...');
-
-    try {
-      final id =
-          await _mantenimientoService.registrarMantenimiento(
-        vehiculoId: _vehiculoId!,
-        tipoMantenimiento: _tipoMantenimiento,
-        fecha: _fecha,
-        kilometraje: kilometraje,
-        taller: _tallerController.text,
-        costo: _obtenerCosto(),
-        descripcion: _descripcionController.text,
-        observaciones: _observacionesController.text,
-      );
-
-      debugPrint('GUARDADO CORRECTAMENTE');
-      debugPrint('ID mantenimiento: $id');
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Mantención registrada correctamente.',
-          ),
-        ),
-      );
-
-      Navigator.pop(context, true);
-    } catch (e, stackTrace) {
-      debugPrint('ERROR AL GUARDAR MANTENCION: $e');
-      debugPrint('STACKTRACE: $stackTrace');
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Error al guardar: $e',
-          ),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _guardando = false;
-        });
-      }
-    }
+      ),
+    );
   }
 
   @override
@@ -219,8 +127,7 @@ class _RegistrarMantenimientoScreenState
       body: StreamBuilder<List<VehiculoModel>>(
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
         builder: (context, snapshot) {
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
                 color: primaryColor,
@@ -286,16 +193,13 @@ class _RegistrarMantenimientoScreenState
                   suffix: 'km',
                   obligatorio: true,
                   validator: (value) {
-                    if (value == null ||
-                        value.trim().isEmpty) {
+                    if (value == null || value.trim().isEmpty) {
                       return 'Ingresa el kilometraje.';
                     }
 
-                    final kilometraje =
-                        int.tryParse(value.trim());
+                    final kilometraje = int.tryParse(value.trim());
 
-                    if (kilometraje == null ||
-                        kilometraje < 0) {
+                    if (kilometraje == null || kilometraje < 0) {
                       return 'Ingresa un kilometraje válido.';
                     }
 
@@ -334,8 +238,7 @@ class _RegistrarMantenimientoScreenState
                 _campo(
                   controller: _descripcionController,
                   label: 'Descripción',
-                  hint:
-                      'Ej: Cambio de aceite y filtro de aceite',
+                  hint: 'Ej: Cambio de aceite y filtro de aceite',
                   icon: Icons.description_outlined,
                   maxLines: 3,
                 ),
@@ -357,38 +260,22 @@ class _RegistrarMantenimientoScreenState
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton.icon(
-                    onPressed:
-                        _guardando ? null : _guardar,
-                    icon: _guardando
-                        ? const SizedBox(
-                            width: 19,
-                            height: 19,
-                            child:
-                                CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.save_outlined,
-                            color: Colors.white,
-                          ),
-                    label: Text(
-                      _guardando
-                          ? 'Guardando...'
-                          : 'Guardar mantención',
-                      style: const TextStyle(
+                    onPressed: _guardar,
+                    icon: const Icon(
+                      Icons.save_outlined,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Guardar mantención',
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
-                      disabledBackgroundColor:
-                          primaryColor.withOpacity(0.5),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                   ),
@@ -476,8 +363,7 @@ class _RegistrarMantenimientoScreenState
         fontSize: 14,
       ),
       items: vehiculos.map((vehiculo) {
-        final alias =
-            (vehiculo.alias ?? '').trim();
+        final alias = (vehiculo.alias ?? '').trim();
 
         final nombre = alias.isNotEmpty
             ? alias

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/documento_vehicular_model.dart';
+import 'archivo_documento_view.dart';
 
 class DetalleDocumentoScreen extends StatelessWidget {
   final DocumentoVehicularModel documento;
@@ -468,37 +469,8 @@ class DetalleDocumentoScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: surfaceColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFF334155),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  Icon(
-                    Icons.attach_file,
-                    color: primaryColor,
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Documento original guardado',
-                      style: TextStyle(
-                        color: textMain,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.check_circle_outline,
-                    color: Color(0xFF10B981),
-                  ),
-                ],
-              ),
+            ArchivoDocumentoView(
+              archivoPath: documento.archivoPath!.trim(),
             ),
           ],
         ],
