@@ -3,7 +3,8 @@ import 'audit_screen.dart';
 import 'herramientas/herramientas_hub_screen.dart';
 import 'inicio_dashboard_screen.dart';
 import 'live_map_screen.dart';
-import 'vehiculos_screen.dart';
+import 'mi_vehiculo/mi_vehiculo_screen.dart';
+import 'mantenimiento/mantenimiento_screen.dart';
 
 /// Contenedor de navegación principal (bottom nav + botón central).
 ///
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // menú inferior nunca desaparezca — por eso es un flag aparte en vez de
   // un Navigator.push a una pantalla completa.
   bool _mostrandoMapa = false;
+  bool _mostrandoMantenimiento = false;
 
   final Color bgColor = const Color(0xFF0F172A);
   final Color primaryColor = const Color(0xFF4F46E5);
@@ -45,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedIndex = index;
       _mostrandoMapa = false;
+      _mostrandoMantenimiento = false;
     });
   }
 
@@ -65,12 +68,18 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           children: [
             Offstage(
-              offstage: _mostrandoMapa,
+              offstage: _mostrandoMapa || _mostrandoMantenimiento,
               child: _buildBodyTab(),
             ),
+
             Offstage(
               offstage: !_mostrandoMapa,
               child: const LiveMapScreen(),
+            ),
+
+            Offstage(
+              offstage: !_mostrandoMantenimiento,
+              child: const MantenimientoScreen(),
             ),
           ],
         ),
@@ -91,7 +100,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         child: FloatingActionButton(
-          onPressed: () => setState(() => _mostrandoMapa = true),
+          onPressed: () {
+            setState(() {
+              _mostrandoMapa = true;
+              _mostrandoMantenimiento = false;
+            });
+          },
           backgroundColor: primaryColor,
           elevation: 0,
           shape: const CircleBorder(),
@@ -170,9 +184,16 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return const AuditScreen();
       case 2:
-        return const VehiculosScreen();
+        return const MiVehiculoScreen();
       case 3:
-        return const HerramientasHubScreen();
+        return HerramientasHubScreen(
+          onAbrirMantenciones: () {
+            setState(() {
+              _mostrandoMantenimiento = true;
+              _mostrandoMapa = false;
+            });
+          },
+        );
       default:
         return const SizedBox.shrink();
     }

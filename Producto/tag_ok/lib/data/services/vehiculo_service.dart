@@ -21,6 +21,8 @@ class VehiculoService {
     int? anio,
     String? tipoVehiculo,
     String? tipoCombustible,
+    int? kilometrajeActual,
+    String? alias,
   }) async {
     final idUsuario = _firestore.collection('usuarios').doc(usuarioId);
 
@@ -33,13 +35,15 @@ class VehiculoService {
       anio: anio,
       tipoVehiculo: tipoVehiculo,
       tipoCombustible: tipoCombustible,
+      kilometrajeActual: kilometrajeActual,
+      alias: alias,
       estado: 'activo',
     );
 
     final docRef = await _vehiculos.add(vehiculo.toJson());
     return docRef.id;
   }
-
+  
   /// CU2 — Modificar información (kilometraje, alias, foto).
   Future<void> actualizarVehiculo(
     String vehiculoId, {

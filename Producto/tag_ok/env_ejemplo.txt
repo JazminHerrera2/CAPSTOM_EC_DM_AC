@@ -10,3 +10,7 @@ STORAGE_BUCKET=TU_STORAGE_BUCKET
 IOS_BUNDLE_ID=TU_IOS_BUNDLE_ID
 MAPBOX_ACCESS_TOKEN=TU_MAPBOX_ACCESS_TOKEN
 GEMINI_API_KEY=AQUI_VA_TU_CLAVE
+
+# Supabase Storage (solo se usa la URL: el acceso a archivos pasa por la
+# Edge Function secure-document-upload, no hay anon key en el cliente)
+SUPABASE_URL=https://TU_PROYECTO.supabase.co
