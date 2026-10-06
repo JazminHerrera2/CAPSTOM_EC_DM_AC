@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/services/documento_vehicular_service.dart';
 import '../../data/services/storage_service.dart';
+import '../../data/services/vehiculo_service.dart';
 import '../../features/registro_inteligente/document_type.dart';
 import '../../features/registro_inteligente/smart_capture_controller.dart';
 import '../../features/registro_inteligente/smart_capture_result.dart';
@@ -64,6 +65,8 @@ class _RegistrarDocumentoIaScreenState
 
   final DocumentoVehicularService _documentoService =
       DocumentoVehicularService();
+
+  final VehiculoService _vehiculoService = VehiculoService();
 
   final StorageService _storageService = StorageService();
 
@@ -247,6 +250,35 @@ class _RegistrarDocumentoIaScreenState
   }
 
   // ------------------------------------------------------------
+  // VALIDACIÓN DE PATENTE
+  // ------------------------------------------------------------
+
+  /// Deja solo letras y números en mayúscula: "ab·cd·12", "AB-CD 12" y
+  /// "ABCD12" son la misma patente.
+  String _normalizarPatente(String patente) =>
+      patente.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+
+  /// El documento debe corresponder al vehículo en el que se registra: si la
+  /// patente leída no coincide con la del vehículo, se rechaza antes de subir
+  /// el archivo o guardar nada.
+  Future<void> _validarPatente(String? patenteDocumento) async {
+    final vehiculo = await _vehiculoService.obtenerVehiculo(widget.vehiculoId);
+    if (vehiculo == null) return;
+
+    final delDocumento = _normalizarPatente(patenteDocumento ?? '');
+    final delVehiculo = _normalizarPatente(vehiculo.patente);
+
+    if (delDocumento.isEmpty || delVehiculo.isEmpty) return;
+
+    if (delDocumento != delVehiculo) {
+      throw SmartCaptureValidationException(
+        'Revisa el documento: la patente ($delDocumento) no es compatible '
+        'con la placa registrada en el vehículo ($delVehiculo).',
+      );
+    }
+  }
+
+  // ------------------------------------------------------------
   // REVISIÓN Y GUARDADO
   // ------------------------------------------------------------
 
@@ -263,6 +295,8 @@ class _RegistrarDocumentoIaScreenState
           resultado: resultado,
           tiposPermitidos: _tiposDocumentoVehiculo,
           onConfirm: ({required tipo, required campos, required esManual}) async {
+            await _validarPatente(campos['patente']?.toString());
+
             DateTime? parseFecha(String? raw) {
               if (raw == null || raw.trim().isEmpty) {
                 return null;
@@ -399,6 +433,8 @@ class _RegistrarDocumentoIaScreenState
                     resultado
                             ?.fechaCaptura ??
                         DateTime.now(),
+                confianzaIa:
+                    resultado?.confianzaIa,
               );
             }
           },

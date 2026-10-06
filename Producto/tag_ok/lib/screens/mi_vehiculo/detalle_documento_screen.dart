@@ -92,6 +92,31 @@ class DetalleDocumentoScreen extends StatelessWidget {
   }
 
   // ------------------------------------------------------------
+  // NÚMERO DE DOCUMENTO
+  // ------------------------------------------------------------
+
+  bool _aplicaNumero(DocumentoVehicularModel documento) {
+    final tipo = documento.tipoDocumento;
+    final tieneNumero = documento.numero != null &&
+        documento.numero!.trim().isNotEmpty;
+
+    return tipo == TipoDocumentoVehicular.revisionTecnica ||
+        tipo == TipoDocumentoVehicular.soap ||
+        tieneNumero;
+  }
+
+  String _tituloNumero(TipoDocumentoVehicular tipo) {
+    switch (tipo) {
+      case TipoDocumentoVehicular.revisionTecnica:
+        return 'Número de informe/certificado';
+      case TipoDocumentoVehicular.soap:
+        return 'Número de póliza SOAP';
+      default:
+        return 'Número de documento';
+    }
+  }
+
+  // ------------------------------------------------------------
   // FECHAS
   // ------------------------------------------------------------
 
@@ -326,16 +351,21 @@ class DetalleDocumentoScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _dato(
-                  icono: Icons.numbers_outlined,
-                  titulo: 'Número de documento',
-                  valor: documento.numero,
-                ),
+                // El número solo corresponde a Revisión Técnica y SOAP. En
+                // otros tipos (p. ej. Permiso de Circulación) solo se muestra
+                // si un registro antiguo ya lo trae guardado.
+                if (_aplicaNumero(documento)) ...[
+                  _dato(
+                    icono: Icons.numbers_outlined,
+                    titulo: _tituloNumero(documento.tipoDocumento),
+                    valor: documento.numero,
+                  ),
 
-                const Divider(
-                  color: Color(0xFF334155),
-                  height: 1,
-                ),
+                  const Divider(
+                    color: Color(0xFF334155),
+                    height: 1,
+                  ),
+                ],
 
                 _dato(
                   icono: Icons.event_available_outlined,

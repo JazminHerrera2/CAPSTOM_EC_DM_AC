@@ -59,6 +59,7 @@ dependencies:
   flutter_local_notifications: ^22.0.1
   wakelock_plus: ^1.5.2
   vibration: ^3.1.4
+  google_mlkit_text_recognition: ^0.16.0
 
 dev_dependencies:
   flutter_test:

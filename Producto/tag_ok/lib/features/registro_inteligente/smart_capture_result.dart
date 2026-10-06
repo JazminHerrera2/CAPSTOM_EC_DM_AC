@@ -1,5 +1,18 @@
 import 'document_type.dart';
 
+/// La lanza el callback `onConfirm` de un módulo cuando rechaza los datos ya
+/// revisados por una regla propia (p. ej. la patente del documento no coincide
+/// con la del vehículo). La pantalla de revisión muestra [mensaje] tal cual,
+/// en vez del error genérico de guardado, y el usuario puede corregir.
+class SmartCaptureValidationException implements Exception {
+  final String mensaje;
+
+  const SmartCaptureValidationException(this.mensaje);
+
+  @override
+  String toString() => 'SmartCaptureValidationException: $mensaje';
+}
+
 /// Contrato entre la capa de IA (captura + extracción) y la capa de UI de
 /// cada módulo (CU33-CU35 → CU36/CU37 de revisión). Un módulo (Mi Vehículo
 /// hoy, Mantenciones/Estacionamientos/Combustible después) recibe esto y
@@ -18,6 +31,10 @@ class SmartCaptureResult {
   /// se destacan en la pantalla de revisión (CU36).
   final Set<String> camposDudosos;
 
+  /// Proporción (0-1) de campos cuyo valor del OCR coincidió con la imagen,
+  /// según la verificación de Gemini. Null si no corrió OCR.
+  final double? confianzaIa;
+
   final String origen;
   final DateTime fechaCaptura;
 
@@ -25,6 +42,7 @@ class SmartCaptureResult {
     required this.tipoDetectado,
     required this.campos,
     required this.camposDudosos,
+    this.confianzaIa,
     this.origen = 'ia',
     required this.fechaCaptura,
   });

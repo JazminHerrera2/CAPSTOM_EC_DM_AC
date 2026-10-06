@@ -223,8 +223,9 @@ class _SmartCaptureReviewScreenState
       if (mounted) {
         setState(() {
           _guardando = false;
-          _errorValidacion =
-              'No se pudo guardar el documento. Intenta nuevamente.';
+          _errorValidacion = e is SmartCaptureValidationException
+              ? e.mensaje
+              : 'No se pudo guardar el documento. Intenta nuevamente.';
         });
       }
     }

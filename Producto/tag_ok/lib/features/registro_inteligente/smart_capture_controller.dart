@@ -6,6 +6,7 @@ import 'document_type.dart';
 import 'extraction_schema_registry.dart';
 import 'file_text_extractor.dart';
 import 'gemini_extraction_service.dart';
+import 'ocr_service.dart';
 import 'smart_capture_result.dart';
 
 /// Orquesta CU33 (capturar evidencia) → CU34 (identificar tipo) → CU35
@@ -18,9 +19,13 @@ import 'smart_capture_result.dart';
 /// el flujo. Este controller no decide esa alternativa por sí mismo.
 class SmartCaptureController {
   final GeminiExtractionService _geminiService;
+  final OcrService _ocrService;
 
-  SmartCaptureController({GeminiExtractionService? geminiService})
-      : _geminiService = geminiService ?? GeminiExtractionService();
+  SmartCaptureController({
+    GeminiExtractionService? geminiService,
+    OcrService? ocrService,
+  })  : _geminiService = geminiService ?? GeminiExtractionService(),
+        _ocrService = ocrService ?? OcrService();
 
   /// [bytes] es la evidencia capturada (CU33): una foto o un archivo.
   /// [mimeType] determina si se envía como imagen (multimodal) o si primero
@@ -34,39 +39,67 @@ class SmartCaptureController {
     required String nombreArchivo,
     required List<DocumentType> tiposPermitidos,
   }) async {
-    final prompt = buildExtractionPrompt(tiposPermitidos);
-    final schema = buildCombinedSchema(tiposPermitidos);
+    final esImagen = mimeType.startsWith('image/');
 
-    final Part evidenciaPart;
-    var textoExtraido = mimeType.startsWith('image/')
-        ? null
-        : FileTextExtractor.extraerDeArchivo(nombreArchivo, bytes);
+    var textoExtraido =
+        esImagen ? null : FileTextExtractor.extraerDeArchivo(nombreArchivo, bytes);
 
     // Un PDF escaneado (o una foto guardada como PDF) no tiene capa de texto:
     // la extracción devuelve vacío y Gemini recibiría un mensaje sin
     // contenido. En ese caso se envía el archivo original para que lo lea
     // como documento/imagen.
-    if (textoExtraido != null && textoExtraido.trim().length < 30) {
+    if (textoExtraido != null &&
+        textoExtraido.trim().length < OcrService.minCaracteres) {
       textoExtraido = null;
     }
+
+    // Imágenes: Gemini recibe SIEMPRE la imagen. Si el OCR local obtiene texto
+    // suficiente, se envía además como TextPart y Gemini lo verifica contra la
+    // imagen (la imagen es la fuente de verdad). Sin OCR (web/escritorio) o
+    // con texto insuficiente, se envía solo la imagen.
+    String? textoOcr;
+    if (esImagen) {
+      textoOcr = await _ocrService.reconocerTexto(bytes);
+    }
+    final hayOcr = textoOcr != null;
+
+    final prompt = buildExtractionPrompt(
+      tiposPermitidos,
+      textoDesdeOcr: hayOcr,
+    );
+    final schema = buildCombinedSchema(
+      tiposPermitidos,
+      conVerificacionOcr: hayOcr,
+    );
 
     // TEMP DEBUG (remover después de confirmar el bug): tamaño real de lo
     // que se va a adjuntar a la petición.
     debugPrint(
       'DEBUG SMART CAPTURE -> mimeType: $mimeType, bytes.length: ${bytes.length}, '
-      'textoExtraido: ${textoExtraido == null ? "null (se manda DataPart)" : '"${textoExtraido.length} caracteres"'}',
+      'textoExtraido: ${textoExtraido == null ? "null (se manda DataPart)" : '"${textoExtraido.length} caracteres"'}, '
+      'ocr: ${hayOcr ? "${textoOcr.length} caracteres (imagen + texto)" : "no"}',
     );
 
-    if (textoExtraido != null) {
-      evidenciaPart = TextPart(
-        'Texto extraído del archivo "$nombreArchivo":\n"""\n$textoExtraido\n"""',
-      );
+    final List<Part> evidencia;
+    if (hayOcr) {
+      evidencia = [
+        DataPart(mimeType, bytes),
+        TextPart(
+          'Texto reconocido por OCR de la imagen "$nombreArchivo":\n"""\n$textoOcr\n"""',
+        ),
+      ];
+    } else if (textoExtraido != null) {
+      evidencia = [
+        TextPart(
+          'Texto extraído del archivo "$nombreArchivo":\n"""\n$textoExtraido\n"""',
+        ),
+      ];
     } else {
-      evidenciaPart = DataPart(mimeType, bytes);
+      evidencia = [DataPart(mimeType, bytes)];
     }
 
     final response = await _geminiService.generateContentWithFallback(
-      parts: [evidenciaPart, TextPart(prompt)],
+      parts: [...evidencia, TextPart(prompt)],
       responseSchema: schema,
     );
 
@@ -77,7 +110,9 @@ class SmartCaptureController {
     final camposDudosos = <String>{};
     if (parsed.tipo != null) {
       for (final campo in extractionSchemas[parsed.tipo]!.campos) {
-        if (!parsed.campos.containsKey(campo.clave)) {
+        // Solo se destacan los requeridos ausentes: un opcional que no
+        // aparece en el documento es normal, no una duda de la IA.
+        if (campo.requerido && !parsed.campos.containsKey(campo.clave)) {
           camposDudosos.add(campo.clave);
         }
       }
@@ -87,6 +122,7 @@ class SmartCaptureController {
       tipoDetectado: parsed.tipo,
       campos: parsed.campos,
       camposDudosos: camposDudosos,
+      confianzaIa: parsed.confianzaIa,
       fechaCaptura: DateTime.now(),
     );
   }
