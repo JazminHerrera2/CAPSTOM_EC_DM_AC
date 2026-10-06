@@ -1,18 +1,47 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/models/vehiculo_model.dart';
+import '../../data/services/vehiculo_service.dart';
 import 'documentos_vehiculo_screen.dart';
-import 'registrar_documento_ia_screen.dart';
+import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
 
+/// Detalle de un vehículo. Escucha el documento en Firestore para reflejar al
+/// instante los cambios (por ejemplo, el kilometraje tras editarlo); mientras
+/// carga, o si el documento ya no existe, usa el [vehiculo] recibido.
 class DetalleVehiculoScreen extends StatelessWidget {
   final VehiculoModel vehiculo;
 
   const DetalleVehiculoScreen({
     super.key,
+    required this.vehiculo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('vehiculos')
+          .doc(vehiculo.id)
+          .snapshots(),
+      builder: (context, snapshot) {
+        final data = snapshot.data;
+        final actual = data != null && data.exists
+            ? VehiculoModel.fromJson(data.data()!, data.id)
+            : vehiculo;
+
+        return _DetalleVehiculoVista(vehiculo: actual);
+      },
+    );
+  }
+}
+
+class _DetalleVehiculoVista extends StatelessWidget {
+  final VehiculoModel vehiculo;
+
+  const _DetalleVehiculoVista({
     required this.vehiculo,
   });
 
@@ -93,130 +122,6 @@ class DetalleVehiculoScreen extends StatelessWidget {
       default:
         return Icons.info_outline;
     }
-  }
-
-  // ------------------------------------------------------------
-  // TARJETA DE DATO
-  // ------------------------------------------------------------
-
-  Widget _datoTecnico({
-    required IconData icono,
-    required String titulo,
-    required String? valor,
-  }) {
-    final valorFinal =
-        valor == null || valor.trim().isEmpty ? 'Sin datos' : valor;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _surfaceLight,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF334155),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: _primaryColor.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icono,
-              color: _primaryColor,
-              size: 21,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    color: _textMuted,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  valorFinal,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: _textMain,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ------------------------------------------------------------
-  // ACCIÓN RÁPIDA
-  // ------------------------------------------------------------
-
-  Widget _accionRapida({
-    required IconData icono,
-    required String titulo,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          height: 105,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: _surfaceColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFF334155),
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: _primaryColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icono,
-                  color: _primaryColor,
-                  size: 21,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                titulo,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: _textMain,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -309,25 +214,6 @@ class DetalleVehiculoScreen extends StatelessWidget {
                 .toList(),
           );
 
-          DocumentoVehicularModel? proximoDocumento;
-
-          final documentosConFecha = documentos
-              .where(
-                (doc) =>
-                    doc.fechaVencimiento != null,
-              )
-              .toList();
-
-          if (documentosConFecha.isNotEmpty) {
-            documentosConFecha.sort(
-              (a, b) => a.fechaVencimiento!
-                  .compareTo(b.fechaVencimiento!),
-            );
-
-            proximoDocumento =
-                documentosConFecha.first;
-          }
-
           return ListView(
             padding: const EdgeInsets.fromLTRB(
               20,
@@ -354,24 +240,18 @@ class DetalleVehiculoScreen extends StatelessWidget {
                     Container(
                       width: double.infinity,
                       height: 220,
-                      padding: const EdgeInsets.all(20),
+                      clipBehavior: Clip.antiAlias,
                       decoration: const BoxDecoration(
                         color: Color(0xFF172033),
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(22),
                         ),
                       ),
-                      child: Image.asset(
-                        _imagenVehiculo(),
-                        fit: BoxFit.contain,
-                        errorBuilder:
-                            (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.directions_car_outlined,
-                            color: _primaryColor,
-                            size: 90,
-                          );
-                        },
+                      child: FotoVehiculo(
+                        fotoPath: vehiculo.fotoPath,
+                        assetPredeterminado: _imagenVehiculo(),
+                        paddingPredeterminado:
+                            const EdgeInsets.all(20),
                       ),
                     ),
 
@@ -401,29 +281,52 @@ class DetalleVehiculoScreen extends StatelessWidget {
                               ),
                             ),
                           ],
-
                           const SizedBox(height: 14),
 
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              spacing: 8,
+                              children: [
                               _chip(
                                 Icons.badge_outlined,
-                                vehiculo.patente,
+                                'Patente: ${vehiculo.patente}',
                               ),
                               _chip(
                                 Icons.directions_car_outlined,
-                                _nombreTipo(),
+                                'Tipo: ${_nombreTipo()}',
                               ),
+                              if (_tieneValor(vehiculo.marca))
+                                _chip(
+                                  Icons.directions_car_filled_outlined,
+                                  'Marca: ${vehiculo.marca}',
+                                ),
+                              if (_tieneValor(vehiculo.modelo))
+                                _chip(
+                                  Icons.car_repair_outlined,
+                                  'Modelo: ${vehiculo.modelo}',
+                                ),
                               if (vehiculo.anio != null)
                                 _chip(
                                   Icons.calendar_today_outlined,
-                                  vehiculo.anio.toString(),
+                                  'Año: ${vehiculo.anio}',
+                                ),
+                              if (_tieneValor(vehiculo.tipoCombustible))
+                                _chip(
+                                  Icons.local_gas_station_outlined,
+                                  'Combustible: ${vehiculo.tipoCombustible}',
+                                ),
+                              if (vehiculo.kilometrajeActual != null)
+                                _chip(
+                                  Icons.speed_outlined,
+                                  'Kilometraje: ${_conMiles(vehiculo.kilometrajeActual!)} km',
                                 ),
                             ],
                           ),
+                          ),
+
 
                           const SizedBox(height: 18),
 
@@ -477,110 +380,6 @@ class DetalleVehiculoScreen extends StatelessWidget {
               const SizedBox(height: 28),
 
               // --------------------------------------------------
-              // FICHA TÉCNICA
-              // --------------------------------------------------
-
-              const Text(
-                'Ficha técnica',
-                style: TextStyle(
-                  color: _textMain,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-
-              const SizedBox(height: 5),
-
-              const Text(
-                'Información principal de tu vehículo.',
-                style: TextStyle(
-                  color: _textMuted,
-                  fontSize: 13,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final dosColumnas =
-                      constraints.maxWidth >= 550;
-
-                  final ancho = dosColumnas
-                      ? (constraints.maxWidth - 12) / 2
-                      : constraints.maxWidth;
-
-                  return Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      SizedBox(
-                        width: ancho,
-                        child: _datoTecnico(
-                          icono:
-                              Icons.directions_car_outlined,
-                          titulo: 'Marca',
-                          valor: vehiculo.marca,
-                        ),
-                      ),
-                      SizedBox(
-                        width: ancho,
-                        child: _datoTecnico(
-                          icono:
-                              Icons.car_repair_outlined,
-                          titulo: 'Modelo',
-                          valor: vehiculo.modelo,
-                        ),
-                      ),
-                      SizedBox(
-                        width: ancho,
-                        child: _datoTecnico(
-                          icono:
-                              Icons.calendar_today_outlined,
-                          titulo: 'Año',
-                          valor:
-                              vehiculo.anio?.toString(),
-                        ),
-                      ),
-                      SizedBox(
-                        width: ancho,
-                        child: _datoTecnico(
-                          icono:
-                              Icons.local_gas_station_outlined,
-                          titulo: 'Combustible',
-                          valor:
-                              vehiculo.tipoCombustible,
-                        ),
-                      ),
-                      SizedBox(
-                        width: ancho,
-                        child: _datoTecnico(
-                          icono: Icons.speed_outlined,
-                          titulo: 'Kilometraje',
-                          valor: vehiculo
-                                      .kilometrajeActual !=
-                                  null
-                              ? '${vehiculo.kilometrajeActual} km'
-                              : null,
-                        ),
-                      ),
-                      SizedBox(
-                        width: ancho,
-                        child: _datoTecnico(
-                          icono:
-                              Icons.category_outlined,
-                          titulo: 'Tipo',
-                          valor: _nombreTipo(),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-              const SizedBox(height: 28),
-
-              // --------------------------------------------------
               // DOCUMENTOS
               // --------------------------------------------------
 
@@ -607,7 +406,7 @@ class DetalleVehiculoScreen extends StatelessWidget {
                           BorderRadius.circular(20),
                     ),
                     child: Text(
-                      '${documentos.length}',
+                      '${documentos.length}/${TipoDocumentoVehicular.values.length}',
                       style: const TextStyle(
                         color: _primaryColor,
                         fontWeight: FontWeight.w700,
@@ -629,80 +428,53 @@ class DetalleVehiculoScreen extends StatelessWidget {
                   ),
                 ),
                 child: documentos.isEmpty
-                    ? Column(
+                    ? const Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.description_outlined,
                             color: _textMuted,
-                            size: 36,
+                            size: 22,
                           ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Aún no hay documentos',
-                            style: TextStyle(
-                              color: _textMain,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Agrega los documentos de tu vehículo para controlar sus vencimientos.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: _textMuted,
-                              fontSize: 13,
-                              height: 1.4,
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Aún no hay documentos registrados',
+                              style: TextStyle(
+                                color: _textMuted,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ],
                       )
-                    : Row(
+                    : Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        spacing: 12,
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: _primaryColor
-                                  .withOpacity(0.12),
-                              borderRadius:
-                                  BorderRadius.circular(14),
-                            ),
-                            child: const Icon(
-                              Icons.event_outlined,
-                              color: _primaryColor,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                          for (final documento in documentos)
+                            Row(
                               children: [
-                                Text(
-                                  proximoDocumento != null
-                                      ? 'Próximo vencimiento'
-                                      : 'Documentos registrados',
-                                  style: const TextStyle(
-                                    color: _textMuted,
-                                    fontSize: 12,
-                                  ),
+                                const Icon(
+                                  Icons.description_outlined,
+                                  color: _primaryColor,
+                                  size: 22,
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  proximoDocumento != null
-                                      ? '${proximoDocumento.tipoDocumento.etiqueta} · '
-                                          '${DateFormat('dd/MM/yyyy').format(proximoDocumento.fechaVencimiento!)}'
-                                      : '${documentos.length} documento(s)',
-                                  style: const TextStyle(
-                                    color: _textMain,
-                                    fontSize: 14,
-                                    fontWeight:
-                                        FontWeight.w700,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    documento
+                                        .tipoDocumento.etiqueta,
+                                    style: const TextStyle(
+                                      color: _textMain,
+                                      fontSize: 15,
+                                      fontWeight:
+                                          FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
                         ],
                       ),
               ),
@@ -729,7 +501,7 @@ class DetalleVehiculoScreen extends StatelessWidget {
                     Icons.description_outlined,
                   ),
                   label: const Text(
-                    'Ver documentos',
+                    'Ver más detalles',
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: _textMain,
@@ -747,56 +519,26 @@ class DetalleVehiculoScreen extends StatelessWidget {
               const SizedBox(height: 28),
 
               // --------------------------------------------------
-              // ACCIONES RÁPIDAS
+              // ELIMINAR VEHÍCULO
               // --------------------------------------------------
 
-              const Text(
-                'Acciones rápidas',
-                style: TextStyle(
-                  color: _textMain,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w700,
+              SizedBox(
+                height: 50,
+                child: OutlinedButton.icon(
+                  onPressed: () =>
+                      _confirmarEliminar(context, nombrePrincipal),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Eliminar vehículo'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.redAccent,
+                    side: BorderSide(
+                      color: Colors.redAccent.withOpacity(0.6),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 14),
-
-              Row(
-                children: [
-                  _accionRapida(
-                    icono: Icons.edit_outlined,
-                    titulo: 'Editar',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              RegistrarEditarVehiculoScreen(
-                            vehiculo: vehiculo,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  _accionRapida(
-                    icono: Icons.add_a_photo_outlined,
-                    titulo: 'Agregar documento',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              RegistrarDocumentoIaScreen(
-                            vehiculoId: vehiculo.id,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
               ),
             ],
           );
@@ -804,6 +546,107 @@ class DetalleVehiculoScreen extends StatelessWidget {
       ),
     );
   }
+
+  // ------------------------------------------------------------
+  // ELIMINAR
+  // ------------------------------------------------------------
+
+  Future<void> _confirmarEliminar(
+    BuildContext context,
+    String nombre,
+  ) async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: _surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: const Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.redAccent,
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '¿Eliminar vehículo?',
+                  style: TextStyle(color: _textMain),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Se eliminará "$nombre" junto con todos sus documentos y '
+            'avisos de vencimiento. Esta acción no se puede deshacer.',
+            style: const TextStyle(
+              color: _textMuted,
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+              ),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmado != true || !context.mounted) return;
+
+    // Bloquea la pantalla mientras se borra.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
+
+    try {
+      await VehiculoService().eliminarVehiculo(vehiculo.id);
+
+      navigator.pop(); // cierra el indicador de carga
+      navigator.pop(); // vuelve a Mi Vehículo
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Vehículo eliminado.')),
+      );
+    } catch (e) {
+      debugPrint('No se pudo eliminar el vehículo ${vehiculo.id}: $e');
+      navigator.pop(); // cierra el indicador de carga
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se pudo eliminar el vehículo. Intenta nuevamente.',
+          ),
+        ),
+      );
+    }
+  }
+
+  /// 160000 -> "160.000"
+  String _conMiles(int valor) => valor.toString().replaceAllMapped(
+        RegExp(r'\B(?=(\d{3})+(?!\d))'),
+        (_) => '.',
+      );
+
+  bool _tieneValor(String? valor) =>
+      valor != null && valor.trim().isNotEmpty;
 
   // ------------------------------------------------------------
   // CHIP
@@ -815,8 +658,8 @@ class DetalleVehiculoScreen extends StatelessWidget {
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
+        horizontal: 13,
+        vertical: 9,
       ),
       decoration: BoxDecoration(
         color: _surfaceLight,
@@ -831,14 +674,14 @@ class DetalleVehiculoScreen extends StatelessWidget {
           Icon(
             icono,
             color: _textMuted,
-            size: 15,
+            size: 18,
           ),
           const SizedBox(width: 6),
           Text(
             texto,
             style: const TextStyle(
               color: _textMain,
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),

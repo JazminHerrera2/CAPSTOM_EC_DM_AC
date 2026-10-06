@@ -43,6 +43,16 @@ class StorageService {
         '${DateTime.now().millisecondsSinceEpoch}.$extension';
   }
 
+  /// Path de destino de la foto de un vehículo del usuario autenticado.
+  String pathFotoVehiculo({
+    required String vehiculoId,
+    required String extension,
+  }) {
+    final uid = _uidActual();
+    return 'usuarios/$uid/vehiculos/$vehiculoId/'
+        '${DateTime.now().millisecondsSinceEpoch}.$extension';
+  }
+
   Future<String> subirArchivo({
     required String path,
     required Uint8List bytes,

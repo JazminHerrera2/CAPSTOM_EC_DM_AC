@@ -1,5 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/vehiculo_model.dart';
+import 'auditoria_service.dart';
+import 'documento_vehicular_service.dart';
+import 'storage_service.dart';
 
 /// CRUD de la colección `vehiculos` — compartida entre Fase 1
 /// (`vehiculos_screen.dart`) y Fase 2 (módulo Mi Vehículo). Ver
@@ -44,22 +48,65 @@ class VehiculoService {
     return docRef.id;
   }
   
-  /// CU2 — Modificar información (kilometraje, alias, foto).
+  /// CU2 — Modificar información (marca, modelo, año, combustible, kilometraje, alias, foto).
   Future<void> actualizarVehiculo(
     String vehiculoId, {
+    String? marca,
+    String? modelo,
+    int? anio,
+    String? tipoCombustible,
     int? kilometrajeActual,
     String? alias,
     String? fotoPath,
+    bool quitarFoto = false,
   }) async {
     final cambios = <String, dynamic>{};
+    if (marca != null) cambios['marca'] = marca;
+    if (modelo != null) cambios['modelo'] = modelo;
+    if (anio != null) cambios['anio'] = anio;
+    if (tipoCombustible != null) cambios['tipo_combustible'] = tipoCombustible;
     if (kilometrajeActual != null) {
       cambios['kilometraje_actual'] = kilometrajeActual;
     }
     if (alias != null) cambios['alias'] = alias;
     if (fotoPath != null) cambios['foto_path'] = fotoPath;
+    if (quitarFoto && fotoPath == null) {
+      cambios['foto_path'] = FieldValue.delete();
+    }
 
     if (cambios.isEmpty) return;
     await _vehiculos.doc(vehiculoId).update(cambios);
+  }
+
+  /// Elimina el vehículo junto con sus documentos (y avisos y archivos de
+  /// éstos). Primero se borran los documentos: si algo falla, el vehículo
+  /// sigue existiendo y se puede reintentar sin dejar datos huérfanos.
+  Future<void> eliminarVehiculo(String vehiculoId) async {
+    final datos = (await _vehiculos.doc(vehiculoId).get()).data();
+    final patente = datos?['patente'];
+    final fotoPath = datos?['foto_path'];
+
+    await DocumentoVehicularService().eliminarDocumentosDeVehiculo(vehiculoId);
+    await _vehiculos.doc(vehiculoId).delete();
+
+    if (fotoPath is String &&
+        fotoPath.trim().isNotEmpty &&
+        StorageService.configurado) {
+      try {
+        await StorageService().eliminarArchivo(fotoPath.trim());
+      } catch (e) {
+        debugPrint('No se pudo eliminar la foto $fotoPath: $e');
+      }
+    }
+
+    await AuditoriaService().registrar(
+      usuarioId: null,
+      accion: 'ELIMINAR',
+      tipoEntidad: 'VEHICULO',
+      entidadId: vehiculoId,
+      detalle: 'Vehículo eliminado${patente != null ? ' ($patente)' : ''}',
+      origen: 'manual',
+    );
   }
 
   Future<VehiculoModel?> obtenerVehiculo(String vehiculoId) async {

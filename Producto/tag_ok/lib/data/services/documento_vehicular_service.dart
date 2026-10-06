@@ -71,6 +71,33 @@ class DocumentoVehicularService {
     }
   }
 
+  /// Borra todos los documentos de un vehículo (registro, avisos de
+  /// vencimiento y archivo adjunto). Se usa al eliminar el vehículo. Si falla
+  /// el borrado de un registro o de sus avisos se propaga el error, para que el
+  /// vehículo no se elimine dejando documentos huérfanos; el borrado del
+  /// archivo adjunto es "best effort".
+  Future<void> eliminarDocumentosDeVehiculo(String vehiculoId) async {
+    final snapshot = await _documentos
+        .where('vehiculo_id', isEqualTo: vehiculoId)
+        .get();
+
+    for (final doc in snapshot.docs) {
+      await _notificacionService.eliminarNotificacionesDocumento(doc.id);
+      await doc.reference.delete();
+
+      final archivoPath = doc.data()['archivo_path'];
+      if (archivoPath is String &&
+          archivoPath.trim().isNotEmpty &&
+          StorageService.configurado) {
+        try {
+          await _storageService.eliminarArchivo(archivoPath.trim());
+        } catch (e) {
+          debugPrint('No se pudo eliminar el archivo $archivoPath: $e');
+        }
+      }
+    }
+  }
+
   /// CU3 / CU40 — registro manual (sin IA) de un documento.
   Future<String> crearDocumentoManual(DocumentoVehicularModel documento) async {
     final anteriores = await _buscarAnteriores(

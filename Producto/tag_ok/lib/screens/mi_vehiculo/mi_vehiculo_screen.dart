@@ -7,6 +7,7 @@ import '../../data/models/documento_vehicular_model.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/vehiculo_service.dart';
 import 'detalle_vehiculo_screen.dart';
+import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
 import 'detalle_documento_screen.dart';
 
@@ -789,26 +790,20 @@ class _VehiculoCard extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     height: 155,
-                    padding: const EdgeInsets.fromLTRB(
-                      24,
-                      14,
-                      24,
-                      4,
-                    ),
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       color: surfaceLight,
                     ),
-                    child: Image.asset(
-                      _imagenVehiculo(),
-                      fit: BoxFit.contain,
-                      errorBuilder:
-                          (context, error, stackTrace) {
-                        return Icon(
-                          Icons.directions_car,
-                          color: primaryColor,
-                          size: 70,
-                        );
-                      },
+                    child: FotoVehiculo(
+                      fotoPath: vehiculo.fotoPath,
+                      assetPredeterminado: _imagenVehiculo(),
+                      paddingPredeterminado:
+                          const EdgeInsets.fromLTRB(
+                        24,
+                        14,
+                        24,
+                        4,
+                      ),
                     ),
                   ),
 

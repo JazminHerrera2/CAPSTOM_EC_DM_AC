@@ -451,7 +451,7 @@ class _DocumentosVehiculoScreenState
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        '${documentos.length} documento${documentos.length == 1 ? '' : 's'}',
+                        '${documentos.length}/${TipoDocumentoVehicular.values.length} documentos',
                         style: const TextStyle(
                           color: textMuted,
                           fontSize: 11,
@@ -502,7 +502,7 @@ class _DocumentosVehiculoScreenState
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        '${documentos.length}',
+                        '${documentos.length}/${TipoDocumentoVehicular.values.length}',
                         style: const TextStyle(
                           color: primaryColor,
                           fontWeight: FontWeight.w700,
