@@ -154,9 +154,12 @@ class _HerramientasHubScreenState extends State<HerramientasHubScreen> {
               ),
             ),
 
-            // Cerrar sesión, fijo al pie de la pantalla.
+            // Cerrar sesión, fijo al pie de la pantalla. El botón del mapa
+            // (72 px) queda incrustado en la barra inferior y sobresale 36 px
+            // hacia arriba, por eso el margen de abajo es de 60: deja el botón
+            // por encima, sin que lo tape ni quede detrás.
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 60),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
