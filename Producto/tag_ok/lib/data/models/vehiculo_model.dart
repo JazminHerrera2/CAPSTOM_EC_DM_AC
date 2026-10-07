@@ -38,6 +38,10 @@ class VehiculoModel {
   final String? fotoPath;
   final String? estado;
 
+  /// Cuándo se registró el vehículo en Mi Vehículo. Los vehículos
+  /// anteriores a este campo no lo tienen (null = más antiguos).
+  final DateTime? fechaRegistro;
+
   VehiculoModel({
     required this.id,
     required this.idUsuario,
@@ -53,6 +57,7 @@ class VehiculoModel {
     this.alias,
     this.fotoPath,
     this.estado,
+    this.fechaRegistro,
   });
 
   factory VehiculoModel.fromJson(Map<String, dynamic> json, String id) {
@@ -71,6 +76,7 @@ class VehiculoModel {
       alias: json['alias'],
       fotoPath: json['foto_path'],
       estado: json['estado'],
+      fechaRegistro: (json['fecha_registro'] as Timestamp?)?.toDate(),
     );
   }
 
@@ -90,6 +96,8 @@ class VehiculoModel {
       if (alias != null) 'alias': alias,
       if (fotoPath != null) 'foto_path': fotoPath,
       'estado': estado ?? 'activo',
+      if (fechaRegistro != null)
+        'fecha_registro': Timestamp.fromDate(fechaRegistro!),
     };
   }
 

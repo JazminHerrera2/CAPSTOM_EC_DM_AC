@@ -1,15 +1,14 @@
 ﻿import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/vehiculo_service.dart';
 import 'detalle_vehiculo_screen.dart';
+import 'documentos_vehiculo_seccion.dart';
 import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
-import 'detalle_documento_screen.dart';
 
 class MiVehiculoScreen extends StatefulWidget {
   const MiVehiculoScreen({super.key});
@@ -31,6 +30,9 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
 
   int _activeSubTab = 0;
 
+  // Filtro de la pestaña Documentos: id del vehículo, o null para todos.
+  String? _filtroVehiculoId;
+
   String get _usuarioId =>
       FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
 
@@ -44,7 +46,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Text(
-          'Mi VehÍ­culo',
+          'Mi VehÍculo',
           style: TextStyle(
             color: textMain,
             fontSize: 27,
@@ -87,7 +89,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
               children: [
                 Expanded(
                   child: _buildTabButton(
-                    label: 'Mis Vehí­culos',
+                    label: 'Mis Vehículos',
                     icon: Icons.directions_car_outlined,
                     index: 0,
                   ),
@@ -134,7 +136,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: 58,
+        height: 44,
         decoration: BoxDecoration(
           color: activo ? primaryColor : surfaceColor,
           borderRadius: BorderRadius.circular(15),
@@ -145,17 +147,23 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
             Icon(
               icon,
               color: activo ? Colors.white : textMuted,
-              size: 21,
+              size: 19,
             ),
             const SizedBox(width: 8),
             Flexible(
-              child: Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: activo ? Colors.white : textMuted,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+              // Una sola línea y sin cortar la palabra: si no cabe, se reduce
+              // el tamaño del texto en vez de partirlo o truncarlo.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                    color: activo ? Colors.white : textMuted,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -201,48 +209,42 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         // UNO O MáS VEHíCULOS
         // ----------------------------------------------------------
 
-        return ListView(
+        // El vehículo principal vive en el usuario (por patente), el mismo
+        // dato que usa la pantalla de Fase 1, el mapa y el perfil.
+        return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(_usuarioId)
+              .snapshots(),
+          builder: (context, userSnapshot) {
+            final principal =
+                (userSnapshot.data?.data()?['vehiculo_principal_id'] ?? '')
+                    .toString();
+
+            // Los documentos de todos los vehículos permiten ordenar por
+            // urgencia. Firestore limita `whereIn` a 10 valores; con más
+            // vehículos se omite ese criterio y el resto del orden se mantiene.
+            final ids = vehiculos.map((v) => v.id).toList();
+
+            return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: ids.length <= 10
+                  ? FirebaseFirestore.instance
+                      .collection('documentos_vehiculares')
+                      .where('vehiculo_id', whereIn: ids)
+                      .snapshots()
+                  : null,
+              builder: (context, docsSnapshot) {
+                final ordenados = _ordenarVehiculos(
+                  vehiculos,
+                  principal,
+                  docsSnapshot.data?.docs,
+                );
+
+                return ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    vehiculos.length == 1
-                        ? 'Tu vehí­culo'
-                        : 'Tus vehí­culos',
-                    style: TextStyle(
-                      color: textMain,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${vehiculos.length} ${vehiculos.length == 1 ? 'registrado' : 'registrados'}',
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 6),
-
             Text(
-              'Consulta la información, documentos y estado de cada vehí­culo.',
+              'Consulta la información, documentos y estado de cada vehículo.',
               style: TextStyle(
                 color: textMuted,
                 fontSize: 13,
@@ -250,31 +252,49 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
               ),
             ),
 
+            const SizedBox(height: 16),
+
+            _buildVehiculoPrincipal(vehiculos, principal),
+
             const SizedBox(height: 18),
 
-            ...vehiculos.map(
+            ...ordenados.map(
               (vehiculo) => Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: _VehiculoCard(
                   vehiculo: vehiculo,
+                  esPrincipal: vehiculo.patente == principal,
                   surfaceColor: surfaceColor,
                   surfaceLight: surfaceLight,
                   textMain: textMain,
                   textMuted: textMuted,
                   primaryColor: primaryColor,
-                  onTap: () {
-                    Navigator.push(
+                  onTap: () async {
+                    final resultado = await Navigator.push<Object>(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
                             DetalleVehiculoScreen(vehiculo: vehiculo),
                       ),
                     );
+
+                    // "Ver más detalles" en el detalle del vehículo pide abrir
+                    // la pestaña Documentos, filtrada por ese vehículo.
+                    if (resultado is VerDocumentosDe && mounted) {
+                      setState(() {
+                        _activeSubTab = 1;
+                        _filtroVehiculoId = resultado.vehiculoId;
+                      });
+                    }
                   },
                 ),
               ),
             ),
           ],
+        );
+              },
+            );
+          },
         );
       },
     );
@@ -291,7 +311,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Tres tipos de vehí­culos disponibles
+            // Tres tipos de vehículos disponibles
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -312,7 +332,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
             const SizedBox(height: 26),
 
             Text(
-              'Aún no tienes vehí­culos',
+              'Aún no tienes vehículos',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: textMain,
@@ -435,7 +455,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Primero agrega un vehí­culo',
+                    'Primero agrega un vehículo',
                     style: TextStyle(
                       color: textMain,
                       fontSize: 18,
@@ -444,7 +464,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Los documentos registrados para tus vehí­culos aparecerán aquí­.',
+                    'Los documentos registrados para tus vehículos aparecerán aquí.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: textMuted,
@@ -460,12 +480,16 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         final idsVehiculos =
             vehiculos.map((vehiculo) => vehiculo.id).toList();
 
-        final patentesPorId = {
-          for (final vehiculo in vehiculos)
-            vehiculo.id: vehiculo.patente,
-        };
+        // Si el vehículo filtrado ya no existe (p. ej. se eliminó), se vuelve
+        // a mostrar todo.
+        final filtroActivo =
+            idsVehiculos.contains(_filtroVehiculoId) ? _filtroVehiculoId : null;
 
-        return StreamBuilder<
+        return Column(
+          children: [
+            _buildFiltrosDocumentos(vehiculos, filtroActivo),
+            Expanded(
+              child: StreamBuilder<
             QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('documentos_vehiculares')
@@ -492,163 +516,355 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
 
             final docs = snapshot.data?.docs ?? [];
 
-            if (docs.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(30),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 82,
-                        height: 82,
-                        decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.10),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.description_outlined,
-                          size: 38,
-                          color: primaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Sin documentos',
-                        style: TextStyle(
-                          color: textMain,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Aun no hay documentos registrados para tus vehÍculos.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: textMuted,
-                          height: 1.5,
-                        ),
-                      ),
-                    ],
+            // Documentos agrupados por vehículo, en el orden de la lista de
+            // vehículos. Los vehículos sin documentos no aparecen.
+            final porVehiculo = <String, List<DocumentoVehicularModel>>{};
+            for (final doc in docs) {
+              final documento =
+                  DocumentoVehicularModel.fromJson(doc.data(), doc.id);
+              porVehiculo
+                  .putIfAbsent(documento.vehiculoId, () => [])
+                  .add(documento);
+            }
+
+            // Todos los vehículos aparecen, también los que aún no tienen
+            // documentos (con el botón para agregar el primero).
+            final secciones = <Widget>[];
+            for (final vehiculo in vehiculos) {
+              if (filtroActivo != null && vehiculo.id != filtroActivo) {
+                continue;
+              }
+
+              final lista = porVehiculo[vehiculo.id] ?? [];
+
+              lista.sort(
+                (a, b) =>
+                    a.tipoDocumento.index.compareTo(b.tipoDocumento.index),
+              );
+
+              // Línea que separa un vehículo del siguiente.
+              if (secciones.isNotEmpty) {
+                secciones.add(const SizedBox(height: 14));
+                secciones.add(
+                  const Divider(
+                    color: Color(0xFF475569),
+                    thickness: 1,
+                    height: 1,
                   ),
+                );
+                secciones.add(const SizedBox(height: 26));
+              }
+              secciones.add(
+                DocumentosVehiculoSeccion(
+                  vehiculoId: vehiculo.id,
+                  patenteVehiculo: vehiculo.patente,
+                  documentos: lista,
+                  mostrarTitulo: false,
+                  mostrarBotonAgregar: true,
                 ),
               );
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.fromLTRB(
-                16,
-                8,
-                16,
-                100,
-              ),
-              itemCount: docs.length,
-              itemBuilder: (context, index) {
-                final documento =
-                    DocumentoVehicularModel.fromJson(
-                  docs[index].data(),
-                  docs[index].id,
-                );
-
-                final patente =
-                    patentesPorId[documento.vehiculoId] ??
-                        'VehÍ­culo';
-
-                final vencido =
-                    documento.fechaVencimiento != null &&
-                        documento.fechaVencimiento!
-                            .isBefore(DateTime.now());
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: surfaceColor,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.04),
-                    ),
-                  ),
-                  child: ListTile(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetalleDocumentoScreen(
-                            documento: documento,
-                            patenteVehiculo: patente,
-                          ),
-                        ),
-                      );
-                    },
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    leading: Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: (vencido
-                                ? Colors.redAccent
-                                : primaryColor)
-                            .withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(13),
-                      ),
-                      child: Icon(
-                        Icons.description_outlined,
-                        color: vencido
-                            ? Colors.redAccent
-                            : primaryColor,
-                      ),
-                    ),
-                    title: Text(
-                      documento.tipoDocumento.etiqueta,
-                      style: TextStyle(
-                        color: textMain,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 5),
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            patente,
-                            style: TextStyle(
-                              color: textMuted,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            documento.fechaVencimiento != null
-                                ? 'Vence: ${DateFormat('dd/MM/yyyy').format(documento.fechaVencimiento!)}'
-                                : 'Sin fecha de vencimiento',
-                            style: TextStyle(
-                              color: vencido
-                                  ? Colors.redAccent
-                                  : textMuted,
-                              fontSize: 12,
-                              fontWeight: vencido
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+              children: secciones,
             );
           },
+        ),
+            ),
+          ],
         );
       },
     );
+  }
+
+  /// Botones de filtro: "Todos" y uno por cada patente. Salen de la lista de
+  /// vehículos, así que al registrar uno nuevo aparece su botón solo.
+  Widget _buildFiltrosDocumentos(
+    List<VehiculoModel> vehiculos,
+    String? filtroActivo,
+  ) {
+    Widget boton(String texto, bool activo, VoidCallback onTap) {
+      return InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 10,
+          ),
+          decoration: BoxDecoration(
+            color: activo ? primaryColor : surfaceColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: activo ? primaryColor : const Color(0xFF334155),
+            ),
+          ),
+          child: Text(
+            texto,
+            maxLines: 1,
+            softWrap: false,
+            style: TextStyle(
+              color: activo ? Colors.white : textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Row(
+        children: [
+          boton(
+            'Todos',
+            filtroActivo == null,
+            () => setState(() => _filtroVehiculoId = null),
+          ),
+          for (final vehiculo in vehiculos) ...[
+            const SizedBox(width: 8),
+            boton(
+              vehiculo.patente,
+              filtroActivo == vehiculo.id,
+              () => setState(() => _filtroVehiculoId = vehiculo.id),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // ================================================================
+  // VEHÍCULO PRINCIPAL
+  // ================================================================
+
+  Widget _buildVehiculoPrincipal(
+    List<VehiculoModel> vehiculos,
+    String principal,
+  ) {
+    final actual = vehiculos
+        .where((v) => v.patente == principal)
+        .cast<VehiculoModel?>()
+        .firstWhere((_) => true, orElse: () => null);
+
+    final detalle = actual == null
+        ? null
+        : [actual.marca, actual.modelo]
+            .where((e) => e != null && e.trim().isNotEmpty)
+            .join(' ');
+
+    return InkWell(
+      onTap: () => _mostrarSelectorPrincipal(vehiculos, principal),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: primaryColor.withOpacity(0.14),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: primaryColor.withOpacity(0.6),
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.star_rounded,
+              color: Colors.amber,
+              size: 26,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Vehículo principal',
+                    style: TextStyle(
+                      color: textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    actual == null
+                        ? 'Seleccionar'
+                        : (detalle != null && detalle.isNotEmpty
+                            ? '${actual.patente} · $detalle'
+                            : actual.patente),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: textMain,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_drop_down,
+              color: textMain,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _setVehiculoPrincipal(String patente) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(_usuarioId)
+          .set(
+        {'vehiculo_principal_id': patente},
+        SetOptions(merge: true),
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Vehículo principal actualizado a $patente'),
+        ),
+      );
+    } catch (e) {
+      debugPrint('No se pudo guardar el vehículo principal: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se pudo actualizar el vehículo principal. Intenta nuevamente.',
+          ),
+        ),
+      );
+    }
+  }
+
+  void _mostrarSelectorPrincipal(
+    List<VehiculoModel> vehiculos,
+    String principal,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            'Seleccionar vehículo principal',
+            style: TextStyle(color: textMain),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: vehiculos.length,
+              itemBuilder: (context, index) {
+                final vehiculo = vehiculos[index];
+                final detalle = [vehiculo.alias, vehiculo.marca, vehiculo.modelo]
+                    .where((e) => e != null && e.trim().isNotEmpty)
+                    .take(2)
+                    .join(' · ');
+
+                return ListTile(
+                  title: Text(
+                    vehiculo.patente,
+                    style: TextStyle(color: textMain),
+                  ),
+                  subtitle: detalle.isEmpty
+                      ? null
+                      : Text(
+                          detalle,
+                          style: TextStyle(color: textMuted),
+                        ),
+                  trailing: vehiculo.patente == principal
+                      ? Icon(Icons.check_circle, color: primaryColor)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(dialogContext);
+                    _setVehiculoPrincipal(vehiculo.patente);
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Orden de la lista de vehículos:
+  ///   1. el vehículo principal;
+  ///   2. por urgencia de sus documentos (Atención requerida, Próximo
+  ///      vencimiento, Todo al día y, al final, Sin información);
+  ///   3. por antigüedad de registro (los más antiguos primero; los que no
+  ///      guardan fecha son anteriores a este campo, así que van antes);
+  ///   4. por patente, para que el orden sea siempre el mismo.
+  List<VehiculoModel> _ordenarVehiculos(
+    List<VehiculoModel> vehiculos,
+    String principal,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>>? docs,
+  ) {
+    final fechas = <String, List<DateTime?>>{};
+    for (final doc in docs ?? const []) {
+      final data = doc.data();
+      final vehiculoId = data['vehiculo_id'];
+      if (vehiculoId is! String) continue;
+
+      final vencimiento = data['fecha_vencimiento'];
+      fechas
+          .putIfAbsent(vehiculoId, () => [])
+          .add(vencimiento is Timestamp ? vencimiento.toDate() : null);
+    }
+
+    int urgencia(VehiculoModel v) {
+      switch (VehiculoModel.calcularEstadoGeneral(fechas[v.id] ?? [])) {
+        case 'Atención requerida':
+          return 0;
+        case 'Próximo vencimiento':
+          return 1;
+        case 'Todo al día':
+          return 2;
+        default:
+          return 3;
+      }
+    }
+
+    final ordenados = [...vehiculos];
+    ordenados.sort((a, b) {
+      final esPrincipalA = a.patente == principal;
+      final esPrincipalB = b.patente == principal;
+      if (esPrincipalA != esPrincipalB) return esPrincipalA ? -1 : 1;
+
+      final porUrgencia = urgencia(a).compareTo(urgencia(b));
+      if (porUrgencia != 0) return porUrgencia;
+
+      final registroA = a.fechaRegistro;
+      final registroB = b.fechaRegistro;
+      if (registroA != registroB) {
+        if (registroA == null) return -1;
+        if (registroB == null) return 1;
+        final porAntiguedad = registroA.compareTo(registroB);
+        if (porAntiguedad != 0) return porAntiguedad;
+      }
+
+      return a.patente.compareTo(b.patente);
+    });
+
+    return ordenados;
   }
 
   Widget _buildEstadoError(String mensaje) {
@@ -685,6 +901,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
 
 class _VehiculoCard extends StatelessWidget {
   final VehiculoModel vehiculo;
+  final bool esPrincipal;
   final Color surfaceColor;
   final Color surfaceLight;
   final Color textMain;
@@ -694,6 +911,7 @@ class _VehiculoCard extends StatelessWidget {
 
   const _VehiculoCard({
     required this.vehiculo,
+    this.esPrincipal = false,
     required this.surfaceColor,
     required this.surfaceLight,
     required this.textMain,
@@ -726,9 +944,9 @@ class _VehiculoCard extends StatelessWidget {
         return Colors.redAccent;
 
       case 'Próximo vencimiento':
-        return const Color(0xFFF59E0B);
+        return const Color(0xFFF97316);
 
-      case 'Todo al dÍ­a':
+      case 'Todo al día':
         return const Color(0xFF10B981);
 
       default:
@@ -845,7 +1063,7 @@ class _VehiculoCard extends StatelessWidget {
                                   Text(
                                     marcaModelo.isNotEmpty
                                         ? marcaModelo
-                                        : 'VehÍ­culo registrado',
+                                        : 'VehÍculo registrado',
                                     style: TextStyle(
                                       color: textMuted,
                                       fontSize: 13,
@@ -871,6 +1089,14 @@ class _VehiculoCard extends StatelessWidget {
                           spacing: 8,
                           runSpacing: 8,
                           children: [
+                            if (esPrincipal)
+                              _InfoChip(
+                                icon: Icons.star_rounded,
+                                texto: 'Principal',
+                                color: Colors.amber,
+                                textMain: textMain,
+                              ),
+
                             _InfoChip(
                               icon: Icons.badge_outlined,
                               texto: vehiculo.patente,

@@ -4,9 +4,17 @@ import 'package:flutter/material.dart';
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/vehiculo_service.dart';
-import 'documentos_vehiculo_screen.dart';
 import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
+
+/// Resultado con el que el detalle de un vehículo se cierra cuando el usuario
+/// pide ver sus documentos: Mi Vehículo abre su pestaña Documentos filtrada
+/// por ese vehículo.
+class VerDocumentosDe {
+  final String vehiculoId;
+
+  const VerDocumentosDe(this.vehiculoId);
+}
 
 /// Detalle de un vehículo. Escucha el documento en Firestore para reflejar al
 /// instante los cambios (por ejemplo, el kilometraje tras editarlo); mientras
@@ -98,7 +106,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
         return Colors.redAccent;
 
       case 'Próximo vencimiento':
-        return const Color(0xFFF59E0B);
+        return const Color(0xFFF97316);
 
       case 'Todo al día':
         return const Color(0xFF10B981);
@@ -281,6 +289,50 @@ class _DetalleVehiculoVista extends StatelessWidget {
                               ),
                             ),
                           ],
+
+                          const SizedBox(height: 14),
+
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _colorEstado(estado)
+                                  .withOpacity(0.10),
+                              borderRadius:
+                                  BorderRadius.circular(14),
+                              border: Border.all(
+                                color: _colorEstado(estado)
+                                    .withOpacity(0.45),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _iconoEstado(estado),
+                                  color:
+                                      _colorEstado(estado),
+                                  size: 19,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  estado,
+                                  style: TextStyle(
+                                    color:
+                                        _colorEstado(estado),
+                                    fontWeight:
+                                        FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
                           const SizedBox(height: 14),
 
                           SizedBox(
@@ -325,50 +377,6 @@ class _DetalleVehiculoVista extends StatelessWidget {
                                 ),
                             ],
                           ),
-                          ),
-
-
-                          const SizedBox(height: 18),
-
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _colorEstado(estado)
-                                  .withOpacity(0.10),
-                              borderRadius:
-                                  BorderRadius.circular(14),
-                              border: Border.all(
-                                color: _colorEstado(estado)
-                                    .withOpacity(0.45),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  _iconoEstado(estado),
-                                  color:
-                                      _colorEstado(estado),
-                                  size: 19,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  estado,
-                                  style: TextStyle(
-                                    color:
-                                        _colorEstado(estado),
-                                    fontWeight:
-                                        FontWeight.w700,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
                         ],
                       ),
@@ -484,17 +492,12 @@ class _DetalleVehiculoVista extends StatelessWidget {
               SizedBox(
                 height: 50,
                 child: OutlinedButton.icon(
+                  // Vuelve a Mi Vehículo y le pide abrir la pestaña Documentos
+                  // filtrada por este vehículo.
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pop(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            DocumentosVehiculoScreen(
-                          vehiculoId: vehiculo.id,
-                          patenteVehiculo:
-                              vehiculo.patente,
-                        ),
-                      ),
+                      VerDocumentosDe(vehiculo.id),
                     );
                   },
                   icon: const Icon(

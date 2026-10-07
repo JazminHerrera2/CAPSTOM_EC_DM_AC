@@ -42,6 +42,7 @@ class VehiculoService {
       kilometrajeActual: kilometrajeActual,
       alias: alias,
       estado: 'activo',
+      fechaRegistro: DateTime.now(),
     );
 
     final docRef = await _vehiculos.add(vehiculo.toJson());
@@ -85,9 +86,25 @@ class VehiculoService {
     final datos = (await _vehiculos.doc(vehiculoId).get()).data();
     final patente = datos?['patente'];
     final fotoPath = datos?['foto_path'];
+    final idUsuario = datos?['id_usuario'];
 
     await DocumentoVehicularService().eliminarDocumentosDeVehiculo(vehiculoId);
     await _vehiculos.doc(vehiculoId).delete();
+
+    // Si era el vehículo principal del usuario, ese dato deja de apuntar a él.
+    if (patente is String && idUsuario is DocumentReference) {
+      try {
+        final usuario = await idUsuario.get();
+        final data = usuario.data() as Map<String, dynamic>?;
+        if (data?['vehiculo_principal_id'] == patente) {
+          await idUsuario.update({
+            'vehiculo_principal_id': FieldValue.delete(),
+          });
+        }
+      } catch (e) {
+        debugPrint('No se pudo limpiar el vehículo principal: $e');
+      }
+    }
 
     if (fotoPath is String &&
         fotoPath.trim().isNotEmpty &&

@@ -357,39 +357,53 @@ class _RegistrarEditarVehiculoScreenState
   bool get _kilometrajeValido =>
       _kilometrajeCtrl.text.trim().isEmpty || _parseKilometraje() != null;
 
+  /// Muestra el error en el cuadro rojo del formulario y también como aviso,
+  /// porque el cuadro queda al final y puede no estar a la vista.
+  void _mostrarError(String mensaje, {bool terminarGuardado = false}) {
+    if (!mounted) return;
+
+    setState(() {
+      if (terminarGuardado) _guardando = false;
+      _error = mensaje;
+    });
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(mensaje),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+  }
+
   Future<void> _guardar() async {
+    final messenger = ScaffoldMessenger.of(context);
+
     if (_patenteCtrl.text.trim().isEmpty) {
-      setState(() {
-        _error = 'La patente es obligatoria.';
-      });
+      _mostrarError('La patente es obligatoria.');
       return;
     }
 
     final errorCampos = _validarDatosPrincipales();
     if (errorCampos != null) {
-      setState(() {
-        _error = errorCampos;
-      });
+      _mostrarError(errorCampos);
       return;
     }
 
     if (!_kilometrajeValido) {
-      setState(() {
-        _error = 'El kilometraje solo puede contener números '
-            '(ej: 160000 o 160.000).';
-      });
+      _mostrarError(
+        'El kilometraje solo puede contener números (ej: 160000 o 160.000).',
+      );
       return;
     }
 
     final kilometraje = _parseKilometraje();
-    final messenger = ScaffoldMessenger.of(context);
 
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      setState(() {
-        _error = 'Debes iniciar sesión.';
-      });
+      _mostrarError('Debes iniciar sesión.');
       return;
     }
 
@@ -397,6 +411,8 @@ class _RegistrarEditarVehiculoScreenState
       _guardando = true;
       _error = null;
     });
+
+    var fotoFallo = false;
 
     try {
       if (_esEdicion) {
@@ -476,6 +492,7 @@ class _RegistrarEditarVehiculoScreenState
             );
           } catch (e) {
             debugPrint('No se pudo subir la foto del vehículo: $e');
+            fotoFallo = true;
             messenger.showSnackBar(
               const SnackBar(
                 content: Text(
@@ -488,21 +505,37 @@ class _RegistrarEditarVehiculoScreenState
         }
       }
 
+      // Si la foto falló ya se mostró un aviso propio; no se tapa con éxito.
+      if (!fotoFallo) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              _esEdicion
+                  ? 'Vehículo actualizado exitosamente.'
+                  : 'Vehículo agregado exitosamente.',
+            ),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+        );
+      }
+
       if (mounted) {
         Navigator.pop(context, true);
       }
     } on StorageException catch (e) {
       debugPrint('Error de almacenamiento: $e');
-      setState(() {
-        _guardando = false;
-        _error = 'No se pudo subir la imagen. Revisa tu conexión e '
-            'intenta nuevamente.';
-      });
+      _mostrarError(
+        'No se pudo subir la imagen. Revisa tu conexión e intenta nuevamente.',
+        terminarGuardado: true,
+      );
     } catch (e) {
-      setState(() {
-        _guardando = false;
-        _error = 'No se pudo guardar el vehículo.';
-      });
+      debugPrint('No se pudo guardar el vehículo: $e');
+      _mostrarError(
+        _esEdicion
+            ? 'No se pudo guardar los cambios del vehículo. Intenta nuevamente.'
+            : 'No se pudo agregar el vehículo. Intenta nuevamente.',
+        terminarGuardado: true,
+      );
     }
   }
 
@@ -751,14 +784,33 @@ class _RegistrarEditarVehiculoScreenState
               enabled: !_esEdicion,
               textCapitalization:
                   TextCapitalization.characters,
-              style: const TextStyle(
-                color: textMain,
+              style: TextStyle(
+                color: _esEdicion ? textMuted : textMain,
               ),
-              decoration: _decoracion(
-                'Patente *',
-                hint: 'Ej: ABCD12',
-                icon: Icons.badge_outlined,
-              ),
+              decoration: _esEdicion
+                  // Al editar la patente no se puede cambiar: se ve en gris,
+                  // con candado y una nota que lo explica.
+                  ? _decoracion(
+                      'Patente',
+                      icon: Icons.badge_outlined,
+                    ).copyWith(
+                      fillColor: const Color(0xFF334155).withOpacity(0.55),
+                      suffixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: textMuted,
+                        size: 20,
+                      ),
+                      helperText: 'La patente no se puede modificar.',
+                      helperStyle: const TextStyle(
+                        color: textMuted,
+                        fontSize: 12,
+                      ),
+                    )
+                  : _decoracion(
+                      'Patente *',
+                      hint: 'Ej: ABCD12',
+                      icon: Icons.badge_outlined,
+                    ),
             ),
 
             const SizedBox(height: 14),
