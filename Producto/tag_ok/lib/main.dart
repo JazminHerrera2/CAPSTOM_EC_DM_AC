@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importa FirebaseAuth
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Importa dotenv
@@ -92,6 +93,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'TagOk',
+      // Idioma de la app: calendarios, relojes y diálogos de Material en
+      // español (Chile), sin depender del idioma del teléfono o navegador.
+      locale: const Locale('es', 'CL'),
+      supportedLocales: const [
+        Locale('es', 'CL'),
+        Locale('es'),
+      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: ThemeData(
         // Avisos flotantes: Flutter los coloca encima del botón central del
         // mapa. Los fijos (por defecto) quedan al fondo y ese botón los tapa.
