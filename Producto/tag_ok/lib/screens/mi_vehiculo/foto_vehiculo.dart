@@ -13,8 +13,9 @@ class FotoVehiculo extends StatefulWidget {
   final String? fotoPath;
   final String assetPredeterminado;
 
-  /// Margen alrededor de la imagen predeterminada (las ilustraciones se ven
-  /// mejor con aire; la foto del usuario ocupa todo el espacio).
+  /// Margen alrededor de la imagen. Se aplica igual a la ilustración
+  /// predeterminada y a la foto del usuario, y ambas se ajustan completas
+  /// dentro del marco (sin recortarse).
   final EdgeInsets paddingPredeterminado;
 
   const FotoVehiculo({
@@ -84,15 +85,20 @@ class _FotoVehiculoState extends State<FotoVehiculo> {
         final url = snapshot.data;
         if (url == null) return _predeterminada();
 
-        return CachedNetworkImage(
-          imageUrl: url,
-          // La URL firmada cambia en cada petición: se cachea por ruta.
-          cacheKey: widget.fotoPath!.trim(),
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          placeholder: (_, _) => _predeterminada(),
-          errorWidget: (_, _, _) => _predeterminada(),
+        return Padding(
+          padding: widget.paddingPredeterminado,
+          child: CachedNetworkImage(
+            imageUrl: url,
+            // La URL firmada cambia en cada petición: se cachea por ruta.
+            cacheKey: widget.fotoPath!.trim(),
+            // contain: la foto se ve entera y se achica según el espacio,
+            // igual que la imagen predeterminada.
+            fit: BoxFit.contain,
+            width: double.infinity,
+            height: double.infinity,
+            placeholder: (_, _) => _predeterminada(),
+            errorWidget: (_, _, _) => _predeterminada(),
+          ),
         );
       },
     );

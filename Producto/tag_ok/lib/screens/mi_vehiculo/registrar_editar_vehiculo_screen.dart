@@ -256,11 +256,14 @@ class _RegistrarEditarVehiculoScreenState
             border: Border.all(color: const Color(0xFF334155)),
           ),
           child: _fotoBytes != null
-              ? Image.memory(
-                  _fotoBytes!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
+              ? Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Image.memory(
+                    _fotoBytes!,
+                    fit: BoxFit.contain,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
                 )
               : FotoVehiculo(
                   fotoPath: fotoGuardada,
