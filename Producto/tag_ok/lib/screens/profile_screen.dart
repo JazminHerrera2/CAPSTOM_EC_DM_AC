@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dialogo_cerrar_sesion.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -253,6 +254,8 @@ class ProfileScreen extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton.icon(
                   onPressed: () async {
+                    if (!await confirmarCerrarSesion(context)) return;
+
                     // Cerrar sesión real en Firebase
                     await FirebaseAuth.instance.signOut();
 
