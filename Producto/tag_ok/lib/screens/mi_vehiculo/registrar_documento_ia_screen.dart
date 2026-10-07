@@ -287,7 +287,13 @@ class _RegistrarDocumentoIaScreenState
     required Uint8List bytesOriginal,
     required String mimeType,
   }) async {
-    await Navigator.push(
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Si el archivo no se pudo subir, el documento se guarda igual (sin
+    // archivo) y se avisa en vez de mostrar el mensaje de éxito completo.
+    var archivoNoSubido = false;
+
+    final guardado = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (context) =>
@@ -350,6 +356,7 @@ class _RegistrarDocumentoIaScreenState
               );
             }
 
+            archivoNoSubido = false;
             String? archivoPath;
             if (StorageService.configurado && bytesOriginal.isNotEmpty) {
               final extension = switch (mimeType) {
@@ -371,6 +378,7 @@ class _RegistrarDocumentoIaScreenState
               } catch (e) {
                 debugPrint('No se pudo subir el archivo: $e');
                 archivoPath = null;
+                archivoNoSubido = true;
               }
             }
 
@@ -441,6 +449,22 @@ class _RegistrarDocumentoIaScreenState
         ),
       ),
     );
+
+    if (guardado == true) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            archivoNoSubido
+                ? 'Documento agregado, pero no se pudo subir el archivo '
+                    'adjunto.'
+                : 'Documento agregado exitosamente.',
+          ),
+          backgroundColor: archivoNoSubido
+              ? const Color(0xFFF97316)
+              : const Color(0xFF10B981),
+        ),
+      );
+    }
 
     if (mounted) {
       Navigator.pop(context);
@@ -707,7 +731,7 @@ class _RegistrarDocumentoIaScreenState
               'Revisión técnica',
             ),
             _chipDocumento('SOAP'),
-            _chipDocumento('Seguro'),
+            _chipDocumento('Seguro Automotriz'),
           ],
         ),
 

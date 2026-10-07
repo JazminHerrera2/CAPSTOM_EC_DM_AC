@@ -71,6 +71,35 @@ class DocumentoVehicularService {
     }
   }
 
+  /// Elimina un documento: sus avisos de vencimiento, el registro y el
+  /// archivo adjunto. Si falla el borrado de los avisos o del registro se
+  /// propaga el error y el documento sigue existiendo; el borrado del archivo
+  /// es "best effort" (si falla solo queda un archivo huérfano).
+  Future<void> eliminarDocumento(DocumentoVehicularModel documento) async {
+    await _notificacionService.eliminarNotificacionesDocumento(documento.id);
+    await _documentos.doc(documento.id).delete();
+
+    final archivoPath = documento.archivoPath?.trim();
+    if (archivoPath != null &&
+        archivoPath.isNotEmpty &&
+        StorageService.configurado) {
+      try {
+        await _storageService.eliminarArchivo(archivoPath);
+      } catch (e) {
+        debugPrint('No se pudo eliminar el archivo $archivoPath: $e');
+      }
+    }
+
+    await _auditoriaService.registrar(
+      usuarioId: null,
+      accion: 'ELIMINAR',
+      tipoEntidad: 'DOCUMENTO_VEHICULAR',
+      entidadId: documento.id,
+      detalle: 'Documento eliminado (${documento.tipoDocumento.etiqueta})',
+      origen: 'manual',
+    );
+  }
+
   /// Borra todos los documentos de un vehículo (registro, avisos de
   /// vencimiento y archivo adjunto). Se usa al eliminar el vehículo. Si falla
   /// el borrado de un registro o de sus avisos se propaga el error, para que el

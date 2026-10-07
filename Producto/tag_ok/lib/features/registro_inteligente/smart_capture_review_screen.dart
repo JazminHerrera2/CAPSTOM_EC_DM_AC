@@ -164,14 +164,31 @@ class _SmartCaptureReviewScreenState
   // CONFIRMAR
   // ------------------------------------------------------------
 
+  /// Muestra el error en el cuadro rojo de la pantalla y también como aviso,
+  /// porque el cuadro queda al final y puede no estar a la vista.
+  void _mostrarError(String mensaje, {bool terminarGuardado = false}) {
+    if (!mounted) return;
+
+    setState(() {
+      if (terminarGuardado) _guardando = false;
+      _errorValidacion = mensaje;
+    });
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(mensaje),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+  }
+
   Future<void> _confirmar() async {
     final tipo = _tipoSeleccionado;
 
     if (tipo == null) {
-      setState(() {
-        _errorValidacion =
-            'Selecciona el tipo de documento.';
-      });
+      _mostrarError('Selecciona el tipo de documento.');
 
       return;
     }
@@ -185,10 +202,9 @@ class _SmartCaptureReviewScreenState
                   .trim()
                   .isEmpty ??
               true)) {
-        setState(() {
-          _errorValidacion =
-              'Falta completar "${campo.etiqueta}" antes de continuar.';
-        });
+        _mostrarError(
+          'Falta completar "${campo.etiqueta}" antes de continuar.',
+        );
 
         return;
       }
@@ -220,14 +236,13 @@ class _SmartCaptureReviewScreenState
         Navigator.of(context).pop(true);
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _guardando = false;
-          _errorValidacion = e is SmartCaptureValidationException
-              ? e.mensaje
-              : 'No se pudo guardar el documento. Intenta nuevamente.';
-        });
-      }
+      debugPrint('No se pudo guardar el documento: $e');
+      _mostrarError(
+        e is SmartCaptureValidationException
+            ? e.mensaje
+            : 'No se pudo agregar el documento. Intenta nuevamente.',
+        terminarGuardado: true,
+      );
     }
   }
 

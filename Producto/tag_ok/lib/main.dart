@@ -92,6 +92,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'TagOk',
+      theme: ThemeData(
+        // Avisos flotantes: Flutter los coloca encima del botón central del
+        // mapa. Los fijos (por defecto) quedan al fondo y ese botón los tapa.
+        snackBarTheme: SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {

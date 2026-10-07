@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/models/documento_vehicular_model.dart';
+import '../../data/services/documento_vehicular_service.dart';
 import 'archivo_documento_view.dart';
 
 class DetalleDocumentoScreen extends StatelessWidget {
@@ -65,7 +66,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
         return Colors.redAccent;
 
       case 'Próximo a vencer':
-        return const Color(0xFFF59E0B);
+        return const Color(0xFFF97316);
 
       case 'Vigente':
         return const Color(0xFF10B981);
@@ -503,8 +504,127 @@ class DetalleDocumentoScreen extends StatelessWidget {
               archivoPath: documento.archivoPath!.trim(),
             ),
           ],
+
+          // ------------------------------------------------------
+          // ELIMINAR
+          // ------------------------------------------------------
+
+          const SizedBox(height: 28),
+
+          SizedBox(
+            height: 50,
+            child: OutlinedButton.icon(
+              onPressed: () => _confirmarEliminar(context),
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Eliminar documento'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+                side: BorderSide(
+                  color: Colors.redAccent.withOpacity(0.6),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  // ------------------------------------------------------------
+  // ELIMINAR
+  // ------------------------------------------------------------
+
+  Future<void> _confirmarEliminar(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final nombre = documento.tipoDocumento.etiqueta;
+
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: const Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.redAccent,
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '¿Eliminar documento?',
+                  style: TextStyle(color: textMain),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Se eliminará "$nombre" de $patenteVehiculo junto con su archivo '
+            'adjunto y sus avisos de vencimiento. Esta acción no se puede '
+            'deshacer.',
+            style: const TextStyle(
+              color: textMuted,
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.redAccent,
+              ),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmado != true || !context.mounted) return;
+
+    // Bloquea la pantalla mientras se borra.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
+
+    try {
+      await DocumentoVehicularService().eliminarDocumento(documento);
+
+      navigator.pop(); // cierra el indicador de carga
+      navigator.pop(); // vuelve a la lista de documentos
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Documento eliminado exitosamente.'),
+          backgroundColor: Color(0xFF10B981),
+        ),
+      );
+    } catch (e) {
+      debugPrint('No se pudo eliminar el documento ${documento.id}: $e');
+      navigator.pop(); // cierra el indicador de carga
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se pudo eliminar el documento. Intenta nuevamente.',
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 }
