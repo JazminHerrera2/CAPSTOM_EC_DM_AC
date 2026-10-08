@@ -1,0 +1,389 @@
+rules_version = '2';
+
+// ===============================================================
+// BORRADOR - NO PUBLICADO. Revisar primero en el simulador de Firebase.
+// ===============================================================
+//
+// Modelo de datos asumido (sacado de lib/ de tag_ok y admin)
+//
+// usuarios/{uid}                     (uid = FirebaseAuth uid)  -> PII (email)
+//   email: string (req, inmutable) | fecha_creacion: timestamp (req, inmutable)
+//   nombre_mostrar: string|null | vehiculo_principal_id: string|null (patente)
+//   limite_presupuesto_mensual: number | notif_cobros: bool
+//   notif_presupuesto: bool | alertas_vistas: map<string,bool>
+//   usuarios/{uid}/trips/{id}            viajes del usuario (admin los lee todos
+//                                        con collectionGroup('trips'))
+//   usuarios/{uid}/audited_invoices/{id} facturas auditadas del usuario
+//
+// vehiculos/{id}
+//   id_usuario: reference a usuarios/{uid} (req, inmutable)
+//   patente: string (req) | categoria, marca, modelo, tipo_vehiculo,
+//   tipo_combustible, alias, estado, foto_path, fecha_ingreso: string
+//   anio, kilometraje_actual: int | fecha_registro: timestamp
+//
+// documentos_vehiculares/{id}
+//   uid: string (req, inmutable) = dueño | vehiculo_id: string (req, inmutable)
+//   tipo_documento: permiso_circulacion|revision_tecnica|soap|seguro
+//   origen_registro: manual|ia | fecha_registro: timestamp
+//   numero, compania, numero_poliza, archivo_path: string|null
+//   fecha_emision, fecha_vencimiento, fecha_captura: timestamp|null
+//   confianza_ia: number|null
+//
+// notificaciones/{id}  (id = {documentoId}_15dias | {documentoId}_7dias)
+//   usuario_id: string = uid dueño (req, inmutable) | vehiculo_id, tipo,
+//   referencia_id, mensaje, estado: string | leida: bool
+//   fecha_programada, fecha_generacion: timestamp
+//
+// auditoria/{id}   (dos formas, ambas de solo-creacion)
+//   app:   usuario_id (= uid autor), accion, tipo_entidad, entidad_id,
+//          detalle, origen, fecha
+//   admin: adminEmail, action, target, details, fecha
+//
+// administradores/{uid}   rol: string (super_admin | operador ...), email
+//   Un usuario es admin si existe administradores/{su uid}.
+//   El panel admin crea ese documento con id = uid (ver _createAdminAccount).
+//
+// porticos, tarifas   datos de referencia (no PII); alertas   solo admin
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Funciones auxiliares
+    // ===============================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function adminDoc() {
+      return /databases/$(database)/documents/administradores/$(request.auth.uid);
+    }
+
+    // Admin del Backoffice: existe administradores/{uid}.
+    function isAdmin() {
+      return isSignedIn() && exists(adminDoc());
+    }
+
+    // Mismos valores que reconoce el panel admin (main.dart, _isSuper...).
+    function isSuperAdmin() {
+      let datos = get(adminDoc()).data;
+      let rol = datos.get('rol', datos.get('role', ''));
+      return isAdmin() && rol is string &&
+        rol.lower() in ['super_admin', 'super_administrador', 'superadmin',
+                        'super administrador'];
+    }
+
+    // Referencia usuarios/{uid} tal como se guarda en vehiculos.id_usuario.
+    function userPath(uid) {
+      return /databases/$(database)/documents/usuarios/$(uid);
+    }
+
+    // El vehiculo existe y pertenece a uid (id_usuario es DocumentReference).
+    function vehiculoEsDe(vehiculoId, uid) {
+      return vehiculoId is string && vehiculoId.size() > 0 && vehiculoId.size() < 100 &&
+        get(/databases/$(database)/documents/vehiculos/$(vehiculoId)).data.id_usuario == userPath(uid);
+    }
+
+    // Campo opcional: puede no existir, ser null o ser string <= max.
+    function optStr(d, k, max) {
+      return !(k in d) || d[k] == null || (d[k] is string && d[k].size() <= max);
+    }
+
+    function reqStr(d, k, max) {
+      return k in d && d[k] is string && d[k].size() > 0 && d[k].size() <= max;
+    }
+
+    function optTs(d, k) {
+      return !(k in d) || d[k] == null || d[k] is timestamp;
+    }
+
+    function optBool(d, k) {
+      return !(k in d) || d[k] is bool;
+    }
+
+    function optInt(d, k, min, max) {
+      return !(k in d) || d[k] == null || (d[k] is int && d[k] >= min && d[k] <= max);
+    }
+
+    // ===============================================================
+    // usuarios  (PII: solo el dueno y los admins leen)
+    // ===============================================================
+
+    function usuarioCamposValidos(d) {
+      return optStr(d, 'email', 254) &&
+        optStr(d, 'nombre_mostrar', 100) &&
+        optStr(d, 'vehiculo_principal_id', 30) &&
+        (!('limite_presupuesto_mensual' in d) ||
+          (d.limite_presupuesto_mensual is number &&
+           d.limite_presupuesto_mensual >= 0 &&
+           d.limite_presupuesto_mensual <= 1000000000)) &&
+        optBool(d, 'notif_cobros') &&
+        optBool(d, 'notif_presupuesto') &&
+        (!('alertas_vistas' in d) ||
+          (d.alertas_vistas is map && d.alertas_vistas.size() <= 200)) &&
+        optTs(d, 'fecha_creacion');
+    }
+
+    function usuarioNuevoValido(d) {
+      return d.keys().hasOnly(['email', 'nombre_mostrar', 'fecha_creacion',
+                               'vehiculo_principal_id', 'limite_presupuesto_mensual',
+                               'notif_cobros', 'notif_presupuesto', 'alertas_vistas']) &&
+        reqStr(d, 'email', 254) &&
+        d.fecha_creacion is timestamp &&
+        usuarioCamposValidos(d);
+    }
+
+    match /usuarios/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Cada usuario solo crea su propio documento (id == uid).
+      allow create: if isOwner(uid) && usuarioNuevoValido(request.resource.data);
+
+      // Dueno: solo campos editables (email y fecha_creacion quedan inmutables).
+      // Admin: solo los dos campos que edita el panel.
+      allow update: if
+        (isOwner(uid) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'nombre_mostrar', 'vehiculo_principal_id', 'limite_presupuesto_mensual',
+            'notif_cobros', 'notif_presupuesto', 'alertas_vistas']) &&
+          usuarioCamposValidos(request.resource.data))
+        ||
+        (isAdmin() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'nombre_mostrar', 'limite_presupuesto_mensual']) &&
+          usuarioCamposValidos(request.resource.data));
+
+      // El panel admin elimina usuarios; el usuario no se borra a si mismo.
+      allow delete: if isAdmin();
+
+      function tripValido(d) {
+        return d.keys().size() <= 12 &&
+          (!('tolls' in d) || (d.tolls is list && d.tolls.size() <= 500)) &&
+          optStr(d, 'date', 40) && optStr(d, 'duration', 40) &&
+          optStr(d, 'vehicleName', 100);
+      }
+
+      match /trips/{tripId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && tripValido(request.resource.data);
+        allow delete: if isOwner(uid);
+      }
+
+      match /audited_invoices/{invoiceId} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) &&
+          request.resource.data.keys().size() <= 20 &&
+          (!('details' in request.resource.data) ||
+            (request.resource.data.details is list &&
+             request.resource.data.details.size() <= 2000));
+        allow delete: if isOwner(uid);
+      }
+    }
+
+    // Panel admin: collectionGroup('trips') para ver los viajes de TODOS.
+    match /{path=**}/trips/{tripId} {
+      allow read: if isAdmin();
+    }
+
+    // ===============================================================
+    // vehiculos  (dueno = id_usuario)
+    // ===============================================================
+
+    function vehiculoCamposValidos(d) {
+      return reqStr(d, 'patente', 20) &&
+        optStr(d, 'categoria', 40) && optStr(d, 'marca', 80) &&
+        optStr(d, 'modelo', 80) && optStr(d, 'tipo_vehiculo', 40) &&
+        optStr(d, 'tipo_combustible', 40) && optStr(d, 'alias', 80) &&
+        optStr(d, 'estado', 30) && optStr(d, 'foto_path', 500) &&
+        optStr(d, 'fecha_ingreso', 30) &&
+        optInt(d, 'anio', 1900, 2100) &&
+        optInt(d, 'kilometraje_actual', 0, 10000000) &&
+        optTs(d, 'fecha_registro');
+    }
+
+    // id_usuario es DocumentReference (Fase 1 y 2). El valor string
+    // '/usuarios/{uid}' solo se acepta para LEER: vehiculos_screen.dart tiene un
+    // fallback que consulta con ese string.
+    function esDuenoVehiculo(d) {
+      return d.id_usuario == userPath(request.auth.uid) ||
+             d.id_usuario == '/usuarios/' + request.auth.uid;
+    }
+
+    match /vehiculos/{vehiculoId} {
+      allow read: if isAdmin() || (isSignedIn() && esDuenoVehiculo(resource.data));
+
+      allow create: if isSignedIn() &&
+        request.resource.data.id_usuario == userPath(request.auth.uid) &&
+        request.resource.data.keys().hasOnly(['id_usuario', 'patente', 'categoria',
+          'marca', 'modelo', 'anio', 'tipo_vehiculo', 'tipo_combustible',
+          'kilometraje_actual', 'alias', 'foto_path', 'estado', 'fecha_ingreso',
+          'fecha_registro']) &&
+        vehiculoCamposValidos(request.resource.data);
+
+      // id_usuario no esta en la lista: el dueno no se puede cambiar.
+      allow update: if isSignedIn() && esDuenoVehiculo(resource.data) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'patente', 'categoria', 'marca', 'modelo', 'anio', 'tipo_vehiculo',
+          'tipo_combustible', 'kilometraje_actual', 'alias', 'foto_path',
+          'estado']) &&
+        vehiculoCamposValidos(request.resource.data);
+
+      allow delete: if isSignedIn() && esDuenoVehiculo(resource.data);
+    }
+
+    // ===============================================================
+    // documentos_vehiculares  (dueno = uid)
+    // ===============================================================
+    // OJO: los documentos creados ANTES del campo uid no cumplen estas reglas
+    // hasta que se les haga backfill de uid (ver notas de entrega).
+
+    function documentoValido(d) {
+      return d.keys().hasOnly(['uid', 'vehiculo_id', 'tipo_documento', 'numero',
+          'fecha_emision', 'fecha_vencimiento', 'compania', 'numero_poliza',
+          'archivo_path', 'origen_registro', 'fecha_captura', 'confianza_ia',
+          'fecha_registro']) &&
+        reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
+        d.tipo_documento in ['permiso_circulacion', 'revision_tecnica', 'soap', 'seguro'] &&
+        d.origen_registro in ['manual', 'ia'] &&
+        d.fecha_registro is timestamp &&
+        optStr(d, 'numero', 100) && optStr(d, 'compania', 100) &&
+        optStr(d, 'numero_poliza', 100) && optStr(d, 'archivo_path', 500) &&
+        optTs(d, 'fecha_emision') && optTs(d, 'fecha_vencimiento') &&
+        optTs(d, 'fecha_captura') &&
+        (!('confianza_ia' in d) || d.confianza_ia == null ||
+          (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100));
+    }
+
+    match /documentos_vehiculares/{docId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+
+      // uid debe ser el del autor y el vehiculo debe ser suyo.
+      allow create: if isSignedIn() &&
+        request.resource.data.uid == request.auth.uid &&
+        documentoValido(request.resource.data) &&
+        vehiculoEsDe(request.resource.data.vehiculo_id, request.auth.uid);
+
+      // La app solo edita fecha_vencimiento (CU4). uid y vehiculo_id inmutables.
+      allow update: if isSignedIn() && resource.data.uid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fecha_vencimiento']) &&
+        documentoValido(request.resource.data);
+
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // notificaciones  (dueno = usuario_id, string con el uid)
+    // ===============================================================
+
+    function notificacionValida(d) {
+      return d.keys().hasOnly(['usuario_id', 'vehiculo_id', 'tipo', 'referencia_id',
+          'mensaje', 'fecha_programada', 'fecha_generacion', 'leida', 'estado']) &&
+        reqStr(d, 'usuario_id', 128) && reqStr(d, 'tipo', 50) &&
+        reqStr(d, 'mensaje', 300) &&
+        optStr(d, 'vehiculo_id', 100) && optStr(d, 'referencia_id', 100) &&
+        optStr(d, 'estado', 30) && optBool(d, 'leida') &&
+        optTs(d, 'fecha_programada') && d.fecha_generacion is timestamp;
+    }
+
+    // resource == null: la app hace get()/delete() de avisos que pueden no
+    // existir (NotificacionService). No expone datos y borrar algo
+    // inexistente no hace nada.
+    match /notificaciones/{notifId} {
+      allow read: if isSignedIn() &&
+        (resource == null || resource.data.usuario_id == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+        request.resource.data.usuario_id == request.auth.uid &&
+        notificacionValida(request.resource.data) &&
+        vehiculoEsDe(request.resource.data.vehiculo_id, request.auth.uid);
+
+      // La app reescribe el aviso completo con set(): usuario_id inmutable.
+      allow update: if isSignedIn() &&
+        resource.data.usuario_id == request.auth.uid &&
+        request.resource.data.usuario_id == resource.data.usuario_id &&
+        notificacionValida(request.resource.data);
+
+      allow delete: if isSignedIn() &&
+        (resource == null || resource.data.usuario_id == request.auth.uid);
+    }
+
+    // ===============================================================
+    // auditoria  (solo creacion; inmutable)
+    // ===============================================================
+
+    match /auditoria/{logId} {
+      // Admin lee todo; un usuario solo lo que lleva su uid.
+      allow read: if isAdmin() ||
+        (isSignedIn() && resource.data.get('usuario_id', null) == request.auth.uid);
+
+      allow create: if isSignedIn() && (
+        // Traza de la app movil.
+        (request.resource.data.keys().hasOnly(['usuario_id', 'accion', 'tipo_entidad',
+            'entidad_id', 'detalle', 'origen', 'fecha']) &&
+          request.resource.data.usuario_id == request.auth.uid &&
+          reqStr(request.resource.data, 'accion', 40) &&
+          reqStr(request.resource.data, 'tipo_entidad', 60) &&
+          reqStr(request.resource.data, 'entidad_id', 128) &&
+          reqStr(request.resource.data, 'origen', 30) &&
+          optStr(request.resource.data, 'detalle', 500) &&
+          request.resource.data.fecha is timestamp)
+        ||
+        // Traza del panel admin (AdminFirestoreService.logAction).
+        (isAdmin() &&
+          request.resource.data.keys().hasOnly(['adminEmail', 'action', 'target',
+            'details', 'fecha']) &&
+          reqStr(request.resource.data, 'adminEmail', 254) &&
+          reqStr(request.resource.data, 'action', 60) &&
+          optStr(request.resource.data, 'target', 300) &&
+          optStr(request.resource.data, 'details', 1000) &&
+          request.resource.data.fecha is timestamp)
+      );
+
+      allow update, delete: if false;
+    }
+
+    // ===============================================================
+    // Otras colecciones que usa el Backoffice Admin
+    // (no estaban en tu lista, pero sin esto dejarian de funcionar)
+    // ===============================================================
+
+    // Un admin lee la lista completa; cada admin puede leer su propio doc.
+    // Solo super_admin crea/edita/borra, y nadie toca su propio doc.
+    match /administradores/{adminId} {
+      allow read: if isAdmin() || isOwner(adminId);
+      allow create: if isSuperAdmin() && request.auth.uid != adminId &&
+        reqStr(request.resource.data, 'rol', 40);
+      allow update: if isSuperAdmin() && request.auth.uid != adminId &&
+        reqStr(request.resource.data, 'rol', 40);
+      allow delete: if isSuperAdmin() && request.auth.uid != adminId;
+    }
+
+    match /porticos/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /tarifas/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /alertas/{id} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ===============================================================
+    // Todo lo demas: denegado.
+    // ===============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

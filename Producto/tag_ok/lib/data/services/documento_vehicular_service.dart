@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/documento_vehicular_model.dart';
 import 'auditoria_service.dart';
@@ -15,6 +16,16 @@ class DocumentoVehicularService {
   CollectionReference<Map<String, dynamic>> get _documentos =>
       _firestore.collection('documentos_vehiculares');
 
+  /// UID del usuario con sesión iniciada; se guarda como `uid` en cada
+  /// documento nuevo para que las reglas de Firestore verifiquen el dueño.
+  String _uidActual() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null || uid.isEmpty) {
+      throw StateError('Debes iniciar sesión para registrar un documento.');
+    }
+    return uid;
+  }
+
   /// Documentos ya registrados del mismo tipo para el vehículo. Debe llamarse
   /// ANTES de crear el nuevo, para no incluirlo.
   Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _buscarAnteriores(
@@ -22,6 +33,7 @@ class DocumentoVehicularService {
     TipoDocumentoVehicular tipo,
   ) async {
     final snapshot = await _documentos
+        .where('uid', isEqualTo: _uidActual())
         .where('vehiculo_id', isEqualTo: vehiculoId)
         .where('tipo_documento', isEqualTo: tipo.valorFirestore)
         .get();
@@ -107,6 +119,7 @@ class DocumentoVehicularService {
   /// archivo adjunto es "best effort".
   Future<void> eliminarDocumentosDeVehiculo(String vehiculoId) async {
     final snapshot = await _documentos
+        .where('uid', isEqualTo: _uidActual())
         .where('vehiculo_id', isEqualTo: vehiculoId)
         .get();
 
@@ -133,7 +146,10 @@ class DocumentoVehicularService {
       documento.vehiculoId,
       documento.tipoDocumento,
     );
-    final docRef = await _documentos.add(documento.toJson());
+    final docRef = await _documentos.add({
+      ...documento.toJson(),
+      'uid': _uidActual(),
+    });
     await _eliminarReemplazados(
       anteriores,
       nuevoId: docRef.id,
@@ -179,6 +195,7 @@ class DocumentoVehicularService {
   }) async {
     final documento = DocumentoVehicularModel(
       id: '',
+      uid: _uidActual(),
       vehiculoId: vehiculoId,
       tipoDocumento: tipoDocumento,
       numero: numero,
@@ -270,6 +287,7 @@ class DocumentoVehicularService {
     String vehiculoId,
   ) {
     return _documentos
+        .where('uid', isEqualTo: _uidActual())
         .where('vehiculo_id', isEqualTo: vehiculoId)
         .snapshots()
         .map(

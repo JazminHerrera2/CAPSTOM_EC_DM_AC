@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/auth_provider.dart';
 import 'home_screen.dart';
@@ -336,50 +335,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               
               Navigator.pop(dialogContext); // Cerrar el diálogo
               
-              // Validar contra Firestore para verificar si el correo está registrado
-              bool emailExists = true;
-              try {
-                final querySnapshot = await FirebaseFirestore.instance
-                    .collection('usuarios')
-                    .where('email', isEqualTo: email)
-                    .limit(1)
-                    .get();
-                if (querySnapshot.docs.isEmpty) {
-                  emailExists = false;
-                }
-              } catch (e) {
-                // Si falla por reglas de seguridad u otra razón, permitimos que continúe con FirebaseAuth
-                debugPrint('No se pudo verificar el correo en Firestore: $e');
-              }
-
-              if (!emailExists) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Error: El correo electrónico ingresado no está registrado.'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-                return;
-              }
-              
+              // No se consulta Firestore para saber si el correo existe: eso
+              // revelaría qué cuentas están registradas. Éxito y
+              // user-not-found muestran el mismo mensaje.
+              const mensajeNeutro =
+                  'Si el correo está registrado, te enviamos un enlace de recuperación.';
               try {
                 await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Correo de recuperación enviado a $email'), backgroundColor: Colors.green),
+                    const SnackBar(content: Text(mensajeNeutro), backgroundColor: Colors.green),
                   );
                 }
               } catch (e) {
                 if (mounted) {
+                  if (e is FirebaseAuthException && e.code == 'user-not-found') {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text(mensajeNeutro), backgroundColor: Colors.green),
+                    );
+                    return;
+                  }
                   String errorMessage = 'No se pudo enviar el correo de recuperación. Inténtalo más tarde.';
-                  if (e is FirebaseAuthException) {
-                    if (e.code == 'user-not-found') {
-                      errorMessage = 'El correo electrónico ingresado no está registrado.';
-                    } else if (e.code == 'invalid-email') {
-                      errorMessage = 'El correo electrónico ingresado no es válido.';
-                    }
+                  if (e is FirebaseAuthException && e.code == 'invalid-email') {
+                    errorMessage = 'El correo electrónico ingresado no es válido.';
                   }
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error: $errorMessage'), backgroundColor: Colors.red),

@@ -52,6 +52,10 @@ extension TipoDocumentoVehicularJson on TipoDocumentoVehicular {
 /// Entidad DOCUMENTOS_VEHICULARES.
 class DocumentoVehicularModel {
   final String id;
+
+  /// UID de FirebaseAuth del dueño. Lo asigna el servicio al crear el
+  /// documento; es null en documentos anteriores a este campo.
+  final String? uid;
   final String vehiculoId;
   final TipoDocumentoVehicular tipoDocumento;
   final String? numero;
@@ -69,6 +73,7 @@ class DocumentoVehicularModel {
 
   DocumentoVehicularModel({
     required this.id,
+    this.uid,
     required this.vehiculoId,
     required this.tipoDocumento,
     this.numero,
@@ -89,6 +94,7 @@ class DocumentoVehicularModel {
   ) {
     return DocumentoVehicularModel(
       id: id,
+      uid: json['uid'],
       vehiculoId: json['vehiculo_id'] ?? '',
       tipoDocumento: TipoDocumentoVehicularJson.fromFirestore(
         json['tipo_documento'] ?? '',
@@ -108,6 +114,7 @@ class DocumentoVehicularModel {
 
   Map<String, dynamic> toJson() {
     return {
+      if (uid != null) 'uid': uid,
       'vehiculo_id': vehiculoId,
       'tipo_documento': tipoDocumento.valorFirestore,
       'numero': numero,

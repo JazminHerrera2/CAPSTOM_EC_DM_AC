@@ -53,3 +53,8 @@ app.*.map.json
 
 # Supabase CLI (estado local del link)
 supabase/.temp/
+
+# Scripts de mantenimiento (tools/): dependencias locales
+tools/node_modules/
+tools/package-lock.json
+tools/rules_test/*.log

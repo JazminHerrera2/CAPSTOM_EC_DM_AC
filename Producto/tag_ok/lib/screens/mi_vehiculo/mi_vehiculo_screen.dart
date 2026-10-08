@@ -230,6 +230,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
               stream: ids.length <= 10
                   ? FirebaseFirestore.instance
                       .collection('documentos_vehiculares')
+                      .where('uid', isEqualTo: _usuarioId)
                       .where('vehiculo_id', whereIn: ids)
                       .snapshots()
                   : null,
@@ -493,6 +494,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
             QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('documentos_vehiculares')
+              .where('uid', isEqualTo: _usuarioId)
               .where(
                 'vehiculo_id',
                 whereIn: idsVehiculos,
@@ -960,6 +962,10 @@ class _VehiculoCard extends StatelessWidget {
         QuerySnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('documentos_vehiculares')
+          .where(
+            'uid',
+            isEqualTo: FirebaseAuth.instance.currentUser?.uid ?? '',
+          )
           .where(
             'vehiculo_id',
             isEqualTo: vehiculo.id,

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// Escribe trazas en la colección `auditoria` (RF-054 / RNF-006).
 ///
@@ -22,7 +23,9 @@ class AuditoriaService {
     required String origen,
   }) async {
     await _auditoria.add({
-      'usuario_id': usuarioId,
+      // Si el llamador no lo indica, se usa el usuario con sesión iniciada:
+      // las reglas de Firestore exigen que usuario_id sea el uid del autor.
+      'usuario_id': usuarioId ?? FirebaseAuth.instance.currentUser?.uid,
       'accion': accion,
       'tipo_entidad': tipoEntidad,
       'entidad_id': entidadId,

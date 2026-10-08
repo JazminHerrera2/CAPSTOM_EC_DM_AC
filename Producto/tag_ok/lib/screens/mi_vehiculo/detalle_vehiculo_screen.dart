@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/models/documento_vehicular_model.dart';
@@ -198,6 +199,10 @@ class _DetalleVehiculoVista extends StatelessWidget {
           QuerySnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance
             .collection('documentos_vehiculares')
+            .where(
+              'uid',
+              isEqualTo: FirebaseAuth.instance.currentUser?.uid ?? '',
+            )
             .where(
               'vehiculo_id',
               isEqualTo: vehiculo.id,
