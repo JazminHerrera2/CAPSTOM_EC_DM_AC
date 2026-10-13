@@ -216,9 +216,10 @@ class _RegistrarEditarVehiculoScreenState
         _error = null;
       });
     } catch (e) {
+      debugPrint('Error al elegir la foto del vehiculo: $e');
       if (!mounted) return;
       setState(() {
-        _error = 'No se pudo cargar la imagen. Intenta con otra.';
+        _error = 'No se pudo cargar la imagen. Intenta con otra. ($e)';
       });
     }
   }
