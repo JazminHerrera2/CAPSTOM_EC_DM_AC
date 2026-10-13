@@ -8,7 +8,7 @@
 [![Dart](https://img.shields.io/badge/Dart-3.11.5-blue.svg)](https://dart.dev/)
 [![Firebase](https://img.shields.io/badge/Firebase-Cloud%20Firestore-orange.svg)](https://firebase.google.com/)
 [![Mapbox](https://img.shields.io/badge/Mapbox-GL%20Maps-000000.svg)](https://www.mapbox.com/)
-[![Gemini](https://img.shields.io/badge/Gemini-AI-blueviolet.svg)](https://deepmind.google/technologies/gemini/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-API-412991.svg)](https://platform.openai.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -37,7 +37,7 @@
 
 Con **TAG OK 2.0 (Fase 2)**, la aplicación evoluciona de un simple controlador de gastos de peaje a un **asistente integral de gestión vehicular**: además de TAG, ahora permite administrar los documentos del vehículo, programar mantenciones, registrar estacionamientos y cargas de combustible, y acceder a un catálogo de beneficios para conductores — todo esto asistido por un componente transversal de **Inteligencia Artificial** que identifica y extrae datos automáticamente desde fotografías de documentos, boletas y tickets.
 
-La suite también incluye un **Panel de Administración Web** para gestionar tarifas, pórticos y el nuevo catálogo de beneficios, y un motor de **Auditoría con IA (Gemini)** que analiza boletas reales (PDF/CSV) para detectar cobros fantasmas o sobreprecios.
+La suite también incluye un **Panel de Administración Web** para gestionar tarifas, pórticos y el nuevo catálogo de beneficios, y un motor de **Auditoría con IA (OpenAI)** que analiza boletas reales (PDF/CSV) para detectar cobros fantasmas o sobreprecios.
 
 ---
 
@@ -85,7 +85,7 @@ graph TD
     subgraph Integracion ["Capa de Integración y IA"]
         Mapbox["Mapbox API<br/>Rutas y peajes"]
         Auth["Firebase Auth<br/>Sesión de usuario"]
-        Gemini["Google Gemini API<br/>Auditoría + Registro Inteligente"]
+        OpenAI["OpenAI API<br/>Auditoría + Registro Inteligente"]
     end
     subgraph Datos ["Capa de Datos"]
         Firestore["Firestore<br/>Colecciones Fase 1 + Fase 2"]
@@ -94,17 +94,17 @@ graph TD
 
     App --> Mapbox
     App --> Auth
-    App --> Gemini
+    App --> OpenAI
     Admin --> Auth
     Mapbox --> Firestore
     Auth --> Firestore
-    Gemini --> Firestore
-    Gemini --> Storage
+    OpenAI --> Firestore
+    OpenAI --> Storage
     Admin --> Firestore
 ```
 
 - **Capa Cliente**: la App Móvil conserva sus funcionalidades de TAG (navegación, simulación de tarifas, alertas de presupuesto) y suma los módulos de Mi Vehículo, Mantenciones, Estacionamientos y Combustible, Beneficios, y el Dashboard "Mi Auto". El Backoffice Admin se amplía con la gestión del catálogo de beneficios.
-- **Capa de Integración**: Mapbox se mantiene sin cambios respecto a la Fase 1. Google Gemini amplía su uso: además de la auditoría de boletas ya existente, ahora impulsa el componente transversal de **Registro Inteligente con IA** (captura → identifica tipo de documento → extrae datos → el usuario valida → se guarda en el módulo correspondiente).
+- **Capa de Integración**: Mapbox se mantiene sin cambios respecto a la Fase 1. OpenAI impulsa la auditoría de boletas y el componente transversal de **Registro Inteligente con IA** (captura → identifica tipo de documento → extrae datos → el usuario valida → se guarda en el módulo correspondiente).
 - **Capa de Datos**: Firestore incorpora seis colecciones nuevas (`documentos_vehiculares`, `mantenciones`, `estacionamientos`, `abastecimientos`, `beneficios`, `notificaciones`) junto a las heredadas de la Fase 1 (`usuarios`, `vehiculos`, `viajes_tag`, `porticos`, `tarifas_tag`, `auditoria`). Firebase Storage se incorpora en esta capa para almacenar las imágenes de documentos y boletas capturadas por el usuario.
 - El cálculo de tarifas TAG continúa apoyándose en un **motor de tarifas local** (`simulated_toll_service.dart`), 100% offline, sin depender de servicios externos de peaje.
 
@@ -160,7 +160,7 @@ Olvídate de revisar boletas a mano. El sistema cruza automáticamente los datos
 - **Motor Multi-Formato NATIVO**:
   - Lee planillas Excel (`.csv`) de Autopista Central de manera nativa.
   - Posee un analizador de texto avanzado (`PdfTextExtractor`) capaz de **leer directamente** los PDFs oficiales de Costanera Norte, Vespucio Sur y Vespucio Norte sin depender de servidores externos, de forma **100% offline y gratuita**.
-- **Análisis con Gemini AI**: En su modo avanzado, procesa grandes volúmenes de datos utilizando la IA de Google Gemini para cruzar transacciones y emitir juicios claros sobre la legitimidad de las boletas.
+- **Análisis con OpenAI**: En su modo avanzado, procesa grandes volúmenes de datos utilizando la IA de OpenAI para cruzar transacciones y emitir juicios claros sobre la legitimidad de las boletas.
 - **Modo Contingencia**: Si la IA no está disponible, el sistema cambia instantáneamente a un motor algorítmico local ultra rápido para mostrar las discrepancias matemáticas.
 
 ---
@@ -180,7 +180,7 @@ Junto a la aplicación móvil, el repositorio incluye un **Backoffice de gestió
 <a id="instalacion-ejecucion" name="instalacion-ejecucion"></a>
 ## 🚀 Instalación y Ejecución Rápida (Zero Config)
 
-Gracias a nuestro sistema de encriptación **Base64 en Memoria**, ya no necesitas configurar engorrosos archivos `.env`. Las claves (Mapbox, Firebase y Gemini) viajan protegidas y se inyectan en RAM automáticamente. ¡Solo descarga y corre!
+Gracias a nuestro sistema de encriptación **Base64 en Memoria**, ya no necesitas configurar engorrosos archivos `.env`. Las claves (Mapbox, Firebase y OpenAI) viajan protegidas y se inyectan en RAM automáticamente. ¡Solo descarga y corre!
 
 1. **Clonar o descargar el repositorio:**
    ```bash
@@ -209,7 +209,7 @@ Gracias a nuestro sistema de encriptación **Base64 en Memoria**, ya no necesita
 | **Autenticación** | Firebase Auth (Persistencia Nativa) |
 | **Mapas** | Flutter Map + Mapbox API |
 | **Cálculo de Tarifas TAG** | Motor de tarifas local (`simulated_toll_service.dart`), 100% offline |
-| **Inteligencia Artificial**| Google Gemini API (`google_generative_ai`) — auditoría de boletas y Registro Inteligente con IA |
+| **Inteligencia Artificial**| OpenAI API (Chat Completions, `http`) — auditoría de boletas y Registro Inteligente con IA |
 | **Procesamiento de Archivos**| `file_picker`, `syncfusion_flutter_pdf`, `csv` |
 
 ---

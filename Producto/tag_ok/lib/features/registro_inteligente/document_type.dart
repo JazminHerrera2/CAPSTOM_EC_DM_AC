@@ -3,7 +3,7 @@
 ///
 /// Este Sprint solo declara los 4 tipos que usa Mi Vehículo. Los Sprints
 /// siguientes (Mantenciones, Estacionamientos, Combustible) agregan sus
-/// propios valores acá — el resto del componente (`GeminiExtractionService`,
+/// propios valores acá — el resto del componente (`OpenAiExtractionService`,
 /// `SmartCaptureController`, `SmartCaptureReviewScreen`) no cambia cuando
 /// eso pase, solo se registra el tipo nuevo en `extraction_schema_registry.dart`.
 enum DocumentType {

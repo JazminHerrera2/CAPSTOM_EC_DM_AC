@@ -4,10 +4,10 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:path_provider/path_provider.dart';
 
 /// OCR local (ML Kit, script Latin) que se ejecuta ANTES de llamar a Gemini:
-/// el OCR lee el texto crudo y Gemini solo lo valida/estructura.
+/// el OCR lee el texto crudo y la IA solo lo valida/estructura.
 ///
 /// Nunca lanza excepción: ante cualquier problema devuelve `null` para que el
-/// controller caiga al comportamiento anterior (enviar la imagen a Gemini).
+/// controller caiga al comportamiento anterior (enviar la imagen a la IA).
 class OcrService {
   /// Mismo umbral que usa `SmartCaptureController` para detectar un PDF
   /// escaneado sin capa de texto.

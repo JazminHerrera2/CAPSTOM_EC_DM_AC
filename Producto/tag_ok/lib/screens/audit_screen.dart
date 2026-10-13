@@ -14,8 +14,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../data/models/trip_history.dart';
 import '../data/services/history_service.dart';
 import '../data/demo_data.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../features/registro_inteligente/openai_extraction_service.dart';
 import 'package:tag_ok/utils/file_saver.dart';
 
 class AuditScreen extends StatefulWidget {
@@ -671,51 +670,21 @@ class _AuditScreenState extends State<AuditScreen> {
     };
   }
 
-  Future<GenerateContentResponse> _generateContentWithFallback(
-    String apiKey,
-    String prompt,
-  ) async {
-    final modelsToTry = [
-      'gemini-3.6-flash',
-      'gemini-3.8-flash',
-      'gemini-3.5-flash-lite',
-      'gemini-3.1-flash-lite',
-    ];
+  final OpenAiExtractionService _ia = OpenAiExtractionService();
 
-    final List<String> attemptErrors = [];
-
-    for (final modelName in modelsToTry) {
-      try {
-        final model = GenerativeModel(
-          model: modelName,
-          apiKey: apiKey,
-          generationConfig: GenerationConfig(
-            responseMimeType: 'application/json',
-          ),
-        );
-        return await model.generateContent([Content.text(prompt)]);
-      } catch (e) {
-        final attemptSummary = '[$modelName] $e';
-        debugPrint(
-          'Gemini model $attemptSummary. Trying next model in fallback list...',
-        );
-        attemptErrors.add(attemptSummary);
-      }
-    }
-    throw Exception(
-      'Todos los modelos de Gemini fallaron:\n${attemptErrors.join('\n')}',
+  /// Envía [prompt] a OpenAI (cascada de modelos y reintentos incluidos) y
+  /// devuelve el texto JSON de la respuesta.
+  Future<String> _generateContentWithFallback(String prompt) {
+    return _ia.generarJsonConFallback(
+      partes: [EvidenciaTexto(prompt)],
+      nombreEsquema: 'auditoria',
     );
   }
 
-  Future<Map<String, dynamic>> _extractDataWithGemini(
+  Future<Map<String, dynamic>> _extractDataWithAi(
     String rawText,
     String fileName,
   ) async {
-    final geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-    if (geminiApiKey.isEmpty) {
-      throw Exception('Clave de API de Gemini no configurada.');
-    }
-
     final limitedText = rawText.length > 60000
         ? rawText.substring(0, 60000)
         : rawText;
@@ -752,8 +721,7 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
 }
 ''';
 
-    final response = await _generateContentWithFallback(geminiApiKey, prompt);
-    final responseText = response.text?.trim() ?? '';
+    final responseText = (await _generateContentWithFallback(prompt)).trim();
 
     try {
       final parsed = _cleanAndDecodeJson(responseText);
@@ -763,9 +731,9 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
       }
       return parsed;
     } catch (e) {
-      debugPrint('Gemini Extraction Error: $e\nResponse: $responseText');
+      debugPrint('AI Extraction Error: $e\nResponse: $responseText');
       final msg = e.toString().replaceAll('Exception: ', '');
-      throw Exception('Gemini: $msg');
+      throw Exception('IA: $msg');
     }
   }
 
@@ -882,11 +850,6 @@ Debes devolver EXCLUSIVAMENTE un objeto JSON válido con esta estructura estrict
     } else {
       // 3. INVOCACIÓN HÍBRIDA OPTIMIZADA (SOLO DISCREPANCIAS Y PROMPT CORTO)
       try {
-        final geminiApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-        if (geminiApiKey.isEmpty) {
-          throw Exception('Clave de API de Gemini no configurada.');
-        }
-
         // Filtrar viajes GPS para enviar únicamente los días con discrepancias
         final Set<String> discrepancyDates = discrepancies
             .map((d) => d['date'] as String)
@@ -944,16 +907,12 @@ Instrucciones para redactar el "aiReport":
 }
 ''';
 
-        final response = await _generateContentWithFallback(
-          geminiApiKey,
-          prompt,
-        );
-        final responseText = response.text?.trim() ?? '';
+        final responseText = (await _generateContentWithFallback(prompt)).trim();
 
         final Map<String, dynamic> aiResult = _cleanAndDecodeJson(responseText);
         aiReport = aiResult['aiReport'] ?? 'Sin comentarios adicionales.';
       } catch (e) {
-        print('Error en auditoría Gemini: $e');
+        debugPrint('Error en auditoría con IA: $e');
         // Fallback local corto si hay error de API o red
         aiReport =
             '### Auditoría (Resumen Local) 📋\n\n'
@@ -963,7 +922,7 @@ Instrucciones para redactar el "aiReport":
             '**Discrepancias principales:**\n'
             '${discrepancies.take(3).map((d) => '- ${d['date']} ${d['time']}: **${d['portico']}** (Costo: \$${(d['cost'] as num).toStringAsFixed(0)})').join('\n')}'
             '${discrepancies.length > 3 ? '\n- *Y ${discrepancies.length - 3} cobros más con diferencias.*' : ''}\n\n'
-            '*Nota: No se pudo conectar con el motor de IA de Gemini, se muestran las discrepancias calculadas localmente.*';
+            '*Nota: No se pudo conectar con el motor de IA de OpenAI, se muestran las discrepancias calculadas localmente.*';
       }
     }
 
@@ -986,7 +945,7 @@ Instrucciones para redactar el "aiReport":
           'uploadDate': DateTime.now().toIso8601String(),
           'details': auditedDetails,
           'aiReport': aiReport,
-          'auditedBy': 'Gemini 3.6 Flash',
+          'auditedBy': _ia.ultimoModelo ?? 'OpenAI',
         });
   }
 
@@ -1273,7 +1232,7 @@ Instrucciones para redactar el "aiReport":
       } catch (localParsingError) {
         if (_useAI) {
           // ==========================================
-          // FALLBACK A GEMINI (EXTRACCIÓN INTELIGENTE)
+          // FALLBACK A IA (EXTRACCIÓN INTELIGENTE)
           // ==========================================
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -1309,7 +1268,7 @@ Instrucciones para redactar el "aiReport":
           if (rawText.isEmpty)
             throw Exception('No se pudo leer el contenido del archivo.');
 
-          final aiExtracted = await _extractDataWithGemini(rawText, file.name);
+          final aiExtracted = await _extractDataWithAi(rawText, file.name);
           extractedCrossings = (aiExtracted['crossings'] as List)
               .map((e) => _normalizeCrossing(Map<String, dynamic>.from(e)))
               .toList();
@@ -1636,7 +1595,7 @@ Instrucciones para redactar el "aiReport":
         final aiTitleCell = sheetSummary.cell(
           CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 10),
         );
-        aiTitleCell.value = TextCellValue('Reporte Analítico de IA (Gemini)');
+        aiTitleCell.value = TextCellValue('Reporte Analítico de IA (OpenAI)');
         aiTitleCell.cellStyle = CellStyle(
           bold: true,
           fontSize: 12,
@@ -2123,7 +2082,7 @@ Instrucciones para redactar el "aiReport":
             const SizedBox(height: 4),
             Text(
               _useAI
-                  ? 'Análisis inteligente, semántico y detección de fraude por Gemini'
+                  ? 'Análisis inteligente, semántico y detección de fraude por OpenAI'
                   : 'Soporta formato oficial mensual (PDF / CSV / XLSX)',
               style: TextStyle(color: textMuted, fontSize: 10),
             ),
@@ -2378,7 +2337,7 @@ Instrucciones para redactar el "aiReport":
                               ),
                               SizedBox(width: 8),
                               Text(
-                                'REPORTE ANALÍTICO DE IA (GEMINI)',
+                                'REPORTE ANALÍTICO DE IA (OPENAI)',
                                 style: TextStyle(
                                   color: Color(0xFFC084FC),
                                   fontSize: 10,

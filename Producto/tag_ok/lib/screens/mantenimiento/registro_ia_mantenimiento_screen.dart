@@ -4,6 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../features/registro_inteligente/consejos_captura.dart';
+import '../../features/registro_inteligente/preparar_imagen.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
 import 'registrar_mantenimiento_screen.dart';
 
@@ -34,11 +36,17 @@ class _RegistrarMantenimientoIaScreenState
 
   bool _procesando = false;
 
+  /// Etapa visible mientras se procesa (preparando imagen / analizando).
+  String _etapa = etapaAnalizando;
+
   // ------------------------------------------------------------
   // CAPTURA
   // ------------------------------------------------------------
 
   Future<void> _tomarFoto() async {
+    if (!await mostrarConsejosCaptura(context)) return;
+    if (!mounted) return;
+
     final foto = await ImagePicker().pickImage(
       source: ImageSource.camera,
       imageQuality: 85,
@@ -81,10 +89,19 @@ class _RegistrarMantenimientoIaScreenState
     required Uint8List bytes,
     required String mimeType,
   }) async {
-    setState(() => _procesando = true);
+    setState(() {
+      _procesando = true;
+      _etapa = etapaAnalizando;
+    });
 
     try {
-      final datos = await extraerMantencion(bytes: bytes, mimeType: mimeType);
+      final datos = await extraerMantencion(
+        bytes: bytes,
+        mimeType: mimeType,
+        alCambiarEtapa: (etapa) {
+          if (mounted) setState(() => _etapa = etapa);
+        },
+      );
       if (!mounted) return;
 
       if (datos.vacia) {
@@ -459,8 +476,10 @@ class _RegistrarMantenimientoIaScreenState
               ),
             ),
             const SizedBox(height: 30),
-            const Text(
-              'Analizando comprobante...',
+            Text(
+              _etapa == etapaPreparandoImagen
+                  ? 'Preparando imagen...'
+                  : 'Analizando comprobante...',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: textMain,

@@ -7,7 +7,7 @@ import 'package:syncfusion_flutter_pdf/pdf.dart';
 /// componente de Registro Inteligente no lo reimplemente.
 ///
 /// Para fotografías (jpg/png) no aplica: esas se envían directamente como
-/// imagen a Gemini (multimodal), no se les extrae texto.
+/// imagen a la IA (multimodal), no se les extrae texto.
 class FileTextExtractor {
   static String extraerDePdf(Uint8List bytes) {
     final document = PdfDocument(inputBytes: bytes);

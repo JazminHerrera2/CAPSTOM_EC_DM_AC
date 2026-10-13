@@ -8,6 +8,8 @@ import '../../data/models/documento_vehicular_model.dart';
 import '../../data/services/documento_vehicular_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/vehiculo_service.dart';
+import '../../features/registro_inteligente/consejos_captura.dart';
+import '../../features/registro_inteligente/preparar_imagen.dart';
 import '../../features/registro_inteligente/document_type.dart';
 import '../../features/registro_inteligente/smart_capture_controller.dart';
 import '../../features/registro_inteligente/smart_capture_result.dart';
@@ -72,11 +74,17 @@ class _RegistrarDocumentoIaScreenState
 
   bool _procesando = false;
 
+  /// Etapa visible mientras se procesa (preparando imagen / analizando).
+  String _etapa = etapaAnalizando;
+
   // ------------------------------------------------------------
   // TOMAR FOTO
   // ------------------------------------------------------------
 
   Future<void> _tomarFoto() async {
+    if (!await mostrarConsejosCaptura(context)) return;
+    if (!mounted) return;
+
     final picker = ImagePicker();
 
     final foto = await picker.pickImage(
@@ -149,6 +157,7 @@ class _RegistrarDocumentoIaScreenState
   }) async {
     setState(() {
       _procesando = true;
+      _etapa = etapaAnalizando;
     });
 
     try {
@@ -159,6 +168,9 @@ class _RegistrarDocumentoIaScreenState
         nombreArchivo: nombre,
         tiposPermitidos:
             _tiposDocumentoVehiculo,
+        alCambiarEtapa: (etapa) {
+          if (mounted) setState(() => _etapa = etapa);
+        },
       );
 
       if (!mounted) return;
@@ -840,8 +852,10 @@ class _RegistrarDocumentoIaScreenState
 
             const SizedBox(height: 30),
 
-            const Text(
-              'Analizando documento...',
+            Text(
+              _etapa == etapaPreparandoImagen
+                  ? 'Preparando imagen...'
+                  : 'Analizando documento...',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: textMain,

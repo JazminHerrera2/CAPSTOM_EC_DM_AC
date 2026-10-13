@@ -83,6 +83,7 @@ STORAGE_BUCKET=tu_storage_bucket
 IOS_BUNDLE_ID=tu_ios_bundle_id
 MAPBOX_ACCESS_TOKEN=tu_mapbox_access_token
 GEMINI_API_KEY=tu_gemini_api_key
+OPENAI_API_KEY=tu_openai_api_key
 ```
 
 Repite lo mismo en `Producto/admin/.env` (misma estructura de variables).

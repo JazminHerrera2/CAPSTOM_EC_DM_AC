@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:google_generative_ai/google_generative_ai.dart';
-
 import '../../data/models/tipo_mantencion.dart';
-import 'gemini_extraction_service.dart';
+import 'openai_extraction_service.dart';
+import 'preparar_imagen.dart';
 
 /// Datos que la IA reconoció en una boleta o factura de mantención. Todos son
 /// opcionales: lo que no se lee con certeza queda en null y el usuario lo
@@ -41,44 +40,39 @@ class MantencionExtraida {
       observaciones == null;
 }
 
-final Schema _esquemaMantencion = Schema.object(
-  properties: {
-    'tipo_mantencion': Schema.enumString(
-      enumValues: TipoMantencion.values.map((t) => t.valorFirestore).toList(),
-      description: 'Tipo de mantención que mejor describe el servicio.',
-      nullable: true,
+Map<String, dynamic> _campoTexto(String descripcion) => {
+      'type': ['string', 'null'],
+      'description': descripcion,
+    };
+
+/// JSON Schema estricto de OpenAI: todo va en `required` y lo que no se lee
+/// con certeza se devuelve como null.
+final Map<String, dynamic> _esquemaMantencion = () {
+  final properties = <String, dynamic>{
+    'tipo_mantencion': {
+      'type': ['string', 'null'],
+      'enum': [...TipoMantencion.values.map((t) => t.valorFirestore), null],
+      'description': 'Tipo de mantención que mejor describe el servicio.',
+    },
+    'tipo_otro': _campoTexto(
+      'Nombre corto del servicio, solo si tipo_mantencion es "otra".',
     ),
-    'tipo_otro': Schema.string(
-      description:
-          'Nombre corto del servicio, solo si tipo_mantencion es "otra".',
-      nullable: true,
-    ),
-    'fecha': Schema.string(
-      description: 'Fecha del servicio en formato YYYY-MM-DD.',
-      nullable: true,
-    ),
-    'kilometraje': Schema.string(
-      description: 'Kilometraje del vehículo (solo el número).',
-      nullable: true,
-    ),
-    'taller': Schema.string(
-      description: 'Nombre del taller o proveedor que emite el documento.',
-      nullable: true,
-    ),
-    'costo': Schema.string(
-      description: 'Monto total pagado en pesos chilenos (solo el número).',
-      nullable: true,
-    ),
-    'descripcion': Schema.string(
-      description: 'Servicios realizados y repuestos o piezas, resumidos.',
-      nullable: true,
-    ),
-    'observaciones': Schema.string(
-      description: 'Observaciones o recomendaciones escritas en el documento.',
-      nullable: true,
-    ),
-  },
-);
+    'fecha': _campoTexto('Fecha del servicio en formato YYYY-MM-DD.'),
+    'kilometraje': _campoTexto('Kilometraje del vehículo (solo el número).'),
+    'taller': _campoTexto('Nombre del taller o proveedor que emite el documento.'),
+    'costo': _campoTexto('Monto total pagado en pesos chilenos (solo el número).'),
+    'descripcion':
+        _campoTexto('Servicios realizados y repuestos o piezas, resumidos.'),
+    'observaciones':
+        _campoTexto('Observaciones o recomendaciones escritas en el documento.'),
+  };
+  return {
+    'type': 'object',
+    'properties': properties,
+    'required': properties.keys.toList(),
+    'additionalProperties': false,
+  };
+}();
 
 String _promptMantencion() {
   final tipos = TipoMantencion.values
@@ -98,9 +92,23 @@ comprobante incluye varios servicios, elige el principal y detalla todos en
 "descripcion".
 
 Extrae únicamente lo que puedas reconocer con certeza. Si un dato no es
-legible o no aparece, déjalo vacío: nunca inventes ni infieras un valor. La
-fecha debe ir en formato "YYYY-MM-DD". "costo" es el monto total pagado en
-pesos chilenos y "kilometraje" el del odómetro, ambos solo con números.''';
+legible o no aparece, devuélvelo como null: nunca inventes ni infieras un
+valor.
+
+Reglas de formato:
+- "fecha": la fecha del servicio o de emisión del comprobante, en formato
+  "YYYY-MM-DD". Los documentos chilenos escriben día/mes/año ("05/03/2026" es
+  el 5 de marzo de 2026, no el 3 de mayo).
+- "costo": el monto TOTAL pagado (con IVA incluido, el que aparece como
+  "Total"), en pesos chilenos, solo con números. En Chile el punto separa los
+  miles ("45.990" son cuarenta y cinco mil novecientos noventa pesos). No uses
+  un subtotal, el neto ni el IVA.
+- "kilometraje": el del odómetro del vehículo (suele decir "KM" o "Kilometraje"),
+  solo con números; no lo confundas con el número de boleta, la patente ni el
+  RUT.
+- "taller": el nombre del taller o proveedor que emite el documento, no el del
+  cliente.
+- "descripcion": resume los servicios y repuestos tal como aparecen.''';
 }
 
 int? _entero(Object? valor) {
@@ -141,13 +149,24 @@ DateTime? _fecha(Object? valor) {
   return null;
 }
 
+/// Una mantención no puede ser futura (se tolera 1 día por la zona horaria) ni
+/// anterior a 1990: una fecha así es casi seguro un error de lectura.
+DateTime? _fechaPlausible(DateTime? fecha, {DateTime? ahora}) {
+  if (fecha == null) return null;
+  final hoy = ahora ?? DateTime.now();
+  final limite = DateTime(hoy.year, hoy.month, hoy.day).add(
+    const Duration(days: 1),
+  );
+  return (fecha.year < 1990 || fecha.isAfter(limite)) ? null : fecha;
+}
+
 String? _texto(Object? valor, int maximo) {
   final t = valor?.toString().trim() ?? '';
   if (t.isEmpty) return null;
   return t.length > maximo ? t.substring(0, maximo) : t;
 }
 
-/// Interpreta el JSON de Gemini. Los largos máximos coinciden con las reglas
+/// Interpreta el JSON de la IA. Los largos máximos coinciden con las reglas
 /// de Firestore (`mantencionValida`), para que lo extraído siempre se pueda
 /// guardar. Un kilometraje o costo fuera de rango se descarta.
 MantencionExtraida parseMantencionExtraida(Map<String, dynamic> json) {
@@ -163,7 +182,7 @@ MantencionExtraida parseMantencionExtraida(Map<String, dynamic> json) {
     tipo: tipo,
     tipoOtro:
         tipo == TipoMantencion.otra ? _texto(json['tipo_otro'], 100) : null,
-    fecha: _fecha(json['fecha']),
+    fecha: _fechaPlausible(_fecha(json['fecha'])),
     kilometraje: (km != null && km <= 5000000) ? km : null,
     taller: _texto(json['taller'], 100),
     costo: (costo != null && costo <= 1000000000) ? costo : null,
@@ -172,21 +191,34 @@ MantencionExtraida parseMantencionExtraida(Map<String, dynamic> json) {
   );
 }
 
-/// Lee una boleta o factura de mantención con Gemini (misma cascada de
+/// Lee una boleta o factura de mantención con OpenAI (misma cascada de
 /// modelos y reintentos que el Registro Inteligente de documentos). Lanza la
 /// excepción si la IA falla: el llamador debe ofrecer el ingreso manual.
 Future<MantencionExtraida> extraerMantencion({
   required Uint8List bytes,
   required String mimeType,
-  GeminiExtractionService? servicio,
+  OpenAiExtractionService? servicio,
+  void Function(String etapa)? alCambiarEtapa,
 }) async {
-  final respuesta = await (servicio ?? GeminiExtractionService())
-      .generateContentWithFallback(
-    parts: [DataPart(mimeType, bytes), TextPart(_promptMantencion())],
-    responseSchema: _esquemaMantencion,
+  // Imagen reducida, con orientación corregida y en JPEG de buena calidad.
+  if (imagenRequierePreparacion(bytes, mimeType)) {
+    alCambiarEtapa?.call(etapaPreparandoImagen);
+    await Future.delayed(const Duration(milliseconds: 80));
+  }
+  final preparada = await prepararImagenParaIa(bytes, mimeType);
+  alCambiarEtapa?.call(etapaAnalizando);
+
+  final respuesta = await (servicio ?? OpenAiExtractionService())
+      .generarJsonConFallback(
+    partes: [
+      EvidenciaArchivo(preparada.mimeType, preparada.bytes),
+      EvidenciaTexto(_promptMantencion()),
+    ],
+    esquemaJson: _esquemaMantencion,
+    nombreEsquema: 'mantencion',
   );
 
-  final json = jsonDecode(respuesta.text?.trim() ?? '{}');
+  final json = jsonDecode(respuesta);
   if (json is! Map<String, dynamic>) {
     throw const FormatException('Respuesta de la IA con formato inesperado.');
   }

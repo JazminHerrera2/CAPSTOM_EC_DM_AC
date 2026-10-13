@@ -32,7 +32,7 @@ class SmartCaptureResult {
   final Set<String> camposDudosos;
 
   /// Proporción (0-1) de campos cuyo valor del OCR coincidió con la imagen,
-  /// según la verificación de Gemini. Null si no corrió OCR.
+  /// según la verificación de la IA. Null si no corrió OCR.
   final double? confianzaIa;
 
   final String origen;
