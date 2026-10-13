@@ -7,13 +7,27 @@ import '../../data/models/tipo_mantencion.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
+import '../../features/registro_inteligente/mantencion_extraction.dart';
 import 'selector_tipo_mantencion.dart';
 
 class RegistrarMantenimientoScreen extends StatefulWidget {
   /// Vehículo preseleccionado (el elegido en Mantenciones).
   final String? vehiculoIdInicial;
 
-  const RegistrarMantenimientoScreen({super.key, this.vehiculoIdInicial});
+  /// Datos leídos por la IA desde una boleta o factura. Si vienen, el
+  /// formulario se abre precargado para que el usuario los revise y la
+  /// mantención se guarda con origen 'ia'.
+  final MantencionExtraida? datosIa;
+
+  /// Momento en que se analizó el comprobante (solo con [datosIa]).
+  final DateTime? fechaCaptura;
+
+  const RegistrarMantenimientoScreen({
+    super.key,
+    this.vehiculoIdInicial,
+    this.datosIa,
+    this.fechaCaptura,
+  });
 
   @override
   State<RegistrarMantenimientoScreen> createState() =>
@@ -56,6 +70,23 @@ class _RegistrarMantenimientoScreenState
   void initState() {
     super.initState();
     _vehiculoId = widget.vehiculoIdInicial;
+    _precargarDatosIa();
+  }
+
+  bool get _desdeIa => widget.datosIa != null;
+
+  void _precargarDatosIa() {
+    final d = widget.datosIa;
+    if (d == null) return;
+
+    if (d.tipo != null) _tipoMantenimiento = d.tipo!.etiqueta;
+    _otroTipoController.text = d.tipoOtro ?? '';
+    if (d.fecha != null) _fecha = d.fecha!;
+    _kilometrajeController.text = d.kilometraje?.toString() ?? '';
+    _tallerController.text = d.taller ?? '';
+    _costoController.text = d.costo?.toString() ?? '';
+    _descripcionController.text = d.descripcion ?? '';
+    _observacionesController.text = d.observaciones ?? '';
   }
 
   @override
@@ -128,13 +159,16 @@ class _RegistrarMantenimientoScreenState
         costo: _entero(_costoController.text),
         descripcion: _descripcionController.text,
         observaciones: _observacionesController.text,
+        origenRegistro: _desdeIa ? 'ia' : 'manual',
+        fechaCaptura: _desdeIa ? (widget.fechaCaptura ?? DateTime.now()) : null,
       );
 
       if (!mounted) return;
       messenger.showSnackBar(
         const SnackBar(content: Text('Mantención registrada.')),
       );
-      Navigator.pop(context);
+      // `true` avisa a la pantalla de IA que ya se guardó, para que se cierre.
+      Navigator.pop(context, true);
     } catch (e) {
       debugPrint('No se pudo guardar la mantención: $e');
       if (!mounted) return;
@@ -355,31 +389,33 @@ class _RegistrarMantenimientoScreenState
           color: primaryColor.withOpacity(0.25),
         ),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
-            Icons.handyman_outlined,
+            _desdeIa ? Icons.auto_awesome_outlined : Icons.handyman_outlined,
             color: primaryColor,
             size: 26,
           ),
-          SizedBox(width: 13),
+          const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Nueva mantención',
-                  style: TextStyle(
+                  _desdeIa ? 'Revisa los datos detectados' : 'Nueva mantención',
+                  style: const TextStyle(
                     color: textMain,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
-                  'Registra el servicio realizado a uno de tus vehículos.',
-                  style: TextStyle(
+                  _desdeIa
+                      ? 'La IA leyó tu comprobante. Corrige lo que haga falta y completa los campos obligatorios antes de guardar.'
+                      : 'Registra el servicio realizado a uno de tus vehículos.',
+                  style: const TextStyle(
                     color: textMuted,
                     fontSize: 12,
                     height: 1.4,

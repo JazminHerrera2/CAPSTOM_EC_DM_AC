@@ -6,7 +6,6 @@ import '../../data/models/mantencion_model.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
-import 'registrar_mantenimiento_screen.dart';
 import 'historial_mantenimientos_screen.dart';
 import 'proximas_mantenciones_screen.dart';
 import 'registro_ia_mantenimiento_screen.dart';
@@ -217,129 +216,25 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               },
             ),
 
-            const SizedBox(height: 22),
-
-            const Text(
-              'Registrar mantenciones',
-              style: TextStyle(
-                color: textMain,
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-
             const SizedBox(height: 12),
 
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionCard(
-                          icon: Icons.add_circle_outline,
-                          title: 'Registrar Manual',
-                          subtitle: 'Nueva mantención',
-                          color: primaryColor,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    RegistrarMantenimientoScreen(
-                                    vehiculoIdInicial: vehiculoId,
-                                  ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ActionCard(
-                    icon: Icons.auto_awesome_outlined,
-                    title: 'Registrar con IA',
-                    subtitle: 'Boleta o factura',
-                    color: const Color(0xFF8B5CF6),
-                    onTap: () {
-                        Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const RegistrarMantenimientoIaScreen(),
-                        ),
-                      );
-                    },
+            _MenuCard(
+              icon: Icons.add_circle_outline,
+              title: 'Registrar mantención',
+              color: primaryColor,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RegistrarMantenimientoIaScreen(
+                      vehiculoIdInicial: vehiculoId,
+                    ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
 
           ],
-    );
-  }
-}
-
-// ================================================================
-// TARJETA DE ACCIÓN RÁPIDA
-// ================================================================
-
-class _ActionCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _ActionCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: MantenimientoScreen.surfaceColor,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.05),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _IconBox(
-                icon: icon,
-                color: color,
-              ),
-              const SizedBox(height: 15),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: MantenimientoScreen.textMain,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: MantenimientoScreen.textMuted,
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -351,14 +246,14 @@ class _ActionCard extends StatelessWidget {
 class _MenuCard extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final Color color;
   final VoidCallback onTap;
 
   const _MenuCard({
     required this.icon,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.color,
     required this.onTap,
   });
@@ -392,14 +287,16 @@ class _MenuCard extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        color: MantenimientoScreen.textMuted,
-                        fontSize: 11,
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle!,
+                        style: const TextStyle(
+                          color: MantenimientoScreen.textMuted,
+                          fontSize: 11,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
