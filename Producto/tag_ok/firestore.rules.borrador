@@ -29,6 +29,16 @@ rules_version = '2';
 //   fecha_emision, fecha_vencimiento, fecha_captura: timestamp|null
 //   confianza_ia: number|null
 //
+// mantenciones/{id}
+//   uid: string (req, inmutable) = dueño | vehiculo_id: string (req, inmutable)
+//   estado: programada|realizada | origen_registro: manual|ia
+//   tipo: cambio_aceite|revision_general|cambio_filtros|frenos|neumaticos|
+//         alineacion_balanceo|bateria|sistema_electrico|motor|preventiva|otra
+//   tipo_otro: string (req si tipo = otra) | taller, descripcion, observaciones
+//   fecha, proxima_fecha, fecha_captura: timestamp|null
+//   kilometraje, proximo_kilometraje, costo: int|null | confianza_ia: number|null
+//   (sin archivo_path: no se guarda la boleta, solo los datos extraídos)
+//
 // notificaciones/{id}  (id = {documentoId}_15dias | {documentoId}_7dias)
 //   usuario_id: string = uid dueño (req, inmutable) | vehiculo_id, tipo,
 //   referencia_id, mensaje, estado: string | leida: bool
@@ -273,6 +283,59 @@ service cloud.firestore {
       allow update: if isSignedIn() && resource.data.uid == request.auth.uid &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fecha_vencimiento']) &&
         documentoValido(request.resource.data);
+
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // mantenciones  (dueno = uid)
+    // ===============================================================
+    // Sin archivo_path: no se guarda foto de boleta/factura en este modulo.
+
+    function mantencionValida(d) {
+      return d.keys().hasOnly(['uid', 'vehiculo_id', 'estado', 'fecha',
+          'kilometraje', 'tipo', 'tipo_otro', 'taller', 'costo', 'descripcion',
+          'observaciones', 'proxima_fecha', 'proximo_kilometraje',
+          'origen_registro', 'fecha_captura', 'confianza_ia']) &&
+        reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
+        d.estado in ['programada', 'realizada'] &&
+        d.tipo in ['cambio_aceite', 'revision_general', 'cambio_filtros', 'frenos',
+          'neumaticos', 'alineacion_balanceo', 'bateria', 'sistema_electrico',
+          'motor', 'preventiva', 'otra'] &&
+        d.origen_registro in ['manual', 'ia'] &&
+        optStr(d, 'tipo_otro', 100) && optStr(d, 'taller', 100) &&
+        optStr(d, 'descripcion', 500) && optStr(d, 'observaciones', 1000) &&
+        optTs(d, 'fecha') && optTs(d, 'proxima_fecha') && optTs(d, 'fecha_captura') &&
+        optInt(d, 'kilometraje', 0, 5000000) &&
+        optInt(d, 'proximo_kilometraje', 0, 5000000) &&
+        optInt(d, 'costo', 0, 1000000000) &&
+        (!('confianza_ia' in d) || d.confianza_ia == null ||
+          (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100)) &&
+        // "Otra" exige escribir el tipo.
+        (d.tipo != 'otra' || reqStr(d, 'tipo_otro', 100)) &&
+        // Realizada: lleva fecha. Programada: lleva fecha y/o kilometraje.
+        (d.estado != 'realizada' || d.get('fecha', null) is timestamp) &&
+        (d.estado != 'programada' ||
+          d.get('proxima_fecha', null) is timestamp ||
+          d.get('proximo_kilometraje', null) is int);
+    }
+
+    match /mantenciones/{mantencionId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+
+      // uid debe ser el del autor y el vehiculo debe ser suyo.
+      allow create: if isSignedIn() &&
+        request.resource.data.uid == request.auth.uid &&
+        mantencionValida(request.resource.data) &&
+        vehiculoEsDe(request.resource.data.vehiculo_id, request.auth.uid);
+
+      // uid, vehiculo_id y los datos de origen son inmutables.
+      allow update: if isSignedIn() && resource.data.uid == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'estado', 'fecha', 'kilometraje', 'tipo', 'tipo_otro', 'taller',
+          'costo', 'descripcion', 'observaciones', 'proxima_fecha',
+          'proximo_kilometraje']) &&
+        mantencionValida(request.resource.data);
 
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }

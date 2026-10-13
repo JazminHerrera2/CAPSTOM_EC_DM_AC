@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../data/models/tipo_mantencion.dart';
+import 'selector_tipo_mantencion.dart';
+
 class RevisarIaMantenimientoScreen extends StatefulWidget {
   const RevisarIaMantenimientoScreen({super.key});
 
@@ -16,6 +19,15 @@ class _RevisarIaMantenimientoScreenState
   static const Color textMain = Color(0xFFF8FAFC);
   static const Color textMuted = Color(0xFF94A3B8);
   static const Color borderColor = Color(0xFF334155);
+
+  String? _tipo;
+  final TextEditingController _otroTipoController = TextEditingController();
+
+  @override
+  void dispose() {
+    _otroTipoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +64,12 @@ class _RevisarIaMantenimientoScreenState
 
             const SizedBox(height: 14),
 
-            _dropdownField(
-              label: 'Tipo de mantención',
-              hint: 'Seleccionar tipo',
-              icon: Icons.build_outlined,
+            SelectorTipoMantencion(
+              opciones: TipoMantencion.etiquetas,
+              valor: _tipo,
+              onChanged: (v) => setState(() => _tipo = v),
+              otroController: _otroTipoController,
+              flotante: true,
             ),
 
             const SizedBox(height: 14),

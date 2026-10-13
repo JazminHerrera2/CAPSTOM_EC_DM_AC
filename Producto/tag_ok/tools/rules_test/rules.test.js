@@ -62,6 +62,14 @@ beforeEach(async () => {
       uid: UID_B, vehiculo_id: 'vehB', tipo_documento: 'soap',
       origen_registro: 'manual', fecha_registro: Timestamp.now(),
     });
+    await db.doc('mantenciones/manB').set({
+      uid: UID_B, vehiculo_id: 'vehB', estado: 'realizada', tipo: 'frenos',
+      origen_registro: 'manual', fecha: Timestamp.now(), kilometraje: 1000,
+    });
+    await db.doc('mantenciones/manA').set({
+      uid: UID_A, vehiculo_id: 'vehA', estado: 'realizada', tipo: 'frenos',
+      origen_registro: 'manual', fecha: Timestamp.now(), kilometraje: 1000,
+    });
   });
 });
 
@@ -156,4 +164,67 @@ test('7  cambiar id_usuario de su propio vehículo falla', async () => {
 });
 test('7c control: cambiar solo el alias pasa', async () => {
   await assertSucceeds(como(UID_A).doc('vehiculos/vehA').update({ alias: 'Mi auto' }));
+});
+
+
+// --- Prueba 8: mantenciones ---------------------------------------------------
+const nuevaMantencion = (uid, extra = {}) => ({
+  uid, vehiculo_id: 'vehA', estado: 'realizada', tipo: 'cambio_aceite',
+  origen_registro: 'manual', fecha: Timestamp.now(), kilometraje: 72450,
+  taller: 'Taller X', costo: 45000, descripcion: null, observaciones: null,
+  tipo_otro: null, proxima_fecha: null, proximo_kilometraje: null,
+  fecha_captura: null, confianza_ia: null, ...extra,
+});
+test('8a A NO lee una mantención de B', async () => {
+  await assertFails(como(UID_A).doc('mantenciones/manB').get());
+});
+test('8a control: el dueño SÍ lee la suya', async () => {
+  await assertSucceeds(como(UID_A).doc('mantenciones/manA').get());
+});
+test('8b listar sin filtro de uid falla; filtrando por uid propio pasa', async () => {
+  await assertFails(como(UID_A).collection('mantenciones').get());
+  await assertSucceeds(
+    como(UID_A).collection('mantenciones').where('uid', '==', UID_A).where('vehiculo_id', '==', 'vehA').get());
+});
+test('8c sin sesión no lee ni lista', async () => {
+  await assertFails(anonimo().doc('mantenciones/manA').get());
+  await assertFails(anonimo().collection('mantenciones').get());
+});
+test('8d crear con uid de OTRO falla; con el propio pasa', async () => {
+  await assertFails(como(UID_A).doc('mantenciones/n1').set(nuevaMantencion(UID_B)));
+  await assertSucceeds(como(UID_A).doc('mantenciones/n1').set(nuevaMantencion(UID_A)));
+});
+test('8e crear en un vehículo AJENO falla', async () => {
+  await assertFails(como(UID_A).doc('mantenciones/n2').set(nuevaMantencion(UID_A, { vehiculo_id: 'vehB' })));
+});
+test('8f campo no permitido (archivo_path) falla', async () => {
+  await assertFails(como(UID_A).doc('mantenciones/n3').set(nuevaMantencion(UID_A, { archivo_path: 'x/y.jpg' })));
+});
+test('8g tipo inválido, costo negativo y "otra" sin texto fallan', async () => {
+  const db = como(UID_A);
+  await assertFails(db.doc('mantenciones/n4').set(nuevaMantencion(UID_A, { tipo: 'inventado' })));
+  await assertFails(db.doc('mantenciones/n5').set(nuevaMantencion(UID_A, { costo: -1 })));
+  await assertFails(db.doc('mantenciones/n6').set(nuevaMantencion(UID_A, { tipo: 'otra' })));
+  await assertSucceeds(db.doc('mantenciones/n7').set(nuevaMantencion(UID_A, { tipo: 'otra', tipo_otro: 'Lavado de motor' })));
+});
+test('8h programada: pasa con fecha o km; sin ninguno falla', async () => {
+  const base = { estado: 'programada', fecha: null, kilometraje: null };
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('mantenciones/p1').set(nuevaMantencion(UID_A, { ...base, proxima_fecha: Timestamp.now() })));
+  await assertSucceeds(db.doc('mantenciones/p2').set(nuevaMantencion(UID_A, { ...base, proximo_kilometraje: 80000 })));
+  await assertFails(db.doc('mantenciones/p3').set(nuevaMantencion(UID_A, base)));
+});
+test('8i realizada sin fecha falla', async () => {
+  await assertFails(como(UID_A).doc('mantenciones/n8').set(nuevaMantencion(UID_A, { fecha: null })));
+});
+test('8j actualizar uid o vehiculo_id falla; actualizar el taller pasa', async () => {
+  const ref = como(UID_A).doc('mantenciones/manA');
+  await assertFails(ref.update({ uid: UID_B }));
+  await assertFails(ref.update({ vehiculo_id: 'vehB' }));
+  await assertSucceeds(ref.update({ taller: 'Otro taller' }));
+});
+test('8k actualizar o borrar la de B falla; borrar la propia pasa', async () => {
+  await assertFails(como(UID_A).doc('mantenciones/manB').update({ taller: 'x' }));
+  await assertFails(como(UID_A).doc('mantenciones/manB').delete());
+  await assertSucceeds(como(UID_A).doc('mantenciones/manA').delete());
 });

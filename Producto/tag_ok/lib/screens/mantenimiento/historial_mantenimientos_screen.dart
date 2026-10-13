@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 
-import 'registrar_mantenimiento_screen.dart';
+import '../../data/models/mantencion_model.dart';
+import '../../data/models/tipo_mantencion.dart';
+import '../../data/services/mantencion_service.dart';
+import 'selector_tipo_mantencion.dart';
+import 'tarjeta_mantencion.dart';
 
 class HistorialMantenimientosScreen extends StatefulWidget {
-  const HistorialMantenimientosScreen({super.key});
+  /// Patente del vehículo elegido en Mantenciones.
+  final String? patente;
+
+  /// Vehículo elegido en Mantenciones; sus mantenciones son las que se listan.
+  final String? vehiculoId;
+
+  const HistorialMantenimientosScreen({
+    super.key,
+    this.patente,
+    this.vehiculoId,
+  });
 
   @override
   State<HistorialMantenimientosScreen> createState() =>
@@ -19,27 +33,48 @@ class _HistorialMantenimientosScreenState
   static const Color textMuted = Color(0xFF94A3B8);
   static const Color borderColor = Color(0xFF334155);
 
-  String _vehiculoSeleccionado = 'Todos los vehículos';
-  String _tipoSeleccionado = 'Todos los tipos';
+  late final String _vehiculoSeleccionado =
+      widget.patente ?? 'Todos los vehículos';
+  static const String _todosLosTipos = 'Todos los tipos';
+  String _tipoSeleccionado = _todosLosTipos;
+  final TextEditingController _otroTipoController = TextEditingController();
 
-  final List<String> _vehiculos = const [
-    'Todos los vehículos',
-  ];
+  Stream<List<MantencionModel>>? _stream;
 
-  final List<String> _tipos = const [
-    'Todos los tipos',
-    'Cambio de aceite',
-    'Revisión general',
-    'Cambio de filtros',
-    'Frenos',
-    'Neumáticos',
-    'Alineación y balanceo',
-    'Batería',
-    'Sistema eléctrico',
-    'Motor',
-    'Preventiva',
-    'Otra',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    final id = widget.vehiculoId;
+    if (id != null) {
+      _stream = MantencionService()
+          .streamPorVehiculo(id, estado: EstadoMantencion.realizada);
+    }
+    // El texto de "Otra" filtra la lista mientras se escribe.
+    _otroTipoController.addListener(() => setState(() {}));
+  }
+
+  /// Aplica el filtro de tipo (el de vehículo ya viene en la consulta).
+  List<MantencionModel> _filtrar(List<MantencionModel> todas) {
+    if (_tipoSeleccionado == _todosLosTipos) return todas;
+    final tipo = TipoMantencion.fromEtiqueta(_tipoSeleccionado);
+    final texto = _otroTipoController.text.trim().toLowerCase();
+    return todas.where((m) {
+      if (m.tipo != tipo) return false;
+      if (tipo == TipoMantencion.otra && texto.isNotEmpty) {
+        return (m.tipoOtro ?? '').toLowerCase().contains(texto);
+      }
+      return true;
+    }).toList();
+  }
+
+  @override
+  void dispose() {
+    _otroTipoController.dispose();
+    super.dispose();
+  }
+
+
+  final List<String> _tipos = TipoMantencion.etiquetas;
 
   @override
   Widget build(BuildContext context) {
@@ -86,45 +121,106 @@ class _HistorialMantenimientosScreenState
 
             const SizedBox(height: 26),
 
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Mantenciones realizadas',
-                    style: TextStyle(
-                      color: textMain,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    '0 registros',
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            _estadoVacio(),
+            _seccionLista(),
           ],
         ),
       ),
+    );
+  }
+
+  // ================================================================
+  // LISTA
+  // ================================================================
+
+  Widget _encabezadoLista(int cantidad) {
+    return Row(
+      children: [
+        const Expanded(
+          child: Text(
+            'Mantenciones realizadas',
+            style: TextStyle(
+              color: textMain,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: primaryColor.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            cantidad == 1 ? '1 registro' : '$cantidad registros',
+            style: const TextStyle(
+              color: primaryColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _seccionLista() {
+    final stream = _stream;
+    if (stream == null) {
+      return Column(
+        children: [
+          _encabezadoLista(0),
+          const SizedBox(height: 12),
+          _estadoVacio(detalle: 'Registra un vehículo para ver su historial.'),
+        ],
+      );
+    }
+
+    return StreamBuilder<List<MantencionModel>>(
+      stream: stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 30),
+            child: Center(
+              child: Text(
+                'No fue posible cargar las mantenciones.',
+                style: TextStyle(color: textMuted),
+              ),
+            ),
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 30),
+            child: Center(
+              child: CircularProgressIndicator(color: primaryColor),
+            ),
+          );
+        }
+
+        final todas = snapshot.data!;
+        final lista = _filtrar(todas);
+
+        return Column(
+          children: [
+            _encabezadoLista(lista.length),
+            const SizedBox(height: 12),
+            if (lista.isEmpty)
+              _estadoVacio(
+                detalle: todas.isEmpty
+                    ? null
+                    : 'No hay mantenciones de este tipo para el vehículo.',
+              )
+            else
+              for (final m in lista)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: TarjetaMantencion(mantencion: m),
+                ),
+          ],
+        );
+      },
     );
   }
 
@@ -133,43 +229,56 @@ class _HistorialMantenimientosScreenState
   // ================================================================
 
   Widget _cabecera() {
+    return const Text(
+      'Aquí podrás revisar las mantenciones y servicios realizados a tus vehículos.',
+      style: TextStyle(
+        color: textMuted,
+        fontSize: 13,
+        height: 1.45,
+      ),
+    );
+  }
+
+  // ================================================================
+  // FILTRO VEHÍCULO
+  // ================================================================
+
+  /// Solo muestra el vehículo elegido en Mantenciones; no se puede cambiar
+  /// desde acá (sin toque ni flecha).
+  Widget _selectorVehiculo() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor),
       ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          _IconBox(
-            icon: Icons.history_rounded,
-            color: Color(0xFF3B82F6),
+          const Icon(
+            Icons.directions_car_outlined,
+            color: textMuted,
+            size: 21,
           ),
-          SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Historial de tu vehículo',
-                  style: TextStyle(
-                    color: textMain,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                const Text(
+                  'Vehículo',
+                  style: TextStyle(color: textMuted, fontSize: 10),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 3),
                 Text(
-                  'Aquí podrás revisar las mantenciones y servicios realizados a tus vehículos.',
-                  style: TextStyle(
-                    color: textMuted,
-                    fontSize: 12,
-                    height: 1.45,
+                  _vehiculoSeleccionado,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: textMain,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -181,108 +290,16 @@ class _HistorialMantenimientosScreenState
   }
 
   // ================================================================
-  // FILTRO VEHÍCULO
-  // ================================================================
-
-  Widget _selectorVehiculo() {
-    return DropdownButtonFormField<String>(
-      value: _vehiculoSeleccionado,
-      dropdownColor: surfaceColor,
-      iconEnabledColor: textMuted,
-      style: const TextStyle(
-        color: textMain,
-        fontSize: 13,
-      ),
-      decoration: _decoracionFiltro(
-        label: 'Vehículo',
-        icon: Icons.directions_car_outlined,
-      ),
-      items: _vehiculos
-          .map(
-            (vehiculo) => DropdownMenuItem<String>(
-              value: vehiculo,
-              child: Text(vehiculo),
-            ),
-          )
-          .toList(),
-      onChanged: (value) {
-        if (value == null) return;
-
-        setState(() {
-          _vehiculoSeleccionado = value;
-        });
-      },
-    );
-  }
-
-  // ================================================================
   // FILTRO TIPO
   // ================================================================
 
   Widget _selectorTipo() {
-    return DropdownButtonFormField<String>(
-      value: _tipoSeleccionado,
-      dropdownColor: surfaceColor,
-      iconEnabledColor: textMuted,
-      style: const TextStyle(
-        color: textMain,
-        fontSize: 13,
-      ),
-      decoration: _decoracionFiltro(
-        label: 'Tipo de mantención',
-        icon: Icons.build_outlined,
-      ),
-      items: _tipos
-          .map(
-            (tipo) => DropdownMenuItem<String>(
-              value: tipo,
-              child: Text(tipo),
-            ),
-          )
-          .toList(),
-      onChanged: (value) {
-        if (value == null) return;
-
-        setState(() {
-          _tipoSeleccionado = value;
-        });
-      },
-    );
-  }
-
-  InputDecoration _decoracionFiltro({
-    required String label,
-    required IconData icon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(
-        color: textMuted,
-      ),
-      prefixIcon: Icon(
-        icon,
-        color: textMuted,
-        size: 21,
-      ),
-      filled: true,
-      fillColor: surfaceColor,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 15,
-        vertical: 16,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: borderColor,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(
-          color: primaryColor,
-          width: 1.5,
-        ),
-      ),
+    return SelectorTipoMantencion(
+      opciones: [_todosLosTipos, ..._tipos],
+      valor: _tipoSeleccionado,
+      flotante: true,
+      onChanged: (v) => setState(() => _tipoSeleccionado = v),
+      otroController: _otroTipoController,
     );
   }
 
@@ -290,7 +307,7 @@ class _HistorialMantenimientosScreenState
   // ESTADO VACÍO
   // ================================================================
 
-  Widget _estadoVacio() {
+  Widget _estadoVacio({String? detalle}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
@@ -334,8 +351,9 @@ class _HistorialMantenimientosScreenState
 
           const SizedBox(height: 7),
 
-          const Text(
-            'Cuando registres una mantención, podrás encontrarla en este historial.',
+          Text(
+            detalle ??
+                'Cuando registres una mantención, podrás encontrarla en este historial.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: textMuted,
@@ -344,76 +362,7 @@ class _HistorialMantenimientosScreenState
             ),
           ),
 
-          const SizedBox(height: 22),
-
-          SizedBox(
-            height: 46,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const RegistrarMantenimientoScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(
-                Icons.add_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-              label: const Text(
-                'Registrar mantención',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(13),
-                ),
-              ),
-            ),
-          ),
         ],
-      ),
-    );
-  }
-}
-
-// ==================================================================
-// ICONO
-// ==================================================================
-
-class _IconBox extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-
-  const _IconBox({
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 23,
       ),
     );
   }

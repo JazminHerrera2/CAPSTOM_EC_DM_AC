@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../models/vehiculo_model.dart';
 import 'auditoria_service.dart';
 import 'documento_vehicular_service.dart';
+import 'mantencion_service.dart';
 import 'storage_service.dart';
 
 /// CRUD de la colección `vehiculos` — compartida entre Fase 1
@@ -89,6 +90,7 @@ class VehiculoService {
     final idUsuario = datos?['id_usuario'];
 
     await DocumentoVehicularService().eliminarDocumentosDeVehiculo(vehiculoId);
+    await MantencionService().eliminarDeVehiculo(vehiculoId);
     await _vehiculos.doc(vehiculoId).delete();
 
     // Si era el vehículo principal del usuario, ese dato deja de apuntar a él.

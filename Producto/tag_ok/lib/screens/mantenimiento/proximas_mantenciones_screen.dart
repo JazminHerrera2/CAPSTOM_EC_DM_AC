@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../../data/models/mantencion_model.dart';
+import '../../data/models/tipo_mantencion.dart';
+import '../../data/services/mantencion_service.dart';
+import 'selector_tipo_mantencion.dart';
+import 'tarjeta_mantencion.dart';
+
 class ProximasMantenimientosScreen extends StatelessWidget {
-  const ProximasMantenimientosScreen({super.key});
+  /// Patente del vehículo elegido en Mantenciones.
+  final String? patente;
+
+  /// Vehículo elegido en Mantenciones; sus mantenciones son las que se listan.
+  final String? vehiculoId;
+
+  const ProximasMantenimientosScreen({
+    super.key,
+    this.patente,
+    this.vehiculoId,
+  });
 
   static const Color bgColor = Color(0xFF0F172A);
   static const Color surfaceColor = Color(0xFF1E293B);
@@ -25,9 +41,16 @@ class ProximasMantenimientosScreen extends StatelessWidget {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'programarMantencion',
+        backgroundColor: primaryColor,
+        tooltip: 'Programar mantención',
+        onPressed: () => _mostrarProgramarMantencion(context),
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
+      ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 90),
           children: [
             _cabecera(),
 
@@ -44,7 +67,10 @@ class ProximasMantenimientosScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            _estadoVacio(context),
+            _ListaProgramadas(
+              vehiculoId: vehiculoId,
+              vacio: _estadoVacio(context),
+            ),
           ],
         ),
       ),
@@ -52,49 +78,12 @@ class ProximasMantenimientosScreen extends StatelessWidget {
   }
 
   Widget _cabecera() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-        ),
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _IconBox(
-            icon: Icons.calendar_month_outlined,
-            color: Color(0xFFF59E0B),
-          ),
-          SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Planifica el cuidado de tu vehículo',
-                  style: TextStyle(
-                    color: textMain,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  'Programa tus próximas mantenciones por fecha, kilometraje o ambos.',
-                  style: TextStyle(
-                    color: textMuted,
-                    fontSize: 12,
-                    height: 1.45,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+    return const Text(
+      'Programa tus próximas mantenciones por fecha, kilometraje o ambos.',
+      style: TextStyle(
+        color: textMuted,
+        fontSize: 13,
+        height: 1.45,
       ),
     );
   }
@@ -190,13 +179,100 @@ class ProximasMantenimientosScreen extends StatelessWidget {
     );
   }
 
-  void _mostrarProgramarMantencion(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> _mostrarProgramarMantencion(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final id = vehiculoId;
+    if (id == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Primero registra un vehículo.')),
+      );
+      return;
+    }
+
+    final guardada = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) {
-        return const _ProgramarMantencionSheet();
+      builder: (context) => _ProgramarMantencionSheet(vehiculoId: id),
+    );
+
+    if (guardada == true) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Mantención programada.')),
+      );
+    }
+  }
+}
+
+// ==================================================================
+// LISTA DE MANTENCIONES PROGRAMADAS
+// ==================================================================
+
+class _ListaProgramadas extends StatefulWidget {
+  final String? vehiculoId;
+
+  /// Se muestra cuando el vehículo no tiene mantenciones programadas.
+  final Widget vacio;
+
+  const _ListaProgramadas({required this.vehiculoId, required this.vacio});
+
+  @override
+  State<_ListaProgramadas> createState() => _ListaProgramadasState();
+}
+
+class _ListaProgramadasState extends State<_ListaProgramadas> {
+  Stream<List<MantencionModel>>? _stream;
+
+  @override
+  void initState() {
+    super.initState();
+    final id = widget.vehiculoId;
+    if (id != null) {
+      _stream = MantencionService()
+          .streamPorVehiculo(id, estado: EstadoMantencion.programada);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stream = _stream;
+    if (stream == null) return widget.vacio;
+
+    return StreamBuilder<List<MantencionModel>>(
+      stream: stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 30),
+            child: Center(
+              child: Text(
+                'No fue posible cargar las mantenciones.',
+                style: TextStyle(color: Color(0xFF94A3B8)),
+              ),
+            ),
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 30),
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xFF4F46E5)),
+            ),
+          );
+        }
+
+        final lista = snapshot.data!;
+        if (lista.isEmpty) return widget.vacio;
+
+        return Column(
+          children: [
+            for (final m in lista)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: TarjetaMantencion(mantencion: m),
+              ),
+          ],
+        );
       },
     );
   }
@@ -207,7 +283,9 @@ class ProximasMantenimientosScreen extends StatelessWidget {
 // ==================================================================
 
 class _ProgramarMantencionSheet extends StatefulWidget {
-  const _ProgramarMantencionSheet();
+  final String vehiculoId;
+
+  const _ProgramarMantencionSheet({required this.vehiculoId});
 
   @override
   State<_ProgramarMantencionSheet> createState() =>
@@ -223,6 +301,90 @@ class _ProgramarMantencionSheetState
   static const Color borderColor = Color(0xFF334155);
 
   String _programarPor = 'Fecha';
+  String? _tipo;
+  final TextEditingController _otroTipoController = TextEditingController();
+
+  static final List<String> _tipos = TipoMantencion.etiquetas;
+
+  final MantencionService _service = MantencionService();
+  final TextEditingController _kmController = TextEditingController();
+  DateTime? _fecha;
+  bool _guardando = false;
+  String? _error;
+
+  Future<void> _elegirFecha() async {
+    final hoy = DateTime.now();
+    final fecha = await showDatePicker(
+      context: context,
+      initialDate: _fecha ?? hoy,
+      firstDate: DateTime(hoy.year, hoy.month, hoy.day),
+      lastDate: DateTime(2100),
+    );
+    if (fecha != null) setState(() => _fecha = fecha);
+  }
+
+  Future<void> _programar() async {
+    final etiqueta = _tipo;
+    if (etiqueta == null) {
+      setState(() => _error = 'Selecciona el tipo de mantención.');
+      return;
+    }
+    final tipo = TipoMantencion.fromEtiqueta(etiqueta);
+    if (tipo == TipoMantencion.otra &&
+        _otroTipoController.text.trim().isEmpty) {
+      setState(() => _error = 'Escribe el tipo de mantención.');
+      return;
+    }
+
+    final usaFecha = _programarPor == 'Fecha' || _programarPor == 'Ambos';
+    final usaKm = _programarPor == 'Kilometraje' || _programarPor == 'Ambos';
+
+    if (usaFecha && _fecha == null) {
+      setState(() => _error = 'Selecciona la fecha.');
+      return;
+    }
+
+    int? km;
+    if (usaKm) {
+      km = int.tryParse(_kmController.text.replaceAll(RegExp(r'[^0-9]'), ''));
+      if (km == null || km > 5000000) {
+        setState(() => _error = 'Ingresa un kilometraje válido.');
+        return;
+      }
+    }
+
+    setState(() {
+      _error = null;
+      _guardando = true;
+    });
+
+    try {
+      await _service.crear(
+        vehiculoId: widget.vehiculoId,
+        estado: EstadoMantencion.programada,
+        tipo: tipo,
+        tipoOtro: _otroTipoController.text,
+        proximaFecha: usaFecha ? _fecha : null,
+        proximoKilometraje: km,
+      );
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      debugPrint('No se pudo programar la mantención: $e');
+      if (!mounted) return;
+      setState(() {
+        _guardando = false;
+        _error = 'No fue posible programar la mantención. Intenta nuevamente.';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _otroTipoController.dispose();
+    _kmController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -278,18 +440,12 @@ class _ProgramarMantencionSheetState
 
             const SizedBox(height: 22),
 
-            _campoVisual(
-              label: 'Vehículo',
-              hint: 'Seleccionar vehículo',
-              icon: Icons.directions_car_outlined,
-            ),
-
-            const SizedBox(height: 12),
-
-            _campoVisual(
-              label: 'Tipo de mantención',
-              hint: 'Seleccionar tipo',
-              icon: Icons.build_outlined,
+            SelectorTipoMantencion(
+              opciones: _tipos,
+              valor: _tipo,
+              onChanged: (v) => setState(() => _tipo = v),
+              otroController: _otroTipoController,
+              flotante: true,
             ),
 
             const SizedBox(height: 22),
@@ -319,22 +475,25 @@ class _ProgramarMantencionSheetState
 
             if (_programarPor == 'Fecha' ||
                 _programarPor == 'Ambos')
-              _campoVisual(
-                label: 'Próxima fecha',
-                hint: 'Seleccionar fecha',
-                icon: Icons.calendar_today_outlined,
-              ),
+              _campoFecha(),
 
             if (_programarPor == 'Ambos')
               const SizedBox(height: 12),
 
             if (_programarPor == 'Kilometraje' ||
                 _programarPor == 'Ambos')
-              _campoVisual(
-                label: 'Próximo kilometraje',
-                hint: 'Ej: 80.000 km',
-                icon: Icons.speed_outlined,
+              _campoKilometraje(),
+
+            if (_error != null) ...[
+              const SizedBox(height: 14),
+              Text(
+                _error!,
+                style: const TextStyle(
+                  color: Color(0xFFF87171),
+                  fontSize: 12,
+                ),
               ),
+            ],
 
             const SizedBox(height: 24),
 
@@ -342,10 +501,7 @@ class _ProgramarMantencionSheetState
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                // Diseño solamente.
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: _guardando ? null : _programar,
                 icon: const Icon(
                   Icons.notifications_active_outlined,
                   color: Colors.white,
@@ -410,89 +566,76 @@ class _ProgramarMantencionSheetState
     );
   }
 
-  Widget _campoVisual({
-    required String label,
-    required String hint,
-    required IconData icon,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 13,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            color: textMuted,
-            size: 21,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: textMuted,
-                    fontSize: 10,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  hint,
-                  style: const TextStyle(
-                    color: textMain,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+  Widget _campoFecha() {
+    return InkWell(
+      onTap: _elegirFecha,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: borderColor),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.calendar_today_outlined,
+              color: textMuted,
+              size: 21,
             ),
-          ),
-          const Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: textMuted,
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Próxima fecha',
+                    style: TextStyle(color: textMuted, fontSize: 10),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    _fecha == null
+                        ? 'Seleccionar fecha'
+                        : formatoFecha(_fecha!),
+                    style: TextStyle(
+                      color: _fecha == null ? textMuted : textMain,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-}
 
-// ==================================================================
-// ICONO
-// ==================================================================
-
-class _IconBox extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-
-  const _IconBox({
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 23,
+  Widget _campoKilometraje() {
+    return TextField(
+      controller: _kmController,
+      keyboardType: TextInputType.number,
+      style: const TextStyle(color: textMain, fontSize: 13),
+      decoration: InputDecoration(
+        labelText: 'Próximo kilometraje',
+        hintText: 'Ej: 80000',
+        suffixText: 'km',
+        labelStyle: const TextStyle(color: textMuted),
+        hintStyle: const TextStyle(color: textMuted),
+        prefixIcon: const Icon(Icons.speed_outlined, color: textMuted, size: 21),
+        filled: true,
+        fillColor: const Color(0xFF0F172A),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+        ),
       ),
     );
   }

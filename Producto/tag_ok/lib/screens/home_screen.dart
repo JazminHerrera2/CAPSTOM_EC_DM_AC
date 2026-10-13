@@ -38,10 +38,24 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _mostrandoMapa = false;
   bool _mostrandoMantenimiento = false;
 
+  // Navigator propio del módulo de mantenciones: las pantallas que se abren
+  // desde ahí (historial, próximas, registrar) se apilan dentro del cuerpo de
+  // HomeScreen y así el menú inferior siempre queda visible.
+  final GlobalKey<NavigatorState> _mantenimientoNavKey =
+      GlobalKey<NavigatorState>();
+
   final Color bgColor = const Color(0xFF0F172A);
   final Color primaryColor = const Color(0xFF4F46E5);
   final Color navBgColor = const Color(0xFF1E293B);
   final Color textMuted = const Color(0xFF94A3B8);
+
+  void _volverAHerramientas() {
+    setState(() {
+      _selectedIndex = 3;
+      _mostrandoMapa = false;
+      _mostrandoMantenimiento = false;
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -53,7 +67,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      // En mantenciones, "atrás" cierra la pantalla abierta y, desde la
+      // principal, vuelve a Herramientas en vez de salir de la app.
+      canPop: !_mostrandoMantenimiento,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        final nav = _mantenimientoNavKey.currentState;
+        if (nav != null && nav.canPop()) {
+          nav.pop();
+        } else {
+          _volverAHerramientas();
+        }
+      },
+      child: Scaffold(
       backgroundColor: bgColor,
       // LiveMapScreen se mantiene siempre montado (Offstage) en vez de
       // construirse/destruirse con el resto de las pestañas: en Fase 1 el
@@ -79,7 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
             Offstage(
               offstage: !_mostrandoMantenimiento,
-              child: const MantenimientoScreen(),
+              child: Navigator(
+                key: _mantenimientoNavKey,
+                onGenerateRoute: (_) => MaterialPageRoute(
+                  builder: (_) => MantenimientoScreen(
+                    onVolver: _volverAHerramientas,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -140,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 

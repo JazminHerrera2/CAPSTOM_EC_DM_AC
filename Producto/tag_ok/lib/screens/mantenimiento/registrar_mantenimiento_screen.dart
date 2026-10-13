@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../data/models/mantencion_model.dart';
+import '../../data/models/tipo_mantencion.dart';
 import '../../data/models/vehiculo_model.dart';
+import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
+import 'selector_tipo_mantencion.dart';
 
 class RegistrarMantenimientoScreen extends StatefulWidget {
-  const RegistrarMantenimientoScreen({super.key});
+  /// Vehículo preseleccionado (el elegido en Mantenciones).
+  final String? vehiculoIdInicial;
+
+  const RegistrarMantenimientoScreen({super.key, this.vehiculoIdInicial});
 
   @override
   State<RegistrarMantenimientoScreen> createState() =>
@@ -25,12 +32,15 @@ class _RegistrarMantenimientoScreenState
   final _formKey = GlobalKey<FormState>();
 
   final VehiculoService _vehiculoService = VehiculoService();
+  final MantencionService _mantencionService = MantencionService();
+
+  bool _guardando = false;
 
   String get _usuarioId =>
       FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
 
   String? _vehiculoId;
-  String _tipoMantenimiento = 'Cambio de aceite';
+  String _tipoMantenimiento = TipoMantencion.cambioAceite.etiqueta;
   DateTime _fecha = DateTime.now();
 
   final _kilometrajeController = TextEditingController();
@@ -38,20 +48,15 @@ class _RegistrarMantenimientoScreenState
   final _costoController = TextEditingController();
   final _descripcionController = TextEditingController();
   final _observacionesController = TextEditingController();
+  final _otroTipoController = TextEditingController();
 
-  final List<String> _tiposMantenimiento = const [
-    'Cambio de aceite',
-    'Revisión general',
-    'Cambio de filtros',
-    'Frenos',
-    'Neumáticos',
-    'Alineación y balanceo',
-    'Batería',
-    'Sistema eléctrico',
-    'Motor',
-    'Preventiva',
-    'Otra',
-  ];
+  final List<String> _tiposMantenimiento = TipoMantencion.etiquetas;
+
+  @override
+  void initState() {
+    super.initState();
+    _vehiculoId = widget.vehiculoIdInicial;
+  }
 
   @override
   void dispose() {
@@ -60,6 +65,7 @@ class _RegistrarMantenimientoScreenState
     _costoController.dispose();
     _descripcionController.dispose();
     _observacionesController.dispose();
+    _otroTipoController.dispose();
     super.dispose();
   }
 
@@ -78,6 +84,9 @@ class _RegistrarMantenimientoScreenState
     }
   }
 
+  int? _entero(String texto) =>
+      int.tryParse(texto.replaceAll(RegExp(r'[^0-9]'), ''));
+
   Future<void> _guardar() async {
     final formularioValido =
         _formKey.currentState?.validate() ?? false;
@@ -86,24 +95,58 @@ class _RegistrarMantenimientoScreenState
       return;
     }
 
-    if (_vehiculoId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Selecciona un vehículo.'),
-        ),
+    final messenger = ScaffoldMessenger.of(context);
+
+    final vehiculoId = _vehiculoId;
+    if (vehiculoId == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Selecciona un vehículo.')),
       );
       return;
     }
 
-    // Diseño UI solamente.
-    // La integración y persistencia se realizará posteriormente.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Formulario listo para registrar mantención.',
+    final tipo = TipoMantencion.fromEtiqueta(_tipoMantenimiento);
+    if (tipo == TipoMantencion.otra &&
+        _otroTipoController.text.trim().isEmpty) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Escribe el tipo de mantención.')),
+      );
+      return;
+    }
+
+    setState(() => _guardando = true);
+
+    try {
+      await _mantencionService.crear(
+        vehiculoId: vehiculoId,
+        estado: EstadoMantencion.realizada,
+        tipo: tipo,
+        tipoOtro: _otroTipoController.text,
+        fecha: _fecha,
+        kilometraje: _entero(_kilometrajeController.text),
+        taller: _tallerController.text,
+        costo: _entero(_costoController.text),
+        descripcion: _descripcionController.text,
+        observaciones: _observacionesController.text,
+      );
+
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Mantención registrada.')),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      debugPrint('No se pudo guardar la mantención: $e');
+      if (!mounted) return;
+      setState(() => _guardando = false);
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No fue posible guardar la mantención. Intenta nuevamente.',
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
@@ -199,7 +242,7 @@ class _RegistrarMantenimientoScreenState
 
                     final kilometraje = int.tryParse(value.trim());
 
-                    if (kilometraje == null || kilometraje < 0) {
+                    if (kilometraje == null || kilometraje < 0 || kilometraje > 5000000) {
                       return 'Ingresa un kilometraje válido.';
                     }
 
@@ -214,6 +257,13 @@ class _RegistrarMantenimientoScreenState
                   label: 'Taller',
                   hint: 'Ej: Taller AutoPro',
                   icon: Icons.storefront_outlined,
+                  obligatorio: true,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Ingresa el taller.';
+                    }
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 12),
@@ -223,10 +273,17 @@ class _RegistrarMantenimientoScreenState
                   label: 'Costo',
                   hint: 'Ej: 45000',
                   icon: Icons.attach_money_rounded,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                  keyboardType: TextInputType.number,
+                  obligatorio: true,
+                  validator: (value) {
+                    final texto = (value ?? '').trim();
+                    if (texto.isEmpty) return 'Ingresa el costo.';
+                    final costo = _entero(texto);
+                    if (costo == null || costo > 1000000000) {
+                      return 'Ingresa un costo válido.';
+                    }
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 22),
@@ -260,7 +317,7 @@ class _RegistrarMantenimientoScreenState
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton.icon(
-                    onPressed: _guardar,
+                    onPressed: _guardando ? null : _guardar,
                     icon: const Icon(
                       Icons.save_outlined,
                       color: Colors.white,
@@ -350,75 +407,42 @@ class _RegistrarMantenimientoScreenState
   Widget _selectorVehiculo(
     List<VehiculoModel> vehiculos,
   ) {
-    return DropdownButtonFormField<String>(
-      value: _vehiculoId,
-      dropdownColor: surfaceColor,
-      iconEnabledColor: textMuted,
-      decoration: _decoracionCampo(
-        label: 'Seleccionar vehículo',
-        icon: Icons.directions_car_outlined,
-      ),
-      style: const TextStyle(
-        color: textMain,
-        fontSize: 14,
-      ),
-      items: vehiculos.map((vehiculo) {
-        final alias = (vehiculo.alias ?? '').trim();
+    String etiqueta(VehiculoModel v) {
+      final alias = (v.alias ?? '').trim();
+      final nombre = alias.isNotEmpty
+          ? alias
+          : [v.marca, v.modelo]
+              .where((e) => e != null && e.trim().isNotEmpty)
+              .join(' ');
+      return nombre.isEmpty ? v.patente : '$nombre · ${v.patente}';
+    }
 
-        final nombre = alias.isNotEmpty
-            ? alias
-            : '${vehiculo.marca} ${vehiculo.modelo}';
+    final etiquetas = {for (final v in vehiculos) v.id: etiqueta(v)};
 
-        return DropdownMenuItem<String>(
-          value: vehiculo.id,
-          child: Text(
-            '$nombre · ${vehiculo.patente}',
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      }).toList(),
-      onChanged: (value) {
+    return SelectorTipoMantencion(
+      label: 'Vehículo',
+      hint: 'Seleccionar vehículo',
+      icono: Icons.directions_car_outlined,
+      opciones: etiquetas.values.toList(),
+      valor: etiquetas[_vehiculoId],
+      flotante: true,
+      onChanged: (etiquetaElegida) {
         setState(() {
-          _vehiculoId = value;
+          _vehiculoId = etiquetas.entries
+              .firstWhere((e) => e.value == etiquetaElegida)
+              .key;
         });
-      },
-      validator: (value) {
-        if (value == null) {
-          return 'Selecciona un vehículo.';
-        }
-        return null;
       },
     );
   }
 
   Widget _selectorTipo() {
-    return DropdownButtonFormField<String>(
-      value: _tipoMantenimiento,
-      dropdownColor: surfaceColor,
-      iconEnabledColor: textMuted,
-      decoration: _decoracionCampo(
-        label: 'Tipo de mantención',
-        icon: Icons.build_outlined,
-      ),
-      style: const TextStyle(
-        color: textMain,
-        fontSize: 14,
-      ),
-      items: _tiposMantenimiento
-          .map(
-            (tipo) => DropdownMenuItem<String>(
-              value: tipo,
-              child: Text(tipo),
-            ),
-          )
-          .toList(),
-      onChanged: (value) {
-        if (value == null) return;
-
-        setState(() {
-          _tipoMantenimiento = value;
-        });
-      },
+    return SelectorTipoMantencion(
+      opciones: _tiposMantenimiento,
+      valor: _tipoMantenimiento,
+      onChanged: (v) => setState(() => _tipoMantenimiento = v),
+      otroController: _otroTipoController,
+      flotante: true,
     );
   }
 

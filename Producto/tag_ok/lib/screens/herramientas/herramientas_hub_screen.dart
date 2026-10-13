@@ -46,28 +46,17 @@ class _HerramientasHubScreenState extends State<HerramientasHubScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Orden fijo: Mantenciones, Estacionamiento, Combustible y carga,
+    // Beneficios y Mi perfil.
     final accesos = <_AccesoHerramienta>[
       _AccesoHerramienta(
-        titulo: 'Mi perfil',
-        icono: Icons.person_outline,
-        onTap: (context) => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfileScreen()),
-        ),
-      ),
-      _AccesoHerramienta(
-        titulo: 'Combustible',
-        icono: Icons.local_gas_station_outlined,
-        onTap: (context) => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const PlaceholderModuloScreen(
-              titulo: 'Combustible',
-              icono: Icons.local_gas_station_outlined,
-              sprintEstimado: 'Sprint 4',
-            ),
-          ),
-        ),
+        titulo: 'Mantenciones',
+        icono: Icons.handyman_outlined,
+        onTap: (context) {
+          if (widget.onAbrirMantenciones != null) {
+            widget.onAbrirMantenciones!();
+          }
+        },
       ),
       _AccesoHerramienta(
         titulo: 'Estacionamiento',
@@ -78,6 +67,20 @@ class _HerramientasHubScreenState extends State<HerramientasHubScreen> {
             builder: (context) => const PlaceholderModuloScreen(
               titulo: 'Estacionamiento',
               icono: Icons.local_parking_outlined,
+              sprintEstimado: 'Sprint 4',
+            ),
+          ),
+        ),
+      ),
+      _AccesoHerramienta(
+        titulo: 'Combustible y carga',
+        icono: Icons.local_gas_station_outlined,
+        onTap: (context) => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PlaceholderModuloScreen(
+              titulo: 'Combustible y carga',
+              icono: Icons.local_gas_station_outlined,
               sprintEstimado: 'Sprint 4',
             ),
           ),
@@ -98,13 +101,12 @@ class _HerramientasHubScreenState extends State<HerramientasHubScreen> {
         ),
       ),
       _AccesoHerramienta(
-        titulo: 'Mantenciones',
-        icono: Icons.handyman_outlined,
-        onTap: (context) {
-          if (widget.onAbrirMantenciones != null) {
-            widget.onAbrirMantenciones!();
-          }
-        },
+        titulo: 'Mi perfil',
+        icono: Icons.person_outline,
+        onTap: (context) => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileScreen()),
+        ),
       ),
     ];
 
