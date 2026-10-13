@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../data/services/recordatorio_local_service.dart';
 import '../dialogo_cerrar_sesion.dart';
 import '../login_screen.dart';
 import '../profile_screen.dart';
@@ -33,6 +34,7 @@ class _HerramientasHubScreenState extends State<HerramientasHubScreen> {
   Future<void> _cerrarSesion() async {
     if (!await confirmarCerrarSesion(context)) return;
 
+    await RecordatoriosLocalesService.instance.cancelarTodos();
     await FirebaseAuth.instance.signOut();
     // Vuelve al inicio de sesión eliminando el historial de pantallas.
     if (mounted) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/services/recordatorio_local_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dialogo_cerrar_sesion.dart';
@@ -257,6 +258,7 @@ class ProfileScreen extends StatelessWidget {
                     if (!await confirmarCerrarSesion(context)) return;
 
                     // Cerrar sesión real en Firebase
+                    await RecordatoriosLocalesService.instance.cancelarTodos();
                     await FirebaseAuth.instance.signOut();
 
                     // Volver a la pantalla de inicio de sesión eliminando el historial

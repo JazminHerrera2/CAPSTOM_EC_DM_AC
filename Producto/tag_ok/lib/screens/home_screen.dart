@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../data/services/aviso_navegador_service.dart';
+import '../data/services/notificacion_service.dart';
 import 'audit_screen.dart';
 import 'herramientas/herramientas_hub_screen.dart';
 import 'inicio_dashboard_screen.dart';
@@ -43,6 +46,24 @@ class _HomeScreenState extends State<HomeScreen> {
   // HomeScreen y así el menú inferior siempre queda visible.
   final GlobalKey<NavigatorState> _mantenimientoNavKey =
       GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Deja programados en el celular los avisos de vencimiento del usuario.
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      NotificacionService().sincronizarDispositivo(uid);
+      // En web: avisos del navegador mientras la app esté abierta.
+      AvisoNavegadorService.instance.iniciar(uid);
+    }
+  }
+
+  @override
+  void dispose() {
+    AvisoNavegadorService.instance.detener();
+    super.dispose();
+  }
 
   final Color bgColor = const Color(0xFF0F172A);
   final Color primaryColor = const Color(0xFF4F46E5);

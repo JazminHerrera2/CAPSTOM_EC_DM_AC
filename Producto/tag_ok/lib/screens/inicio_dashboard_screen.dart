@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'notificaciones/notificaciones_screen.dart';
 
 /// "Inicio" — plantilla visual del dashboard (scaffold), sin lógica ni
 /// conexión a datos reales. Reemplaza el mapa en tiempo real que vivía
@@ -26,14 +27,27 @@ class InicioDashboardScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const Text(
-              'Hola, Conductor',
-              style: TextStyle(color: _textMain, fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Este es un resumen de ejemplo',
-              style: TextStyle(color: _textMuted, fontSize: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Hola, Conductor',
+                        style: TextStyle(color: _textMain, fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Este es un resumen de ejemplo',
+                        style: TextStyle(color: _textMuted, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+                const CampanaNotificaciones(),
+              ],
             ),
             const SizedBox(height: 24),
             Row(

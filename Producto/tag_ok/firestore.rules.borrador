@@ -39,7 +39,7 @@ rules_version = '2';
 //   kilometraje, proximo_kilometraje, costo: int|null | confianza_ia: number|null
 //   (sin archivo_path: no se guarda la boleta, solo los datos extraídos)
 //
-// notificaciones/{id}  (id = {documentoId}_15dias | {documentoId}_7dias)
+// notificaciones/{id}  (id = {documentoId}_30dias | {documentoId}_15dias | {documentoId}_7dias)
 //   usuario_id: string = uid dueño (req, inmutable) | vehiculo_id, tipo,
 //   referencia_id, mensaje, estado: string | leida: bool
 //   fecha_programada, fecha_generacion: timestamp
