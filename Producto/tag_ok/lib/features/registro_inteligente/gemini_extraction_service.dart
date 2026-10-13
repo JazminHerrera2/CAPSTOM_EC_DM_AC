@@ -64,15 +64,17 @@ Future<void> _esperarReal(Duration duracion) => Future.delayed(duracion);
 /// el ingreso manual). Mientras reintenta, el llamador sigue esperando, así
 /// que la pantalla mantiene "Analizando documento..." sin mostrar errores.
 ///
-/// Sin timeout artificial a propósito: los modelos `gemini-3.5-flash` y
+/// Sin timeout artificial a propósito: los modelos `gemini-3.8-flash` y
 /// `gemini-3.6-flash` usan "thinking" y pueden demorar más de lo esperado;
 /// cortar la espera con un timeout descarta respuestas que sí iban a llegar
 /// bien (ver incidente documentado durante Sprint 1 con el mismo patrón en
 /// audit_screen.dart).
 class GeminiExtractionService {
   static const List<String> _modelsToTry = [
-    'gemini-3.5-flash',
     'gemini-3.6-flash',
+    'gemini-3.8-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
   ];
 
   Future<GenerateContentResponse> generateContentWithFallback({
