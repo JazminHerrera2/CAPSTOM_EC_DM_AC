@@ -16,7 +16,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:vibration/vibration.dart';
 import 'route_setup_screen.dart';
-import 'vehiculos_screen.dart';
+import 'mi_vehiculo/registrar_editar_vehiculo_screen.dart';
 import '../data/models/route_model.dart';
 import '../data/models/trip_history.dart';
 import '../data/services/history_service.dart';
@@ -1301,12 +1301,12 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
               ),
               onPressed: () {
                 Navigator.pop(context);
-                // Antes cambiaba a la pestaña "Vehículos" (setState(_selectedIndex = 2))
-                // dentro de HomeScreen. Como esta pantalla ahora es una ruta
-                // independiente, se navega directo a "Mis Vehículos".
+                // Lleva directo al formulario de registro del módulo "Mi vehículo".
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const VehiculosScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const RegistrarEditarVehiculoScreen(),
+                  ),
                 );
               },
               child: const Text("REGISTRAR AHORA", style: TextStyle(color: Colors.white)),
