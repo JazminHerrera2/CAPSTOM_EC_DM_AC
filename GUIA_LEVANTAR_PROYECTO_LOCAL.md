@@ -133,10 +133,25 @@ flutter build web --release; firebase deploy --only hosting --project tag-ok-v2
 ```
 flutter clean
 flutter pub get
-flutter build web --release
+flutter build web --release --pwa-strategy=none
 firebase deploy --only hosting --project tag-ok-v2
 
 Luego abre en el navegador: `http://127.0.0.1:8090/`
+
+**Publicar en producción (Firebase Hosting):**
+
+```bash
+cd Producto/tag_ok
+flutter build web --release --pwa-strategy=none
+firebase deploy --only hosting --project tag-ok-v2
+```
+
+Los clientes ven la versión nueva con solo abrir el link, sin Ctrl+Shift+R ni
+incógnito: `firebase.json` manda `Cache-Control: no-cache` (el navegador
+revalida con Hosting en cada visita) y `--pwa-strategy=none` desactiva el
+service worker de Flutter, que guardaba una copia propia de la app. Un cliente
+que ya tenía la versión antigua puede necesitar recargar **una sola vez**; de
+ahí en adelante se actualiza solo.
 
 **En Windows Desktop:**
 
