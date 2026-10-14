@@ -98,17 +98,14 @@ class NotificacionesScreen extends StatelessWidget {
                 }
 
                 final ahora = DateTime.now();
-                final todas = snapshot.data!;
-                final recientes =
-                    todas.where((n) => avisoYaCorresponde(n, ahora)).toList();
-                final programadas = todas
-                    .where((n) => !avisoYaCorresponde(n, ahora))
-                    .toList()
-                  ..sort((a, b) =>
-                      a.fechaProgramada!.compareTo(b.fechaProgramada!));
+                // Los avisos programados a futuro no se listan aquí: siguen
+                // agendados y aparecen en la bandeja cuando llega su fecha.
+                final recientes = snapshot.data!
+                    .where((n) => avisoYaCorresponde(n, ahora))
+                    .toList();
                 final sinLeer = recientes.where((n) => !n.leida).toList();
 
-                if (todas.isEmpty) {
+                if (recientes.isEmpty) {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(32),
@@ -138,19 +135,12 @@ class NotificacionesScreen extends StatelessWidget {
                           label: const Text('Marcar todas como leídas'),
                         ),
                       ),
-                    if (recientes.isNotEmpty) ...[
-                      const _Titulo('Recientes'),
-                      for (final n in recientes)
-                        _TarjetaAviso(
-                          aviso: n,
-                          onTap: n.leida ? null : () => servicio.marcarLeida(n.id),
-                        ),
-                    ],
-                    if (programadas.isNotEmpty) ...[
-                      const _Titulo('Programadas'),
-                      for (final n in programadas)
-                        _TarjetaAviso(aviso: n, programada: true),
-                    ],
+                    const _Titulo('Recientes'),
+                    for (final n in recientes)
+                      _TarjetaAviso(
+                        aviso: n,
+                        onTap: n.leida ? null : () => servicio.marcarLeida(n.id),
+                      ),
                   ],
                 );
               },
@@ -231,23 +221,19 @@ class _Titulo extends StatelessWidget {
 class _TarjetaAviso extends StatelessWidget {
   const _TarjetaAviso({
     required this.aviso,
-    this.programada = false,
     this.onTap,
   });
 
   final NotificacionConfigModel aviso;
-  final bool programada;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final fecha = aviso.fechaProgramada;
-    final noLeida = !aviso.leida && !programada;
+    final noLeida = !aviso.leida;
     final cuando = fecha == null
         ? ''
-        : programada
-            ? 'Te avisaremos el ${DateFormat('dd/MM/yyyy').format(fecha)}'
-            : DateFormat('dd/MM/yyyy').format(fecha);
+        : DateFormat('dd/MM/yyyy').format(fecha);
 
     return Card(
       color: NotificacionesScreen._surfaceColor,
@@ -263,7 +249,7 @@ class _TarjetaAviso extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         leading: Icon(
-          programada ? Icons.schedule : Icons.event_busy_outlined,
+          Icons.event_busy_outlined,
           color: noLeida
               ? const Color(0xFFF59E0B)
               : NotificacionesScreen._textMuted,
