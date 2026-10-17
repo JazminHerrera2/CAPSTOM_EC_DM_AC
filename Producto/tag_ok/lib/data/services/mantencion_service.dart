@@ -40,6 +40,8 @@ class MantencionService {
     String? observaciones,
     DateTime? proximaFecha,
     int? proximoKilometraje,
+    TipoComprobante? tipoComprobante,
+    String? numeroComprobante,
     String origenRegistro = 'manual',
     DateTime? fechaCaptura,
     double? confianzaIa,
@@ -64,6 +66,8 @@ class MantencionService {
       observaciones: limpio(observaciones),
       proximaFecha: proximaFecha,
       proximoKilometraje: proximoKilometraje,
+      tipoComprobante: tipoComprobante,
+      numeroComprobante: limpio(numeroComprobante),
       origenRegistro: origenRegistro,
       fechaCaptura: fechaCaptura,
       confianzaIa: confianzaIa,
@@ -134,6 +138,8 @@ class MantencionService {
       'observaciones',
       'proxima_fecha',
       'proximo_kilometraje',
+      'tipo_comprobante',
+      'numero_comprobante',
     };
     final invalidas = cambios.keys.where((k) => !editables.contains(k));
     if (invalidas.isNotEmpty) {

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tag_ok/data/models/mantencion_model.dart';
 import 'package:tag_ok/data/models/tipo_mantencion.dart';
 import 'package:tag_ok/features/registro_inteligente/mantencion_extraction.dart';
 
@@ -21,6 +22,25 @@ void main() {
     expect(m.descripcion, 'Aceite 5W30 y filtro');
     expect(m.observaciones, isNull);
     expect(m.vacia, isFalse);
+  });
+
+  test('lee el comprobante y limpia el prefijo del folio', () {
+    final m = parseMantencionExtraida({
+      'tipo_comprobante': 'boleta',
+      'numero_comprobante': 'N° 458123',
+    });
+    expect(m.tipoComprobante, TipoComprobante.boleta);
+    expect(m.numeroComprobante, '458123');
+    expect(m.vacia, isFalse);
+
+    expect(parseMantencionExtraida({'numero_comprobante': 'Folio: 10234'})
+        .numeroComprobante, '10234');
+    expect(parseMantencionExtraida({'numero_comprobante': 'No. 77801'})
+        .numeroComprobante, '77801');
+    expect(parseMantencionExtraida({'tipo_comprobante': 'recibo'})
+        .tipoComprobante, isNull);
+    expect(parseMantencionExtraida({'numero_comprobante': '9' * 80})
+        .numeroComprobante!.length, 50);
   });
 
   test('acepta fecha dd/mm/aaaa, rechaza imposibles y descarta decimales', () {

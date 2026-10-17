@@ -33,6 +33,39 @@ void main() {
     expect(copia.fecha, DateTime(2026, 10, 1));
   });
 
+  test('comprobante: se guarda tipo y número, y se arma la referencia', () {
+    final conBoleta = MantencionModel(
+      id: '',
+      vehiculoId: 'v1',
+      estado: EstadoMantencion.realizada,
+      tipo: TipoMantencion.cambioAceite,
+      tipoComprobante: TipoComprobante.boleta,
+      numeroComprobante: '458123',
+    );
+    final json = conBoleta.toJson();
+    expect(json['tipo_comprobante'], 'boleta');
+    expect(json['numero_comprobante'], '458123');
+
+    final copia = MantencionModel.fromJson(json, 'id1');
+    expect(copia.tipoComprobante, TipoComprobante.boleta);
+    expect(copia.referenciaComprobante, 'Boleta N° 458123');
+
+    // Documentos anteriores a estos campos: sin comprobante.
+    final antigua = MantencionModel.fromJson({
+      'vehiculo_id': 'v1',
+      'estado': 'realizada',
+      'tipo': 'frenos',
+    }, 'id2');
+    expect(antigua.tipoComprobante, isNull);
+    expect(antigua.referenciaComprobante, isNull);
+
+    final otroSinNumero = MantencionModel.fromJson({
+      'tipo': 'bateria',
+      'tipo_comprobante': 'otro',
+    }, 'id3');
+    expect(otroSinNumero.referenciaComprobante, 'Otro');
+  });
+
   test('los 11 tipos son únicos y se resuelven por etiqueta y por valor', () {
     expect(TipoMantencion.values.length, 11);
     expect(TipoMantencion.etiquetas.toSet().length, 11);

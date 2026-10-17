@@ -49,6 +49,8 @@ class TarjetaMantencion extends StatelessWidget {
         if ((m.taller ?? '').isNotEmpty) m.taller!,
         if (m.costo != null) '\$${formatoMiles(m.costo!)}',
         if ((m.descripcion ?? '').isNotEmpty) m.descripcion!,
+        // Documento asociado del historial (RF-010): solo la referencia.
+        m.referenciaComprobante ?? 'Sin comprobante',
       ],
     ].where((l) => l.isNotEmpty).toList();
 

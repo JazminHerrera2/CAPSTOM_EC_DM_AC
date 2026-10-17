@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../../data/models/mantencion_model.dart';
 import '../../data/models/tipo_mantencion.dart';
 import 'openai_extraction_service.dart';
 import 'preparar_imagen.dart';
@@ -17,6 +18,8 @@ class MantencionExtraida {
   final int? costo;
   final String? descripcion;
   final String? observaciones;
+  final TipoComprobante? tipoComprobante;
+  final String? numeroComprobante;
 
   const MantencionExtraida({
     this.tipo,
@@ -27,6 +30,8 @@ class MantencionExtraida {
     this.costo,
     this.descripcion,
     this.observaciones,
+    this.tipoComprobante,
+    this.numeroComprobante,
   });
 
   /// `true` si la IA no logró leer ningún dato.
@@ -37,7 +42,9 @@ class MantencionExtraida {
       taller == null &&
       costo == null &&
       descripcion == null &&
-      observaciones == null;
+      observaciones == null &&
+      tipoComprobante == null &&
+      numeroComprobante == null;
 }
 
 Map<String, dynamic> _campoTexto(String descripcion) => {
@@ -65,6 +72,14 @@ final Map<String, dynamic> _esquemaMantencion = () {
         _campoTexto('Servicios realizados y repuestos o piezas, resumidos.'),
     'observaciones':
         _campoTexto('Observaciones o recomendaciones escritas en el documento.'),
+    'tipo_comprobante': {
+      'type': ['string', 'null'],
+      'enum': [...TipoComprobante.values.map((t) => t.valorFirestore), null],
+      'description': 'Tipo de documento tributario: boleta, factura u otro.',
+    },
+    'numero_comprobante': _campoTexto(
+      'Número (folio) del comprobante, solo el número.',
+    ),
   };
   return {
     'type': 'object',
@@ -108,7 +123,15 @@ Reglas de formato:
   RUT.
 - "taller": el nombre del taller o proveedor que emite el documento, no el del
   cliente.
-- "descripcion": resume los servicios y repuestos tal como aparecen.''';
+- "descripcion": resume los servicios y repuestos tal como aparecen.
+- "tipo_comprobante" y "numero_comprobante": búscalos en el recuadro del
+  emisor (en documentos electrónicos del SII, el recuadro con el RUT del
+  taller, el tipo de documento y "N°"). "BOLETA ELECTRÓNICA" o "BOLETA" es
+  "boleta"; "FACTURA ELECTRÓNICA" o "FACTURA" es "factura"; cualquier otro
+  comprobante (voucher, comprobante de venta, orden de trabajo) es "otro".
+  El número es el folio del documento, solo con números: no lo confundas
+  con el RUT, la patente, el kilometraje ni el número de orden de trabajo.
+- No extraigas datos del cliente (nombre, RUT ni dirección del comprador).''';
 }
 
 int? _entero(Object? valor) {
@@ -166,6 +189,18 @@ String? _texto(Object? valor, int maximo) {
   return t.length > maximo ? t.substring(0, maximo) : t;
 }
 
+/// Folio del comprobante sin el prefijo que a veces copia la IA
+/// ("N° 458123", "No. 458123", "Nro. 458123", "Folio: 458123" -> "458123").
+String? _folio(Object? valor) {
+  final t = valor?.toString().trim().replaceFirst(
+            RegExp(r'^(n\s*[°º.]|no\.|nro\.?|folio)\s*:?\s*',
+                caseSensitive: false),
+            '',
+          ) ??
+      '';
+  return _texto(t, 50);
+}
+
 /// Interpreta el JSON de la IA. Los largos máximos coinciden con las reglas
 /// de Firestore (`mantencionValida`), para que lo extraído siempre se pueda
 /// guardar. Un kilometraje o costo fuera de rango se descarta.
@@ -188,6 +223,9 @@ MantencionExtraida parseMantencionExtraida(Map<String, dynamic> json) {
     costo: (costo != null && costo <= 1000000000) ? costo : null,
     descripcion: _texto(json['descripcion'], 500),
     observaciones: _texto(json['observaciones'], 1000),
+    tipoComprobante:
+        TipoComprobante.fromFirestore(json['tipo_comprobante']?.toString()),
+    numeroComprobante: _folio(json['numero_comprobante']),
   );
 }
 

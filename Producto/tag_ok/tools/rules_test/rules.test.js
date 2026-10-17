@@ -1,5 +1,5 @@
 /**
- * Pruebas de firestore.rules.borrador contra el EMULADOR local.
+ * Pruebas de firestore.rules contra el EMULADOR local.
  * Proyecto "demo-tag-ok": el prefijo demo- garantiza que nunca se conecta a
  * Firebase real ni toca tag-ok-v2.
  *
@@ -10,7 +10,7 @@
  * Cada prueba que debe fallar (assertFails) tiene una "gemela de control" que
  * debe pasar: si fallaran las dos, el problema sería el dato, no la regla.
  */
-const { test, before, after, beforeEach } = require('node:test');
+const { test, after, beforeEach } = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
 const firebase = require('firebase/compat/app');
@@ -28,18 +28,23 @@ const UID_B = 'uidB_otro';
 
 let env;
 
-before(async () => {
-  env = await initializeTestEnvironment({
+// Se inicializa en el primer beforeEach y no en un before() de nivel superior:
+// en Node 22.0.0 ese before() no se espera antes de los beforeEach y `env`
+// quedaba undefined en todas las pruebas.
+let envListo;
+const iniciarEnv = () =>
+  (envListo ??= initializeTestEnvironment({
     projectId: 'demo-tag-ok',
     firestore: {
-      rules: fs.readFileSync(path.join(__dirname, '../../firestore.rules.borrador'), 'utf8'),
+      rules: fs.readFileSync(path.join(__dirname, '../../firestore.rules'), 'utf8'),
     },
-  });
-});
+  }).then((e) => (env = e)));
+
 after(async () => env && (await env.cleanup()));
 
 // Datos base (se cargan sin reglas) antes de cada prueba.
 beforeEach(async () => {
+  await iniciarEnv();
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
@@ -173,6 +178,7 @@ const nuevaMantencion = (uid, extra = {}) => ({
   origen_registro: 'manual', fecha: Timestamp.now(), kilometraje: 72450,
   taller: 'Taller X', costo: 45000, descripcion: null, observaciones: null,
   tipo_otro: null, proxima_fecha: null, proximo_kilometraje: null,
+  tipo_comprobante: null, numero_comprobante: null,
   fecha_captura: null, confianza_ia: null, ...extra,
 });
 test('8a A NO lee una mantención de B', async () => {
@@ -222,6 +228,20 @@ test('8j actualizar uid o vehiculo_id falla; actualizar el taller pasa', async (
   await assertFails(ref.update({ uid: UID_B }));
   await assertFails(ref.update({ vehiculo_id: 'vehB' }));
   await assertSucceeds(ref.update({ taller: 'Otro taller' }));
+});
+test('8l comprobante: boleta con número pasa; tipo inválido o número largo falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('mantenciones/c1').set(
+    nuevaMantencion(UID_A, { tipo_comprobante: 'boleta', numero_comprobante: '458123' })));
+  await assertFails(db.doc('mantenciones/c2').set(
+    nuevaMantencion(UID_A, { tipo_comprobante: 'recibo' })));
+  await assertFails(db.doc('mantenciones/c3').set(
+    nuevaMantencion(UID_A, { tipo_comprobante: 'factura', numero_comprobante: '1'.repeat(51) })));
+});
+test('8m mantención antigua sin campos de comprobante sigue siendo válida', async () => {
+  const { tipo_comprobante, numero_comprobante, ...antigua } = nuevaMantencion(UID_A);
+  await assertSucceeds(como(UID_A).doc('mantenciones/c4').set(antigua));
+  await assertSucceeds(como(UID_A).doc('mantenciones/manA').update({ numero_comprobante: '77801' }));
 });
 test('8k actualizar o borrar la de B falla; borrar la propia pasa', async () => {
   await assertFails(como(UID_A).doc('mantenciones/manB').update({ taller: 'x' }));

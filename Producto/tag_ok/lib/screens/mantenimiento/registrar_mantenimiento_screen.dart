@@ -63,8 +63,19 @@ class _RegistrarMantenimientoScreenState
   final _descripcionController = TextEditingController();
   final _observacionesController = TextEditingController();
   final _otroTipoController = TextEditingController();
+  final _numeroComprobanteController = TextEditingController();
 
   final List<String> _tiposMantenimiento = TipoMantencion.etiquetas;
+
+  static const String _sinComprobante = 'Sin comprobante';
+  final List<String> _opcionesComprobante = [
+    _sinComprobante,
+    ...TipoComprobante.values.map((t) => t.etiqueta),
+  ];
+  String _comprobante = _sinComprobante;
+
+  TipoComprobante? get _tipoComprobante =>
+      TipoComprobante.fromEtiqueta(_comprobante);
 
   @override
   void initState() {
@@ -87,6 +98,8 @@ class _RegistrarMantenimientoScreenState
     _costoController.text = d.costo?.toString() ?? '';
     _descripcionController.text = d.descripcion ?? '';
     _observacionesController.text = d.observaciones ?? '';
+    if (d.tipoComprobante != null) _comprobante = d.tipoComprobante!.etiqueta;
+    _numeroComprobanteController.text = d.numeroComprobante ?? '';
   }
 
   @override
@@ -97,6 +110,7 @@ class _RegistrarMantenimientoScreenState
     _descripcionController.dispose();
     _observacionesController.dispose();
     _otroTipoController.dispose();
+    _numeroComprobanteController.dispose();
     super.dispose();
   }
 
@@ -159,6 +173,11 @@ class _RegistrarMantenimientoScreenState
         costo: _entero(_costoController.text),
         descripcion: _descripcionController.text,
         observaciones: _observacionesController.text,
+        tipoComprobante: _tipoComprobante,
+        // Sin comprobante no se guarda número aunque se haya escrito antes.
+        numeroComprobante: _tipoComprobante == null
+            ? null
+            : _numeroComprobanteController.text,
         origenRegistro: _desdeIa ? 'ia' : 'manual',
         fechaCaptura: _desdeIa ? (widget.fechaCaptura ?? DateTime.now()) : null,
       );
@@ -322,6 +341,30 @@ class _RegistrarMantenimientoScreenState
 
                 const SizedBox(height: 22),
 
+                _tituloSeccion('Comprobante'),
+
+                const SizedBox(height: 10),
+
+                _selectorComprobante(),
+
+                if (_tipoComprobante != null) ...[
+                  const SizedBox(height: 12),
+                  _campo(
+                    controller: _numeroComprobanteController,
+                    label: 'Número de ${_comprobante.toLowerCase()}',
+                    hint: 'Ej: 458123',
+                    icon: Icons.tag_rounded,
+                    validator: (value) {
+                      if ((value ?? '').trim().length > 50) {
+                        return 'Máximo 50 caracteres.';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+
+                const SizedBox(height: 22),
+
                 _tituloSeccion('Detalles'),
 
                 const SizedBox(height: 10),
@@ -478,6 +521,20 @@ class _RegistrarMantenimientoScreenState
       valor: _tipoMantenimiento,
       onChanged: (v) => setState(() => _tipoMantenimiento = v),
       otroController: _otroTipoController,
+      flotante: true,
+    );
+  }
+
+  /// Referencia del comprobante para el historial (RF-010). Solo se guarda el
+  /// tipo y el número, nunca la imagen de la boleta o factura.
+  Widget _selectorComprobante() {
+    return SelectorTipoMantencion(
+      label: 'Tipo de comprobante',
+      hint: 'Seleccionar comprobante',
+      icono: Icons.receipt_long_outlined,
+      opciones: _opcionesComprobante,
+      valor: _comprobante,
+      onChanged: (v) => setState(() => _comprobante = v),
       flotante: true,
     );
   }

@@ -16,11 +16,43 @@ extension EstadoMantencionJson on EstadoMantencion {
   }
 }
 
+/// Tipo del comprobante de pago de una mantención (campo `tipo_comprobante`).
+///
+/// Si se agrega o renombra un tipo, hay que actualizar también la lista de
+/// `mantencionValida()` en firestore.rules.
+enum TipoComprobante {
+  boleta('boleta', 'Boleta'),
+  factura('factura', 'Factura'),
+  otro('otro', 'Otro');
+
+  const TipoComprobante(this.valorFirestore, this.etiqueta);
+
+  /// Valor que se guarda en Firestore.
+  final String valorFirestore;
+
+  /// Texto que ve el usuario.
+  final String etiqueta;
+
+  static TipoComprobante? fromFirestore(String? valor) {
+    return TipoComprobante.values
+        .where((t) => t.valorFirestore == valor)
+        .firstOrNull;
+  }
+
+  static TipoComprobante? fromEtiqueta(String? etiqueta) {
+    return TipoComprobante.values
+        .where((t) => t.etiqueta == etiqueta)
+        .firstOrNull;
+  }
+}
+
 /// Entidad MANTENCIONES (colección `mantenciones`).
 ///
 /// No guarda archivo adjunto (ni foto de boleta o factura): para este módulo
 /// solo se conservan los datos extraídos, por decisión del cliente. Por eso no
-/// existe `archivo_path` ni se usa Firebase Storage.
+/// existe `archivo_path` ni se usa Firebase Storage. Como "documento asociado"
+/// del historial (RF-010) se guarda solo la referencia del comprobante:
+/// `tipo_comprobante` y `numero_comprobante`.
 class MantencionModel {
   final String id;
 
@@ -48,6 +80,10 @@ class MantencionModel {
   final DateTime? proximaFecha;
   final int? proximoKilometraje;
 
+  /// Referencia del comprobante de pago (sin la imagen). Ambos opcionales.
+  final TipoComprobante? tipoComprobante;
+  final String? numeroComprobante;
+
   /// 'manual' o 'ia'.
   final String origenRegistro;
   final DateTime? fechaCaptura;
@@ -68,6 +104,8 @@ class MantencionModel {
     this.observaciones,
     this.proximaFecha,
     this.proximoKilometraje,
+    this.tipoComprobante,
+    this.numeroComprobante,
     this.origenRegistro = 'manual',
     this.fechaCaptura,
     this.confianzaIa,
@@ -79,6 +117,18 @@ class MantencionModel {
     return tipo == TipoMantencion.otra && otro.isNotEmpty
         ? otro
         : tipo.etiqueta;
+  }
+
+  /// Texto del comprobante para el historial ("Boleta N° 458123"), o null si
+  /// no se registró ninguno.
+  String? get referenciaComprobante {
+    final numero = numeroComprobante?.trim() ?? '';
+    if (tipoComprobante == null) {
+      return numero.isEmpty ? null : 'Comprobante N° $numero';
+    }
+    return numero.isEmpty
+        ? tipoComprobante!.etiqueta
+        : '${tipoComprobante!.etiqueta} N° $numero';
   }
 
   factory MantencionModel.fromJson(Map<String, dynamic> json, String id) {
@@ -97,6 +147,8 @@ class MantencionModel {
       observaciones: json['observaciones'],
       proximaFecha: (json['proxima_fecha'] as Timestamp?)?.toDate(),
       proximoKilometraje: (json['proximo_kilometraje'] as num?)?.toInt(),
+      tipoComprobante: TipoComprobante.fromFirestore(json['tipo_comprobante']),
+      numeroComprobante: json['numero_comprobante'],
       origenRegistro: json['origen_registro'] ?? 'manual',
       fechaCaptura: (json['fecha_captura'] as Timestamp?)?.toDate(),
       confianzaIa: (json['confianza_ia'] as num?)?.toDouble(),
@@ -119,6 +171,8 @@ class MantencionModel {
       'proxima_fecha':
           proximaFecha != null ? Timestamp.fromDate(proximaFecha!) : null,
       'proximo_kilometraje': proximoKilometraje,
+      'tipo_comprobante': tipoComprobante?.valorFirestore,
+      'numero_comprobante': numeroComprobante,
       'origen_registro': origenRegistro,
       'fecha_captura':
           fechaCaptura != null ? Timestamp.fromDate(fechaCaptura!) : null,

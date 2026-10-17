@@ -1,7 +1,9 @@
 rules_version = '2';
 
 // ===============================================================
-// BORRADOR - NO PUBLICADO. Revisar primero en el simulador de Firebase.
+// Reglas de seguridad de Firestore del proyecto tag-ok-v2.
+// Este archivo es la versión oficial: no editar las reglas en la consola.
+// Publicar con:  firebase deploy --only firestore:rules --project tag-ok-v2
 // ===============================================================
 //
 // Modelo de datos asumido (sacado de lib/ de tag_ok y admin)
@@ -37,7 +39,9 @@ rules_version = '2';
 //   tipo_otro: string (req si tipo = otra) | taller, descripcion, observaciones
 //   fecha, proxima_fecha, fecha_captura: timestamp|null
 //   kilometraje, proximo_kilometraje, costo: int|null | confianza_ia: number|null
-//   (sin archivo_path: no se guarda la boleta, solo los datos extraídos)
+//   tipo_comprobante: boleta|factura|otro|null | numero_comprobante: string|null
+//   (sin archivo_path: no se guarda la boleta, solo los datos extraídos y la
+//   referencia del comprobante)
 //
 // notificaciones/{id}  (id = {documentoId}_30dias | {documentoId}_15dias | {documentoId}_7dias)
 //   usuario_id: string = uid dueño (req, inmutable) | vehiculo_id, tipo,
@@ -296,6 +300,7 @@ service cloud.firestore {
       return d.keys().hasOnly(['uid', 'vehiculo_id', 'estado', 'fecha',
           'kilometraje', 'tipo', 'tipo_otro', 'taller', 'costo', 'descripcion',
           'observaciones', 'proxima_fecha', 'proximo_kilometraje',
+          'tipo_comprobante', 'numero_comprobante',
           'origen_registro', 'fecha_captura', 'confianza_ia']) &&
         reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
         d.estado in ['programada', 'realizada'] &&
@@ -309,6 +314,9 @@ service cloud.firestore {
         optInt(d, 'kilometraje', 0, 5000000) &&
         optInt(d, 'proximo_kilometraje', 0, 5000000) &&
         optInt(d, 'costo', 0, 1000000000) &&
+        (!('tipo_comprobante' in d) || d.tipo_comprobante == null ||
+          d.tipo_comprobante in ['boleta', 'factura', 'otro']) &&
+        optStr(d, 'numero_comprobante', 50) &&
         (!('confianza_ia' in d) || d.confianza_ia == null ||
           (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100)) &&
         // "Otra" exige escribir el tipo.
@@ -334,7 +342,7 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'estado', 'fecha', 'kilometraje', 'tipo', 'tipo_otro', 'taller',
           'costo', 'descripcion', 'observaciones', 'proxima_fecha',
-          'proximo_kilometraje']) &&
+          'proximo_kilometraje', 'tipo_comprobante', 'numero_comprobante']) &&
         mantencionValida(request.resource.data);
 
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
