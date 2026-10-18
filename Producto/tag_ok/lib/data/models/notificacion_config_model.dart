@@ -1,9 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Entidad NOTIFICACIONES, acotada a lo que usa CU4 este Sprint: guardar la
-/// configuración de vencimiento. El envío real (push/in-app) es Sprint 5 /
-/// EP-08 y no agrega campos nuevos a este modelo, así que no se anticipan
-/// aquí para no inventar estructura que todavía no está definida.
+/// Valores del campo `tipo` de un aviso.
+const String tipoAvisoVencimientoDocumento = 'vencimiento_documento';
+const String tipoAvisoMantencion = 'mantencion_programada';
+
+/// Tipos de aviso que la app entrega (bandeja, teléfono y navegador).
+const Set<String> tiposAvisoEntregables = {
+  tipoAvisoVencimientoDocumento,
+  tipoAvisoMantencion,
+};
+
+/// Título con que se muestra un aviso según su tipo.
+String tituloAviso(String tipo) => tipo == tipoAvisoMantencion
+    ? 'Mantención programada'
+    : 'Documento por vencer';
+
+/// Entidad NOTIFICACIONES: avisos de vencimiento de documentos (CU4) y
+/// recordatorios de mantenciones programadas (RF-012). El envío ocurre en el
+/// dispositivo (notificación local y bandeja); no hay push desde servidor.
 class NotificacionConfigModel {
   final String id;
   final String usuarioId;

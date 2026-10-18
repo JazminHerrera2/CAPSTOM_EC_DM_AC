@@ -28,7 +28,8 @@ bool avisoListoParaNavegador(NotificacionConfigModel n, DateTime ahora) {
 String claveAvisoMostrado(NotificacionConfigModel n) =>
     '${n.id}@${n.fechaProgramada?.millisecondsSinceEpoch ?? 0}';
 
-/// Notificaciones del navegador para los avisos de vencimiento (web).
+/// Notificaciones del navegador para los avisos de vencimiento y de
+/// mantenciones programadas (web).
 ///
 /// Solo avisa mientras la web está abierta: el navegador no puede programar
 /// notificaciones con la pestaña cerrada sin push (FCM + Cloud Function).
@@ -80,13 +81,13 @@ class AvisoNavegadorService {
 
     var nuevos = 0;
     for (final aviso in avisos) {
-      if (aviso.tipo != 'vencimiento_documento') continue;
+      if (!tiposAvisoEntregables.contains(aviso.tipo)) continue;
       if (!avisoListoParaNavegador(aviso, ahora)) continue;
       final clave = claveAvisoMostrado(aviso);
       if (mostrados.contains(clave)) continue;
 
       mostrarNotificacionNavegador(
-        titulo: 'Documento por vencer',
+        titulo: tituloAviso(aviso.tipo),
         cuerpo: aviso.mensaje,
         tag: aviso.id,
       );

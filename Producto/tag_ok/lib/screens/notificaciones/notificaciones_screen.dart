@@ -15,7 +15,7 @@ bool avisoYaCorresponde(NotificacionConfigModel n, DateTime ahora) {
   return !DateTime(fecha.year, fecha.month, fecha.day).isAfter(hoy);
 }
 
-/// Campana con contador de avisos de vencimiento sin leer. Abre la bandeja.
+/// Campana con contador de avisos sin leer. Abre la bandeja.
 class CampanaNotificaciones extends StatelessWidget {
   const CampanaNotificaciones({super.key});
 
@@ -52,7 +52,8 @@ class CampanaNotificaciones extends StatelessWidget {
   }
 }
 
-/// Bandeja de avisos de vencimiento de documentos del vehículo.
+/// Bandeja de avisos: vencimiento de documentos del vehículo y recordatorios
+/// de mantenciones programadas.
 class NotificacionesScreen extends StatelessWidget {
   const NotificacionesScreen({super.key});
 
@@ -110,9 +111,9 @@ class NotificacionesScreen extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.all(32),
                       child: Text(
-                        'No tienes avisos. Cuando registres un documento con '
-                        'fecha de vencimiento, te avisaremos 30, 15 y 7 días '
-                        'antes.',
+                        'No tienes avisos. Te avisaremos 30, 15 y 7 días antes '
+                        'del vencimiento de tus documentos, y 7 días antes y '
+                        'el mismo día de tus mantenciones programadas.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: _textMuted),
                       ),
@@ -188,8 +189,8 @@ class _BannerPermisoNavegadorState extends State<_BannerPermisoNavegador> {
           style: TextStyle(color: NotificacionesScreen._textMain),
         ),
         subtitle: const Text(
-          'Te avisaremos cuando un documento esté por vencer mientras tengas '
-          'la app abierta.',
+          'Te avisaremos de documentos por vencer y mantenciones programadas '
+          'mientras tengas la app abierta.',
           style: TextStyle(color: NotificacionesScreen._textMuted),
         ),
         trailing: TextButton(onPressed: _activar, child: const Text('Activar')),
@@ -249,7 +250,9 @@ class _TarjetaAviso extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         leading: Icon(
-          Icons.event_busy_outlined,
+          aviso.tipo == tipoAvisoMantencion
+              ? Icons.build_circle_outlined
+              : Icons.event_busy_outlined,
           color: noLeida
               ? const Color(0xFFF59E0B)
               : NotificacionesScreen._textMuted,

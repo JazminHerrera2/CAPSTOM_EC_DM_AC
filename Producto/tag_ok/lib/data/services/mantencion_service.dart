@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/mantencion_model.dart';
 import '../models/tipo_mantencion.dart';
+import 'notificacion_service.dart';
 
 /// CRUD de la colección `mantenciones`.
 ///
@@ -10,8 +12,13 @@ import '../models/tipo_mantencion.dart';
 /// guarda el `uid` de su dueño y toda consulta filtra por `uid` (las reglas de
 /// Firestore solo dejan leer lo propio) y por `vehiculo_id`. No se guarda
 /// ningún archivo: este servicio no usa Firebase Storage.
+///
+/// Las mantenciones programadas con fecha generan recordatorios (RF-012) en
+/// `notificaciones`; este servicio los crea, actualiza y borra junto con la
+/// mantención.
 class MantencionService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificacionService _notificacionService = NotificacionService();
 
   CollectionReference<Map<String, dynamic>> get _mantenciones =>
       _firestore.collection('mantenciones');
@@ -74,7 +81,33 @@ class MantencionService {
     );
 
     final ref = await _mantenciones.add(mantencion.toJson());
+    if (estado == EstadoMantencion.programada && proximaFecha != null) {
+      await _sincronizarRecordatorios(
+        MantencionModel.fromJson(mantencion.toJson(), ref.id),
+      );
+    }
     return ref.id;
+  }
+
+  /// Deja los recordatorios de [m] acordes a su estado: si está programada
+  /// con fecha, se crean o reprograman; si no, se borran. Es "best effort":
+  /// si falla, la mantención queda guardada igual y el error va a consola.
+  Future<void> _sincronizarRecordatorios(MantencionModel m) async {
+    try {
+      final fecha = m.proximaFecha;
+      if (m.estado == EstadoMantencion.programada && fecha != null) {
+        await _notificacionService.configurarRecordatoriosMantencion(
+          vehiculoId: m.vehiculoId,
+          mantencionId: m.id,
+          nombreMantencion: m.nombreTipo,
+          proximaFecha: fecha,
+        );
+      } else {
+        await _notificacionService.eliminarRecordatoriosMantencion(m.id);
+      }
+    } catch (e) {
+      debugPrint('No se pudieron actualizar los recordatorios de ${m.id}: $e');
+    }
   }
 
   /// Mantenciones del usuario para un vehículo, opcionalmente solo de un
@@ -146,18 +179,33 @@ class MantencionService {
       throw ArgumentError('Campos no editables: ${invalidas.join(', ')}');
     }
     await _mantenciones.doc(id).update(cambios);
+
+    // Cambió la fecha, el estado o el nombre: los recordatorios se rehacen.
+    const afectanRecordatorios = {'estado', 'proxima_fecha', 'tipo', 'tipo_otro'};
+    if (cambios.keys.any(afectanRecordatorios.contains)) {
+      final actualizada = await obtener(id);
+      if (actualizada != null) await _sincronizarRecordatorios(actualizada);
+    }
   }
 
-  Future<void> eliminar(String id) => _mantenciones.doc(id).delete();
+  /// Borra la mantención y sus recordatorios.
+  Future<void> eliminar(String id) async {
+    await _notificacionService.eliminarRecordatoriosMantencion(id);
+    await _mantenciones.doc(id).delete();
+  }
 
-  /// Borra todas las mantenciones de un vehículo. Se usa al eliminar el
-  /// vehículo, para no dejar mantenciones huérfanas.
+  /// Borra todas las mantenciones de un vehículo (y los recordatorios de las
+  /// programadas). Se usa al eliminar el vehículo, para no dejar mantenciones
+  /// ni avisos huérfanos.
   Future<void> eliminarDeVehiculo(String vehiculoId) async {
     final snapshot = await _mantenciones
         .where('uid', isEqualTo: _uidActual())
         .where('vehiculo_id', isEqualTo: vehiculoId)
         .get();
     for (final doc in snapshot.docs) {
+      if (doc.data()['estado'] == EstadoMantencion.programada.valorFirestore) {
+        await _notificacionService.eliminarRecordatoriosMantencion(doc.id);
+      }
       await doc.reference.delete();
     }
   }

@@ -248,3 +248,28 @@ test('8k actualizar o borrar la de B falla; borrar la propia pasa', async () => 
   await assertFails(como(UID_A).doc('mantenciones/manB').delete());
   await assertSucceeds(como(UID_A).doc('mantenciones/manA').delete());
 });
+
+// --- Prueba 9: notificaciones (recordatorios de mantención, RF-012) ---------
+const recordatorio = (uid, extra = {}) => ({
+  usuario_id: uid, vehiculo_id: 'vehA', tipo: 'mantencion_programada',
+  referencia_id: 'manA', mensaje: 'Mantención programada en 7 días: Frenos (AAAA11).',
+  fecha_programada: Timestamp.now(), fecha_generacion: Timestamp.now(),
+  leida: false, estado: 'pendiente', ...extra,
+});
+test('9a crear recordatorio de mantención para su vehículo pasa; para otro usuario o vehículo ajeno falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('notificaciones/manA_7dias').set(recordatorio(UID_A)));
+  await assertFails(db.doc('notificaciones/x1').set(recordatorio(UID_B)));
+  await assertFails(db.doc('notificaciones/x2').set(recordatorio(UID_A, { vehiculo_id: 'vehB' })));
+});
+test('9b el dueño lee, marca como leído y borra su recordatorio; B no lo lee', async () => {
+  const ref = como(UID_A).doc('notificaciones/manA_dia');
+  await assertSucceeds(ref.set(recordatorio(UID_A)));
+  await assertFails(como(UID_B).doc('notificaciones/manA_dia').get());
+  await assertSucceeds(ref.get());
+  await assertSucceeds(ref.update({ leida: true, estado: 'leida' }));
+  await assertSucceeds(ref.delete());
+});
+test('9c borrar un recordatorio que no existe no falla (eliminar mantención sin avisos)', async () => {
+  await assertSucceeds(como(UID_A).doc('notificaciones/noExiste_7dias').delete());
+});
