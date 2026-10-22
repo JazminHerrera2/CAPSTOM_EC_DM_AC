@@ -7,14 +7,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/vehiculo_service.dart';
+import '../../features/registro_inteligente/odometro_extraction.dart';
+import '../../features/registro_inteligente/vehiculo_extraction.dart';
 import 'foto_vehiculo.dart';
 
 class RegistrarEditarVehiculoScreen extends StatefulWidget {
   final VehiculoModel? vehiculo;
 
+  /// Datos leídos por la IA desde un documento del vehículo. Si vienen, el
+  /// formulario se abre precargado para que el usuario los revise y los
+  /// complete antes de guardar.
+  final VehiculoExtraido? datosIa;
+
   const RegistrarEditarVehiculoScreen({
     super.key,
     this.vehiculo,
+    this.datosIa,
   });
 
   @override
@@ -54,6 +62,9 @@ class _RegistrarEditarVehiculoScreenState
   bool _guardando = false;
   String? _error;
 
+  // La IA está leyendo la foto del velocímetro.
+  bool _leyendoKm = false;
+
   // Foto nueva elegida por el usuario (aún sin subir).
   Uint8List? _fotoBytes;
   String _fotoMime = 'image/jpeg';
@@ -62,6 +73,8 @@ class _RegistrarEditarVehiculoScreenState
   bool _quitarFoto = false;
 
   bool get _esEdicion => widget.vehiculo != null;
+
+  bool get _desdeIa => widget.datosIa != null && !_esEdicion;
 
   @override
   void initState() {
@@ -82,6 +95,18 @@ class _RegistrarEditarVehiculoScreenState
       _tipoCombustibleCtrl.text = v.tipoCombustible ?? '';
       _kilometrajeCtrl.text = v.kilometrajeActual?.toString() ?? '';
       _aliasCtrl.text = v.alias ?? '';
+    }
+
+    final ia = widget.datosIa;
+    if (ia != null && v == null) {
+      _patenteCtrl.text = ia.patente ?? '';
+      _marcaCtrl.text = ia.marca ?? '';
+      _modeloCtrl.text = ia.modelo ?? '';
+      _anioCtrl.text = ia.anio?.toString() ?? '';
+      _tipoCombustibleCtrl.text = ia.tipoCombustible ?? '';
+      if (_tiposVehiculo.contains(ia.tipoVehiculo)) {
+        _tipoVehiculoSel = ia.tipoVehiculo!;
+      }
     }
   }
 
@@ -123,8 +148,8 @@ class _RegistrarEditarVehiculoScreenState
     }
   }
 
-  /// Todos los datos principales son obligatorios (al registrar y al editar);
-  /// solo la personalización (alias y kilometraje) es opcional.
+  /// Todos los datos principales son obligatorios (al registrar y al editar),
+  /// incluido el kilometraje; solo la personalización (alias) es opcional.
   String? _validarDatosPrincipales() {
     if (_marcaCtrl.text.trim().isEmpty) {
       return 'La marca es obligatoria.';
@@ -146,6 +171,10 @@ class _RegistrarEditarVehiculoScreenState
 
     if (_tipoCombustibleCtrl.text.trim().isEmpty) {
       return 'El tipo de combustible es obligatorio.';
+    }
+
+    if (_kilometrajeCtrl.text.trim().isEmpty) {
+      return 'El kilometraje es obligatorio. Puedes fotografiar el velocímetro.';
     }
 
     return null;
@@ -350,6 +379,117 @@ class _RegistrarEditarVehiculoScreenState
     );
   }
 
+  /// Fotografía el velocímetro y la IA completa el kilometraje. El usuario
+  /// puede corregirlo antes de guardar. La foto no se guarda.
+  Future<void> _fotografiarVelocimetro() async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    final foto = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
+    if (foto == null || !mounted) return;
+
+    setState(() => _leyendoKm = true);
+    try {
+      final km = await extraerKilometraje(
+        bytes: await foto.readAsBytes(),
+        mimeType: 'image/jpeg',
+      );
+      if (!mounted) return;
+
+      if (km == null) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text(
+                'No se pudo leer el kilometraje. Toma otra foto o escríbelo.',
+              ),
+            ),
+          );
+        return;
+      }
+
+      setState(() => _kilometrajeCtrl.text = km.toString());
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Kilometraje leído: $km km. Revísalo antes de guardar.',
+            ),
+          ),
+        );
+    } catch (e) {
+      debugPrint('No se pudo leer el velocímetro: $e');
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se pudo analizar la foto. Intenta de nuevo o escribe el kilometraje.',
+            ),
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => _leyendoKm = false);
+    }
+  }
+
+  Widget _botonFotoVelocimetro() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: _leyendoKm ? null : _fotografiarVelocimetro,
+            icon: _leyendoKm
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: primaryColor,
+                    ),
+                  )
+                : const Icon(
+                    Icons.photo_camera_outlined,
+                    color: primaryColor,
+                    size: 22,
+                  ),
+            label: Text(
+              _leyendoKm
+                  ? 'Leyendo el velocímetro...'
+                  : 'Fotografiar velocímetro con IA',
+              style: const TextStyle(
+                color: textMain,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              backgroundColor: primaryColor.withOpacity(0.10),
+              side: BorderSide(color: primaryColor.withOpacity(0.6)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Con el vehículo encendido, toma una foto donde se vea el '
+          'kilometraje total (no el parcial "TRIP").',
+          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
+        ),
+      ],
+    );
+  }
+
   /// Acepta puntos como separador de miles (160.000 o 160000). Devuelve null
   /// si el campo está vacío; usar [_kilometrajeValido] para distinguir un
   /// campo vacío de uno con texto inválido.
@@ -526,6 +666,12 @@ class _RegistrarEditarVehiculoScreenState
       if (mounted) {
         Navigator.pop(context, true);
       }
+    } on PatenteDuplicadaException catch (e) {
+      _mostrarError(
+        'Ya tienes un vehículo registrado con la patente ${e.patente.toUpperCase()}. '
+        'No puedes agregar otro con la misma patente.',
+        terminarGuardado: true,
+      );
     } on StorageException catch (e) {
       debugPrint('Error de almacenamiento: $e');
       _mostrarError(
@@ -621,6 +767,65 @@ class _RegistrarEditarVehiculoScreenState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Aviso de que los datos vienen de la IA y hay que revisarlos.
+  Widget _avisoIa() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: primaryColor.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryColor.withOpacity(0.25)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.auto_awesome_outlined, color: primaryColor, size: 24),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Revisa los datos detectados',
+                  style: TextStyle(
+                    color: textMain,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'La IA leyó tu documento. Corrige lo que haga falta y completa los campos que no pudo leer antes de guardar.',
+                  style: TextStyle(
+                    color: textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Si el formulario viene de la IA y el campo quedó vacío, avisa que no se
+  /// pudo leer (igual que la revisión de documentos).
+  InputDecoration _conAvisoIa(
+    InputDecoration base,
+    TextEditingController controller,
+  ) {
+    if (!_desdeIa || controller.text.trim().isNotEmpty) return base;
+    return base.copyWith(
+      helperText: 'No se pudo leer: complétalo.',
+      helperStyle: const TextStyle(
+        color: Color(0xFFF59E0B),
+        fontSize: 12,
       ),
     );
   }
@@ -760,6 +965,11 @@ class _RegistrarEditarVehiculoScreenState
             35,
           ),
           children: [
+            if (_desdeIa) ...[
+              _avisoIa(),
+              const SizedBox(height: 22),
+            ],
+
             if (!_esEdicion) ...[
               _tituloSeccion(
                 'Tipo de vehículo',
@@ -810,10 +1020,13 @@ class _RegistrarEditarVehiculoScreenState
                         fontSize: 12,
                       ),
                     )
-                  : _decoracion(
-                      'Patente *',
-                      hint: 'Ej: ABCD12',
-                      icon: Icons.badge_outlined,
+                  : _conAvisoIa(
+                      _decoracion(
+                        'Patente *',
+                        hint: 'Ej: ABCD12',
+                        icon: Icons.badge_outlined,
+                      ),
+                      _patenteCtrl,
                     ),
             ),
 
@@ -824,10 +1037,13 @@ class _RegistrarEditarVehiculoScreenState
               style: const TextStyle(
                 color: textMain,
               ),
-              decoration: _decoracion(
+              decoration: _conAvisoIa(
+                _decoracion(
                 'Marca *',
                 hint: 'Ej: Toyota',
                 icon: Icons.directions_car_outlined,
+              ),
+                _marcaCtrl,
               ),
             ),
 
@@ -838,10 +1054,13 @@ class _RegistrarEditarVehiculoScreenState
               style: const TextStyle(
                 color: textMain,
               ),
-              decoration: _decoracion(
+              decoration: _conAvisoIa(
+                _decoracion(
                 'Modelo *',
                 hint: 'Ej: Corolla',
                 icon: Icons.car_repair_outlined,
+              ),
+                _modeloCtrl,
               ),
             ),
 
@@ -853,10 +1072,13 @@ class _RegistrarEditarVehiculoScreenState
               style: const TextStyle(
                 color: textMain,
               ),
-              decoration: _decoracion(
+              decoration: _conAvisoIa(
+                _decoracion(
                 'Año *',
                 hint: 'Ej: 2022',
                 icon: Icons.calendar_today_outlined,
+              ),
+                _anioCtrl,
               ),
             ),
 
@@ -867,12 +1089,37 @@ class _RegistrarEditarVehiculoScreenState
               style: const TextStyle(
                 color: textMain,
               ),
-              decoration: _decoracion(
+              decoration: _conAvisoIa(
+                _decoracion(
                 'Tipo de combustible *',
                 hint: 'Ej: Gasolina',
                 icon: Icons.local_gas_station_outlined,
               ),
+                _tipoCombustibleCtrl,
+              ),
             ),
+
+            const SizedBox(height: 14),
+
+            TextField(
+              controller: _kilometrajeCtrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
+              style: const TextStyle(
+                color: textMain,
+              ),
+              decoration: _decoracion(
+                'Kilometraje actual *',
+                hint: 'Ej: 35000 o 35.000',
+                icon: Icons.speed_outlined,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            _botonFotoVelocimetro(),
 
             const SizedBox(height: 28),
 
@@ -893,23 +1140,6 @@ class _RegistrarEditarVehiculoScreenState
               ),
             ),
 
-            const SizedBox(height: 14),
-
-            TextField(
-              controller: _kilometrajeCtrl,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-              ],
-              style: const TextStyle(
-                color: textMain,
-              ),
-              decoration: _decoracion(
-                'Kilometraje actual (opcional)',
-                hint: 'Ej: 35000 o 35.000',
-                icon: Icons.speed_outlined,
-              ),
-            ),
 
             if (!_esEdicion) ...[
               const SizedBox(height: 22),
