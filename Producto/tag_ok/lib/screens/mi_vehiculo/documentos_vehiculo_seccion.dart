@@ -88,6 +88,23 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
     }
   }
 
+  /// Abre el registro del mismo tipo de documento: al guardar el nuevo se
+  /// reemplaza el anterior.
+  void _actualizarDocumento(
+    BuildContext context,
+    DocumentoVehicularModel documento,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RegistrarDocumentoIaScreen(
+          vehiculoId: documento.vehiculoId,
+          tipoInicial: documentTypeDe(documento.tipoDocumento),
+        ),
+      ),
+    );
+  }
+
   void _agregarDocumento(BuildContext context) {
     Navigator.push(
       context,
@@ -322,6 +339,35 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+
+            const SizedBox(height: 14),
+
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton.icon(
+                onPressed: () => _actualizarDocumento(context, documento),
+                icon: const Icon(
+                  Icons.autorenew_rounded,
+                  color: primaryColor,
+                  size: 20,
+                ),
+                label: const Text(
+                  'Actualizar',
+                  style: TextStyle(
+                    color: textMain,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: primaryColor.withOpacity(0.10),
+                  side: BorderSide(color: primaryColor.withOpacity(0.6)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

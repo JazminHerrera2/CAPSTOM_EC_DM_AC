@@ -9,8 +9,8 @@ import '../../features/registro_inteligente/preparar_imagen.dart';
 import '../../features/registro_inteligente/vehiculo_extraction.dart';
 import 'registrar_editar_vehiculo_screen.dart';
 
-/// "Agregar vehículo": el usuario escanea o sube un documento de su vehículo
-/// (permiso de circulación, etc.), la IA lo lee en cuanto el archivo está
+/// "Agregar vehículo": el usuario escanea o sube el padrón de su vehículo
+/// (certificado de inscripción; también sirve el permiso de circulación), la IA lo lee en cuanto el archivo está
 /// cargado y se abre el formulario precargado para revisar y guardar. El
 /// registro manual (el formulario de siempre) está al final de la pantalla.
 class RegistrarVehiculoIaScreen extends StatefulWidget {
@@ -132,7 +132,7 @@ class _RegistrarVehiculoIaScreenState extends State<RegistrarVehiculoIaScreen> {
   Future<void> _avisoFalloIa() => _dialogoManual(
         titulo: 'No se pudo analizar',
         mensaje: 'No pudimos extraer automáticamente los datos del '
-            'documento. Puedes continuar ingresándolos manualmente.',
+            'padrón. Puedes continuar ingresándolos manualmente.',
       );
 
   Future<void> _avisoSinDatos() => _dialogoManual(
@@ -200,7 +200,7 @@ class _RegistrarVehiculoIaScreenState extends State<RegistrarVehiculoIaScreen> {
           automaticallyImplyLeading: !_procesando,
           iconTheme: const IconThemeData(color: textMain),
           title: Text(
-            _procesando ? 'Analizando documento' : 'Agregar vehículo',
+            _procesando ? 'Analizando padrón' : 'Agregar vehículo',
             style: const TextStyle(
               color: textMain,
               fontWeight: FontWeight.w700,
@@ -243,7 +243,7 @@ class _RegistrarVehiculoIaScreenState extends State<RegistrarVehiculoIaScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Escanea o sube el documento de tu vehículo',
+                'Escanea tu padrón para registrar tu vehículo',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: textMain,
@@ -253,8 +253,8 @@ class _RegistrarVehiculoIaScreenState extends State<RegistrarVehiculoIaScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'La IA leerá el permiso de circulación (u otro documento del '
-                'vehículo) y completará los datos para que puedas revisarlos '
+                'La IA leerá tu padrón (certificado de inscripción) y '
+                'completará los datos del vehículo para que puedas revisarlos '
                 'antes de guardar.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -270,7 +270,7 @@ class _RegistrarVehiculoIaScreenState extends State<RegistrarVehiculoIaScreen> {
         _opcion(
           icono: Icons.camera_alt_outlined,
           titulo: 'Escanear con cámara',
-          descripcion: 'Toma una fotografía clara del permiso de circulación.',
+          descripcion: 'Toma una fotografía clara de tu padrón.',
           onTap: _tomarFoto,
           principal: true,
         ),
@@ -471,7 +471,7 @@ class _RegistrarVehiculoIaScreenState extends State<RegistrarVehiculoIaScreen> {
             Text(
               _etapa == etapaPreparandoImagen
                   ? 'Preparando imagen...'
-                  : 'Analizando documento...',
+                  : 'Analizando padrón...',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: textMain,
@@ -481,7 +481,7 @@ class _RegistrarVehiculoIaScreenState extends State<RegistrarVehiculoIaScreen> {
             ),
             const SizedBox(height: 10),
             const Text(
-              'Estamos leyendo el documento y extrayendo los datos de tu '
+              'Estamos leyendo tu padrón y extrayendo los datos de tu '
               'vehículo.',
               textAlign: TextAlign.center,
               style: TextStyle(color: textMuted, fontSize: 13, height: 1.5),

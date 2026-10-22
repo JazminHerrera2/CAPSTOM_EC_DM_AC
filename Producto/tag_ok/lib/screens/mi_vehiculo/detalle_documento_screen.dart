@@ -103,6 +103,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
 
     return tipo == TipoDocumentoVehicular.revisionTecnica ||
         tipo == TipoDocumentoVehicular.soap ||
+        tipo == TipoDocumentoVehicular.permisoCirculacion ||
         tieneNumero;
   }
 
@@ -112,6 +113,8 @@ class DetalleDocumentoScreen extends StatelessWidget {
         return 'Número de informe/certificado';
       case TipoDocumentoVehicular.soap:
         return 'Número de póliza SOAP';
+      case TipoDocumentoVehicular.permisoCirculacion:
+        return 'Número de folio';
       default:
         return 'Número de documento';
     }
@@ -352,9 +355,9 @@ class DetalleDocumentoScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // El número solo corresponde a Revisión Técnica y SOAP. En
-                // otros tipos (p. ej. Permiso de Circulación) solo se muestra
-                // si un registro antiguo ya lo trae guardado.
+                // El número corresponde a Revisión Técnica, SOAP y Permiso de
+                // Circulación (folio). En otros tipos solo se muestra si un
+                // registro antiguo ya lo trae guardado.
                 if (_aplicaNumero(documento)) ...[
                   _dato(
                     icono: Icons.numbers_outlined,

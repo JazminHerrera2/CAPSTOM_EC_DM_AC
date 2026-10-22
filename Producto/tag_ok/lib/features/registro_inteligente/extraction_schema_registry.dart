@@ -42,6 +42,11 @@ const Map<DocumentType, ExtractionSchema> extractionSchemas = {
     etiqueta: 'Permiso de Circulación',
     campos: [
       CampoExtraido(clave: 'patente', etiqueta: 'Patente', requerido: true),
+      CampoExtraido(
+        clave: 'numero',
+        etiqueta: 'Número de folio',
+        pista: 'es el folio del permiso; se rotula "Folio", "Serie", "N°" o "Nº" (solo el número, sin el rótulo). No lo confundas con la patente, el código de verificación ni el número de motor o chasis. Si no figura, déjalo en null',
+      ),
       CampoExtraido(clave: 'fecha_emision', etiqueta: 'Fecha de emisión', pista: 'se rotula "Fecha" en la cabecera del comprobante de pago (ej. "05/06/2026") o es la fecha del timbre "PAGADO"; muchos permisos NO la traen (solo el año y el período): si no figura una fecha de pago, emisión u otorgamiento, déjala en null'),
       CampoExtraido(
         clave: 'fecha_vencimiento',

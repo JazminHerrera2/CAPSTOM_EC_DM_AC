@@ -89,8 +89,10 @@ final Map<String, dynamic> _esquemaVehiculo = () {
 
 const String _promptVehiculo = '''
 Eres un asistente experto en documentos vehiculares chilenos. Analiza el
-documento recibido (imagen o PDF) de un vehículo (permiso de circulación,
-certificado de inscripción u otro) y extrae los datos del vehículo.
+documento recibido (imagen o PDF) de un vehículo y extrae sus datos. Lo
+habitual es el padrón (certificado de inscripción y anotaciones vigentes del
+Registro Civil), pero también puede ser un permiso de circulación u otro
+documento del vehículo.
 
 Extrae únicamente lo que puedas reconocer con certeza. Si un dato no es
 legible o no aparece, devuélvelo como null: nunca inventes ni infieras un
@@ -106,7 +108,7 @@ Reglas:
 - "modelo": el modelo tal como aparece (puede incluir la versión, ej.
   "RIO 4 LX 1.4L 6").
 - "anio": el año del VEHÍCULO (año de fabricación o del modelo), con 4
-  dígitos. Los permisos de circulación traen además el "AÑO" del propio
+  dígitos. En el padrón se rotula "Año"; los permisos de circulación traen además el "AÑO" del propio
   permiso (ej. "PERMISO DE CIRCULACION AÑO 2026"): ese NO es el año del
   vehículo. El del vehículo suele estar junto a la marca y el modelo.
 - "tipo_vehiculo": "AUTO" para automóvil, station wagon, SUV, jeep o similares;

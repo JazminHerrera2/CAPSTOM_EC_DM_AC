@@ -9,6 +9,7 @@ import '../../data/models/vehiculo_model.dart';
 import '../../data/services/componente_mantencion_service.dart';
 import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
+import '../../features/registro_inteligente/boton_foto_velocimetro.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
 import 'selector_tipo_mantencion.dart';
 
@@ -311,6 +312,14 @@ class _RegistrarMantenimientoScreenState
 
                     return null;
                   },
+                ),
+
+                const SizedBox(height: 10),
+
+                BotonFotoVelocimetro(
+                  onKilometraje: (km) => setState(
+                    () => _kilometrajeController.text = km.toString(),
+                  ),
                 ),
 
                 const SizedBox(height: 12),

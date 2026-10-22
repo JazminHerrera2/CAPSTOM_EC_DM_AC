@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/vehiculo_service.dart';
-import '../../features/registro_inteligente/odometro_extraction.dart';
+import '../../features/registro_inteligente/boton_foto_velocimetro.dart';
 import '../../features/registro_inteligente/vehiculo_extraction.dart';
 import 'foto_vehiculo.dart';
 
@@ -61,9 +61,6 @@ class _RegistrarEditarVehiculoScreenState
 
   bool _guardando = false;
   String? _error;
-
-  // La IA está leyendo la foto del velocímetro.
-  bool _leyendoKm = false;
 
   // Foto nueva elegida por el usuario (aún sin subir).
   Uint8List? _fotoBytes;
@@ -374,117 +371,6 @@ class _RegistrarEditarVehiculoScreenState
               ),
             ],
           ],
-        ),
-      ],
-    );
-  }
-
-  /// Fotografía el velocímetro y la IA completa el kilometraje. El usuario
-  /// puede corregirlo antes de guardar. La foto no se guarda.
-  Future<void> _fotografiarVelocimetro() async {
-    final messenger = ScaffoldMessenger.of(context);
-
-    final foto = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85,
-    );
-    if (foto == null || !mounted) return;
-
-    setState(() => _leyendoKm = true);
-    try {
-      final km = await extraerKilometraje(
-        bytes: await foto.readAsBytes(),
-        mimeType: 'image/jpeg',
-      );
-      if (!mounted) return;
-
-      if (km == null) {
-        messenger
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text(
-                'No se pudo leer el kilometraje. Toma otra foto o escríbelo.',
-              ),
-            ),
-          );
-        return;
-      }
-
-      setState(() => _kilometrajeCtrl.text = km.toString());
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(
-              'Kilometraje leído: $km km. Revísalo antes de guardar.',
-            ),
-          ),
-        );
-    } catch (e) {
-      debugPrint('No se pudo leer el velocímetro: $e');
-      if (!mounted) return;
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(
-            content: Text(
-              'No se pudo analizar la foto. Intenta de nuevo o escribe el kilometraje.',
-            ),
-          ),
-        );
-    } finally {
-      if (mounted) setState(() => _leyendoKm = false);
-    }
-  }
-
-  Widget _botonFotoVelocimetro() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: OutlinedButton.icon(
-            onPressed: _leyendoKm ? null : _fotografiarVelocimetro,
-            icon: _leyendoKm
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: primaryColor,
-                    ),
-                  )
-                : const Icon(
-                    Icons.photo_camera_outlined,
-                    color: primaryColor,
-                    size: 22,
-                  ),
-            label: Text(
-              _leyendoKm
-                  ? 'Leyendo el velocímetro...'
-                  : 'Fotografiar velocímetro con IA',
-              style: const TextStyle(
-                color: textMain,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              backgroundColor: primaryColor.withOpacity(0.10),
-              side: BorderSide(color: primaryColor.withOpacity(0.6)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Con el vehículo encendido, toma una foto donde se vea el '
-          'kilometraje total (no el parcial "TRIP").',
-          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
         ),
       ],
     );
@@ -1119,7 +1005,10 @@ class _RegistrarEditarVehiculoScreenState
 
             const SizedBox(height: 10),
 
-            _botonFotoVelocimetro(),
+            BotonFotoVelocimetro(
+              onKilometraje: (km) =>
+                  setState(() => _kilometrajeCtrl.text = km.toString()),
+            ),
 
             const SizedBox(height: 28),
 

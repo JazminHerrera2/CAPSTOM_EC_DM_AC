@@ -62,6 +62,12 @@ class _SmartCaptureReviewScreenState
     _tipoSeleccionado =
         widget.resultado?.tipoDetectado;
 
+    // Con un único tipo posible (p. ej. al actualizar un documento) no hay
+    // nada que elegir.
+    if (_tipoSeleccionado == null && widget.tiposPermitidos.length == 1) {
+      _tipoSeleccionado = widget.tiposPermitidos.first;
+    }
+
     _inicializarControllers();
   }
 
