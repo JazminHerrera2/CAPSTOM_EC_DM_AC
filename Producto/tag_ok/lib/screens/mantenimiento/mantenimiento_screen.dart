@@ -9,6 +9,7 @@ import '../../data/services/vehiculo_service.dart';
 import 'historial_mantenimientos_screen.dart';
 import 'proximas_mantenciones_screen.dart';
 import 'registro_ia_mantenimiento_screen.dart';
+import 'resumen_gastos_mantenciones.dart';
 import 'tarjeta_mantencion.dart';
 
 
@@ -166,6 +167,15 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
     return ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
           children: [
+            // Gasto total y por mes
+            if (vehiculoId != null) ...[
+              ResumenGastosMantenciones(
+                vehiculoId: vehiculoId,
+                patente: patente,
+              ),
+              const SizedBox(height: 12),
+            ],
+
             // Próxima mantención
             Container(
               padding: const EdgeInsets.all(18),

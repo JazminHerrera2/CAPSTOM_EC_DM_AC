@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/mantencion_model.dart';
 import '../../data/models/tipo_mantencion.dart';
 import '../../data/services/mantencion_service.dart';
+import 'gasto_periodo.dart';
 import 'selector_tipo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
 
@@ -13,10 +14,15 @@ class HistorialMantenimientosScreen extends StatefulWidget {
   /// Vehículo elegido en Mantenciones; sus mantenciones son las que se listan.
   final String? vehiculoId;
 
+  /// Si viene (desde "Ver detalle" del card de gasto), el historial se abre
+  /// filtrado por ese mes o año; el usuario puede quitar el filtro.
+  final PeriodoGasto? periodo;
+
   const HistorialMantenimientosScreen({
     super.key,
     this.patente,
     this.vehiculoId,
+    this.periodo,
   });
 
   @override
@@ -41,9 +47,13 @@ class _HistorialMantenimientosScreenState
 
   Stream<List<MantencionModel>>? _stream;
 
+  /// Filtro de periodo activo (null = sin filtro).
+  PeriodoGasto? _periodo;
+
   @override
   void initState() {
     super.initState();
+    _periodo = widget.periodo;
     final id = widget.vehiculoId;
     if (id != null) {
       _stream = MantencionService()
@@ -54,7 +64,13 @@ class _HistorialMantenimientosScreenState
   }
 
   /// Aplica el filtro de tipo (el de vehículo ya viene en la consulta).
-  List<MantencionModel> _filtrar(List<MantencionModel> todas) {
+  List<MantencionModel> _filtrar(List<MantencionModel> registradas) {
+    final periodo = _periodo;
+    final todas = periodo == null
+        ? registradas
+        : registradas
+            .where((m) => m.fecha != null && periodo.contiene(m.fecha!))
+            .toList();
     if (_tipoSeleccionado == _todosLosTipos) return todas;
     final tipo = TipoMantencion.fromEtiqueta(_tipoSeleccionado);
     final texto = _otroTipoController.text.trim().toLowerCase();
@@ -118,6 +134,11 @@ class _HistorialMantenimientosScreenState
             const SizedBox(height: 10),
 
             _selectorTipo(),
+
+            if (_periodo != null) ...[
+              const SizedBox(height: 10),
+              _chipPeriodo(_periodo!),
+            ],
 
             const SizedBox(height: 26),
 
@@ -210,7 +231,9 @@ class _HistorialMantenimientosScreenState
               _estadoVacio(
                 detalle: todas.isEmpty
                     ? null
-                    : 'No hay mantenciones de este tipo para el vehículo.',
+                    : _periodo != null
+                        ? 'No hay mantenciones que coincidan con los filtros.'
+                        : 'No hay mantenciones de este tipo para el vehículo.',
               )
             else
               for (final m in lista)
@@ -285,6 +308,47 @@ class _HistorialMantenimientosScreenState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ================================================================
+  // FILTRO PERIODO
+  // ================================================================
+
+  /// Aviso del periodo filtrado, con una X para quitarlo.
+  Widget _chipPeriodo(PeriodoGasto periodo) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.only(left: 14, right: 4),
+        decoration: BoxDecoration(
+          color: primaryColor.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: primaryColor.withOpacity(0.5)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.event_outlined, color: primaryColor, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              'Periodo: ${periodo.etiqueta}',
+              style: const TextStyle(
+                color: textMain,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            IconButton(
+              tooltip: 'Quitar filtro de periodo',
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              onPressed: () => setState(() => _periodo = null),
+              icon: const Icon(Icons.close_rounded, size: 18),
+              color: textMuted,
+            ),
+          ],
+        ),
       ),
     );
   }
