@@ -49,6 +49,7 @@ class MantencionService {
     int? proximoKilometraje,
     TipoComprobante? tipoComprobante,
     String? numeroComprobante,
+    List<String> componentes = const [],
     String origenRegistro = 'manual',
     DateTime? fechaCaptura,
     double? confianzaIa,
@@ -75,6 +76,7 @@ class MantencionService {
       proximoKilometraje: proximoKilometraje,
       tipoComprobante: tipoComprobante,
       numeroComprobante: limpio(numeroComprobante),
+      componentes: componentes,
       origenRegistro: origenRegistro,
       fechaCaptura: fechaCaptura,
       confianzaIa: confianzaIa,
@@ -173,6 +175,7 @@ class MantencionService {
       'proximo_kilometraje',
       'tipo_comprobante',
       'numero_comprobante',
+      'componentes',
     };
     final invalidas = cambios.keys.where((k) => !editables.contains(k));
     if (invalidas.isNotEmpty) {

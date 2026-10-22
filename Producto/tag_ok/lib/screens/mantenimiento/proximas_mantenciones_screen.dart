@@ -79,7 +79,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
 
   Widget _cabecera() {
     return const Text(
-      'Programa tus próximas mantenciones por fecha, kilometraje o ambos.',
+      'Indica la fecha de tu última mantención: la próxima se programa a un año y te avisamos 7 días antes y el mismo día.',
       style: TextStyle(
         color: textMuted,
         fontSize: 13,
@@ -300,7 +300,6 @@ class _ProgramarMantencionSheetState
   static const Color textMuted = Color(0xFF94A3B8);
   static const Color borderColor = Color(0xFF334155);
 
-  String _programarPor = 'Fecha';
   String? _tipo;
   final TextEditingController _otroTipoController = TextEditingController();
 
@@ -308,7 +307,7 @@ class _ProgramarMantencionSheetState
 
   final MantencionService _service = MantencionService();
   final TextEditingController _kmController = TextEditingController();
-  DateTime? _fecha;
+  DateTime? _ultimaFecha;
   bool _guardando = false;
   String? _error;
 
@@ -316,11 +315,11 @@ class _ProgramarMantencionSheetState
     final hoy = DateTime.now();
     final fecha = await showDatePicker(
       context: context,
-      initialDate: _fecha ?? hoy,
-      firstDate: DateTime(hoy.year, hoy.month, hoy.day),
-      lastDate: DateTime(2100),
+      initialDate: _ultimaFecha ?? hoy,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(hoy.year, hoy.month, hoy.day),
     );
-    if (fecha != null) setState(() => _fecha = fecha);
+    if (fecha != null) setState(() => _ultimaFecha = fecha);
   }
 
   Future<void> _programar() async {
@@ -336,17 +335,16 @@ class _ProgramarMantencionSheetState
       return;
     }
 
-    final usaFecha = _programarPor == 'Fecha' || _programarPor == 'Ambos';
-    final usaKm = _programarPor == 'Kilometraje' || _programarPor == 'Ambos';
-
-    if (usaFecha && _fecha == null) {
-      setState(() => _error = 'Selecciona la fecha.');
+    final ultima = _ultimaFecha;
+    if (ultima == null) {
+      setState(() => _error = 'Selecciona la fecha de la última mantención.');
       return;
     }
 
     int? km;
-    if (usaKm) {
-      km = int.tryParse(_kmController.text.replaceAll(RegExp(r'[^0-9]'), ''));
+    final textoKm = _kmController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (textoKm.isNotEmpty) {
+      km = int.tryParse(textoKm);
       if (km == null || km > 5000000) {
         setState(() => _error = 'Ingresa un kilometraje válido.');
         return;
@@ -364,7 +362,7 @@ class _ProgramarMantencionSheetState
         estado: EstadoMantencion.programada,
         tipo: tipo,
         tipoOtro: _otroTipoController.text,
-        proximaFecha: usaFecha ? _fecha : null,
+        proximaFecha: proximaMantencionAnual(ultima),
         proximoKilometraje: km,
       );
       if (!mounted) return;
@@ -431,7 +429,7 @@ class _ProgramarMantencionSheetState
             const SizedBox(height: 5),
 
             const Text(
-              'Define cuándo debería realizarse la próxima mantención.',
+              'La próxima mantención se programa a un año de la última.',
               style: TextStyle(
                 color: textMuted,
                 fontSize: 12,
@@ -450,39 +448,23 @@ class _ProgramarMantencionSheetState
 
             const SizedBox(height: 22),
 
-            const Text(
-              'Programar por',
-              style: TextStyle(
-                color: textMain,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+            _campoFecha(),
+
+            if (_ultimaFecha != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                'Próxima mantención: ${formatoFecha(proximaMantencionAnual(_ultimaFecha!))}',
+                style: const TextStyle(
+                  color: Color(0xFFA5B4FC),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
+            ],
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
 
-            Row(
-              children: [
-                Expanded(child: _opcion('Fecha')),
-                const SizedBox(width: 8),
-                Expanded(child: _opcion('Kilometraje')),
-                const SizedBox(width: 8),
-                Expanded(child: _opcion('Ambos')),
-              ],
-            ),
-
-            const SizedBox(height: 18),
-
-            if (_programarPor == 'Fecha' ||
-                _programarPor == 'Ambos')
-              _campoFecha(),
-
-            if (_programarPor == 'Ambos')
-              const SizedBox(height: 12),
-
-            if (_programarPor == 'Kilometraje' ||
-                _programarPor == 'Ambos')
-              _campoKilometraje(),
+            _campoKilometraje(),
 
             if (_error != null) ...[
               const SizedBox(height: 14),
@@ -528,44 +510,6 @@ class _ProgramarMantencionSheetState
     );
   }
 
-  Widget _opcion(String texto) {
-    final seleccionado = _programarPor == texto;
-
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _programarPor = texto;
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 42,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: seleccionado
-              ? primaryColor.withOpacity(0.16)
-              : const Color(0xFF0F172A),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: seleccionado
-                ? primaryColor
-                : borderColor,
-          ),
-        ),
-        child: Text(
-          texto,
-          style: TextStyle(
-            color: seleccionado
-                ? const Color(0xFFA5B4FC)
-                : textMuted,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _campoFecha() {
     return InkWell(
       onTap: _elegirFecha,
@@ -591,16 +535,16 @@ class _ProgramarMantencionSheetState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Próxima fecha',
+                    'Fecha de la última mantención',
                     style: TextStyle(color: textMuted, fontSize: 10),
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    _fecha == null
+                    _ultimaFecha == null
                         ? 'Seleccionar fecha'
-                        : formatoFecha(_fecha!),
+                        : formatoFecha(_ultimaFecha!),
                     style: TextStyle(
-                      color: _fecha == null ? textMuted : textMain,
+                      color: _ultimaFecha == null ? textMuted : textMain,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -620,7 +564,7 @@ class _ProgramarMantencionSheetState
       keyboardType: TextInputType.number,
       style: const TextStyle(color: textMain, fontSize: 13),
       decoration: InputDecoration(
-        labelText: 'Próximo kilometraje',
+        labelText: 'Próximo kilometraje (opcional)',
         hintText: 'Ej: 80000',
         suffixText: 'km',
         labelStyle: const TextStyle(color: textMuted),

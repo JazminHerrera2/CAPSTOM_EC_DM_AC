@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../data/models/componente_mantencion_model.dart';
 import '../../data/models/mantencion_model.dart';
 import '../../data/models/tipo_mantencion.dart';
 import '../../data/models/vehiculo_model.dart';
+import '../../data/services/componente_mantencion_service.dart';
 import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
@@ -47,6 +49,12 @@ class _RegistrarMantenimientoScreenState
 
   final VehiculoService _vehiculoService = VehiculoService();
   final MantencionService _mantencionService = MantencionService();
+  final Stream<List<ComponenteMantencion>> _componentesStream =
+      ComponenteMantencionService().streamActivos();
+
+  /// Ids de los componentes marcados: los que detectó la IA y los que el
+  /// usuario marque o desmarque a mano.
+  final Set<String> _componentesMarcados = {};
 
   bool _guardando = false;
 
@@ -98,6 +106,7 @@ class _RegistrarMantenimientoScreenState
     _costoController.text = d.costo?.toString() ?? '';
     _descripcionController.text = d.descripcion ?? '';
     _observacionesController.text = d.observaciones ?? '';
+    _componentesMarcados.addAll(d.componentes);
     if (d.tipoComprobante != null) _comprobante = d.tipoComprobante!.etiqueta;
     _numeroComprobanteController.text = d.numeroComprobante ?? '';
   }
@@ -178,6 +187,7 @@ class _RegistrarMantenimientoScreenState
         numeroComprobante: _tipoComprobante == null
             ? null
             : _numeroComprobanteController.text,
+        componentes: _componentesMarcados.toList(),
         origenRegistro: _desdeIa ? 'ia' : 'manual',
         fechaCaptura: _desdeIa ? (widget.fechaCaptura ?? DateTime.now()) : null,
       );
@@ -338,6 +348,27 @@ class _RegistrarMantenimientoScreenState
                     return null;
                   },
                 ),
+
+                const SizedBox(height: 22),
+
+                _tituloSeccion('Componentes revisados'),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  _desdeIa
+                      ? 'Marcados según lo que la IA leyó en el comprobante. Puedes marcar o desmarcar a mano.'
+                      : 'Marca los componentes a los que se les hizo mantención.',
+                  style: const TextStyle(
+                    color: textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                _listaComponentes(),
 
                 const SizedBox(height: 22),
 
@@ -522,6 +553,41 @@ class _RegistrarMantenimientoScreenState
       onChanged: (v) => setState(() => _tipoMantenimiento = v),
       otroController: _otroTipoController,
       flotante: true,
+    );
+  }
+
+  Widget _listaComponentes() {
+    return StreamBuilder<List<ComponenteMantencion>>(
+      stream: _componentesStream,
+      initialData: componentesPorDefecto,
+      builder: (context, snapshot) {
+        final componentes = snapshot.data ?? componentesPorDefecto;
+        return Column(
+          children: [
+            for (final c in componentes)
+              CheckboxListTile(
+                value: _componentesMarcados.contains(c.id),
+                onChanged: (marcado) => setState(() {
+                  if (marcado == true) {
+                    _componentesMarcados.add(c.id);
+                  } else {
+                    _componentesMarcados.remove(c.id);
+                  }
+                }),
+                title: Text(
+                  c.nombre,
+                  style: const TextStyle(color: textMain, fontSize: 14),
+                ),
+                activeColor: primaryColor,
+                checkColor: Colors.white,
+                side: const BorderSide(color: textMuted),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+          ],
+        );
+      },
     );
   }
 

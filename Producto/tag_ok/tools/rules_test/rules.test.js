@@ -105,6 +105,14 @@ test('2d crear documento en un vehículo AJENO falla (uid propio)', async () => 
   await assertFails(como(UID_A).doc('documentos_vehiculares/nuevo2').set(d));
 });
 
+test('2e fecha_emision_estimada: booleano pasa; otro tipo de valor falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('documentos_vehiculares/est1').set(
+    { ...nuevoDoc(UID_A), fecha_emision: Timestamp.now(), fecha_emision_estimada: true }));
+  await assertFails(db.doc('documentos_vehiculares/est2').set(
+    { ...nuevoDoc(UID_A), fecha_emision_estimada: 'si' }));
+});
+
 // --- Prueba 3: admin lee todo lo que necesita el panel ----------------------
 test('3  admin lee usuarios (get y list), trips y vehiculos de todos', async () => {
   const db = como(ADMIN);
@@ -247,6 +255,29 @@ test('8k actualizar o borrar la de B falla; borrar la propia pasa', async () => 
   await assertFails(como(UID_A).doc('mantenciones/manB').update({ taller: 'x' }));
   await assertFails(como(UID_A).doc('mantenciones/manB').delete());
   await assertSucceeds(como(UID_A).doc('mantenciones/manA').delete());
+});
+
+test('8l componentes revisados: lista de ids pasa; un valor que no es lista falla; se puede actualizar', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('mantenciones/k1').set(
+    nuevaMantencion(UID_A, { componentes: ['cambio_aceite_motor', 'frenos'] })));
+  await assertFails(db.doc('mantenciones/k2').set(
+    nuevaMantencion(UID_A, { componentes: 'frenos' })));
+  await assertSucceeds(db.doc('mantenciones/manA').update({ componentes: ['bateria'] }));
+});
+
+// --- Prueba 8m: catálogo de componentes de mantención ------------------------
+test('8m componentes_mantencion: todo usuario con sesión lee; solo admin escribe', async () => {
+  const comp = { nombre: 'Frenos', orden: 4, activo: true };
+  await assertSucceeds(como(ADMIN).doc('componentes_mantencion/frenos').set(comp));
+  await assertSucceeds(como(UID_A).doc('componentes_mantencion/frenos').get());
+  await assertSucceeds(como(UID_A).collection('componentes_mantencion').get());
+  await assertFails(anonimo().collection('componentes_mantencion').get());
+  await assertFails(como(UID_A).doc('componentes_mantencion/x').set(comp));
+  await assertFails(como(UID_A).doc('componentes_mantencion/frenos').delete());
+  await assertFails(como(ADMIN).doc('componentes_mantencion/malo').set({ ...comp, nombre: '' }));
+  await assertSucceeds(como(ADMIN).doc('componentes_mantencion/frenos').update({ activo: false }));
+  await assertSucceeds(como(ADMIN).doc('componentes_mantencion/frenos').delete());
 });
 
 // --- Prueba 9: notificaciones (recordatorios de mantención, RF-012) ---------

@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tag_ok/data/models/componente_mantencion_model.dart';
 import 'package:tag_ok/data/models/mantencion_model.dart';
 import 'package:tag_ok/data/models/tipo_mantencion.dart';
 import 'package:tag_ok/features/registro_inteligente/mantencion_extraction.dart';
 
 void main() {
+  mainComponentes();
   test('interpreta una boleta completa', () {
     final m = parseMantencionExtraida({
       'tipo_mantencion': 'cambio_aceite',
@@ -74,5 +76,48 @@ void main() {
         {'descripcion': 'a' * 800, 'taller': 'b' * 200});
     expect(largo.descripcion!.length, 500);
     expect(largo.taller!.length, 100);
+  });
+}
+
+void mainComponentes() {
+  test('lee los componentes, ignora ids desconocidos y repetidos', () {
+    final m = parseMantencionExtraida({
+      'componentes': ['cambio_aceite_motor', 'frenos', 'inventado', 'frenos'],
+    });
+    expect(m.componentes, ['cambio_aceite_motor', 'frenos']);
+    expect(m.vacia, isFalse);
+    expect(parseMantencionExtraida({}).componentes, isEmpty);
+    expect(parseMantencionExtraida({'componentes': 'frenos'}).componentes,
+        isEmpty);
+  });
+
+  test('usa la lista de componentes recibida (la tabla es editable)', () {
+    final m = parseMantencionExtraida(
+      {'componentes': ['alineacion', 'frenos']},
+      componentesValidos: const [
+        ComponenteMantencion(id: 'alineacion', nombre: 'Alineación', orden: 1),
+      ],
+    );
+    expect(m.componentes, ['alineacion']);
+  });
+
+  test('la mantención guarda y lee sus componentes', () {
+    final m = MantencionModel(
+      id: '',
+      vehiculoId: 'v1',
+      estado: EstadoMantencion.realizada,
+      tipo: TipoMantencion.cambioAceite,
+      componentes: const ['bateria', 'frenos'],
+    );
+    expect(m.toJson()['componentes'], ['bateria', 'frenos']);
+    expect(MantencionModel.fromJson(m.toJson(), 'x').componentes,
+        ['bateria', 'frenos']);
+    expect(MantencionModel.fromJson({'vehiculo_id': 'v1'}, 'y').componentes,
+        isEmpty);
+  });
+
+  test('la próxima mantención es a un año de la última', () {
+    expect(proximaMantencionAnual(DateTime(2026, 3, 5)), DateTime(2027, 3, 5));
+    expect(proximaMantencionAnual(DateTime(2024, 2, 29)), DateTime(2025, 2, 28));
   });
 }

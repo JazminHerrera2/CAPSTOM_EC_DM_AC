@@ -16,6 +16,13 @@ extension EstadoMantencionJson on EstadoMantencion {
   }
 }
 
+/// Intervalo por defecto entre mantenciones: un año desde la última.
+DateTime proximaMantencionAnual(DateTime ultima) {
+  // Un 29 de febrero pasa al 28 del año siguiente (no al 1 de marzo).
+  final dia = (ultima.month == 2 && ultima.day == 29) ? 28 : ultima.day;
+  return DateTime(ultima.year + 1, ultima.month, dia);
+}
+
 /// Tipo del comprobante de pago de una mantención (campo `tipo_comprobante`).
 ///
 /// Si se agrega o renombra un tipo, hay que actualizar también la lista de
@@ -84,6 +91,10 @@ class MantencionModel {
   final TipoComprobante? tipoComprobante;
   final String? numeroComprobante;
 
+  /// Ids de `componentes_mantencion` revisados en esta mantención (marcados
+  /// por la IA o a mano).
+  final List<String> componentes;
+
   /// 'manual' o 'ia'.
   final String origenRegistro;
   final DateTime? fechaCaptura;
@@ -106,6 +117,7 @@ class MantencionModel {
     this.proximoKilometraje,
     this.tipoComprobante,
     this.numeroComprobante,
+    this.componentes = const [],
     this.origenRegistro = 'manual',
     this.fechaCaptura,
     this.confianzaIa,
@@ -149,6 +161,10 @@ class MantencionModel {
       proximoKilometraje: (json['proximo_kilometraje'] as num?)?.toInt(),
       tipoComprobante: TipoComprobante.fromFirestore(json['tipo_comprobante']),
       numeroComprobante: json['numero_comprobante'],
+      componentes: (json['componentes'] as List?)
+              ?.whereType<String>()
+              .toList() ??
+          const [],
       origenRegistro: json['origen_registro'] ?? 'manual',
       fechaCaptura: (json['fecha_captura'] as Timestamp?)?.toDate(),
       confianzaIa: (json['confianza_ia'] as num?)?.toDouble(),
@@ -173,6 +189,7 @@ class MantencionModel {
       'proximo_kilometraje': proximoKilometraje,
       'tipo_comprobante': tipoComprobante?.valorFirestore,
       'numero_comprobante': numeroComprobante,
+      'componentes': componentes,
       'origen_registro': origenRegistro,
       'fecha_captura':
           fechaCaptura != null ? Timestamp.fromDate(fechaCaptura!) : null,

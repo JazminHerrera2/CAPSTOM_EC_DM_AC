@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../../data/models/componente_mantencion_model.dart';
 import '../../data/models/mantencion_model.dart';
 import '../../data/models/tipo_mantencion.dart';
 import 'openai_extraction_service.dart';
@@ -21,6 +22,10 @@ class MantencionExtraida {
   final TipoComprobante? tipoComprobante;
   final String? numeroComprobante;
 
+  /// Ids de los componentes (`componentes_mantencion`) que el documento indica
+  /// como revisados o cambiados.
+  final List<String> componentes;
+
   const MantencionExtraida({
     this.tipo,
     this.tipoOtro,
@@ -32,6 +37,7 @@ class MantencionExtraida {
     this.observaciones,
     this.tipoComprobante,
     this.numeroComprobante,
+    this.componentes = const [],
   });
 
   /// `true` si la IA no logró leer ningún dato.
@@ -44,7 +50,8 @@ class MantencionExtraida {
       descripcion == null &&
       observaciones == null &&
       tipoComprobante == null &&
-      numeroComprobante == null;
+      numeroComprobante == null &&
+      componentes.isEmpty;
 }
 
 Map<String, dynamic> _campoTexto(String descripcion) => {
@@ -54,7 +61,7 @@ Map<String, dynamic> _campoTexto(String descripcion) => {
 
 /// JSON Schema estricto de OpenAI: todo va en `required` y lo que no se lee
 /// con certeza se devuelve como null.
-final Map<String, dynamic> _esquemaMantencion = () {
+Map<String, dynamic> _esquemaMantencion(List<ComponenteMantencion> componentes) {
   final properties = <String, dynamic>{
     'tipo_mantencion': {
       'type': ['string', 'null'],
@@ -80,6 +87,16 @@ final Map<String, dynamic> _esquemaMantencion = () {
     'numero_comprobante': _campoTexto(
       'Número (folio) del comprobante, solo el número.',
     ),
+    'componentes': {
+      'type': 'array',
+      'items': {
+        'type': 'string',
+        'enum': componentes.map((c) => c.id).toList(),
+      },
+      'description':
+          'Ids de los componentes a los que el documento indica que se les '
+          'realizó mantención. Lista vacía si no hay ninguno.',
+    },
   };
   return {
     'type': 'object',
@@ -87,9 +104,11 @@ final Map<String, dynamic> _esquemaMantencion = () {
     'required': properties.keys.toList(),
     'additionalProperties': false,
   };
-}();
+}
 
-String _promptMantencion() {
+String _promptMantencion(List<ComponenteMantencion> componentes) {
+  final listaComponentes =
+      componentes.map((c) => '- ${c.id}: ${c.nombre}').join('\n');
   final tipos = TipoMantencion.values
       .map((t) => '- ${t.valorFirestore}: ${t.etiqueta}')
       .join('\n');
@@ -131,6 +150,16 @@ Reglas de formato:
   comprobante (voucher, comprobante de venta, orden de trabajo) es "otro".
   El número es el folio del documento, solo con números: no lo confundas
   con el RUT, la patente, el kilometraje ni el número de orden de trabajo.
+- "componentes": ids de los componentes de esta lista a los que el documento
+  indica que se les hizo mantención, cambio o revisión:
+
+$listaComponentes
+
+  Marca un componente solo si el servicio aparece escrito en el documento
+  (por ejemplo "aceite motor" o "filtro de aceite" es "cambio_aceite_motor").
+  Un insumo suelto (por ejemplo un aerosol "limpia frenos" o "agua
+  desmineralizada") no cuenta como mantención del componente. Si no hay
+  ninguno, devuelve una lista vacía.
 - No extraigas datos del cliente (nombre, RUT ni dirección del comprador).''';
 }
 
@@ -204,7 +233,16 @@ String? _folio(Object? valor) {
 /// Interpreta el JSON de la IA. Los largos máximos coinciden con las reglas
 /// de Firestore (`mantencionValida`), para que lo extraído siempre se pueda
 /// guardar. Un kilometraje o costo fuera de rango se descarta.
-MantencionExtraida parseMantencionExtraida(Map<String, dynamic> json) {
+MantencionExtraida parseMantencionExtraida(
+  Map<String, dynamic> json, {
+  List<ComponenteMantencion> componentesValidos = componentesPorDefecto,
+}) {
+  final idsValidos = componentesValidos.map((c) => c.id).toSet();
+  final componentes = <String>[
+    for (final id in json['componentes'] is List ? json['componentes'] as List : const [])
+      if (idsValidos.contains(id.toString())) id.toString(),
+  ].toSet().toList();
+
   final tipoRaw = json['tipo_mantencion']?.toString();
   final tipo = TipoMantencion.values
       .where((t) => t.valorFirestore == tipoRaw)
@@ -226,6 +264,7 @@ MantencionExtraida parseMantencionExtraida(Map<String, dynamic> json) {
     tipoComprobante:
         TipoComprobante.fromFirestore(json['tipo_comprobante']?.toString()),
     numeroComprobante: _folio(json['numero_comprobante']),
+    componentes: componentes,
   );
 }
 
@@ -235,6 +274,7 @@ MantencionExtraida parseMantencionExtraida(Map<String, dynamic> json) {
 Future<MantencionExtraida> extraerMantencion({
   required Uint8List bytes,
   required String mimeType,
+  List<ComponenteMantencion> componentes = componentesPorDefecto,
   OpenAiExtractionService? servicio,
   void Function(String etapa)? alCambiarEtapa,
 }) async {
@@ -250,9 +290,9 @@ Future<MantencionExtraida> extraerMantencion({
       .generarJsonConFallback(
     partes: [
       EvidenciaArchivo(preparada.mimeType, preparada.bytes),
-      EvidenciaTexto(_promptMantencion()),
+      EvidenciaTexto(_promptMantencion(componentes)),
     ],
-    esquemaJson: _esquemaMantencion,
+    esquemaJson: _esquemaMantencion(componentes),
     nombreEsquema: 'mantencion',
   );
 
@@ -260,5 +300,5 @@ Future<MantencionExtraida> extraerMantencion({
   if (json is! Map<String, dynamic>) {
     throw const FormatException('Respuesta de la IA con formato inesperado.');
   }
-  return parseMantencionExtraida(json);
+  return parseMantencionExtraida(json, componentesValidos: componentes);
 }
