@@ -60,6 +60,10 @@ class DocumentoVehicularModel {
   final TipoDocumentoVehicular tipoDocumento;
   final String? numero;
   final DateTime? fechaEmision;
+
+  /// `true` si [fechaEmision] no figuraba en el documento (solo traía el año)
+  /// y se completó con la fecha de ingreso. Documentos antiguos: `false`.
+  final bool fechaEmisionEstimada;
   final DateTime? fechaVencimiento;
   final String? compania;
   final String? numeroPoliza;
@@ -78,6 +82,7 @@ class DocumentoVehicularModel {
     required this.tipoDocumento,
     this.numero,
     this.fechaEmision,
+    this.fechaEmisionEstimada = false,
     this.fechaVencimiento,
     this.compania,
     this.numeroPoliza,
@@ -101,6 +106,7 @@ class DocumentoVehicularModel {
       ),
       numero: json['numero'],
       fechaEmision: (json['fecha_emision'] as Timestamp?)?.toDate(),
+      fechaEmisionEstimada: json['fecha_emision_estimada'] == true,
       fechaVencimiento: (json['fecha_vencimiento'] as Timestamp?)?.toDate(),
       compania: json['compania'],
       numeroPoliza: json['numero_poliza'],
@@ -121,6 +127,8 @@ class DocumentoVehicularModel {
       'fecha_emision': fechaEmision != null
           ? Timestamp.fromDate(fechaEmision!)
           : null,
+      // Solo se escribe cuando es true: un documento normal no cambia.
+      if (fechaEmisionEstimada) 'fecha_emision_estimada': true,
       'fecha_vencimiento': fechaVencimiento != null
           ? Timestamp.fromDate(fechaVencimiento!)
           : null,

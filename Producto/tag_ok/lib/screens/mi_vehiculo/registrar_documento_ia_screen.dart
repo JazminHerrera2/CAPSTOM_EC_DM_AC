@@ -11,6 +11,7 @@ import '../../data/services/vehiculo_service.dart';
 import '../../features/registro_inteligente/consejos_captura.dart';
 import '../../features/registro_inteligente/preparar_imagen.dart';
 import '../../features/registro_inteligente/document_type.dart';
+import '../../features/registro_inteligente/extraction_schema_registry.dart';
 import '../../features/registro_inteligente/smart_capture_controller.dart';
 import '../../features/registro_inteligente/smart_capture_result.dart';
 import '../../features/registro_inteligente/smart_capture_review_screen.dart';
@@ -438,6 +439,8 @@ class _RegistrarDocumentoIaScreenState
                 fechaEmision: parseFecha(
                   campos['fecha_emision'],
                 ),
+                fechaEmisionEstimada:
+                    campos[claveFechaEmisionEstimada] == 'true',
                 fechaVencimiento:
                     parseFecha(
                   campos[

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
+import '../../utils/permiso_circulacion.dart';
 import 'document_type.dart';
 import 'extraction_schema_registry.dart';
 import 'file_text_extractor.dart';
@@ -41,6 +42,9 @@ class SmartCaptureController {
     required List<DocumentType> tiposPermitidos,
     void Function(String etapa)? alCambiarEtapa,
   }) async {
+    // Momento en que el usuario ingresó el archivo: sirve de fecha de emisión
+    // estimada cuando el permiso trae solo el año.
+    final fechaIngreso = DateTime.now();
     final reloj = Stopwatch()..start();
     final esImagen = mimeType.startsWith('image/');
 
@@ -142,6 +146,25 @@ class SmartCaptureController {
     final validados = validarCamposExtraidos(parsed.campos);
     final camposFinales = validados.campos;
 
+    // Permiso de Circulación sin fecha de emisión pero con año: se completa
+    // con la fecha de ingreso y se marca como estimada. El año auxiliar no se
+    // muestra ni se guarda.
+    final camposEstimados = <String>{};
+    final anioRaw = camposFinales.remove(claveAnioPermiso);
+    if (parsed.tipo == DocumentType.permisoCirculacion) {
+      final emision = resolverFechaEmision(
+        fechaLeida: camposFinales['fecha_emision'] == null
+            ? null
+            : interpretarFecha(camposFinales['fecha_emision'].toString()),
+        anioLeido: int.tryParse(anioRaw?.toString().trim() ?? ''),
+        fechaIngreso: fechaIngreso,
+      );
+      if (emision != null && emision.estimada) {
+        camposFinales['fecha_emision'] = formatoIsoFecha(emision.fecha);
+        camposEstimados.add('fecha_emision');
+      }
+    }
+
     final camposDudosos = <String>{...validados.dudosos};
     if (parsed.tipo != null) {
       for (final campo in extractionSchemas[parsed.tipo]!.campos) {
@@ -158,7 +181,8 @@ class SmartCaptureController {
       campos: camposFinales,
       camposDudosos: camposDudosos,
       confianzaIa: parsed.confianzaIa,
-      fechaCaptura: DateTime.now(),
+      camposEstimados: camposEstimados,
+      fechaCaptura: fechaIngreso,
     );
   }
 }

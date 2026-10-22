@@ -81,6 +81,9 @@ String _iso(DateTime f) =>
     '${f.month.toString().padLeft(2, '0')}-'
     '${f.day.toString().padLeft(2, '0')}';
 
+/// Fecha en el formato "YYYY-MM-DD" que usan los campos de fecha de la revisión.
+String formatoIsoFecha(DateTime f) => _iso(f);
+
 /// Normaliza y valida lo que devolvió la IA, sin depender de que acierte:
 ///
 /// - **Patente**: se pasa a mayúsculas sin separadores; si no tiene formato

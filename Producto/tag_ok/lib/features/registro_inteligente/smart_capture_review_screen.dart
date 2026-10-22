@@ -91,6 +91,16 @@ class _SmartCaptureReviewScreenState
     super.dispose();
   }
 
+  /// `true` si [clave] se estimó (no figuraba en el documento) y el usuario
+  /// todavía no la modificó.
+  bool _fechaEstimadaVigente(String clave) {
+    final resultado = widget.resultado;
+    if (resultado == null || !resultado.camposEstimados.contains(clave)) {
+      return false;
+    }
+    return _controllers[clave]?.text.trim() == resultado.campos[clave];
+  }
+
   // ------------------------------------------------------------
   // IA - CAMPO DUDOSO
   // ------------------------------------------------------------
@@ -223,6 +233,12 @@ class _SmartCaptureReviewScreenState
       if (valor.isNotEmpty) {
         campos[entry.key] = valor;
       }
+    }
+
+    // Una fecha estimada sigue marcada como tal solo si el usuario no la
+    // cambió; si la corrigió, pasa a ser un dato confirmado por él.
+    if (_fechaEstimadaVigente('fecha_emision')) {
+      campos[claveFechaEmisionEstimada] = 'true';
     }
 
     try {
@@ -376,6 +392,29 @@ class _SmartCaptureReviewScreenState
               ),
             ),
           ),
+
+          if (_fechaEstimadaVigente(campo.clave)) ...[
+            const SizedBox(height: 6),
+            const Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: textMuted,
+                  size: 13,
+                ),
+                SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    'Estimada: el documento solo indica el año, así que se usó la fecha de hoy. Corrígela si no es correcta.',
+                    style: TextStyle(
+                      color: textMuted,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
 
           if (dudoso) ...[
             const SizedBox(height: 6),

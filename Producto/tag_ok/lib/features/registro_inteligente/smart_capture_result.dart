@@ -35,6 +35,10 @@ class SmartCaptureResult {
   /// según la verificación de la IA. Null si no corrió OCR.
   final double? confianzaIa;
 
+  /// Campos cuyo valor no se leyó del documento sino que se estimó (por ahora
+  /// solo `fecha_emision` del permiso, cuando el documento trae solo el año).
+  final Set<String> camposEstimados;
+
   final String origen;
   final DateTime fechaCaptura;
 
@@ -43,6 +47,7 @@ class SmartCaptureResult {
     required this.campos,
     required this.camposDudosos,
     this.confianzaIa,
+    this.camposEstimados = const {},
     this.origen = 'ia',
     required this.fechaCaptura,
   });

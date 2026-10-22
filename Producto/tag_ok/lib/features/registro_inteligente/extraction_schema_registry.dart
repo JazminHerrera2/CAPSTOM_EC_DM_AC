@@ -103,6 +103,26 @@ const Map<DocumentType, ExtractionSchema> extractionSchemas = {
   ),
 };
 
+/// Campos que la IA lee solo para completar otros: se piden en el esquema pero
+/// no se muestran en la revisión ni se guardan. Ej.: el año del permiso sirve
+/// para estimar la fecha de emisión cuando el documento no la trae.
+const Map<DocumentType, List<CampoExtraido>> camposAuxiliaresIa = {
+  DocumentType.permisoCirculacion: [
+    CampoExtraido(
+      clave: 'anio_permiso',
+      etiqueta: 'Año del permiso',
+      pista: 'se rotula "AÑO" (ej. "2026"); solo el año, 4 dígitos',
+    ),
+  ],
+};
+
+/// Clave que la revisión agrega a los campos confirmados cuando la fecha de
+/// emisión es una estimación (valor "true"). No es un campo del documento.
+const String claveFechaEmisionEstimada = 'fecha_emision_estimada';
+
+/// Clave del campo auxiliar con el año del permiso.
+const String claveAnioPermiso = 'anio_permiso';
+
 /// Sufijo de la propiedad booleana que indica si el OCR acertó en un campo.
 const String sufijoOcrCorrecto = '_ocr_correcto';
 
@@ -158,7 +178,7 @@ Map<String, dynamic> buildCombinedSchema(
   final etiquetasPorClave = <String, Map<String, String>>{};
   for (final tipo in tiposPermitidos) {
     final schema = extractionSchemas[tipo]!;
-    for (final campo in schema.campos) {
+    for (final campo in [...schema.campos, ...?camposAuxiliaresIa[tipo]]) {
       etiquetasPorClave.putIfAbsent(campo.clave, () => {})[schema.etiqueta] =
           campo.etiqueta;
     }
@@ -231,7 +251,7 @@ detectó. Si el campo no aparece en el documento, deja ambos vacíos.
 
   final descripcionTipos = tiposPermitidos.map((tipo) {
     final schema = extractionSchemas[tipo]!;
-    final camposTexto = schema.campos
+    final camposTexto = [...schema.campos, ...?camposAuxiliaresIa[tipo]]
         .map((c) => c.pista == null ? c.etiqueta : '${c.etiqueta} (${c.pista})')
         .join('\n    · ');
     return '- ${schema.etiqueta}: campos esperados\n    · $camposTexto';
