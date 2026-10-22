@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../utils/permiso_circulacion.dart';
+
 /// Tipos de documento vehicular soportados por Mi Vehículo (CU3/CU6).
 ///
 /// El componente transversal de Registro Inteligente (lib/features/
@@ -65,6 +67,10 @@ class DocumentoVehicularModel {
   /// y se completó con la fecha de ingreso. Documentos antiguos: `false`.
   final bool fechaEmisionEstimada;
   final DateTime? fechaVencimiento;
+
+  /// Forma de pago del permiso de circulación (null en otros documentos y en
+  /// permisos anteriores a este campo).
+  final FormaPagoPermiso? formaPago;
   final String? compania;
   final String? numeroPoliza;
   final String? archivoPath;
@@ -84,6 +90,7 @@ class DocumentoVehicularModel {
     this.fechaEmision,
     this.fechaEmisionEstimada = false,
     this.fechaVencimiento,
+    this.formaPago,
     this.compania,
     this.numeroPoliza,
     this.archivoPath,
@@ -108,6 +115,7 @@ class DocumentoVehicularModel {
       fechaEmision: (json['fecha_emision'] as Timestamp?)?.toDate(),
       fechaEmisionEstimada: json['fecha_emision_estimada'] == true,
       fechaVencimiento: (json['fecha_vencimiento'] as Timestamp?)?.toDate(),
+      formaPago: FormaPagoPermiso.fromFirestore(json['forma_pago']),
       compania: json['compania'],
       numeroPoliza: json['numero_poliza'],
       archivoPath: json['archivo_path'],
@@ -132,6 +140,7 @@ class DocumentoVehicularModel {
       'fecha_vencimiento': fechaVencimiento != null
           ? Timestamp.fromDate(fechaVencimiento!)
           : null,
+      if (formaPago != null) 'forma_pago': formaPago!.valorFirestore,
       'compania': compania,
       'numero_poliza': numeroPoliza,
       'archivo_path': archivoPath,

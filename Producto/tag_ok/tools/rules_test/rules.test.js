@@ -113,6 +113,14 @@ test('2e fecha_emision_estimada: booleano pasa; otro tipo de valor falla', async
     { ...nuevoDoc(UID_A), fecha_emision_estimada: 'si' }));
 });
 
+test('2f forma_pago: total/cuota_1/cuota_2 pasan; otro valor falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('documentos_vehiculares/fp1').set({ ...nuevoDoc(UID_A), forma_pago: 'cuota_1' }));
+  await assertSucceeds(db.doc('documentos_vehiculares/fp2').set({ ...nuevoDoc(UID_A), forma_pago: 'total' }));
+  await assertSucceeds(db.doc('documentos_vehiculares/fp4').set({ ...nuevoDoc(UID_A), forma_pago: 'cuota_2' }));
+  await assertFails(db.doc('documentos_vehiculares/fp3').set({ ...nuevoDoc(UID_A), forma_pago: 'tres_cuotas' }));
+});
+
 // --- Prueba 3: admin lee todo lo que necesita el panel ----------------------
 test('3  admin lee usuarios (get y list), trips y vehiculos de todos', async () => {
   const db = como(ADMIN);

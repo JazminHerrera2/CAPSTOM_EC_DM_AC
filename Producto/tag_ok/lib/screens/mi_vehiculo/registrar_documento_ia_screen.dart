@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../data/models/documento_vehicular_model.dart';
+import '../../utils/permiso_circulacion.dart';
 import '../../data/services/documento_vehicular_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/vehiculo_service.dart';
@@ -415,6 +416,9 @@ class _RegistrarDocumentoIaScreenState
                     campos[
                         'fecha_vencimiento'],
                   ),
+                  formaPago: FormaPagoPermiso.fromFirestore(
+                    campos[claveFormaPago],
+                  ),
                   compania:
                       campos['compania'],
                   numeroPoliza:
@@ -445,6 +449,9 @@ class _RegistrarDocumentoIaScreenState
                     parseFecha(
                   campos[
                       'fecha_vencimiento'],
+                ),
+                formaPago: FormaPagoPermiso.fromFirestore(
+                  campos[claveFormaPago],
                 ),
                 compania:
                     campos['compania'],

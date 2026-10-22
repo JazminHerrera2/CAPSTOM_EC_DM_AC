@@ -28,9 +28,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
   /// entre la tarjeta de la patente y los documentos.
   final bool mostrarTitulo;
 
-  /// Muestra el botón "Agregar documento" bajo las tarjetas. La pantalla de un
-  /// solo vehículo ya tiene su botón flotante, así que ahí va en false; en la
-  /// pestaña con varios vehículos cada sección lleva el suyo.
+  /// Muestra el botón "Agregar documento" debajo de la tarjeta del vehículo y
+  /// arriba de los documentos ya registrados (cada sección lleva el suyo).
   final bool mostrarBotonAgregar;
 
   const DocumentosVehiculoSeccion({
@@ -502,6 +501,32 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
           ),
         ),
 
+        // Debajo del vehículo y arriba de los documentos ya registrados. Sin
+        // documentos ya se ofrece "Agregar primer documento".
+        if (mostrarBotonAgregar && documentos.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: () => _agregarDocumento(context),
+              icon: const Icon(Icons.add),
+              label: const Text(
+                'Agregar documento',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+        ],
+
         if (mostrarTitulo) ...[
           const SizedBox(height: 26),
 
@@ -566,27 +591,6 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
             (documento) => _tarjetaDocumento(context, documento),
           ),
 
-        // Sin documentos ya se ofrece "Agregar primer documento".
-        if (mostrarBotonAgregar && documentos.isNotEmpty)
-          SizedBox(
-            height: 50,
-            child: ElevatedButton.icon(
-              onPressed: () => _agregarDocumento(context),
-              icon: const Icon(Icons.add),
-              label: const Text(
-                'Agregar documento',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }

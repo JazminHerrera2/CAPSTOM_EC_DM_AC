@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '../../utils/permiso_circulacion.dart';
 import '../models/documento_vehicular_model.dart';
 import 'auditoria_service.dart';
 import 'notificacion_service.dart';
@@ -188,6 +189,7 @@ class DocumentoVehicularService {
     DateTime? fechaEmision,
     bool fechaEmisionEstimada = false,
     DateTime? fechaVencimiento,
+    FormaPagoPermiso? formaPago,
     String? compania,
     String? numeroPoliza,
     String? archivoPath,
@@ -203,6 +205,7 @@ class DocumentoVehicularService {
       fechaEmision: fechaEmision,
       fechaEmisionEstimada: fechaEmisionEstimada,
       fechaVencimiento: fechaVencimiento,
+      formaPago: formaPago,
       compania: compania,
       numeroPoliza: numeroPoliza,
       archivoPath: archivoPath,

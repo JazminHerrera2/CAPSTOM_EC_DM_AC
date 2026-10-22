@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/permiso_circulacion.dart';
+
 import 'document_type.dart';
 import 'extraction_schema_registry.dart';
 import 'smart_capture_result.dart';
+import 'validacion_campos.dart';
 
 class SmartCaptureReviewScreen extends StatefulWidget {
   final SmartCaptureResult? resultado;
@@ -35,8 +38,13 @@ class _SmartCaptureReviewScreenState
   static const Color textMuted = Color(0xFF94A3B8);
   static const Color primaryColor = Color(0xFF4F46E5);
   static const Color warningColor = Color(0xFFF59E0B);
+  static const Color infoMorado = Color(0xFF8B5CF6);
 
   DocumentType? _tipoSeleccionado;
+
+  /// Casilla de pago marcada en el permiso: la propone la IA y el usuario la
+  /// confirma.
+  FormaPagoPermiso? _formaPago;
 
   final Map<String, TextEditingController> _controllers = {};
 
@@ -66,6 +74,10 @@ class _SmartCaptureReviewScreenState
 
     final tipo = _tipoSeleccionado;
 
+    _formaPago = FormaPagoPermiso.fromFirestore(
+      widget.resultado?.campos[claveFormaPago]?.toString(),
+    );
+
     if (tipo == null) return;
 
     for (final campo
@@ -77,8 +89,37 @@ class _SmartCaptureReviewScreenState
 
       _controllers[campo.clave] =
           TextEditingController(
-        text: valorPrevio ?? '',
+        text: _esCampoFecha(campo.clave)
+            ? _fechaVisible(valorPrevio)
+            : (valorPrevio ?? ''),
       );
+    }
+
+    // Con la casilla marcada y la emisión conocidas, el vencimiento es el que
+    // dicen las reglas, aunque la IA haya leído otro (el usuario puede
+    // corregirlo).
+    _recalcularVencimiento();
+  }
+
+  /// `true` si el tipo elegido pide forma de pago (hoy, el permiso).
+  bool get _pideFormaPago =>
+      _tipoSeleccionado == DocumentType.permisoCirculacion;
+
+  /// Vencimiento según la forma de pago y la fecha de emisión que muestra el
+  /// formulario, o null si falta alguna.
+  DateTime? _vencimientoCalculado() {
+    final forma = _formaPago;
+    final emision = interpretarFecha(_controllers['fecha_emision']?.text ?? '');
+    if (!_pideFormaPago || forma == null || emision == null) return null;
+    return fechaVencimientoPermiso(formaPago: forma, fechaEmision: emision);
+  }
+
+  /// Completa el campo de vencimiento con el calculado, si se puede.
+  void _recalcularVencimiento() {
+    final vencimiento = _vencimientoCalculado();
+    final campo = _controllers['fecha_vencimiento'];
+    if (vencimiento != null && campo != null) {
+      campo.text = formatoFechaCl(vencimiento);
     }
   }
 
@@ -91,6 +132,20 @@ class _SmartCaptureReviewScreenState
     super.dispose();
   }
 
+  /// Fecha para mostrar: "DD/MM/YYYY". Si no se puede interpretar, se deja
+  /// el texto tal cual para que el usuario lo corrija.
+  String _fechaVisible(String? texto) {
+    if (texto == null || texto.trim().isEmpty) return '';
+    final fecha = interpretarFecha(texto);
+    return fecha == null ? texto : formatoFechaCl(fecha);
+  }
+
+  /// Fecha para guardar: "YYYY-MM-DD" (el formato que recibe `onConfirm`).
+  String _fechaParaGuardar(String texto) {
+    final fecha = interpretarFecha(texto);
+    return fecha == null ? texto : formatoIsoFecha(fecha);
+  }
+
   /// `true` si [clave] se estimó (no figuraba en el documento) y el usuario
   /// todavía no la modificó.
   bool _fechaEstimadaVigente(String clave) {
@@ -98,7 +153,9 @@ class _SmartCaptureReviewScreenState
     if (resultado == null || !resultado.camposEstimados.contains(clave)) {
       return false;
     }
-    return _controllers[clave]?.text.trim() == resultado.campos[clave];
+    final actual = interpretarFecha(_controllers[clave]?.text ?? '');
+    final estimada = interpretarFecha(resultado.campos[clave]?.toString() ?? '');
+    return actual != null && actual == estimada;
   }
 
   // ------------------------------------------------------------
@@ -135,7 +192,7 @@ class _SmartCaptureReviewScreenState
 
     if (controller.text.trim().isNotEmpty) {
       final fechaExistente =
-          DateTime.tryParse(
+          interpretarFecha(
         controller.text.trim(),
       );
 
@@ -156,17 +213,9 @@ class _SmartCaptureReviewScreenState
 
     if (fecha == null) return;
 
-    final anio =
-        fecha.year.toString().padLeft(4, '0');
-
-    final mes =
-        fecha.month.toString().padLeft(2, '0');
-
-    final dia =
-        fecha.day.toString().padLeft(2, '0');
-
     setState(() {
-      controller.text = '$anio-$mes-$dia';
+      controller.text = formatoFechaCl(fecha);
+      if (clave == 'fecha_emision') _recalcularVencimiento();
     });
   }
 
@@ -205,6 +254,12 @@ class _SmartCaptureReviewScreenState
 
     final schema = extractionSchemas[tipo]!;
 
+    if (tipo == DocumentType.permisoCirculacion && _formaPago == null) {
+      _mostrarError('Selecciona la casilla marcada en el permiso (Total, Cuota 1 o Cuota 2).');
+
+      return;
+    }
+
     for (final campo in schema.campos) {
       if (campo.requerido &&
           (_controllers[campo.clave]
@@ -231,8 +286,13 @@ class _SmartCaptureReviewScreenState
       final valor = entry.value.text.trim();
 
       if (valor.isNotEmpty) {
-        campos[entry.key] = valor;
+        campos[entry.key] =
+            _esCampoFecha(entry.key) ? _fechaParaGuardar(valor) : valor;
       }
+    }
+
+    if (tipo == DocumentType.permisoCirculacion) {
+      campos[claveFormaPago] = _formaPago!.valorFirestore;
     }
 
     // Una fecha estimada sigue marcada como tal solo si el usuario no la
@@ -438,6 +498,148 @@ class _SmartCaptureReviewScreenState
               ],
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  // ------------------------------------------------------------
+  // FORMA DE PAGO (PERMISO DE CIRCULACIÓN)
+  // ------------------------------------------------------------
+
+  /// Aviso morado que explica cómo se calcula la vigencia según lo pagado.
+  Widget _avisoPermiso() {
+    const base = TextStyle(color: textMain, fontSize: 12, height: 1.45);
+    const negrita = TextStyle(fontWeight: FontWeight.w700);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: infoMorado.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: infoMorado.withOpacity(0.5)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline, color: infoMorado, size: 20),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                style: base,
+                children: [
+                  TextSpan(
+                    text: 'Vigencia de tu permiso\n',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                  TextSpan(text: '• Si pagaste el '),
+                  TextSpan(text: 'total', style: negrita),
+                  TextSpan(
+                    text: ', tu permiso está vigente hasta el 31 de marzo del próximo año.\n',
+                  ),
+                  TextSpan(text: '• Si pagaste solo la '),
+                  TextSpan(text: 'cuota 1', style: negrita),
+                  TextSpan(
+                    text: ', vence el 31 de agosto de este mismo año. Cuando pagues la cuota 2, vuelve a fotografiar el permiso ya pagado en 2 cuotas.',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _selectorFormaPago() {
+    final vencimiento = _vencimientoCalculado();
+    final propuestaPorIa =
+        widget.resultado?.campos[claveFormaPago] != null;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Casilla marcada en el permiso',
+                  style: TextStyle(
+                    color: textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Text(
+                'Obligatorio',
+                style: TextStyle(
+                  color: primaryColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Mismos botones que el filtro de documentos de Mi Vehículo.
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final forma in FormaPagoPermiso.values)
+                InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => setState(() {
+                    _formaPago = forma;
+                    _recalcularVencimiento();
+                  }),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _formaPago == forma ? primaryColor : surfaceColor,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _formaPago == forma
+                            ? primaryColor
+                            : const Color(0xFF334155),
+                      ),
+                    ),
+                    child: Text(
+                      forma.etiqueta,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                        color: _formaPago == forma ? Colors.white : textMuted,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _formaPago == null
+                ? 'Elige la casilla marcada (Total, Cuota 1 o Cuota 2) para calcular el vencimiento.'
+                : vencimiento != null
+                    ? '${propuestaPorIa ? "Propuesta por la IA. " : ""}${_formaPago == FormaPagoPermiso.cuota1 ? "Falta pagar la segunda cuota: " : "Permiso pagado: "}vence el ${formatoFechaCl(vencimiento)}.'
+                    : 'Ingresa la fecha de emisión para calcular el vencimiento.',
+            style: const TextStyle(
+              color: textMuted,
+              fontSize: 10,
+            ),
+          ),
         ],
       ),
     );
@@ -760,6 +962,8 @@ class _SmartCaptureReviewScreenState
 
               const SizedBox(height: 16),
 
+              if (_pideFormaPago) _avisoPermiso(),
+
               ...extractionSchemas[
                       _tipoSeleccionado]!
                   .campos
@@ -769,6 +973,8 @@ class _SmartCaptureReviewScreenState
                       campo,
                     ),
                   ),
+
+              if (_pideFormaPago) _selectorFormaPago(),
             ],
 
             // ----------------------------------------------------

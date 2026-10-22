@@ -42,12 +42,12 @@ const Map<DocumentType, ExtractionSchema> extractionSchemas = {
     etiqueta: 'Permiso de Circulación',
     campos: [
       CampoExtraido(clave: 'patente', etiqueta: 'Patente', requerido: true),
-      CampoExtraido(clave: 'fecha_emision', etiqueta: 'Fecha de emisión', pista: 'muchos permisos NO la traen (solo el año y el período): si no figura una fecha de pago, emisión u otorgamiento, déjala en null'),
+      CampoExtraido(clave: 'fecha_emision', etiqueta: 'Fecha de emisión', pista: 'se rotula "Fecha" en la cabecera del comprobante de pago (ej. "05/06/2026") o es la fecha del timbre "PAGADO"; muchos permisos NO la traen (solo el año y el período): si no figura una fecha de pago, emisión u otorgamiento, déjala en null'),
       CampoExtraido(
         clave: 'fecha_vencimiento',
         etiqueta: 'Fecha de vencimiento',
         requerido: true,
-        pista: 'se rotula "PERÍODO" (ej. "31/03/2027"), "vence" o "válido hasta"; es la fecha hasta la que está vigente (suele ser el 31 de marzo del año siguiente)',
+        pista: 'se rotula "PERÍODO" (ej. "31/03/2027"), "vence" o "válido hasta"; es la fecha hasta la que está vigente (suele ser el 31 de marzo del año siguiente). "Perm. Ant." es el permiso ANTERIOR: no es el vencimiento. Si no figura, déjala en null',
       ),
     ],
   ),
@@ -113,12 +113,21 @@ const Map<DocumentType, List<CampoExtraido>> camposAuxiliaresIa = {
       etiqueta: 'Año del permiso',
       pista: 'se rotula "AÑO" (ej. "2026"); solo el año, 4 dígitos',
     ),
+    CampoExtraido(
+      clave: claveFormaPago,
+      etiqueta: 'Casilla de pago marcada',
+      pista: 'al costado del comprobante hay un apartado con tres casillas: "Total", "Cuota 1" y "Cuota 2"; una de ellas está marcada con una X (o rellena). Devuelve "total" si la marcada es Total, "cuota_1" si es Cuota 1 y "cuota_2" si es Cuota 2. Fíjate bien en cuál casilla contiene la marca, no en el rótulo vecino. Si ninguna se ve marcada o no aparece el apartado, null',
+    ),
   ],
 };
 
 /// Clave que la revisión agrega a los campos confirmados cuando la fecha de
 /// emisión es una estimación (valor "true"). No es un campo del documento.
 const String claveFechaEmisionEstimada = 'fecha_emision_estimada';
+
+/// Clave del campo auxiliar con la casilla de pago que la IA ve marcada
+/// (`total`, `cuota_1` o `cuota_2`); el usuario la confirma en la revisión.
+const String claveFormaPago = 'forma_pago';
 
 /// Clave del campo auxiliar con el año del permiso.
 const String claveAnioPermiso = 'anio_permiso';

@@ -151,7 +151,14 @@ class SmartCaptureController {
     // muestra ni se guarda.
     final camposEstimados = <String>{};
     final anioRaw = camposFinales.remove(claveAnioPermiso);
+    // La forma de pago es solo una propuesta de la IA, y solo para el permiso.
+    final formaPago = FormaPagoPermiso.fromFirestore(
+      camposFinales.remove(claveFormaPago)?.toString().trim(),
+    );
     if (parsed.tipo == DocumentType.permisoCirculacion) {
+      if (formaPago != null) {
+        camposFinales[claveFormaPago] = formaPago.valorFirestore;
+      }
       final emision = resolverFechaEmision(
         fechaLeida: camposFinales['fecha_emision'] == null
             ? null

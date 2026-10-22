@@ -29,6 +29,7 @@ rules_version = '2';
 //   origen_registro: manual|ia | fecha_registro: timestamp
 //   numero, compania, numero_poliza, archivo_path: string|null
 //   fecha_emision, fecha_vencimiento, fecha_captura: timestamp|null
+//   forma_pago: total|cuota_1|cuota_2|null (casilla marcada en el permiso)
 //   fecha_emision_estimada: bool (opcional; true si la emision no figuraba en el
 //   documento y se completo con la fecha de ingreso)
 //   confianza_ia: number|null
@@ -267,7 +268,7 @@ service cloud.firestore {
       return d.keys().hasOnly(['uid', 'vehiculo_id', 'tipo_documento', 'numero',
           'fecha_emision', 'fecha_vencimiento', 'compania', 'numero_poliza',
           'archivo_path', 'origen_registro', 'fecha_captura', 'confianza_ia',
-          'fecha_registro', 'fecha_emision_estimada']) &&
+          'fecha_registro', 'fecha_emision_estimada', 'forma_pago']) &&
         reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
         d.tipo_documento in ['permiso_circulacion', 'revision_tecnica', 'soap', 'seguro'] &&
         d.origen_registro in ['manual', 'ia'] &&
@@ -276,6 +277,8 @@ service cloud.firestore {
         optStr(d, 'numero_poliza', 100) && optStr(d, 'archivo_path', 500) &&
         optTs(d, 'fecha_emision') && optTs(d, 'fecha_vencimiento') &&
         optTs(d, 'fecha_captura') && optBool(d, 'fecha_emision_estimada') &&
+        (!('forma_pago' in d) || d.forma_pago == null ||
+          d.forma_pago in ['total', 'cuota_1', 'cuota_2']) &&
         (!('confianza_ia' in d) || d.confianza_ia == null ||
           (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100));
     }

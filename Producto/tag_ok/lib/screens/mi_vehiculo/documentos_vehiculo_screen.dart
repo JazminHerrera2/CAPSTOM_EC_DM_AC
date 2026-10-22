@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/services/documento_vehicular_service.dart';
 import 'documentos_vehiculo_seccion.dart';
-import 'registrar_documento_ia_screen.dart';
 
 class DocumentosVehiculoScreen extends StatefulWidget {
   final String vehiculoId;
@@ -55,33 +54,6 @@ class _DocumentosVehiculoScreenState
         ),
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  RegistrarDocumentoIaScreen(
-                vehiculoId: widget.vehiculoId,
-              ),
-            ),
-          );
-        },
-        icon: const Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-        label: const Text(
-          'Agregar',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-
       body: StreamBuilder<List<DocumentoVehicularModel>>(
         stream: _documentoService
             .streamDocumentosPorVehiculo(
@@ -104,13 +76,14 @@ class _DocumentosVehiculoScreenState
               20,
               10,
               20,
-              100,
+              30,
             ),
             children: [
               DocumentosVehiculoSeccion(
                 vehiculoId: widget.vehiculoId,
                 patenteVehiculo: widget.patenteVehiculo,
                 documentos: documentos,
+                mostrarBotonAgregar: true,
               ),
             ],
           );
