@@ -11,7 +11,9 @@ import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
 import '../../features/registro_inteligente/boton_foto_velocimetro.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
+import '../../utils/validaciones_mantencion.dart';
 import 'selector_tipo_mantencion.dart';
+import 'tarjeta_mantencion.dart';
 
 class RegistrarMantenimientoScreen extends StatefulWidget {
   /// Vehículo preseleccionado (el elegido en Mantenciones).
@@ -64,7 +66,22 @@ class _RegistrarMantenimientoScreenState
 
   String? _vehiculoId;
   String _tipoMantenimiento = TipoMantencion.cambioAceite.etiqueta;
-  DateTime _fecha = DateTime.now();
+
+  /// Fecha de emisión del documento. Parte vacía: nunca se inventa ni se
+  /// rellena con "hoy"; hay que leerla o elegirla.
+  DateTime? _fecha;
+  bool _errorFecha = false;
+
+  /// Campos que la IA leyó con dudas (se resaltan hasta que el usuario los
+  /// toca).
+  final Set<String> _dudosos = {};
+
+  /// Mantenciones realizadas del vehículo y su último km, para sugerir el
+  /// kilometraje y para las advertencias (km menor, número repetido).
+  List<MantencionModel> _existentes = const [];
+  int? _kmVehiculo;
+
+  DateTime? _proximaFecha;
 
   final _kilometrajeController = TextEditingController();
   final _tallerController = TextEditingController();
@@ -73,6 +90,7 @@ class _RegistrarMantenimientoScreenState
   final _observacionesController = TextEditingController();
   final _otroTipoController = TextEditingController();
   final _numeroComprobanteController = TextEditingController();
+  final _proximoKmController = TextEditingController();
 
   final List<String> _tiposMantenimiento = TipoMantencion.etiquetas;
 
@@ -91,6 +109,27 @@ class _RegistrarMantenimientoScreenState
     super.initState();
     _vehiculoId = widget.vehiculoIdInicial;
     _precargarDatosIa();
+    _cargarContexto();
+  }
+
+  /// Carga lo ya registrado del vehículo. Si falla, el formulario funciona
+  /// igual (sin sugerencia ni advertencias).
+  Future<void> _cargarContexto() async {
+    final id = _vehiculoId;
+    if (id == null) return;
+    try {
+      final lista = await _mantencionService
+          .streamPorVehiculo(id, estado: EstadoMantencion.realizada)
+          .first;
+      final vehiculo = await _vehiculoService.obtenerVehiculo(id);
+      if (!mounted) return;
+      setState(() {
+        _existentes = lista;
+        _kmVehiculo = vehiculo?.kilometrajeActual;
+      });
+    } catch (e) {
+      debugPrint('No se pudo cargar el contexto del vehículo: $e');
+    }
   }
 
   bool get _desdeIa => widget.datosIa != null;
@@ -101,7 +140,8 @@ class _RegistrarMantenimientoScreenState
 
     if (d.tipo != null) _tipoMantenimiento = d.tipo!.etiqueta;
     _otroTipoController.text = d.tipoOtro ?? '';
-    if (d.fecha != null) _fecha = d.fecha!;
+    _dudosos.addAll(d.camposDudosos);
+    if (d.fecha != null) _fecha = d.fecha;
     _kilometrajeController.text = d.kilometraje?.toString() ?? '';
     _tallerController.text = d.taller ?? '';
     _costoController.text = d.costo?.toString() ?? '';
@@ -121,22 +161,76 @@ class _RegistrarMantenimientoScreenState
     _observacionesController.dispose();
     _otroTipoController.dispose();
     _numeroComprobanteController.dispose();
+    _proximoKmController.dispose();
     super.dispose();
   }
 
   Future<void> _seleccionarFecha() async {
+    final ahora = DateTime.now();
+    final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+    final inicial = _fecha ?? hoy;
     final fecha = await showDatePicker(
       context: context,
-      initialDate: _fecha,
+      initialDate: inicial.isAfter(hoy) ? hoy : inicial,
       firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
+      // Una mantención no puede ser futura.
+      lastDate: hoy,
     );
 
     if (fecha != null) {
       setState(() {
         _fecha = fecha;
+        _errorFecha = false;
+        _dudosos.remove(dudosoFecha);
       });
     }
+  }
+
+  Future<void> _seleccionarProximaFecha() async {
+    final ahora = DateTime.now();
+    final hoy = DateTime(ahora.year, ahora.month, ahora.day);
+    final fecha = await showDatePicker(
+      context: context,
+      initialDate: _proximaFecha ?? hoy,
+      firstDate: hoy,
+      lastDate: DateTime(2100),
+    );
+    if (fecha != null) setState(() => _proximaFecha = fecha);
+  }
+
+  /// Advertencia que no bloquea: el usuario decide si sigue.
+  Future<bool> _confirmarAdvertencia(String titulo, String mensaje) async {
+    final seguir = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(titulo, style: const TextStyle(color: textMain)),
+            ),
+          ],
+        ),
+        content: Text(
+          mensaje,
+          style: const TextStyle(color: textMuted, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Corregir'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Es correcto'),
+          ),
+        ],
+      ),
+    );
+    return seguir == true;
   }
 
   int? _entero(String texto) =>
@@ -169,6 +263,87 @@ class _RegistrarMantenimientoScreenState
       return;
     }
 
+    // --- Fecha: obligatoria y no futura (bloquean).
+    final estadoFecha = estadoFechaMantencion(_fecha, DateTime.now());
+    if (estadoFecha == EstadoFechaMantencion.vacia) {
+      setState(() => _errorFecha = true);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Selecciona la fecha de la mantención.')),
+      );
+      return;
+    }
+    if (estadoFecha == EstadoFechaMantencion.futura) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('La fecha no puede ser futura.')),
+      );
+      return;
+    }
+    final fecha = _fecha!;
+    final km = _entero(_kilometrajeController.text);
+
+    // --- Próxima mantención (opcional): debe ser posterior a esta.
+    final proximoKm = _entero(_proximoKmController.text);
+    if (proximoKm != null && km != null && proximoKm <= km) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('El próximo kilometraje debe ser mayor al actual.'),
+        ),
+      );
+      return;
+    }
+    final proxima = _proximaFecha;
+    if (proxima != null && !proxima.isAfter(fecha)) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('La próxima fecha debe ser posterior a la de esta mantención.'),
+        ),
+      );
+      return;
+    }
+
+    // --- Advertencias (no bloquean): el usuario confirma.
+    if (estadoFecha == EstadoFechaMantencion.antigua &&
+        !await _confirmarAdvertencia(
+          'Documento antiguo',
+          mensajeFechaAntigua(fecha),
+        )) {
+      return;
+    }
+    if (!mounted) return;
+
+    final menor = km == null
+        ? null
+        : kilometrajeMenorAlAnterior(
+            km: km,
+            fecha: fecha,
+            existentes: _existentes,
+          );
+    if (menor != null &&
+        !await _confirmarAdvertencia(
+          'Kilometraje menor al anterior',
+          'Tu mantención del ${formatoFecha(menor.fecha)} registró '
+          '${formatoMiles(menor.km)} km y este kilometraje es menor. '
+          '¿Es correcto?',
+        )) {
+      return;
+    }
+    if (!mounted) return;
+
+    if (_tipoComprobante != null &&
+        numeroDocumentoDuplicado(
+          _numeroComprobanteController.text,
+          _existentes,
+        ) &&
+        !await _confirmarAdvertencia(
+          'Posible duplicado',
+          'Ya registraste una mantención con el número '
+          '${_numeroComprobanteController.text.trim()} en este vehículo. '
+          '¿Quieres guardarla igual?',
+        )) {
+      return;
+    }
+    if (!mounted) return;
+
     setState(() => _guardando = true);
 
     try {
@@ -177,8 +352,8 @@ class _RegistrarMantenimientoScreenState
         estado: EstadoMantencion.realizada,
         tipo: tipo,
         tipoOtro: _otroTipoController.text,
-        fecha: _fecha,
-        kilometraje: _entero(_kilometrajeController.text),
+        fecha: fecha,
+        kilometraje: km,
         taller: _tallerController.text,
         costo: _entero(_costoController.text),
         descripcion: _descripcionController.text,
@@ -189,6 +364,9 @@ class _RegistrarMantenimientoScreenState
             ? null
             : _numeroComprobanteController.text,
         componentes: _componentesMarcados.toList(),
+        proximaFecha: proxima,
+        proximoKilometraje: proximoKm,
+        confianzaIa: _desdeIa ? widget.datosIa!.confianza : null,
         origenRegistro: _desdeIa ? 'ia' : 'manual',
         fechaCaptura: _desdeIa ? (widget.fechaCaptura ?? DateTime.now()) : null,
       );
@@ -299,6 +477,7 @@ class _RegistrarMantenimientoScreenState
                   keyboardType: TextInputType.number,
                   suffix: 'km',
                   obligatorio: true,
+                  claveDudosa: dudosoKilometraje,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Ingresa el kilometraje.';
@@ -314,6 +493,8 @@ class _RegistrarMantenimientoScreenState
                   },
                 ),
 
+                _sugerenciaKm(),
+
                 const SizedBox(height: 10),
 
                 BotonFotoVelocimetro(
@@ -326,16 +507,10 @@ class _RegistrarMantenimientoScreenState
 
                 _campo(
                   controller: _tallerController,
-                  label: 'Taller',
+                  label: 'Taller (recomendado)',
                   hint: 'Ej: Taller AutoPro',
                   icon: Icons.storefront_outlined,
-                  obligatorio: true,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Ingresa el taller.';
-                    }
-                    return null;
-                  },
+                  claveDudosa: dudosoTaller,
                 ),
 
                 const SizedBox(height: 12),
@@ -347,6 +522,7 @@ class _RegistrarMantenimientoScreenState
                   icon: Icons.attach_money_rounded,
                   keyboardType: TextInputType.number,
                   obligatorio: true,
+                  claveDudosa: dudosoCosto,
                   validator: (value) {
                     final texto = (value ?? '').trim();
                     if (texto.isEmpty) return 'Ingresa el costo.';
@@ -394,6 +570,7 @@ class _RegistrarMantenimientoScreenState
                     label: 'Número de ${_comprobante.toLowerCase()}',
                     hint: 'Ej: 458123',
                     icon: Icons.tag_rounded,
+                    claveDudosa: dudosoNumero,
                     validator: (value) {
                       if ((value ?? '').trim().length > 50) {
                         return 'Máximo 50 caracteres.';
@@ -415,6 +592,7 @@ class _RegistrarMantenimientoScreenState
                   hint: 'Ej: Cambio de aceite y filtro de aceite',
                   icon: Icons.description_outlined,
                   maxLines: 3,
+                  claveDudosa: dudosoDescripcion,
                 ),
 
                 const SizedBox(height: 12),
@@ -427,6 +605,46 @@ class _RegistrarMantenimientoScreenState
                   icon: Icons.notes_rounded,
                   maxLines: 3,
                 ),
+
+                const SizedBox(height: 22),
+
+                _tituloSeccion('Próxima mantención (opcional)'),
+
+                const SizedBox(height: 4),
+
+                const Text(
+                  'Anota cuándo toca la siguiente, por kilometraje y/o fecha. '
+                  'Por ahora solo queda registrada, no genera avisos.',
+                  style: TextStyle(
+                    color: textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                _campo(
+                  controller: _proximoKmController,
+                  label: 'Próximo kilometraje',
+                  hint: 'Ej: 82450',
+                  icon: Icons.speed_outlined,
+                  keyboardType: TextInputType.number,
+                  suffix: 'km',
+                  validator: (value) {
+                    final texto = (value ?? '').trim();
+                    if (texto.isEmpty) return null;
+                    final km = _entero(texto);
+                    if (km == null || km > 5000000) {
+                      return 'Ingresa un kilometraje válido.';
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 12),
+
+                _campoProximaFecha(),
 
                 const SizedBox(height: 28),
 
@@ -523,20 +741,76 @@ class _RegistrarMantenimientoScreenState
     );
   }
 
+  String _etiquetaVehiculo(VehiculoModel v) {
+    final alias = (v.alias ?? '').trim();
+    final nombre = alias.isNotEmpty
+        ? alias
+        : [v.marca, v.modelo]
+            .where((e) => e != null && e.trim().isNotEmpty)
+            .join(' ');
+    return nombre.isEmpty ? v.patente : '$nombre · ${v.patente}';
+  }
+
+  /// Vehículo del filtro de Mantenciones desde donde se presionó el +: la
+  /// mantención se registra en ese vehículo y no se puede cambiar acá (igual
+  /// que el vehículo del historial). Null si no viene uno válido.
+  VehiculoModel? _vehiculoDelFiltro(List<VehiculoModel> vehiculos) {
+    final id = widget.vehiculoIdInicial;
+    if (id == null) return null;
+    return vehiculos.where((v) => v.id == id).firstOrNull;
+  }
+
+  Widget _vehiculoFijo(VehiculoModel vehiculo) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.directions_car_outlined,
+            color: textMuted,
+            size: 21,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Vehículo',
+                  style: TextStyle(color: textMuted, fontSize: 10),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _etiquetaVehiculo(vehiculo),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: textMain,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _selectorVehiculo(
     List<VehiculoModel> vehiculos,
   ) {
-    String etiqueta(VehiculoModel v) {
-      final alias = (v.alias ?? '').trim();
-      final nombre = alias.isNotEmpty
-          ? alias
-          : [v.marca, v.modelo]
-              .where((e) => e != null && e.trim().isNotEmpty)
-              .join(' ');
-      return nombre.isEmpty ? v.patente : '$nombre · ${v.patente}';
-    }
+    final fijo = _vehiculoDelFiltro(vehiculos);
+    if (fijo != null) return _vehiculoFijo(fijo);
 
-    final etiquetas = {for (final v in vehiculos) v.id: etiqueta(v)};
+    final etiquetas = {for (final v in vehiculos) v.id: _etiquetaVehiculo(v)};
 
     return SelectorTipoMantencion(
       label: 'Vehículo',
@@ -556,12 +830,88 @@ class _RegistrarMantenimientoScreenState
   }
 
   Widget _selectorTipo() {
-    return SelectorTipoMantencion(
-      opciones: _tiposMantenimiento,
-      valor: _tipoMantenimiento,
-      onChanged: (v) => setState(() => _tipoMantenimiento = v),
-      otroController: _otroTipoController,
-      flotante: true,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SelectorTipoMantencion(
+          opciones: _tiposMantenimiento,
+          valor: _tipoMantenimiento,
+          onChanged: (v) => setState(() {
+            _tipoMantenimiento = v;
+            _dudosos.remove(dudosoTipo);
+          }),
+          otroController: _otroTipoController,
+          flotante: true,
+        ),
+        if (_dudosos.contains(dudosoTipo)) _avisoDudoso(),
+      ],
+    );
+  }
+
+  static const Color _ambar = Color(0xFFF59E0B);
+
+  /// Texto bajo un campo que la IA leyó con dudas.
+  Widget _avisoDudoso() {
+    return const Padding(
+      padding: EdgeInsets.only(top: 6, left: 4),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: _ambar, size: 13),
+          SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              'Revisa este dato antes de guardar.',
+              style: TextStyle(color: _ambar, fontSize: 11),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Borde ámbar y aviso cuando el campo está marcado como dudoso.
+  InputDecoration _conDudoso(InputDecoration base, bool dudoso) {
+    if (!dudoso) return base;
+    const borde = OutlineInputBorder(
+      borderRadius: BorderRadius.all(Radius.circular(14)),
+      borderSide: BorderSide(color: _ambar),
+    );
+    return base.copyWith(
+      enabledBorder: borde,
+      focusedBorder: borde,
+      helperText: 'Revisa este dato antes de guardar.',
+      helperStyle: const TextStyle(color: _ambar, fontSize: 11),
+    );
+  }
+
+  /// Sugerencia del último kilometraje conocido; no se escribe sola.
+  Widget _sugerenciaKm() {
+    final sugerido = kilometrajeSugerido(
+      kmVehiculo: _kmVehiculo,
+      existentes: _existentes,
+    );
+    if (sugerido == null ||
+        _entero(_kilometrajeController.text) == sugerido) {
+      return const SizedBox.shrink();
+    }
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: ActionChip(
+          avatar: const Icon(Icons.history_rounded, size: 16, color: primaryColor),
+          label: Text(
+            'Usar último km conocido: ${formatoMiles(sugerido)} km',
+            style: const TextStyle(color: textMain, fontSize: 12),
+          ),
+          backgroundColor: surfaceColor,
+          side: const BorderSide(color: borderColor),
+          onPressed: () => setState(() {
+            _kilometrajeController.text = sugerido.toString();
+            _dudosos.remove(dudosoKilometraje);
+          }),
+        ),
+      ),
     );
   }
 
@@ -614,22 +964,81 @@ class _RegistrarMantenimientoScreenState
     );
   }
 
-  Widget _selectorFecha() {
+  Widget _campoProximaFecha() {
+    final fecha = _proximaFecha;
     return InkWell(
-      onTap: _seleccionarFecha,
+      onTap: _seleccionarProximaFecha,
       borderRadius: BorderRadius.circular(14),
       child: InputDecorator(
         decoration: _decoracionCampo(
-          label: 'Fecha',
-          icon: Icons.calendar_today_outlined,
+          label: 'Próxima fecha',
+          icon: Icons.event_outlined,
         ),
         child: Row(
           children: [
             Expanded(
               child: Text(
-                DateFormat('dd/MM/yyyy').format(_fecha),
-                style: const TextStyle(
-                  color: textMain,
+                fecha == null
+                    ? 'Seleccionar fecha'
+                    : DateFormat('dd/MM/yyyy').format(fecha),
+                style: TextStyle(
+                  color: fecha == null ? textMuted : textMain,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            if (fecha != null)
+              IconButton(
+                tooltip: 'Quitar fecha',
+                onPressed: () => setState(() => _proximaFecha = null),
+                icon: const Icon(Icons.close_rounded, size: 18),
+                color: textMuted,
+              )
+            else
+              const Icon(
+                Icons.calendar_month_outlined,
+                color: textMuted,
+                size: 20,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _selectorFecha() {
+    final fecha = _fecha;
+    final dudosa = _dudosos.contains(dudosoFecha);
+    var decoracion = _decoracionCampo(
+      label: 'Fecha del documento *',
+      icon: Icons.calendar_today_outlined,
+    );
+    if (_errorFecha) {
+      decoracion = decoracion.copyWith(
+        errorText: 'Selecciona la fecha de la mantención.',
+        errorBorder: const OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(14)),
+          borderSide: BorderSide(color: Colors.redAccent),
+        ),
+      );
+    } else {
+      decoracion = _conDudoso(decoracion, dudosa);
+    }
+
+    return InkWell(
+      onTap: _seleccionarFecha,
+      borderRadius: BorderRadius.circular(14),
+      child: InputDecorator(
+        decoration: decoracion,
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                fecha == null
+                    ? 'Seleccionar fecha'
+                    : DateFormat('dd/MM/yyyy').format(fecha),
+                style: TextStyle(
+                  color: fecha == null ? textMuted : textMain,
                   fontSize: 14,
                 ),
               ),
@@ -655,21 +1064,31 @@ class _RegistrarMantenimientoScreenState
     int maxLines = 1,
     bool obligatorio = false,
     String? Function(String?)? validator,
+    String? claveDudosa,
   }) {
+    final dudoso = claveDudosa != null && _dudosos.contains(claveDudosa);
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
+      // Al editar un campo resaltado, deja de estar resaltado (y se refresca
+      // la sugerencia de kilometraje).
+      onChanged: (_) => setState(() {
+        if (claveDudosa != null) _dudosos.remove(claveDudosa);
+      }),
       style: const TextStyle(
         color: textMain,
         fontSize: 14,
       ),
-      decoration: _decoracionCampo(
-        label: obligatorio ? '$label *' : label,
-        hint: hint,
-        icon: icon,
-        suffix: suffix,
+      decoration: _conDudoso(
+        _decoracionCampo(
+          label: obligatorio ? '$label *' : label,
+          hint: hint,
+          icon: icon,
+          suffix: suffix,
+        ),
+        dudoso,
       ),
     );
   }

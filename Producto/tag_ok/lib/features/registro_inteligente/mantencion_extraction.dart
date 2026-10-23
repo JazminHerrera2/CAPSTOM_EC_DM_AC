@@ -4,8 +4,29 @@ import 'dart:typed_data';
 import '../../data/models/componente_mantencion_model.dart';
 import '../../data/models/mantencion_model.dart';
 import '../../data/models/tipo_mantencion.dart';
+import '../../utils/validaciones_mantencion.dart';
 import 'openai_extraction_service.dart';
 import 'preparar_imagen.dart';
+import 'validacion_campos.dart';
+
+/// Claves de los campos que pueden quedar marcados como dudosos en la revisión.
+const String dudosoFecha = 'fecha';
+const String dudosoKilometraje = 'kilometraje';
+const String dudosoTaller = 'taller';
+const String dudosoCosto = 'costo';
+const String dudosoTipo = 'tipo';
+const String dudosoNumero = 'numero_comprobante';
+const String dudosoDescripcion = 'descripcion';
+
+const List<String> _clavesDudosas = [
+  dudosoFecha,
+  dudosoKilometraje,
+  dudosoTaller,
+  dudosoCosto,
+  dudosoTipo,
+  dudosoNumero,
+  dudosoDescripcion,
+];
 
 /// Datos que la IA reconoció en una boleta o factura de mantención. Todos son
 /// opcionales: lo que no se lee con certeza queda en null y el usuario lo
@@ -26,6 +47,15 @@ class MantencionExtraida {
   /// como revisados o cambiados.
   final List<String> componentes;
 
+  /// Campos que la revisión debe resaltar: los que la IA leyó con dudas, el
+  /// costo si no cuadra con el neto, y la fecha o el costo si no se pudieron
+  /// leer (son obligatorios).
+  final Set<String> camposDudosos;
+
+  /// Proporción (0 a 1) de campos leídos sin duda, igual que en documentos.
+  /// Null si no se leyó ninguno.
+  final double? confianza;
+
   const MantencionExtraida({
     this.tipo,
     this.tipoOtro,
@@ -38,6 +68,8 @@ class MantencionExtraida {
     this.tipoComprobante,
     this.numeroComprobante,
     this.componentes = const [],
+    this.camposDudosos = const {},
+    this.confianza,
   });
 
   /// `true` si la IA no logró leer ningún dato.
@@ -71,14 +103,16 @@ Map<String, dynamic> _esquemaMantencion(List<ComponenteMantencion> componentes) 
     'tipo_otro': _campoTexto(
       'Nombre corto del servicio, solo si tipo_mantencion es "otra".',
     ),
-    'fecha': _campoTexto('Fecha del servicio en formato YYYY-MM-DD.'),
+    'fecha': _campoTexto('Fecha de emisión del documento en formato YYYY-MM-DD.'),
     'kilometraje': _campoTexto('Kilometraje del vehículo (solo el número).'),
     'taller': _campoTexto('Nombre del taller o proveedor que emite el documento.'),
-    'costo': _campoTexto('Monto total pagado en pesos chilenos (solo el número).'),
-    'descripcion':
-        _campoTexto('Servicios realizados y repuestos o piezas, resumidos.'),
-    'observaciones':
-        _campoTexto('Observaciones o recomendaciones escritas en el documento.'),
+    'costo': _campoTexto('Monto TOTAL con IVA en pesos chilenos (solo el número).'),
+    'neto': _campoTexto(
+      'Monto neto (antes de IVA) en pesos chilenos, solo para verificar el total.',
+    ),
+    'descripcion': _campoTexto(
+      'Resumen corto (máximo 200 caracteres) de los trabajos y repuestos.',
+    ),
     'tipo_comprobante': {
       'type': ['string', 'null'],
       'enum': [...TipoComprobante.values.map((t) => t.valorFirestore), null],
@@ -87,6 +121,12 @@ Map<String, dynamic> _esquemaMantencion(List<ComponenteMantencion> componentes) 
     'numero_comprobante': _campoTexto(
       'Número (folio) del comprobante, solo el número.',
     ),
+    'campos_dudosos': {
+      'type': 'array',
+      'items': {'type': 'string', 'enum': _clavesDudosas},
+      'description':
+          'Campos que leíste pero de los que dudas. Lista vacía si no hay.',
+    },
     'componentes': {
       'type': 'array',
       'items': {
@@ -115,34 +155,42 @@ String _promptMantencion(List<ComponenteMantencion> componentes) {
   return '''
 Eres un asistente experto en boletas y facturas de talleres mecánicos
 chilenos. Analiza el comprobante recibido (imagen o PDF) de una mantención
-vehicular y extrae sus datos.
-
-Para "tipo_mantencion" elige la opción que mejor describa el servicio:
-
-$tipos
-
-Usa "otra" solo si ninguna aplica y en ese caso indica "tipo_otro". Si el
-comprobante incluye varios servicios, elige el principal y detalla todos en
-"descripcion".
+vehicular y extrae solo los campos que se piden.
 
 Extrae únicamente lo que puedas reconocer con certeza. Si un dato no es
 legible o no aparece, devuélvelo como null: nunca inventes ni infieras un
-valor.
+valor. Si lees un dato pero dudas de él (foto torcida o borrosa, cifras que no
+cuadran), devuélvelo igual e inclúyelo en "campos_dudosos".
 
-Reglas de formato:
-- "fecha": la fecha del servicio o de emisión del comprobante, en formato
-  "YYYY-MM-DD". Los documentos chilenos escriben día/mes/año ("05/03/2026" es
-  el 5 de marzo de 2026, no el 3 de mayo).
-- "costo": el monto TOTAL pagado (con IVA incluido, el que aparece como
-  "Total"), en pesos chilenos, solo con números. En Chile el punto separa los
-  miles ("45.990" son cuarenta y cinco mil novecientos noventa pesos). No uses
-  un subtotal, el neto ni el IVA.
-- "kilometraje": el del odómetro del vehículo (suele decir "KM" o "Kilometraje"),
-  solo con números; no lo confundas con el número de boleta, la patente ni el
-  RUT.
-- "taller": el nombre del taller o proveedor que emite el documento, no el del
-  cliente.
-- "descripcion": resume los servicios y repuestos tal como aparecen.
+Reglas:
+- "fecha": la fecha de EMISIÓN del documento (no la de hoy), en formato
+  "YYYY-MM-DD". Los documentos chilenos escriben día/mes/año ("05/03/2026" o
+  "05-03-2026" es el 5 de marzo de 2026, no el 3 de mayo) o con el mes en
+  palabras ("28 de octubre de 2020" es 2020-10-28).
+- "costo": el TOTAL pagado, con IVA incluido (la línea "Total"), en pesos
+  chilenos, solo con números. En Chile el punto separa los miles ("45.990" son
+  cuarenta y cinco mil novecientos noventa pesos). No uses un subtotal, el neto
+  ni el IVA. Si el total también está escrito en letras ("SON: ..."), úsalo
+  solo para verificar la cifra.
+- "neto": el monto NETO (antes de IVA), si aparece. Solo se usa para verificar
+  el total.
+- "taller": el nombre de la empresa del membrete (la que emite el documento),
+  no el del cliente. Una línea del detalle como "Mecánica Ford Liviano" o "Mano
+  de obra" es un servicio, no el taller.
+- "tipo_mantencion": elige la opción que mejor describa el servicio:
+
+$tipos
+
+  Clasifica por el insumo o repuesto principal: el de mayor valor, sin contar
+  la mano de obra. Los productos de limpieza o accesorios ("limpia frenos",
+  "limpia parabrisas", "agua desmineralizada") no definen el tipo: "limpia
+  frenos" NO es "frenos". Si hay varios trabajos de naturaleza distinta, usa
+  "revision_general". Usa "otra" solo si ninguna aplica e indica "tipo_otro".
+- "descripcion": un resumen corto (máximo 200 caracteres) de los trabajos y
+  repuestos principales. No reconstruyas los ítems línea por línea.
+- "kilometraje": solo si aparece explícito en el documento ("KM",
+  "Kilometraje"), solo con números. No lo confundas con el folio, la patente,
+  el RUT ni la orden de trabajo. Casi nunca viene: en ese caso, null.
 - "tipo_comprobante" y "numero_comprobante": búscalos en el recuadro del
   emisor (en documentos electrónicos del SII, el recuadro con el RUT del
   taller, el tipo de documento y "N°"). "BOLETA ELECTRÓNICA" o "BOLETA" es
@@ -160,7 +208,10 @@ $listaComponentes
   Un insumo suelto (por ejemplo un aerosol "limpia frenos" o "agua
   desmineralizada") no cuenta como mantención del componente. Si no hay
   ninguno, devuelve una lista vacía.
-- No extraigas datos del cliente (nombre, RUT ni dirección del comprador).''';
+- "campos_dudosos": los campos que leíste pero de los que dudas (puede ser una
+  lista vacía).
+- Privacidad: ignora y no devuelvas datos personales del cliente (nombre, RUT,
+  domicilio ni teléfono). Solo se extraen los campos de esta lista.''';
 }
 
 int? _entero(Object? valor) {
@@ -171,34 +222,6 @@ int? _entero(Object? valor) {
   texto = texto.replaceFirst(RegExp(r'[,.]\d{1,2}$'), '');
   final digitos = texto.replaceAll(RegExp(r'[^0-9]'), '');
   return digitos.isEmpty ? null : int.tryParse(digitos);
-}
-
-DateTime? _fechaValida(int anio, int mes, int dia) {
-  final fecha = DateTime(anio, mes, dia);
-  return (fecha.year == anio && fecha.month == mes && fecha.day == dia)
-      ? fecha
-      : null;
-}
-
-DateTime? _fecha(Object? valor) {
-  final texto = valor?.toString().trim() ?? '';
-  final iso = RegExp(r'^(\d{4})-(\d{2})-(\d{2})').firstMatch(texto);
-  if (iso != null) {
-    return _fechaValida(
-      int.parse(iso.group(1)!),
-      int.parse(iso.group(2)!),
-      int.parse(iso.group(3)!),
-    );
-  }
-  final cl = RegExp(r'^(\d{1,2})/(\d{1,2})/(\d{4})$').firstMatch(texto);
-  if (cl != null) {
-    return _fechaValida(
-      int.parse(cl.group(3)!),
-      int.parse(cl.group(2)!),
-      int.parse(cl.group(1)!),
-    );
-  }
-  return null;
 }
 
 /// Una mantención no puede ser futura (se tolera 1 día por la zona horaria) ni
@@ -249,22 +272,69 @@ MantencionExtraida parseMantencionExtraida(
       .firstOrNull;
 
   final km = _entero(json['kilometraje']);
-  final costo = _entero(json['costo']);
+  final costoLeido = _entero(json['costo']);
+  final costo =
+      (costoLeido != null && costoLeido <= 1000000000) ? costoLeido : null;
+  final neto = _entero(json['neto']);
+
+  // Lector común de fechas: entiende "2020-10-28", "28/10/2020",
+  // "28-10-2020" y "28 de octubre de 2020".
+  final fechaTexto = json['fecha']?.toString().trim() ?? '';
+  final fecha = _fechaPlausible(
+    fechaTexto.isEmpty ? null : interpretarFecha(fechaTexto),
+  );
+
+  final kilometraje = (km != null && km <= 5000000) ? km : null;
+  final taller = _texto(json['taller'], 100);
+  final descripcion = _texto(json['descripcion'], 500);
+  final numero = _folio(json['numero_comprobante']);
+
+  // Campos que la revisión debe resaltar.
+  final dudosos = <String>{
+    for (final c in json['campos_dudosos'] is List
+        ? json['campos_dudosos'] as List
+        : const [])
+      if (_clavesDudosas.contains(c.toString())) c.toString(),
+  };
+  // Fecha y costo son obligatorios: si no se pudieron leer, se destacan.
+  if (fecha == null) dudosos.add(dudosoFecha);
+  if (costo == null) dudosos.add(dudosoCosto);
+  // El total no cuadra con el neto: no se elige uno, se marca para revisar.
+  if (costo != null &&
+      neto != null &&
+      !totalCuadraConNeto(total: costo, neto: neto)) {
+    dudosos.add(dudosoCosto);
+  }
+
+  // Confianza: proporción de campos leídos que no quedaron dudosos.
+  final leidos = <String>[
+    if (fecha != null) dudosoFecha,
+    if (kilometraje != null) dudosoKilometraje,
+    if (taller != null) dudosoTaller,
+    if (costo != null) dudosoCosto,
+    if (tipo != null) dudosoTipo,
+    if (numero != null) dudosoNumero,
+    if (descripcion != null) dudosoDescripcion,
+  ];
+  final confianza = leidos.isEmpty
+      ? null
+      : leidos.where((c) => !dudosos.contains(c)).length / leidos.length;
 
   return MantencionExtraida(
     tipo: tipo,
     tipoOtro:
         tipo == TipoMantencion.otra ? _texto(json['tipo_otro'], 100) : null,
-    fecha: _fechaPlausible(_fecha(json['fecha'])),
-    kilometraje: (km != null && km <= 5000000) ? km : null,
-    taller: _texto(json['taller'], 100),
-    costo: (costo != null && costo <= 1000000000) ? costo : null,
-    descripcion: _texto(json['descripcion'], 500),
-    observaciones: _texto(json['observaciones'], 1000),
+    fecha: fecha,
+    kilometraje: kilometraje,
+    taller: taller,
+    costo: costo,
+    descripcion: descripcion,
     tipoComprobante:
         TipoComprobante.fromFirestore(json['tipo_comprobante']?.toString()),
-    numeroComprobante: _folio(json['numero_comprobante']),
+    numeroComprobante: numero,
     componentes: componentes,
+    camposDudosos: dudosos,
+    confianza: confianza,
   );
 }
 

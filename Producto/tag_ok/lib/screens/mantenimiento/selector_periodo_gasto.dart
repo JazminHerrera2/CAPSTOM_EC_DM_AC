@@ -19,67 +19,57 @@ const List<String> _mesesAbreviados = [
 ];
 
 /// Abre el selector de mes o de año (según el tipo de [actual]) y devuelve el
-/// periodo elegido, o null si se cancela. Solo deja elegir entre [primero] (la
-/// primera mantención registrada) y [hoy]. Sin paquetes: es un diálogo propio.
+/// periodo elegido, o null si se cancela. Solo ofrece los [meses] o [anios]
+/// en que hay mantenciones registradas: lo que no tiene registros no aparece.
 Future<PeriodoGasto?> mostrarSelectorPeriodo(
   BuildContext context, {
   required PeriodoGasto actual,
-  required DateTime primero,
-  required DateTime hoy,
+  required List<DateTime> meses,
+  required List<int> anios,
 }) {
   return showDialog<PeriodoGasto>(
     context: context,
-    builder: (_) => _DialogoPeriodo(actual: actual, primero: primero, hoy: hoy),
+    builder: (_) => _DialogoPeriodo(actual: actual, meses: meses, anios: anios),
   );
 }
 
-class _DialogoPeriodo extends StatefulWidget {
+class _DialogoPeriodo extends StatelessWidget {
   final PeriodoGasto actual;
-  final DateTime primero;
-  final DateTime hoy;
+
+  /// Meses con mantenciones (primer día de cada mes), del más reciente al más
+  /// antiguo.
+  final List<DateTime> meses;
+
+  /// Años con mantenciones, del más reciente al más antiguo.
+  final List<int> anios;
 
   const _DialogoPeriodo({
     required this.actual,
-    required this.primero,
-    required this.hoy,
+    required this.meses,
+    required this.anios,
   });
 
-  @override
-  State<_DialogoPeriodo> createState() => _DialogoPeriodoState();
-}
+  bool get _esMes => actual.tipo == TipoPeriodo.mes;
 
-class _DialogoPeriodoState extends State<_DialogoPeriodo> {
-  /// Año que se está mirando (solo en el selector de mes).
-  late int _anio = widget.actual.inicio.year;
-
-  bool get _esMes => widget.actual.tipo == TipoPeriodo.mes;
-
-  bool _mesDisponible(int anio, int mes) {
-    final inicio = DateTime(widget.primero.year, widget.primero.month);
-    final fin = DateTime(widget.hoy.year, widget.hoy.month);
-    final candidato = DateTime(anio, mes);
-    return !candidato.isBefore(inicio) && !candidato.isAfter(fin);
-  }
-
-  Widget _celda({
+  Widget _celda(
+    BuildContext context, {
     required String texto,
-    required bool seleccionada,
-    required bool disponible,
     required String semantica,
-    required VoidCallback onTap,
+    required bool seleccionada,
+    required PeriodoGasto periodo,
   }) {
     return Semantics(
       button: true,
       selected: seleccionada,
-      enabled: disponible,
       label: semantica,
       excludeSemantics: true,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: disponible ? onTap : null,
+        onTap: () => Navigator.pop(context, periodo),
         child: Container(
+          width: 84,
           alignment: Alignment.center,
-          constraints: const BoxConstraints(minHeight: 48),
+          constraints: const BoxConstraints(minHeight: 44),
           decoration: BoxDecoration(
             color: seleccionada ? TokensGasto.violeta : TokensGasto.pildora,
             borderRadius: BorderRadius.circular(12),
@@ -87,11 +77,7 @@ class _DialogoPeriodoState extends State<_DialogoPeriodo> {
           child: Text(
             texto,
             style: TextStyle(
-              color: seleccionada
-                  ? Colors.white
-                  : disponible
-                      ? TokensGasto.textoPrincipal
-                      : TokensGasto.flechaDeshabilitada,
+              color: seleccionada ? Colors.white : TokensGasto.textoPrincipal,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
@@ -101,104 +87,72 @@ class _DialogoPeriodoState extends State<_DialogoPeriodo> {
     );
   }
 
-  Widget _selectorMes() {
-    final actual = widget.actual;
+  Widget _listaMeses(BuildContext context) {
+    // Agrupa por año, conservando el orden (el más reciente primero).
+    final porAnio = <int, List<DateTime>>{};
+    for (final mes in meses) {
+      porAnio.putIfAbsent(mes.year, () => []).add(mes);
+    }
+
     return Column(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            IconButton(
-              tooltip: 'Año anterior',
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              onPressed: _anio > widget.primero.year
-                  ? () => setState(() => _anio--)
-                  : null,
-              icon: const Icon(Icons.chevron_left_rounded),
-              color: TokensGasto.textoPrincipal,
-              disabledColor: TokensGasto.flechaDeshabilitada,
-            ),
-            Expanded(
-              child: Text(
-                '$_anio',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: TokensGasto.textoPrincipal,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                ),
+        for (final entrada in porAnio.entries) ...[
+          Padding(
+            padding: const EdgeInsets.only(top: 6, bottom: 8),
+            child: Text(
+              '${entrada.key}',
+              style: const TextStyle(
+                color: TokensGasto.textoSecundario,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            IconButton(
-              tooltip: 'Año siguiente',
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              onPressed: _anio < widget.hoy.year
-                  ? () => setState(() => _anio++)
-                  : null,
-              icon: const Icon(Icons.chevron_right_rounded),
-              color: TokensGasto.textoPrincipal,
-              disabledColor: TokensGasto.flechaDeshabilitada,
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        GridView.count(
-          crossAxisCount: 3,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          childAspectRatio: 2,
-          children: [
-            for (var mes = 1; mes <= 12; mes++)
-              _celda(
-                texto: _mesesAbreviados[mes - 1],
-                seleccionada:
-                    actual.inicio.year == _anio && actual.inicio.month == mes,
-                disponible: _mesDisponible(_anio, mes),
-                semantica: PeriodoGasto.mes(DateTime(_anio, mes)).etiqueta,
-                onTap: () => Navigator.pop(
+          ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final mes in entrada.value)
+                _celda(
                   context,
-                  PeriodoGasto.mes(DateTime(_anio, mes)),
+                  texto: _mesesAbreviados[mes.month - 1],
+                  semantica: PeriodoGasto.mes(mes).etiqueta,
+                  seleccionada: actual.tipo == TipoPeriodo.mes &&
+                      actual.inicio.year == mes.year &&
+                      actual.inicio.month == mes.month,
+                  periodo: PeriodoGasto.mes(mes),
                 ),
-              ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
       ],
     );
   }
 
-  Widget _selectorAnio() {
-    final anios = [
-      for (var a = widget.hoy.year; a >= widget.primero.year; a--) a,
-    ];
-    return SizedBox(
-      width: double.maxFinite,
-      child: GridView.count(
-        crossAxisCount: 3,
-        shrinkWrap: true,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        childAspectRatio: 2,
-        children: [
-          for (final a in anios)
-            _celda(
-              texto: '$a',
-              seleccionada: widget.actual.inicio.year == a,
-              disponible: true,
-              semantica: 'Año $a',
-              onTap: () => Navigator.pop(
-                context,
-                PeriodoGasto.anio(DateTime(a)),
-              ),
-            ),
-        ],
-      ),
+  Widget _listaAnios(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final anio in anios)
+          _celda(
+            context,
+            texto: '$anio',
+            semantica: 'Año $anio',
+            seleccionada:
+                actual.tipo == TipoPeriodo.anio && actual.inicio.year == anio,
+            periodo: PeriodoGasto.anio(DateTime(anio)),
+          ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final hayOpciones = _esMes ? meses.isNotEmpty : anios.isNotEmpty;
+
     return Dialog(
       backgroundColor: TokensGasto.fondoCard,
       shape: RoundedRectangleBorder(
@@ -219,10 +173,31 @@ class _DialogoPeriodoState extends State<_DialogoPeriodo> {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              _esMes
+                  ? 'Solo aparecen los meses con mantenciones registradas.'
+                  : 'Solo aparecen los años con mantenciones registradas.',
+              style: const TextStyle(
+                color: TokensGasto.textoSecundario,
+                fontSize: 12,
+              ),
+            ),
             const SizedBox(height: 10),
             Flexible(
               child: SingleChildScrollView(
-                child: _esMes ? _selectorMes() : _selectorAnio(),
+                child: hayOpciones
+                    ? (_esMes ? _listaMeses(context) : _listaAnios(context))
+                    : const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Text(
+                          'Aún no tienes mantenciones registradas con costo.',
+                          style: TextStyle(
+                            color: TokensGasto.textoPrincipal,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
               ),
             ),
             Align(

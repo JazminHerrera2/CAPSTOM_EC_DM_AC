@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tag_ok/data/models/mantencion_model.dart';
 import 'package:tag_ok/data/models/tipo_mantencion.dart';
 import 'package:tag_ok/screens/mantenimiento/gasto_periodo.dart';
+import 'package:tag_ok/screens/mantenimiento/selector_periodo_gasto.dart';
 import 'package:tag_ok/screens/mantenimiento/widgets_gasto.dart';
 
 MantencionModel _m({
@@ -84,17 +85,38 @@ void main() {
       expect(PeriodoGasto.todo().contiene(DateTime(1999, 1, 1)), isTrue);
     });
 
-    test('primer mes con mantenciones y etiquetas', () {
-      final lista = [
-        _m(costo: 1, fecha: DateTime(2026, 3, 9)),
-        _m(costo: 1, fecha: DateTime(2025, 11, 30)),
-      ];
-      expect(primerMesConMantenciones(lista), DateTime(2025, 11));
-      expect(primerMesConMantenciones(const []), isNull);
+    test('etiquetas', () {
       expect(octubre.etiqueta, 'Octubre 2026');
       expect(PeriodoGasto.mes(DateTime(2027, 1)).etiqueta, 'Enero 2027');
       expect(PeriodoGasto.anio(hoy).etiqueta, '2026');
       expect(PeriodoGasto.todo().etiqueta, 'Todo');
+    });
+
+    test('solo salen los meses y años con registros, del más reciente al más antiguo',
+        () {
+      final lista = [
+        _m(costo: 45000, fecha: DateTime(2026, 10, 3)),
+        _m(costo: 30000, fecha: DateTime(2026, 10, 28)), // mismo mes
+        _m(costo: 87520, fecha: DateTime(2026, 7, 15)),
+        _m(costo: 10000, fecha: DateTime(2024, 3, 5)),
+        _m(costo: null, fecha: DateTime(2026, 9, 9)), // sin costo: no cuenta
+        _m(costo: 5000, fecha: null), // sin fecha: no cuenta
+        _m(
+          costo: 9999,
+          fecha: DateTime(2026, 8, 1),
+          estado: EstadoMantencion.programada, // programada: no cuenta
+        ),
+      ];
+
+      expect(mesesConMantenciones(lista), [
+        DateTime(2026, 10),
+        DateTime(2026, 7),
+        DateTime(2024, 3),
+      ]);
+      // Septiembre y agosto no aparecen; 2025 tampoco.
+      expect(aniosConMantenciones(lista), [2026, 2024]);
+      expect(mesesConMantenciones(const []), isEmpty);
+      expect(aniosConMantenciones(const []), isEmpty);
     });
   });
 
@@ -187,14 +209,115 @@ void main() {
       expect(elegido, TipoPeriodo.anio);
     });
 
-    testWidgets('el pie solo tiene "Ver detalle"', (tester) async {
-      var abrio = false;
-      await tester.pumpWidget(app(PieGasto(onVerDetalle: () => abrio = true)));
-      expect(find.text('Total histórico'), findsNothing);
-      expect(find.text('Ver detalle'), findsOneWidget);
+    Future<void> abrirSelector(
+      WidgetTester tester, {
+      required PeriodoGasto actual,
+      required List<DateTime> meses,
+      required List<int> anios,
+      required void Function(PeriodoGasto?) alCerrar,
+    }) async {
+      await tester.pumpWidget(app(Builder(
+        builder: (context) => TextButton(
+          onPressed: () async => alCerrar(await mostrarSelectorPeriodo(
+            context,
+            actual: actual,
+            meses: meses,
+            anios: anios,
+          )),
+          child: const Text('abrir'),
+        ),
+      )));
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+    }
 
-      await tester.tap(find.text('Ver detalle'));
-      expect(abrio, isTrue);
+    testWidgets('el selector de mes solo ofrece los meses con registros',
+        (tester) async {
+      PeriodoGasto? elegido;
+      await abrirSelector(
+        tester,
+        actual: octubre,
+        meses: [DateTime(2026, 10), DateTime(2026, 7), DateTime(2024, 3)],
+        anios: [2026, 2024],
+        alCerrar: (p) => elegido = p,
+      );
+
+      expect(find.text('Oct'), findsOneWidget);
+      expect(find.text('Jul'), findsOneWidget);
+      expect(find.text('Mar'), findsOneWidget);
+      // Sin registros: no son opción.
+      expect(find.text('Sep'), findsNothing);
+      expect(find.text('Ago'), findsNothing);
+      expect(find.text('Ene'), findsNothing);
+      // Se agrupan por año, y 2025 (sin registros) no aparece.
+      expect(find.text('2026'), findsOneWidget);
+      expect(find.text('2024'), findsOneWidget);
+      expect(find.text('2025'), findsNothing);
+
+      await tester.tap(find.text('Jul'));
+      await tester.pumpAndSettle();
+      expect(elegido, PeriodoGasto.mes(DateTime(2026, 7)));
+    });
+
+    testWidgets('el selector de año solo ofrece los años con registros',
+        (tester) async {
+      PeriodoGasto? elegido;
+      await abrirSelector(
+        tester,
+        actual: PeriodoGasto.anio(hoy),
+        meses: [DateTime(2026, 10), DateTime(2024, 3)],
+        anios: [2026, 2024],
+        alCerrar: (p) => elegido = p,
+      );
+
+      expect(find.text('2026'), findsOneWidget);
+      expect(find.text('2024'), findsOneWidget);
+      expect(find.text('2025'), findsNothing);
+
+      await tester.tap(find.text('2024'));
+      await tester.pumpAndSettle();
+      expect(elegido, PeriodoGasto.anio(DateTime(2024)));
+    });
+
+    testWidgets('sin ninguna mantención el selector lo dice y no ofrece nada',
+        (tester) async {
+      await abrirSelector(
+        tester,
+        actual: octubre,
+        meses: const [],
+        anios: const [],
+        alCerrar: (_) {},
+      );
+      expect(find.textContaining('Aún no tienes mantenciones'), findsOneWidget);
+      expect(find.text('Oct'), findsNothing);
+    });
+
+    testWidgets('botones a la izquierda y la opción de mes a la derecha, sin desbordar en 320 px',
+        (tester) async {
+      tester.view.physicalSize = const Size(320, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(app(Row(
+        children: [
+          SegmentosPeriodo(seleccionado: TipoPeriodo.mes, onChanged: (_) {}),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: PildoraPeriodo(
+                periodo: PeriodoGasto.mes(DateTime(2026, 9)),
+                onElegir: () {},
+              ),
+            ),
+          ),
+        ],
+      )));
+
+      expect(tester.takeException(), isNull);
+      final izquierda = tester.getTopLeft(find.text('Mes')).dx;
+      final derecha = tester.getTopLeft(find.text('Septiembre 2026')).dx;
+      expect(izquierda, lessThan(derecha));
     });
   });
 }

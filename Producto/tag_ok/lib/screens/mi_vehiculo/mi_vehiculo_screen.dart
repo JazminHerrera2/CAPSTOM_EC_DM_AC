@@ -8,7 +8,7 @@ import '../../data/services/vehiculo_service.dart';
 import 'detalle_vehiculo_screen.dart';
 import 'documentos_vehiculo_seccion.dart';
 import 'foto_vehiculo.dart';
-import 'registro_ia_vehiculo_screen.dart';
+import 'registrar_editar_vehiculo_screen.dart';
 
 class MiVehiculoScreen extends StatefulWidget {
   const MiVehiculoScreen({super.key});
@@ -65,7 +65,8 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const RegistrarVehiculoIaScreen(),
+                    builder: (context) =>
+                        const RegistrarEditarVehiculoScreen(),
                   ),
                 );
               },

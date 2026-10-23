@@ -112,13 +112,26 @@ ResumenGasto calcularGasto(
   return (total: total, cantidad: cantidad);
 }
 
-/// Mes más antiguo con una mantención realizada (null si no hay ninguna).
-DateTime? primerMesConMantenciones(Iterable<MantencionModel> mantenciones) {
-  DateTime? primero;
+/// Meses (primer día de cada uno) en que hay mantenciones que cuentan en el
+/// gasto (realizadas, con fecha y con costo), del más reciente al más antiguo.
+/// Un mes sin registros no aparece.
+List<DateTime> mesesConMantenciones(Iterable<MantencionModel> mantenciones) {
+  final meses = <DateTime>{};
   for (final m in mantenciones) {
     final fecha = m.fecha;
-    if (m.estado != EstadoMantencion.realizada || fecha == null) continue;
-    if (primero == null || fecha.isBefore(primero)) primero = fecha;
+    if (m.estado != EstadoMantencion.realizada ||
+        m.costo == null ||
+        fecha == null) {
+      continue;
+    }
+    meses.add(DateTime(fecha.year, fecha.month));
   }
-  return primero == null ? null : DateTime(primero.year, primero.month);
+  return meses.toList()..sort((a, b) => b.compareTo(a));
+}
+
+/// Años con mantenciones que cuentan en el gasto, del más reciente al más
+/// antiguo.
+List<int> aniosConMantenciones(Iterable<MantencionModel> mantenciones) {
+  final anios = {for (final mes in mesesConMantenciones(mantenciones)) mes.year};
+  return anios.toList()..sort((a, b) => b.compareTo(a));
 }

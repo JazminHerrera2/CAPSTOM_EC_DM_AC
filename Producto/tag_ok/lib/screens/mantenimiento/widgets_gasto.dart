@@ -42,52 +42,49 @@ class SegmentosPeriodo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          color: TokensGasto.pildora,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final tipo in TipoPeriodo.values)
-              Semantics(
-                button: true,
-                selected: tipo == seleccionado,
-                label: 'Ver gasto por ${_etiquetas[tipo]!.toLowerCase()}',
-                excludeSemantics: true,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(9),
-                  onTap: () => onChanged(tipo),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    height: 32,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: TokensGasto.pildora,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final tipo in TipoPeriodo.values)
+            Semantics(
+              button: true,
+              selected: tipo == seleccionado,
+              label: 'Ver gasto por ${_etiquetas[tipo]!.toLowerCase()}',
+              excludeSemantics: true,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(9),
+                onTap: () => onChanged(tipo),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  height: 32,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: tipo == seleccionado
+                        ? TokensGasto.violeta
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Text(
+                    _etiquetas[tipo]!,
+                    style: TextStyle(
                       color: tipo == seleccionado
-                          ? TokensGasto.violeta
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(9),
-                    ),
-                    child: Text(
-                      _etiquetas[tipo]!,
-                      style: TextStyle(
-                        color: tipo == seleccionado
-                            ? Colors.white
-                            : TokensGasto.textoSecundario,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
+                          ? Colors.white
+                          : TokensGasto.textoSecundario,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
@@ -108,44 +105,41 @@ class PildoraPeriodo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final unidad = periodo.tipo == TipoPeriodo.mes ? 'mes' : 'año';
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Semantics(
-        button: true,
-        label: 'Elegir $unidad, ${periodo.etiqueta.toLowerCase()}',
-        excludeSemantics: true,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(22),
-          onTap: onElegir,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: TokensGasto.pildora,
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    periodo.etiqueta,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: TokensGasto.textoPrincipal,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+    return Semantics(
+      button: true,
+      label: 'Elegir $unidad, ${periodo.etiqueta.toLowerCase()}',
+      excludeSemantics: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onElegir,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: TokensGasto.pildora,
+            borderRadius: BorderRadius.circular(22),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  periodo.etiqueta,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: TokensGasto.textoPrincipal,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(width: 6),
-                const Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  color: TokensGasto.acento,
-                  size: 22,
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: TokensGasto.acento,
+                size: 22,
+              ),
+            ],
           ),
         ),
       ),
@@ -157,10 +151,7 @@ class PildoraPeriodo extends StatelessWidget {
 class MontoPeriodo extends StatelessWidget {
   final ResumenGasto resumen;
 
-  const MontoPeriodo({
-    super.key,
-    required this.resumen,
-  });
+  const MontoPeriodo({super.key, required this.resumen});
 
   @override
   Widget build(BuildContext context) {
@@ -194,56 +185,6 @@ class MontoPeriodo extends StatelessWidget {
           style: const TextStyle(
             color: TokensGasto.textoSecundario,
             fontSize: 14,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Pie del card: el enlace "Ver detalle" alineado a la derecha.
-class PieGasto extends StatelessWidget {
-  final VoidCallback onVerDetalle;
-
-  const PieGasto({super.key, required this.onVerDetalle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Semantics(
-          button: true,
-          label: 'Ver detalle de las mantenciones',
-          excludeSemantics: true,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: onVerDetalle,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 44),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Ver detalle',
-                      style: TextStyle(
-                        color: TokensGasto.acento,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(width: 2),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: TokensGasto.acento,
-                      size: 22,
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ),
       ],

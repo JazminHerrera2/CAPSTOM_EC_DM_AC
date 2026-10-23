@@ -274,6 +274,17 @@ test('8l componentes revisados: lista de ids pasa; un valor que no es lista fall
   await assertSucceeds(db.doc('mantenciones/manA').update({ componentes: ['bateria'] }));
 });
 
+test('8n mantención realizada con próxima mantención y confianza_ia 0-1 pasa; sin sesión se rechaza', async () => {
+  const datos = nuevaMantencion(UID_A, {
+    numero_comprobante: '284479', tipo_comprobante: 'factura',
+    proxima_fecha: Timestamp.now(), proximo_kilometraje: 82450,
+    origen_registro: 'ia', fecha_captura: Timestamp.now(), confianza_ia: 0.83,
+  });
+  await assertSucceeds(como(UID_A).doc('mantenciones/f1').set(datos));
+  await assertFails(anonimo().doc('mantenciones/f2').set(datos));
+  await assertFails(como(UID_B).doc('mantenciones/f3').set(datos));
+});
+
 // --- Prueba 8m: catálogo de componentes de mantención ------------------------
 test('8m componentes_mantencion: todo usuario con sesión lee; solo admin escribe', async () => {
   const comp = { nombre: 'Frenos', orden: 4, activo: true };
