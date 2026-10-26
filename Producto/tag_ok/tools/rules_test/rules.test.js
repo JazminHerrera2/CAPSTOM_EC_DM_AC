@@ -1,5 +1,5 @@
 /**
- * Pruebas de firestore.rules.borrador contra el EMULADOR local.
+ * Pruebas de firestore.rules contra el EMULADOR local.
  * Proyecto "demo-tag-ok": el prefijo demo- garantiza que nunca se conecta a
  * Firebase real ni toca tag-ok-v2.
  *
@@ -10,7 +10,7 @@
  * Cada prueba que debe fallar (assertFails) tiene una "gemela de control" que
  * debe pasar: si fallaran las dos, el problema sería el dato, no la regla.
  */
-const { test, before, after, beforeEach } = require('node:test');
+const { test, after, beforeEach } = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
 const firebase = require('firebase/compat/app');
@@ -28,18 +28,23 @@ const UID_B = 'uidB_otro';
 
 let env;
 
-before(async () => {
-  env = await initializeTestEnvironment({
+// Se inicializa en el primer beforeEach y no en un before() de nivel superior:
+// en Node 22.0.0 ese before() no se espera antes de los beforeEach y `env`
+// quedaba undefined en todas las pruebas.
+let envListo;
+const iniciarEnv = () =>
+  (envListo ??= initializeTestEnvironment({
     projectId: 'demo-tag-ok',
     firestore: {
-      rules: fs.readFileSync(path.join(__dirname, '../../firestore.rules.borrador'), 'utf8'),
+      rules: fs.readFileSync(path.join(__dirname, '../../firestore.rules'), 'utf8'),
     },
-  });
-});
+  }).then((e) => (env = e)));
+
 after(async () => env && (await env.cleanup()));
 
 // Datos base (se cargan sin reglas) antes de cada prueba.
 beforeEach(async () => {
+  await iniciarEnv();
   await env.clearFirestore();
   await env.withSecurityRulesDisabled(async (ctx) => {
     const db = ctx.firestore();
@@ -98,6 +103,22 @@ test('2c control: crear con su propio uid pasa', async () => {
 test('2d crear documento en un vehículo AJENO falla (uid propio)', async () => {
   const d = { ...nuevoDoc(UID_A), vehiculo_id: 'vehB' };
   await assertFails(como(UID_A).doc('documentos_vehiculares/nuevo2').set(d));
+});
+
+test('2e fecha_emision_estimada: booleano pasa; otro tipo de valor falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('documentos_vehiculares/est1').set(
+    { ...nuevoDoc(UID_A), fecha_emision: Timestamp.now(), fecha_emision_estimada: true }));
+  await assertFails(db.doc('documentos_vehiculares/est2').set(
+    { ...nuevoDoc(UID_A), fecha_emision_estimada: 'si' }));
+});
+
+test('2f forma_pago: total/cuota_1/cuota_2 pasan; otro valor falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('documentos_vehiculares/fp1').set({ ...nuevoDoc(UID_A), forma_pago: 'cuota_1' }));
+  await assertSucceeds(db.doc('documentos_vehiculares/fp2').set({ ...nuevoDoc(UID_A), forma_pago: 'total' }));
+  await assertSucceeds(db.doc('documentos_vehiculares/fp4').set({ ...nuevoDoc(UID_A), forma_pago: 'cuota_2' }));
+  await assertFails(db.doc('documentos_vehiculares/fp3').set({ ...nuevoDoc(UID_A), forma_pago: 'tres_cuotas' }));
 });
 
 // --- Prueba 3: admin lee todo lo que necesita el panel ----------------------
@@ -173,6 +194,7 @@ const nuevaMantencion = (uid, extra = {}) => ({
   origen_registro: 'manual', fecha: Timestamp.now(), kilometraje: 72450,
   taller: 'Taller X', costo: 45000, descripcion: null, observaciones: null,
   tipo_otro: null, proxima_fecha: null, proximo_kilometraje: null,
+  tipo_comprobante: null, numero_comprobante: null,
   fecha_captura: null, confianza_ia: null, ...extra,
 });
 test('8a A NO lee una mantención de B', async () => {
@@ -223,8 +245,81 @@ test('8j actualizar uid o vehiculo_id falla; actualizar el taller pasa', async (
   await assertFails(ref.update({ vehiculo_id: 'vehB' }));
   await assertSucceeds(ref.update({ taller: 'Otro taller' }));
 });
+test('8l comprobante: boleta con número pasa; tipo inválido o número largo falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('mantenciones/c1').set(
+    nuevaMantencion(UID_A, { tipo_comprobante: 'boleta', numero_comprobante: '458123' })));
+  await assertFails(db.doc('mantenciones/c2').set(
+    nuevaMantencion(UID_A, { tipo_comprobante: 'recibo' })));
+  await assertFails(db.doc('mantenciones/c3').set(
+    nuevaMantencion(UID_A, { tipo_comprobante: 'factura', numero_comprobante: '1'.repeat(51) })));
+});
+test('8m mantención antigua sin campos de comprobante sigue siendo válida', async () => {
+  const { tipo_comprobante, numero_comprobante, ...antigua } = nuevaMantencion(UID_A);
+  await assertSucceeds(como(UID_A).doc('mantenciones/c4').set(antigua));
+  await assertSucceeds(como(UID_A).doc('mantenciones/manA').update({ numero_comprobante: '77801' }));
+});
 test('8k actualizar o borrar la de B falla; borrar la propia pasa', async () => {
   await assertFails(como(UID_A).doc('mantenciones/manB').update({ taller: 'x' }));
   await assertFails(como(UID_A).doc('mantenciones/manB').delete());
   await assertSucceeds(como(UID_A).doc('mantenciones/manA').delete());
+});
+
+test('8l componentes revisados: lista de ids pasa; un valor que no es lista falla; se puede actualizar', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('mantenciones/k1').set(
+    nuevaMantencion(UID_A, { componentes: ['cambio_aceite_motor', 'frenos'] })));
+  await assertFails(db.doc('mantenciones/k2').set(
+    nuevaMantencion(UID_A, { componentes: 'frenos' })));
+  await assertSucceeds(db.doc('mantenciones/manA').update({ componentes: ['bateria'] }));
+});
+
+test('8n mantención realizada con próxima mantención y confianza_ia 0-1 pasa; sin sesión se rechaza', async () => {
+  const datos = nuevaMantencion(UID_A, {
+    numero_comprobante: '284479', tipo_comprobante: 'factura',
+    proxima_fecha: Timestamp.now(), proximo_kilometraje: 82450,
+    origen_registro: 'ia', fecha_captura: Timestamp.now(), confianza_ia: 0.83,
+  });
+  await assertSucceeds(como(UID_A).doc('mantenciones/f1').set(datos));
+  await assertFails(anonimo().doc('mantenciones/f2').set(datos));
+  await assertFails(como(UID_B).doc('mantenciones/f3').set(datos));
+});
+
+// --- Prueba 8m: catálogo de componentes de mantención ------------------------
+test('8m componentes_mantencion: todo usuario con sesión lee; solo admin escribe', async () => {
+  const comp = { nombre: 'Frenos', orden: 4, activo: true };
+  await assertSucceeds(como(ADMIN).doc('componentes_mantencion/frenos').set(comp));
+  await assertSucceeds(como(UID_A).doc('componentes_mantencion/frenos').get());
+  await assertSucceeds(como(UID_A).collection('componentes_mantencion').get());
+  await assertFails(anonimo().collection('componentes_mantencion').get());
+  await assertFails(como(UID_A).doc('componentes_mantencion/x').set(comp));
+  await assertFails(como(UID_A).doc('componentes_mantencion/frenos').delete());
+  await assertFails(como(ADMIN).doc('componentes_mantencion/malo').set({ ...comp, nombre: '' }));
+  await assertSucceeds(como(ADMIN).doc('componentes_mantencion/frenos').update({ activo: false }));
+  await assertSucceeds(como(ADMIN).doc('componentes_mantencion/frenos').delete());
+});
+
+// --- Prueba 9: notificaciones (recordatorios de mantención, RF-012) ---------
+const recordatorio = (uid, extra = {}) => ({
+  usuario_id: uid, vehiculo_id: 'vehA', tipo: 'mantencion_programada',
+  referencia_id: 'manA', mensaje: 'Mantención programada en 7 días: Frenos (AAAA11).',
+  fecha_programada: Timestamp.now(), fecha_generacion: Timestamp.now(),
+  leida: false, estado: 'pendiente', ...extra,
+});
+test('9a crear recordatorio de mantención para su vehículo pasa; para otro usuario o vehículo ajeno falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('notificaciones/manA_7dias').set(recordatorio(UID_A)));
+  await assertFails(db.doc('notificaciones/x1').set(recordatorio(UID_B)));
+  await assertFails(db.doc('notificaciones/x2').set(recordatorio(UID_A, { vehiculo_id: 'vehB' })));
+});
+test('9b el dueño lee, marca como leído y borra su recordatorio; B no lo lee', async () => {
+  const ref = como(UID_A).doc('notificaciones/manA_dia');
+  await assertSucceeds(ref.set(recordatorio(UID_A)));
+  await assertFails(como(UID_B).doc('notificaciones/manA_dia').get());
+  await assertSucceeds(ref.get());
+  await assertSucceeds(ref.update({ leida: true, estado: 'leida' }));
+  await assertSucceeds(ref.delete());
+});
+test('9c borrar un recordatorio que no existe no falla (eliminar mantención sin avisos)', async () => {
+  await assertSucceeds(como(UID_A).doc('notificaciones/noExiste_7dias').delete());
 });

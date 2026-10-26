@@ -1,7 +1,9 @@
 rules_version = '2';
 
 // ===============================================================
-// BORRADOR - NO PUBLICADO. Revisar primero en el simulador de Firebase.
+// Reglas de seguridad de Firestore del proyecto tag-ok-v2.
+// Este archivo es la versión oficial: no editar las reglas en la consola.
+// Publicar con:  firebase deploy --only firestore:rules --project tag-ok-v2
 // ===============================================================
 //
 // Modelo de datos asumido (sacado de lib/ de tag_ok y admin)
@@ -27,17 +29,27 @@ rules_version = '2';
 //   origen_registro: manual|ia | fecha_registro: timestamp
 //   numero, compania, numero_poliza, archivo_path: string|null
 //   fecha_emision, fecha_vencimiento, fecha_captura: timestamp|null
+//   forma_pago: total|cuota_1|cuota_2|null (casilla marcada en el permiso)
+//   fecha_emision_estimada: bool (opcional; true si la emision no figuraba en el
+//   documento y se completo con la fecha de ingreso)
 //   confianza_ia: number|null
 //
 // mantenciones/{id}
 //   uid: string (req, inmutable) = dueño | vehiculo_id: string (req, inmutable)
 //   estado: programada|realizada | origen_registro: manual|ia
-//   tipo: cambio_aceite|revision_general|cambio_filtros|frenos|neumaticos|
-//         alineacion_balanceo|bateria|sistema_electrico|motor|preventiva|otra
-//   tipo_otro: string (req si tipo = otra) | taller, descripcion, observaciones
+//   tipo: string 1-60 (titulo libre; las antiguas guardan un valor de la
+//         lista anterior, ej. cambio_aceite u otra)
+//   tipo_otro: string|null (solo antiguas con tipo = otra)
+//   taller, descripcion, observaciones
 //   fecha, proxima_fecha, fecha_captura: timestamp|null
 //   kilometraje, proximo_kilometraje, costo: int|null | confianza_ia: number|null
-//   (sin archivo_path: no se guarda la boleta, solo los datos extraídos)
+//   tipo_comprobante: boleta|factura|otro|null | numero_comprobante: string|null
+//   componentes: list<string> (ids de componentes_mantencion revisados)
+//   (sin archivo_path: no se guarda la boleta, solo los datos extraídos y la
+//   referencia del comprobante)
+//
+// componentes_mantencion/{id}   catalogo (lo escriben solo admins)
+//   nombre: string (req) | orden: int (req) | activo: bool (req)
 //
 // notificaciones/{id}  (id = {documentoId}_30dias | {documentoId}_15dias | {documentoId}_7dias)
 //   usuario_id: string = uid dueño (req, inmutable) | vehiculo_id, tipo,
@@ -257,7 +269,7 @@ service cloud.firestore {
       return d.keys().hasOnly(['uid', 'vehiculo_id', 'tipo_documento', 'numero',
           'fecha_emision', 'fecha_vencimiento', 'compania', 'numero_poliza',
           'archivo_path', 'origen_registro', 'fecha_captura', 'confianza_ia',
-          'fecha_registro']) &&
+          'fecha_registro', 'fecha_emision_estimada', 'forma_pago']) &&
         reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
         d.tipo_documento in ['permiso_circulacion', 'revision_tecnica', 'soap', 'seguro'] &&
         d.origen_registro in ['manual', 'ia'] &&
@@ -265,7 +277,9 @@ service cloud.firestore {
         optStr(d, 'numero', 100) && optStr(d, 'compania', 100) &&
         optStr(d, 'numero_poliza', 100) && optStr(d, 'archivo_path', 500) &&
         optTs(d, 'fecha_emision') && optTs(d, 'fecha_vencimiento') &&
-        optTs(d, 'fecha_captura') &&
+        optTs(d, 'fecha_captura') && optBool(d, 'fecha_emision_estimada') &&
+        (!('forma_pago' in d) || d.forma_pago == null ||
+          d.forma_pago in ['total', 'cuota_1', 'cuota_2']) &&
         (!('confianza_ia' in d) || d.confianza_ia == null ||
           (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100));
     }
@@ -296,12 +310,13 @@ service cloud.firestore {
       return d.keys().hasOnly(['uid', 'vehiculo_id', 'estado', 'fecha',
           'kilometraje', 'tipo', 'tipo_otro', 'taller', 'costo', 'descripcion',
           'observaciones', 'proxima_fecha', 'proximo_kilometraje',
+          'tipo_comprobante', 'numero_comprobante', 'componentes',
           'origen_registro', 'fecha_captura', 'confianza_ia']) &&
         reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
         d.estado in ['programada', 'realizada'] &&
-        d.tipo in ['cambio_aceite', 'revision_general', 'cambio_filtros', 'frenos',
-          'neumaticos', 'alineacion_balanceo', 'bateria', 'sistema_electrico',
-          'motor', 'preventiva', 'otra'] &&
+        // Titulo libre (max 60). Las mantenciones antiguas guardan un valor de
+        // la lista anterior (cambio_aceite, otra...), que tambien es un string.
+        reqStr(d, 'tipo', 60) &&
         d.origen_registro in ['manual', 'ia'] &&
         optStr(d, 'tipo_otro', 100) && optStr(d, 'taller', 100) &&
         optStr(d, 'descripcion', 500) && optStr(d, 'observaciones', 1000) &&
@@ -309,10 +324,12 @@ service cloud.firestore {
         optInt(d, 'kilometraje', 0, 5000000) &&
         optInt(d, 'proximo_kilometraje', 0, 5000000) &&
         optInt(d, 'costo', 0, 1000000000) &&
+        (!('tipo_comprobante' in d) || d.tipo_comprobante == null ||
+          d.tipo_comprobante in ['boleta', 'factura', 'otro']) &&
+        optStr(d, 'numero_comprobante', 50) &&
+        (!('componentes' in d) || (d.componentes is list && d.componentes.size() <= 30)) &&
         (!('confianza_ia' in d) || d.confianza_ia == null ||
           (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100)) &&
-        // "Otra" exige escribir el tipo.
-        (d.tipo != 'otra' || reqStr(d, 'tipo_otro', 100)) &&
         // Realizada: lleva fecha. Programada: lleva fecha y/o kilometraje.
         (d.estado != 'realizada' || d.get('fecha', null) is timestamp) &&
         (d.estado != 'programada' ||
@@ -334,10 +351,29 @@ service cloud.firestore {
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'estado', 'fecha', 'kilometraje', 'tipo', 'tipo_otro', 'taller',
           'costo', 'descripcion', 'observaciones', 'proxima_fecha',
-          'proximo_kilometraje']) &&
+          'proximo_kilometraje', 'tipo_comprobante', 'numero_comprobante',
+          'componentes']) &&
         mantencionValida(request.resource.data);
 
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // componentes_mantencion  (catalogo: lo lee todo usuario con sesion y
+    // solo lo administran los admins)
+    // ===============================================================
+
+    function componenteValido(d) {
+      return d.keys().hasOnly(['nombre', 'orden', 'activo']) &&
+        reqStr(d, 'nombre', 60) &&
+        d.orden is int && d.orden >= 0 && d.orden <= 1000 &&
+        d.activo is bool;
+    }
+
+    match /componentes_mantencion/{componenteId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin() && componenteValido(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     // ===============================================================

@@ -60,6 +60,14 @@ void main() {
       expect(await svc.mostrarPendientes(avisos, tarde), 0);
     });
 
+    test('también muestra los recordatorios de mantención', () async {
+      final avisos = [
+        aviso('m_dia', DateTime(2026, 10, 12), tipo: tipoAvisoMantencion),
+        aviso('d_7dias', DateTime(2026, 10, 12)),
+      ];
+      expect(await AvisoNavegadorService.instance.mostrarPendientes(avisos, tarde), 2);
+    });
+
     test('si cambia la fecha programada, vuelve a avisar', () async {
       final svc = AvisoNavegadorService.instance;
       expect(await svc.mostrarPendientes([aviso('d_7dias', DateTime(2026, 10, 12))], tarde), 1);

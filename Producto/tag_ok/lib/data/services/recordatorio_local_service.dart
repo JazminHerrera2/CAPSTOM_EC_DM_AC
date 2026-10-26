@@ -42,16 +42,30 @@ DateTime? momentoDeAviso(DateTime fechaProgramada, DateTime ahora) {
   return ahora.add(const Duration(seconds: 5));
 }
 
-/// Programa en el dispositivo (Android / iOS) los avisos de vencimiento que
-/// `NotificacionService` guarda en Firestore, para que lleguen aunque la app
-/// esté cerrada o no haya internet. En web no hace nada: allí los avisos se
-/// ven en la bandeja de notificaciones de la app.
+/// Canal de Android de cada tipo de aviso: el usuario puede silenciar uno sin
+/// perder el otro desde los ajustes del teléfono.
+({String id, String nombre, String descripcion}) _canalDe(String tipo) =>
+    tipo == tipoAvisoMantencion
+        ? (
+            id: 'recordatorios_mantencion_v1',
+            nombre: 'Mantenciones programadas',
+            descripcion: 'Recordatorios de mantenciones programadas',
+          )
+        : (
+            id: 'vencimientos_documentos_v1',
+            nombre: 'Vencimientos de documentos',
+            descripcion: 'Avisos de documentos del vehículo próximos a vencer',
+          );
+
+/// Programa en el dispositivo (Android / iOS) los avisos que
+/// `NotificacionService` guarda en Firestore (vencimientos de documentos y
+/// mantenciones programadas), para que lleguen aunque la app esté cerrada o
+/// no haya internet. En web no hace nada: allí los avisos se ven en la
+/// bandeja de notificaciones de la app.
 class RecordatoriosLocalesService {
   RecordatoriosLocalesService._();
   static final RecordatoriosLocalesService instance =
       RecordatoriosLocalesService._();
-
-  static const String _canalId = 'vencimientos_documentos_v1';
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
@@ -84,14 +98,17 @@ class RecordatoriosLocalesService {
 
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    await android?.createNotificationChannel(
-      const AndroidNotificationChannel(
-        _canalId,
-        'Vencimientos de documentos',
-        description: 'Avisos de documentos del vehículo próximos a vencer',
-        importance: Importance.high,
-      ),
-    );
+    for (final tipo in tiposAvisoEntregables) {
+      final canal = _canalDe(tipo);
+      await android?.createNotificationChannel(
+        AndroidNotificationChannel(
+          canal.id,
+          canal.nombre,
+          description: canal.descripcion,
+          importance: Importance.high,
+        ),
+      );
+    }
 
     _inicializado = true;
     return true;
@@ -133,21 +150,21 @@ class RecordatoriosLocalesService {
         return;
       }
 
+      final canal = _canalDe(n.tipo);
       await _plugin.zonedSchedule(
         id: id,
-        title: 'Documento por vencer',
+        title: tituloAviso(n.tipo),
         body: n.mensaje,
         scheduledDate: tz.TZDateTime.from(momento, tz.UTC),
-        notificationDetails: const NotificationDetails(
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
-            _canalId,
-            'Vencimientos de documentos',
-            channelDescription:
-                'Avisos de documentos del vehículo próximos a vencer',
+            canal.id,
+            canal.nombre,
+            channelDescription: canal.descripcion,
             importance: Importance.high,
             priority: Priority.high,
           ),
-          iOS: DarwinNotificationDetails(),
+          iOS: const DarwinNotificationDetails(),
         ),
         // Inexacto a propósito: no requiere el permiso de alarmas exactas y,
         // para un aviso de días, unos minutos de margen no importan.
@@ -169,15 +186,15 @@ class RecordatoriosLocalesService {
   }
 
   /// Deja programados exactamente los avisos de [avisos] (los pendientes y
-  /// futuros) y cancela cualquier otro aviso de vencimiento que haya quedado
-  /// (documento borrado desde otro dispositivo, aviso ya leído, etc.).
+  /// futuros) y cancela cualquier otro aviso que haya quedado (documento o
+  /// mantención borrados desde otro dispositivo, aviso ya leído, etc.).
   Future<void> sincronizar(List<NotificacionConfigModel> avisos) async {
     try {
       if (!await _asegurarInicio()) return;
 
       final vigentes = <int>{};
       for (final aviso in avisos) {
-        if (aviso.tipo != 'vencimiento_documento') continue;
+        if (!tiposAvisoEntregables.contains(aviso.tipo)) continue;
         await programar(aviso);
         final fecha = aviso.fechaProgramada;
         if (!aviso.leida &&

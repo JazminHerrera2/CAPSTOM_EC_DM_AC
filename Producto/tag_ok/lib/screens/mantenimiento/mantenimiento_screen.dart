@@ -9,6 +9,7 @@ import '../../data/services/vehiculo_service.dart';
 import 'historial_mantenimientos_screen.dart';
 import 'proximas_mantenciones_screen.dart';
 import 'registro_ia_mantenimiento_screen.dart';
+import 'resumen_gastos_mantenciones.dart';
 import 'tarjeta_mantencion.dart';
 
 
@@ -99,11 +100,42 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               vehiculo ??= vehiculos.isEmpty ? null : vehiculos.first;
 
               return SafeArea(
-                child: Column(
+                child: Stack(
                   children: [
-                    if (vehiculos.isNotEmpty)
-                      _filtrosVehiculos(vehiculos, vehiculo?.id),
-                    Expanded(child: _contenido(context, vehiculo)),
+                    Column(
+                      children: [
+                        if (vehiculos.isNotEmpty)
+                          _filtrosVehiculos(vehiculos, vehiculo?.id),
+                        Expanded(child: _contenido(context, vehiculo)),
+                      ],
+                    ),
+                    // El + significa REGISTRAR MANTENCIÓN (igual que el + de
+                    // Mi Vehículo para agregar un vehículo).
+                    Positioned(
+                      right: 16,
+                      bottom: 16,
+                      child: FloatingActionButton(
+                        heroTag: 'registrarMantencion',
+                        backgroundColor: primaryColor,
+                        tooltip: 'Registrar mantención',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  RegistrarMantenimientoIaScreen(
+                                vehiculoIdInicial: vehiculo?.id,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -164,8 +196,14 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
     final patente = vehiculo?.patente;
     final vehiculoId = vehiculo?.id;
     return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
           children: [
+            // Gasto total y por mes
+            if (vehiculoId != null) ...[
+              ResumenGastosMantenciones(vehiculoId: vehiculoId),
+              const SizedBox(height: 12),
+            ],
+
             // Próxima mantención
             Container(
               padding: const EdgeInsets.all(18),
@@ -211,24 +249,6 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                     patente: patente,
                     vehiculoId: vehiculoId,
                   ),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _MenuCard(
-              icon: Icons.add_circle_outline,
-              title: 'Registrar mantención',
-              color: primaryColor,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RegistrarMantenimientoIaScreen(
-                      vehiculoIdInicial: vehiculoId,
-                    ),
                   ),
                 );
               },
@@ -464,6 +484,8 @@ class _ResumenProximaState extends State<_ResumenProxima> {
             children: [
               Text(
                 m == null ? 'Sin mantenciones programadas' : m.nombreTipo,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: MantenimientoScreen.textMain,
                   fontSize: 16,

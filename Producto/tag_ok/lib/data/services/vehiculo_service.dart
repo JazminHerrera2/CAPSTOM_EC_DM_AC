@@ -6,6 +6,28 @@ import 'documento_vehicular_service.dart';
 import 'mantencion_service.dart';
 import 'storage_service.dart';
 
+/// El usuario ya tiene un vehículo registrado con esa patente.
+class PatenteDuplicadaException implements Exception {
+  final String patente;
+
+  const PatenteDuplicadaException(this.patente);
+
+  @override
+  String toString() => 'PatenteDuplicadaException: $patente';
+}
+
+/// Patente para comparar: mayúsculas y solo letras y números, así "abcd-12",
+/// "ABCD 12" y "ABCD12" son la misma.
+String patenteParaComparar(String patente) =>
+    patente.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
+
+/// `true` si [nueva] ya está entre las patentes [existentes].
+bool patenteYaRegistrada(Iterable<String> existentes, String nueva) {
+  final buscada = patenteParaComparar(nueva);
+  if (buscada.isEmpty) return false;
+  return existentes.any((p) => patenteParaComparar(p) == buscada);
+}
+
 /// CRUD de la colección `vehiculos` — compartida entre Fase 1
 /// (`vehiculos_screen.dart`) y Fase 2 (módulo Mi Vehículo). Ver
 /// `docs/07-desviaciones-diccionario-datos.md` para el detalle de por qué
@@ -30,6 +52,16 @@ class VehiculoService {
     String? alias,
   }) async {
     final idUsuario = _firestore.collection('usuarios').doc(usuarioId);
+
+    // Un usuario no puede registrar dos vehículos con la misma patente.
+    final existentes =
+        await _vehiculos.where('id_usuario', isEqualTo: idUsuario).get();
+    if (patenteYaRegistrada(
+      existentes.docs.map((d) => (d.data()['patente'] ?? '').toString()),
+      patente,
+    )) {
+      throw PatenteDuplicadaException(patente);
+    }
 
     final vehiculo = VehiculoModel(
       id: '',

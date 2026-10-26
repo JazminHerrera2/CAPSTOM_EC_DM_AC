@@ -5,12 +5,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../data/models/documento_vehicular_model.dart';
+import '../../utils/permiso_circulacion.dart';
 import '../../data/services/documento_vehicular_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/vehiculo_service.dart';
 import '../../features/registro_inteligente/consejos_captura.dart';
 import '../../features/registro_inteligente/preparar_imagen.dart';
 import '../../features/registro_inteligente/document_type.dart';
+import '../../features/registro_inteligente/extraction_schema_registry.dart';
 import '../../features/registro_inteligente/smart_capture_controller.dart';
 import '../../features/registro_inteligente/smart_capture_result.dart';
 import '../../features/registro_inteligente/smart_capture_review_screen.dart';
@@ -18,9 +20,14 @@ import '../../features/registro_inteligente/smart_capture_review_screen.dart';
 class RegistrarDocumentoIaScreen extends StatefulWidget {
   final String vehiculoId;
 
+  /// Si viene, la pantalla trabaja solo con ese tipo de documento (botón
+  /// "Actualizar" de la tarjeta de un documento). Sin él acepta cualquiera.
+  final DocumentType? tipoInicial;
+
   const RegistrarDocumentoIaScreen({
     super.key,
     required this.vehiculoId,
+    this.tipoInicial,
   });
 
   @override
@@ -34,6 +41,24 @@ const _tiposDocumentoVehiculo = [
   DocumentType.soap,
   DocumentType.seguro,
 ];
+
+/// Tipo de Registro Inteligente que corresponde a un tipo de documento del
+/// vehículo.
+DocumentType documentTypeDe(TipoDocumentoVehicular tipo) {
+  switch (tipo) {
+    case TipoDocumentoVehicular.permisoCirculacion:
+      return DocumentType.permisoCirculacion;
+
+    case TipoDocumentoVehicular.revisionTecnica:
+      return DocumentType.revisionTecnica;
+
+    case TipoDocumentoVehicular.soap:
+      return DocumentType.soap;
+
+    case TipoDocumentoVehicular.seguro:
+      return DocumentType.seguro;
+  }
+}
 
 TipoDocumentoVehicular _aTipoDocumentoVehicular(
   DocumentType tipo,
@@ -71,6 +96,11 @@ class _RegistrarDocumentoIaScreenState
   final VehiculoService _vehiculoService = VehiculoService();
 
   final StorageService _storageService = StorageService();
+
+  /// Tipos con los que trabaja esta pantalla: solo [tipoInicial] si viene.
+  List<DocumentType> get _tiposPermitidos => widget.tipoInicial == null
+      ? _tiposDocumentoVehiculo
+      : [widget.tipoInicial!];
 
   bool _procesando = false;
 
@@ -166,8 +196,7 @@ class _RegistrarDocumentoIaScreenState
         bytes: bytes,
         mimeType: mimeType,
         nombreArchivo: nombre,
-        tiposPermitidos:
-            _tiposDocumentoVehiculo,
+        tiposPermitidos: _tiposPermitidos,
         alCambiarEtapa: (etapa) {
           if (mounted) setState(() => _etapa = etapa);
         },
@@ -311,7 +340,7 @@ class _RegistrarDocumentoIaScreenState
         builder: (context) =>
             SmartCaptureReviewScreen(
           resultado: resultado,
-          tiposPermitidos: _tiposDocumentoVehiculo,
+          tiposPermitidos: _tiposPermitidos,
           onConfirm: ({required tipo, required campos, required esManual}) async {
             await _validarPatente(campos['patente']?.toString());
 
@@ -414,6 +443,9 @@ class _RegistrarDocumentoIaScreenState
                     campos[
                         'fecha_vencimiento'],
                   ),
+                  formaPago: FormaPagoPermiso.fromFirestore(
+                    campos[claveFormaPago],
+                  ),
                   compania:
                       campos['compania'],
                   numeroPoliza:
@@ -438,10 +470,15 @@ class _RegistrarDocumentoIaScreenState
                 fechaEmision: parseFecha(
                   campos['fecha_emision'],
                 ),
+                fechaEmisionEstimada:
+                    campos[claveFechaEmisionEstimada] == 'true',
                 fechaVencimiento:
                     parseFecha(
                   campos[
                       'fecha_vencimiento'],
+                ),
+                formaPago: FormaPagoPermiso.fromFirestore(
+                  campos[claveFormaPago],
                 ),
                 compania:
                     campos['compania'],

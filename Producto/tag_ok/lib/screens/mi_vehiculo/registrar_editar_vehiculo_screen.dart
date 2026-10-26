@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -7,6 +8,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/vehiculo_service.dart';
+import '../../features/registro_inteligente/boton_foto_velocimetro.dart';
+import '../../features/registro_inteligente/consejos_captura.dart';
+import '../../features/registro_inteligente/vehiculo_extraction.dart';
 import 'foto_vehiculo.dart';
 
 class RegistrarEditarVehiculoScreen extends StatefulWidget {
@@ -62,6 +66,14 @@ class _RegistrarEditarVehiculoScreenState
   bool _quitarFoto = false;
 
   bool get _esEdicion => widget.vehiculo != null;
+
+  /// Los datos vienen de escanear el padrón con IA (hay que revisarlos).
+  bool _datosDeIa = false;
+
+  /// La IA está leyendo el padrón.
+  bool _leyendoPadron = false;
+
+  bool get _desdeIa => _datosDeIa && !_esEdicion;
 
   @override
   void initState() {
@@ -123,8 +135,8 @@ class _RegistrarEditarVehiculoScreenState
     }
   }
 
-  /// Todos los datos principales son obligatorios (al registrar y al editar);
-  /// solo la personalización (alias y kilometraje) es opcional.
+  /// Todos los datos principales son obligatorios (al registrar y al editar),
+  /// incluido el kilometraje; solo la personalización (alias) es opcional.
   String? _validarDatosPrincipales() {
     if (_marcaCtrl.text.trim().isEmpty) {
       return 'La marca es obligatoria.';
@@ -146,6 +158,10 @@ class _RegistrarEditarVehiculoScreenState
 
     if (_tipoCombustibleCtrl.text.trim().isEmpty) {
       return 'El tipo de combustible es obligatorio.';
+    }
+
+    if (_kilometrajeCtrl.text.trim().isEmpty) {
+      return 'El kilometraje es obligatorio. Puedes fotografiar el velocímetro.';
     }
 
     return null;
@@ -526,6 +542,12 @@ class _RegistrarEditarVehiculoScreenState
       if (mounted) {
         Navigator.pop(context, true);
       }
+    } on PatenteDuplicadaException catch (e) {
+      _mostrarError(
+        'Ya tienes un vehículo registrado con la patente ${e.patente.toUpperCase()}. '
+        'No puedes agregar otro con la misma patente.',
+        terminarGuardado: true,
+      );
     } on StorageException catch (e) {
       debugPrint('Error de almacenamiento: $e');
       _mostrarError(
@@ -621,6 +643,282 @@ class _RegistrarEditarVehiculoScreenState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ------------------------------------------------------------
+  // ESCANEAR PADRÓN CON IA
+  // ------------------------------------------------------------
+
+  Widget _botonEscanearPadron() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: OutlinedButton.icon(
+            onPressed: _leyendoPadron ? null : _elegirOrigenPadron,
+            icon: _leyendoPadron
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: primaryColor,
+                    ),
+                  )
+                : const Icon(
+                    Icons.document_scanner_outlined,
+                    color: primaryColor,
+                    size: 22,
+                  ),
+            label: Text(
+              _leyendoPadron
+                  ? 'Leyendo el padrón...'
+                  : 'Escanear padrón con IA',
+              style: const TextStyle(
+                color: textMain,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              backgroundColor: primaryColor.withOpacity(0.10),
+              side: BorderSide(color: primaryColor.withOpacity(0.6)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'La IA leerá tu padrón y completará los datos del vehículo. '
+          'Podrás revisarlos antes de guardar.',
+          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
+        ),
+      ],
+    );
+  }
+
+  /// Pregunta cómo se entrega el padrón: cámara o documento.
+  Future<void> _elegirOrigenPadron() async {
+    final origen = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text(
+                'Escanear padrón',
+                style: TextStyle(
+                  color: textMain,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined, color: textMain),
+              title: const Text(
+                'Escanear con cámara',
+                style: TextStyle(color: textMain),
+              ),
+              subtitle: const Text(
+                'Toma una fotografía clara de tu padrón.',
+                style: TextStyle(color: textMuted),
+              ),
+              onTap: () => Navigator.pop(context, 'camara'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.upload_file_outlined, color: textMain),
+              title: const Text(
+                'Subir documento',
+                style: TextStyle(color: textMain),
+              ),
+              subtitle: const Text(
+                'Selecciona un archivo PDF, JPG o PNG.',
+                style: TextStyle(color: textMuted),
+              ),
+              onTap: () => Navigator.pop(context, 'documento'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (origen == 'camara') {
+      await _padronDesdeCamara();
+    } else if (origen == 'documento') {
+      await _padronDesdeArchivo();
+    }
+  }
+
+  Future<void> _padronDesdeCamara() async {
+    if (!await mostrarConsejosCaptura(context)) return;
+    if (!mounted) return;
+
+    final foto = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
+    if (foto == null) return;
+
+    await _leerPadron(bytes: await foto.readAsBytes(), mimeType: 'image/jpeg');
+  }
+
+  Future<void> _padronDesdeArchivo() async {
+    final resultado = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf', 'jpg', 'jpeg', 'png'],
+      withData: true,
+    );
+    if (resultado == null || resultado.files.isEmpty) return;
+
+    final archivo = resultado.files.first;
+    final bytes = archivo.bytes;
+    if (bytes == null) return;
+
+    final nombre = archivo.name.toLowerCase();
+    final mimeType = nombre.endsWith('.pdf')
+        ? 'application/pdf'
+        : nombre.endsWith('.png')
+            ? 'image/png'
+            : 'image/jpeg';
+
+    await _leerPadron(bytes: bytes, mimeType: mimeType);
+  }
+
+  /// La IA lee el padrón y completa el formulario. Lo que no se lee queda
+  /// como estaba (vacío) y se avisa; el usuario revisa todo antes de guardar.
+  Future<void> _leerPadron({
+    required Uint8List bytes,
+    required String mimeType,
+  }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _leyendoPadron = true);
+
+    try {
+      final datos = await extraerVehiculo(bytes: bytes, mimeType: mimeType);
+      if (!mounted) return;
+
+      if (datos.vacio) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text(
+                'No pudimos leer datos del vehículo en este archivo. '
+                'Prueba con una foto más clara o ingrésalos manualmente.',
+              ),
+            ),
+          );
+        return;
+      }
+
+      setState(() {
+        if (datos.patente != null) _patenteCtrl.text = datos.patente!;
+        if (datos.marca != null) _marcaCtrl.text = datos.marca!;
+        if (datos.modelo != null) _modeloCtrl.text = datos.modelo!;
+        if (datos.anio != null) _anioCtrl.text = datos.anio.toString();
+        if (datos.tipoCombustible != null) {
+          _tipoCombustibleCtrl.text = datos.tipoCombustible!;
+        }
+        if (_tiposVehiculo.contains(datos.tipoVehiculo)) {
+          _tipoVehiculoSel = datos.tipoVehiculo!;
+        }
+        _datosDeIa = true;
+        _error = null;
+      });
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Datos del padrón cargados. Revísalos antes de guardar.'),
+          ),
+        );
+    } catch (e) {
+      debugPrint('No se pudo analizar el padrón: $e');
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se pudo analizar el padrón. Intenta de nuevo o ingresa los datos manualmente.',
+            ),
+          ),
+        );
+    } finally {
+      if (mounted) setState(() => _leyendoPadron = false);
+    }
+  }
+
+  /// Aviso de que los datos vienen de la IA y hay que revisarlos.
+  Widget _avisoIa() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: primaryColor.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: primaryColor.withOpacity(0.25)),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.auto_awesome_outlined, color: primaryColor, size: 24),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Revisa los datos detectados',
+                  style: TextStyle(
+                    color: textMain,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'La IA leyó tu documento. Corrige lo que haga falta y completa los campos que no pudo leer antes de guardar.',
+                  style: TextStyle(
+                    color: textMuted,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Si el formulario viene de la IA y el campo quedó vacío, avisa que no se
+  /// pudo leer (igual que la revisión de documentos).
+  InputDecoration _conAvisoIa(
+    InputDecoration base,
+    TextEditingController controller,
+  ) {
+    if (!_desdeIa || controller.text.trim().isNotEmpty) return base;
+    return base.copyWith(
+      helperText: 'No se pudo leer: complétalo.',
+      helperStyle: const TextStyle(
+        color: Color(0xFFF59E0B),
+        fontSize: 12,
       ),
     );
   }
@@ -760,6 +1058,11 @@ class _RegistrarEditarVehiculoScreenState
             35,
           ),
           children: [
+            if (_desdeIa) ...[
+              _avisoIa(),
+              const SizedBox(height: 22),
+            ],
+
             if (!_esEdicion) ...[
               _tituloSeccion(
                 'Tipo de vehículo',
@@ -767,6 +1070,10 @@ class _RegistrarEditarVehiculoScreenState
               ),
 
               _selectorTipoVehiculo(),
+
+              const SizedBox(height: 14),
+
+              _botonEscanearPadron(),
 
               const SizedBox(height: 28),
             ],
@@ -810,10 +1117,13 @@ class _RegistrarEditarVehiculoScreenState
                         fontSize: 12,
                       ),
                     )
-                  : _decoracion(
-                      'Patente *',
-                      hint: 'Ej: ABCD12',
-                      icon: Icons.badge_outlined,
+                  : _conAvisoIa(
+                      _decoracion(
+                        'Patente *',
+                        hint: 'Ej: ABCD12',
+                        icon: Icons.badge_outlined,
+                      ),
+                      _patenteCtrl,
                     ),
             ),
 
@@ -824,10 +1134,13 @@ class _RegistrarEditarVehiculoScreenState
               style: const TextStyle(
                 color: textMain,
               ),
-              decoration: _decoracion(
+              decoration: _conAvisoIa(
+                _decoracion(
                 'Marca *',
                 hint: 'Ej: Toyota',
                 icon: Icons.directions_car_outlined,
+              ),
+                _marcaCtrl,
               ),
             ),
 
@@ -838,10 +1151,13 @@ class _RegistrarEditarVehiculoScreenState
               style: const TextStyle(
                 color: textMain,
               ),
-              decoration: _decoracion(
+              decoration: _conAvisoIa(
+                _decoracion(
                 'Modelo *',
                 hint: 'Ej: Corolla',
                 icon: Icons.car_repair_outlined,
+              ),
+                _modeloCtrl,
               ),
             ),
 
@@ -853,10 +1169,13 @@ class _RegistrarEditarVehiculoScreenState
               style: const TextStyle(
                 color: textMain,
               ),
-              decoration: _decoracion(
+              decoration: _conAvisoIa(
+                _decoracion(
                 'Año *',
                 hint: 'Ej: 2022',
                 icon: Icons.calendar_today_outlined,
+              ),
+                _anioCtrl,
               ),
             ),
 
@@ -867,11 +1186,39 @@ class _RegistrarEditarVehiculoScreenState
               style: const TextStyle(
                 color: textMain,
               ),
-              decoration: _decoracion(
+              decoration: _conAvisoIa(
+                _decoracion(
                 'Tipo de combustible *',
                 hint: 'Ej: Gasolina',
                 icon: Icons.local_gas_station_outlined,
               ),
+                _tipoCombustibleCtrl,
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            TextField(
+              controller: _kilometrajeCtrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
+              style: const TextStyle(
+                color: textMain,
+              ),
+              decoration: _decoracion(
+                'Kilometraje actual *',
+                hint: 'Ej: 35000 o 35.000',
+                icon: Icons.speed_outlined,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            BotonFotoVelocimetro(
+              onKilometraje: (km) =>
+                  setState(() => _kilometrajeCtrl.text = km.toString()),
             ),
 
             const SizedBox(height: 28),
@@ -893,23 +1240,6 @@ class _RegistrarEditarVehiculoScreenState
               ),
             ),
 
-            const SizedBox(height: 14),
-
-            TextField(
-              controller: _kilometrajeCtrl,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-              ],
-              style: const TextStyle(
-                color: textMain,
-              ),
-              decoration: _decoracion(
-                'Kilometraje actual (opcional)',
-                hint: 'Ej: 35000 o 35.000',
-                icon: Icons.speed_outlined,
-              ),
-            ),
 
             if (!_esEdicion) ...[
               const SizedBox(height: 22),

@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../data/services/componente_mantencion_service.dart';
 import '../../features/registro_inteligente/consejos_captura.dart';
 import '../../features/registro_inteligente/preparar_imagen.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
@@ -95,9 +96,11 @@ class _RegistrarMantenimientoIaScreenState
     });
 
     try {
+      final componentes = await ComponenteMantencionService().obtenerActivos();
       final datos = await extraerMantencion(
         bytes: bytes,
         mimeType: mimeType,
+        componentes: componentes,
         alCambiarEtapa: (etapa) {
           if (mounted) setState(() => _etapa = etapa);
         },

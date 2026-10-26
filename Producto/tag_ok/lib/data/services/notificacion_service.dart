@@ -3,8 +3,41 @@ import 'package:flutter/foundation.dart';
 import '../models/notificacion_config_model.dart';
 import 'recordatorio_local_service.dart';
 
-/// Servicio para configurar avisos preventivos de vencimiento en Firestore y
-/// entregarlos al cliente.
+/// Un aviso por crear: su id en `notificaciones`, el día en que corresponde y
+/// el texto que verá el usuario.
+typedef AvisoProgramado = ({String id, DateTime fechaProgramada, String mensaje});
+
+/// Sufijos de id de los recordatorios de una mantención (`{id}_7dias`,
+/// `{id}_dia`).
+const List<String> sufijosAvisoMantencion = ['7dias', 'dia'];
+
+/// Recordatorios de una mantención programada (RF-012): 7 días antes y el
+/// mismo día de la fecha programada.
+List<AvisoProgramado> avisosMantencion({
+  required String mantencionId,
+  required String nombreMantencion,
+  required DateTime proximaFecha,
+  String? patente,
+}) {
+  final que = (patente ?? '').trim().isEmpty
+      ? nombreMantencion
+      : '$nombreMantencion (${patente!.trim()})';
+  return [
+    (
+      id: '${mantencionId}_7dias',
+      fechaProgramada: proximaFecha.subtract(const Duration(days: 7)),
+      mensaje: 'Mantención programada en 7 días: $que.',
+    ),
+    (
+      id: '${mantencionId}_dia',
+      fechaProgramada: proximaFecha,
+      mensaje: 'Hoy tienes una mantención programada: $que.',
+    ),
+  ];
+}
+
+/// Servicio para configurar avisos preventivos en Firestore y entregarlos al
+/// cliente: vencimiento de documentos y mantenciones programadas.
 ///
 /// Los avisos se guardan en `notificaciones` y se entregan de dos formas:
 /// - Notificación local programada en el dispositivo
@@ -31,21 +64,9 @@ class NotificacionService {
     required String nombreDocumento,
     required DateTime fechaVencimiento,
   }) async {
-    final vehiculoDoc = await _vehiculos.doc(vehiculoId).get();
-    if (!vehiculoDoc.exists) {
-      throw StateError(
-        'No existe el vehículo $vehiculoId para generar la notificación de vencimiento.',
-      );
-    }
+    final vehiculo = await _datosVehiculo(vehiculoId);
 
-    final usuarioId = _resolverUsuarioId(vehiculoDoc.data() ?? {});
-    if (usuarioId.trim().isEmpty) {
-      throw StateError(
-        'No se pudo obtener un usuario válido para el vehículo $vehiculoId.',
-      );
-    }
-
-    final avisos = <({String id, DateTime fechaProgramada, String mensaje})>[
+    final avisos = <AvisoProgramado>[
       (
         id: '${documentoId}_30dias',
         fechaProgramada: fechaVencimiento.subtract(const Duration(days: 30)),
@@ -62,6 +83,74 @@ class NotificacionService {
         mensaje: 'Recordatorio: $nombreDocumento vence en 7 días.',
       ),
     ];
+
+    await _guardarAvisos(
+      usuarioId: _resolverUsuarioId(vehiculo),
+      vehiculoId: vehiculoId,
+      referenciaId: documentoId,
+      tipo: tipoAvisoVencimientoDocumento,
+      avisos: avisos,
+    );
+  }
+
+  /// Crea (o reemplaza) los recordatorios de una mantención programada:
+  /// 7 días antes y el mismo día de [proximaFecha] (RF-012).
+  Future<void> configurarRecordatoriosMantencion({
+    required String vehiculoId,
+    required String mantencionId,
+    required String nombreMantencion,
+    required DateTime proximaFecha,
+  }) async {
+    final vehiculo = await _datosVehiculo(vehiculoId);
+    final patente = vehiculo['patente'];
+
+    await _guardarAvisos(
+      usuarioId: _resolverUsuarioId(vehiculo),
+      vehiculoId: vehiculoId,
+      referenciaId: mantencionId,
+      tipo: tipoAvisoMantencion,
+      avisos: avisosMantencion(
+        mantencionId: mantencionId,
+        nombreMantencion: nombreMantencion,
+        proximaFecha: proximaFecha,
+        patente: patente is String ? patente : null,
+      ),
+    );
+  }
+
+  /// Borra los recordatorios de una mantención (7 días antes y el mismo día).
+  Future<void> eliminarRecordatoriosMantencion(String mantencionId) async {
+    for (final sufijo in sufijosAvisoMantencion) {
+      final id = '${mantencionId}_$sufijo';
+      await _notificaciones.doc(id).delete();
+      await RecordatoriosLocalesService.instance.cancelar(id);
+    }
+  }
+
+  Future<Map<String, dynamic>> _datosVehiculo(String vehiculoId) async {
+    final vehiculoDoc = await _vehiculos.doc(vehiculoId).get();
+    if (!vehiculoDoc.exists) {
+      throw StateError(
+        'No existe el vehículo $vehiculoId para generar la notificación.',
+      );
+    }
+    return vehiculoDoc.data() ?? {};
+  }
+
+  /// Guarda cada aviso en `notificaciones` y lo programa en el dispositivo.
+  /// Los avisos cuyo día ya pasó no se crean (y se borran si existían).
+  Future<void> _guardarAvisos({
+    required String usuarioId,
+    required String vehiculoId,
+    required String referenciaId,
+    required String tipo,
+    required List<AvisoProgramado> avisos,
+  }) async {
+    if (usuarioId.trim().isEmpty) {
+      throw StateError(
+        'No se pudo obtener un usuario válido para el vehículo $vehiculoId.',
+      );
+    }
 
     final ahora = DateTime.now();
     final hoy = DateTime(
@@ -95,8 +184,8 @@ class NotificacionService {
         id: aviso.id,
         usuarioId: usuarioId,
         vehiculoId: vehiculoId,
-        tipo: 'vencimiento_documento',
-        referenciaId: documentoId,
+        tipo: tipo,
+        referenciaId: referenciaId,
         mensaje: aviso.mensaje,
         fechaProgramada: fechaProgramada,
         fechaGeneracion: DateTime.now(),

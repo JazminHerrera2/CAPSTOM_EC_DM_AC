@@ -1,8 +1,7 @@
-/// Tipos de mantención del módulo Mantenciones. Única fuente de verdad: las
-/// pantallas, el modelo y las reglas de Firestore usan estos mismos valores.
-///
-/// Si se agrega o renombra un tipo, hay que actualizar también la lista
-/// `d.tipo in [...]` de `mantencionValida()` en firestore.rules.
+/// Lista ANTERIOR de tipos de mantención. Ya no se elige de una lista: el tipo
+/// es un título de texto libre. Se conserva solo para mostrar bien las
+/// mantenciones antiguas, cuyo campo `tipo` guarda uno de estos valores (ver
+/// `tituloMantencion` en utils/titulo_mantencion.dart). No agregar tipos nuevos.
 enum TipoMantencion {
   cambioAceite('cambio_aceite', 'Cambio de aceite'),
   revisionGeneral('revision_general', 'Revisión general'),

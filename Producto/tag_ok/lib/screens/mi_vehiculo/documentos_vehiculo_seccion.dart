@@ -6,7 +6,7 @@ import '../../data/services/documento_vehicular_service.dart';
 import 'detalle_documento_screen.dart';
 import 'registrar_documento_ia_screen.dart';
 
-/// Documentos de UN vehículo: tarjeta con la patente y el avance (N/4), y las
+/// Documentos de UN vehículo: tarjeta con la patente, y las
 /// tarjetas de sus documentos con estado y vencimiento (o el estado vacío con
 /// el botón para agregar el primero).
 ///
@@ -28,9 +28,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
   /// entre la tarjeta de la patente y los documentos.
   final bool mostrarTitulo;
 
-  /// Muestra el botón "Agregar documento" bajo las tarjetas. La pantalla de un
-  /// solo vehículo ya tiene su botón flotante, así que ahí va en false; en la
-  /// pestaña con varios vehículos cada sección lleva el suyo.
+  /// Muestra el botón "Agregar documento" debajo de la tarjeta del vehículo y
+  /// arriba de los documentos ya registrados (cada sección lleva el suyo).
   final bool mostrarBotonAgregar;
 
   const DocumentosVehiculoSeccion({
@@ -87,6 +86,23 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         ),
       );
     }
+  }
+
+  /// Abre el registro del mismo tipo de documento: al guardar el nuevo se
+  /// reemplaza el anterior.
+  void _actualizarDocumento(
+    BuildContext context,
+    DocumentoVehicularModel documento,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RegistrarDocumentoIaScreen(
+          vehiculoId: documento.vehiculoId,
+          tipoInicial: documentTypeDe(documento.tipoDocumento),
+        ),
+      ),
+    );
   }
 
   void _agregarDocumento(BuildContext context) {
@@ -324,6 +340,35 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 ),
               ],
             ),
+
+            const SizedBox(height: 14),
+
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton.icon(
+                onPressed: () => _actualizarDocumento(context, documento),
+                icon: const Icon(
+                  Icons.autorenew_rounded,
+                  color: primaryColor,
+                  size: 20,
+                ),
+                label: const Text(
+                  'Actualizar',
+                  style: TextStyle(
+                    color: textMain,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: primaryColor.withOpacity(0.10),
+                  side: BorderSide(color: primaryColor.withOpacity(0.6)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -478,29 +523,35 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 ],
               ),
 
-              const Spacer(),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${documentos.length}/${TipoDocumentoVehicular.values.length} documentos',
-                  style: const TextStyle(
-                    color: Color(0xFFE0E7FF),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
+
+        // Debajo del vehículo y arriba de los documentos ya registrados. Sin
+        // documentos ya se ofrece "Agregar primer documento".
+        if (mostrarBotonAgregar && documentos.isNotEmpty) ...[
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: () => _agregarDocumento(context),
+              icon: const Icon(Icons.add),
+              label: const Text(
+                'Agregar documento',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+        ],
 
         if (mostrarTitulo) ...[
           const SizedBox(height: 26),
@@ -530,25 +581,6 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   ],
                 ),
               ),
-
-              if (documentos.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${documentos.length}/${TipoDocumentoVehicular.values.length}',
-                    style: const TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
             ],
           ),
         ],
@@ -566,27 +598,6 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
             (documento) => _tarjetaDocumento(context, documento),
           ),
 
-        // Sin documentos ya se ofrece "Agregar primer documento".
-        if (mostrarBotonAgregar && documentos.isNotEmpty)
-          SizedBox(
-            height: 50,
-            child: ElevatedButton.icon(
-              onPressed: () => _agregarDocumento(context),
-              icon: const Icon(Icons.add),
-              label: const Text(
-                'Agregar documento',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }
