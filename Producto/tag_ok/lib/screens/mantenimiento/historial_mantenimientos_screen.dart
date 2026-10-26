@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/mantencion_model.dart';
-import '../../data/models/tipo_mantencion.dart';
 import '../../data/services/mantencion_service.dart';
 import 'gasto_periodo.dart';
-import 'selector_tipo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
 
 class HistorialMantenimientosScreen extends StatefulWidget {
@@ -41,9 +39,7 @@ class _HistorialMantenimientosScreenState
 
   late final String _vehiculoSeleccionado =
       widget.patente ?? 'Todos los vehículos';
-  static const String _todosLosTipos = 'Todos los tipos';
-  String _tipoSeleccionado = _todosLosTipos;
-  final TextEditingController _otroTipoController = TextEditingController();
+  final TextEditingController _busquedaController = TextEditingController();
 
   Stream<List<MantencionModel>>? _stream;
 
@@ -59,11 +55,11 @@ class _HistorialMantenimientosScreenState
       _stream = MantencionService()
           .streamPorVehiculo(id, estado: EstadoMantencion.realizada);
     }
-    // El texto de "Otra" filtra la lista mientras se escribe.
-    _otroTipoController.addListener(() => setState(() {}));
+    // La búsqueda filtra la lista mientras se escribe.
+    _busquedaController.addListener(() => setState(() {}));
   }
 
-  /// Aplica el filtro de tipo (el de vehículo ya viene en la consulta).
+  /// Aplica la búsqueda por título (el de vehículo ya viene en la consulta).
   List<MantencionModel> _filtrar(List<MantencionModel> registradas) {
     final periodo = _periodo;
     final todas = periodo == null
@@ -71,26 +67,19 @@ class _HistorialMantenimientosScreenState
         : registradas
             .where((m) => m.fecha != null && periodo.contiene(m.fecha!))
             .toList();
-    if (_tipoSeleccionado == _todosLosTipos) return todas;
-    final tipo = TipoMantencion.fromEtiqueta(_tipoSeleccionado);
-    final texto = _otroTipoController.text.trim().toLowerCase();
-    return todas.where((m) {
-      if (m.tipo != tipo) return false;
-      if (tipo == TipoMantencion.otra && texto.isNotEmpty) {
-        return (m.tipoOtro ?? '').toLowerCase().contains(texto);
-      }
-      return true;
-    }).toList();
+    final texto = _busquedaController.text.trim().toLowerCase();
+    if (texto.isEmpty) return todas;
+    return todas
+        .where((m) => m.nombreTipo.toLowerCase().contains(texto))
+        .toList();
   }
 
   @override
   void dispose() {
-    _otroTipoController.dispose();
+    _busquedaController.dispose();
     super.dispose();
   }
 
-
-  final List<String> _tipos = TipoMantencion.etiquetas;
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +122,7 @@ class _HistorialMantenimientosScreenState
 
             const SizedBox(height: 10),
 
-            _selectorTipo(),
+            _campoBusqueda(),
 
             if (_periodo != null) ...[
               const SizedBox(height: 10),
@@ -354,16 +343,37 @@ class _HistorialMantenimientosScreenState
   }
 
   // ================================================================
-  // FILTRO TIPO
+  // BÚSQUEDA POR TÍTULO
   // ================================================================
 
-  Widget _selectorTipo() {
-    return SelectorTipoMantencion(
-      opciones: [_todosLosTipos, ..._tipos],
-      valor: _tipoSeleccionado,
-      flotante: true,
-      onChanged: (v) => setState(() => _tipoSeleccionado = v),
-      otroController: _otroTipoController,
+  Widget _campoBusqueda() {
+    return TextField(
+      controller: _busquedaController,
+      textInputAction: TextInputAction.search,
+      style: const TextStyle(color: textMain, fontSize: 14),
+      decoration: InputDecoration(
+        hintText: 'Buscar por tipo de mantención',
+        hintStyle: const TextStyle(color: textMuted),
+        prefixIcon: const Icon(Icons.search_rounded, color: textMuted, size: 21),
+        suffixIcon: _busquedaController.text.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Borrar búsqueda',
+                icon: const Icon(Icons.close_rounded, size: 18),
+                color: textMuted,
+                onPressed: _busquedaController.clear,
+              ),
+        filled: true,
+        fillColor: surfaceColor,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+        ),
+      ),
     );
   }
 

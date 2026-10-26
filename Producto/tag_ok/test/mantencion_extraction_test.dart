@@ -1,14 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tag_ok/data/models/componente_mantencion_model.dart';
 import 'package:tag_ok/data/models/mantencion_model.dart';
-import 'package:tag_ok/data/models/tipo_mantencion.dart';
 import 'package:tag_ok/features/registro_inteligente/mantencion_extraction.dart';
 
 void main() {
   mainComponentes();
   test('interpreta una boleta completa', () {
     final m = parseMantencionExtraida({
-      'tipo_mantencion': 'cambio_aceite',
+      'tipo_mantencion': '  Cambio   de aceite ',
       'fecha': '2026-09-15',
       'kilometraje': '72.450',
       'taller': '  Taller AutoPro ',
@@ -16,7 +15,7 @@ void main() {
       'descripcion': 'Aceite 5W30 y filtro',
       'observaciones': '',
     });
-    expect(m.tipo, TipoMantencion.cambioAceite);
+    expect(m.tipo, 'Cambio de aceite');
     expect(m.fecha, DateTime(2026, 9, 15));
     expect(m.kilometraje, 72450);
     expect(m.taller, 'Taller AutoPro');
@@ -52,9 +51,10 @@ void main() {
     expect(parseMantencionExtraida({'costo': '45000,50'}).costo, 45000);
   });
 
-  test('descarta valores fuera de rango o tipo desconocido', () {
+  test('descarta valores fuera de rango y deja el tipo vacío sin inventarlo',
+      () {
     final m = parseMantencionExtraida({
-      'tipo_mantencion': 'inventado',
+      'tipo_mantencion': '   ',
       'kilometraje': '99999999',
       'costo': '99999999999',
     });
@@ -64,14 +64,18 @@ void main() {
     expect(m.vacia, isTrue);
   });
 
-  test('"otra" conserva tipo_otro, otros tipos lo ignoran y se recortan largos',
-      () {
-    final otra = parseMantencionExtraida(
-        {'tipo_mantencion': 'otra', 'tipo_otro': 'Pulido'});
-    expect(otra.tipoOtro, 'Pulido');
-    final frenos = parseMantencionExtraida(
-        {'tipo_mantencion': 'frenos', 'tipo_otro': 'x'});
-    expect(frenos.tipoOtro, isNull);
+  test('título de la IA: se recorta a 60, y vacío queda como dudoso', () {
+    final largo = parseMantencionExtraida({'tipo_mantencion': 'a' * 90});
+    expect(largo.tipo!.length, 60);
+
+    final vacio = parseMantencionExtraida({'tipo_mantencion': null});
+    expect(vacio.tipo, isNull);
+    expect(vacio.camposDudosos, contains(dudosoTipo));
+    expect(parseMantencionExtraida({'tipo_mantencion': 'Frenos'})
+        .camposDudosos, isNot(contains(dudosoTipo)));
+  });
+
+  test('se recortan los largos de descripción y taller', () {
     final largo = parseMantencionExtraida(
         {'descripcion': 'a' * 800, 'taller': 'b' * 200});
     expect(largo.descripcion!.length, 500);
@@ -106,7 +110,7 @@ void mainComponentes() {
       id: '',
       vehiculoId: 'v1',
       estado: EstadoMantencion.realizada,
-      tipo: TipoMantencion.cambioAceite,
+      tipo: 'Cambio de aceite',
       componentes: const ['bateria', 'frenos'],
     );
     expect(m.toJson()['componentes'], ['bateria', 'frenos']);

@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../../data/models/componente_mantencion_model.dart';
 import '../../data/models/mantencion_model.dart';
-import '../../data/models/tipo_mantencion.dart';
 import '../../data/models/vehiculo_model.dart';
-import '../../data/services/componente_mantencion_service.dart';
 import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
 import '../../features/registro_inteligente/boton_foto_velocimetro.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
+import '../../utils/titulo_mantencion.dart';
 import '../../utils/validaciones_mantencion.dart';
 import 'selector_tipo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
@@ -52,12 +50,6 @@ class _RegistrarMantenimientoScreenState
 
   final VehiculoService _vehiculoService = VehiculoService();
   final MantencionService _mantencionService = MantencionService();
-  final Stream<List<ComponenteMantencion>> _componentesStream =
-      ComponenteMantencionService().streamActivos();
-
-  /// Ids de los componentes marcados: los que detectó la IA y los que el
-  /// usuario marque o desmarque a mano.
-  final Set<String> _componentesMarcados = {};
 
   bool _guardando = false;
 
@@ -65,7 +57,8 @@ class _RegistrarMantenimientoScreenState
       FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
 
   String? _vehiculoId;
-  String _tipoMantenimiento = TipoMantencion.cambioAceite.etiqueta;
+  /// El título lo propuso la IA y el usuario aún no lo toca.
+  bool _tipoSugeridoIa = false;
 
   /// Fecha de emisión del documento. Parte vacía: nunca se inventa ni se
   /// rellena con "hoy"; hay que leerla o elegirla.
@@ -88,11 +81,9 @@ class _RegistrarMantenimientoScreenState
   final _costoController = TextEditingController();
   final _descripcionController = TextEditingController();
   final _observacionesController = TextEditingController();
-  final _otroTipoController = TextEditingController();
+  final _tipoController = TextEditingController();
   final _numeroComprobanteController = TextEditingController();
   final _proximoKmController = TextEditingController();
-
-  final List<String> _tiposMantenimiento = TipoMantencion.etiquetas;
 
   static const String _sinComprobante = 'Sin comprobante';
   final List<String> _opcionesComprobante = [
@@ -138,8 +129,8 @@ class _RegistrarMantenimientoScreenState
     final d = widget.datosIa;
     if (d == null) return;
 
-    if (d.tipo != null) _tipoMantenimiento = d.tipo!.etiqueta;
-    _otroTipoController.text = d.tipoOtro ?? '';
+    _tipoController.text = d.tipo ?? '';
+    _tipoSugeridoIa = d.tipo != null;
     _dudosos.addAll(d.camposDudosos);
     if (d.fecha != null) _fecha = d.fecha;
     _kilometrajeController.text = d.kilometraje?.toString() ?? '';
@@ -147,7 +138,6 @@ class _RegistrarMantenimientoScreenState
     _costoController.text = d.costo?.toString() ?? '';
     _descripcionController.text = d.descripcion ?? '';
     _observacionesController.text = d.observaciones ?? '';
-    _componentesMarcados.addAll(d.componentes);
     if (d.tipoComprobante != null) _comprobante = d.tipoComprobante!.etiqueta;
     _numeroComprobanteController.text = d.numeroComprobante ?? '';
   }
@@ -159,7 +149,7 @@ class _RegistrarMantenimientoScreenState
     _costoController.dispose();
     _descripcionController.dispose();
     _observacionesController.dispose();
-    _otroTipoController.dispose();
+    _tipoController.dispose();
     _numeroComprobanteController.dispose();
     _proximoKmController.dispose();
     super.dispose();
@@ -254,9 +244,8 @@ class _RegistrarMantenimientoScreenState
       return;
     }
 
-    final tipo = TipoMantencion.fromEtiqueta(_tipoMantenimiento);
-    if (tipo == TipoMantencion.otra &&
-        _otroTipoController.text.trim().isEmpty) {
+    final tipo = normalizarTituloMantencion(_tipoController.text);
+    if (tipo == null) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Escribe el tipo de mantención.')),
       );
@@ -351,7 +340,6 @@ class _RegistrarMantenimientoScreenState
         vehiculoId: vehiculoId,
         estado: EstadoMantencion.realizada,
         tipo: tipo,
-        tipoOtro: _otroTipoController.text,
         fecha: fecha,
         kilometraje: km,
         taller: _tallerController.text,
@@ -363,7 +351,6 @@ class _RegistrarMantenimientoScreenState
         numeroComprobante: _tipoComprobante == null
             ? null
             : _numeroComprobanteController.text,
-        componentes: _componentesMarcados.toList(),
         proximaFecha: proxima,
         proximoKilometraje: proximoKm,
         confianzaIa: _desdeIa ? widget.datosIa!.confianza : null,
@@ -461,7 +448,7 @@ class _RegistrarMantenimientoScreenState
 
                 const SizedBox(height: 10),
 
-                _selectorTipo(),
+                _campoTipo(),
 
                 const SizedBox(height: 12),
 
@@ -533,27 +520,6 @@ class _RegistrarMantenimientoScreenState
                     return null;
                   },
                 ),
-
-                const SizedBox(height: 22),
-
-                _tituloSeccion('Componentes revisados'),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  _desdeIa
-                      ? 'Marcados según lo que la IA leyó en el comprobante. Puedes marcar o desmarcar a mano.'
-                      : 'Marca los componentes a los que se les hizo mantención.',
-                  style: const TextStyle(
-                    color: textMuted,
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                _listaComponentes(),
 
                 const SizedBox(height: 22),
 
@@ -829,45 +795,47 @@ class _RegistrarMantenimientoScreenState
     );
   }
 
-  Widget _selectorTipo() {
+  /// Título de la mantención en texto libre. Si lo propuso la IA, se avisa y
+  /// se resalta hasta que el usuario lo edite (o si venía como dudoso).
+  Widget _campoTipo() {
+    final dudoso = _dudosos.contains(dudosoTipo);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SelectorTipoMantencion(
-          opciones: _tiposMantenimiento,
-          valor: _tipoMantenimiento,
-          onChanged: (v) => setState(() {
-            _tipoMantenimiento = v;
+        TextFormField(
+          controller: _tipoController,
+          maxLength: largoMaximoTituloMantencion,
+          textCapitalization: TextCapitalization.sentences,
+          validator: (value) => normalizarTituloMantencion(value) == null
+              ? 'Escribe el tipo de mantención.'
+              : null,
+          onChanged: (_) => setState(() {
+            _tipoSugeridoIa = false;
             _dudosos.remove(dudosoTipo);
           }),
-          otroController: _otroTipoController,
-          flotante: true,
+          style: const TextStyle(color: textMain, fontSize: 14),
+          decoration: _conDudoso(
+            _decoracionCampo(
+              label: 'Tipo de mantención *',
+              hint: 'Ej: Cambio de aceite',
+              icon: Icons.build_outlined,
+            ),
+            dudoso,
+          ),
         ),
-        if (_dudosos.contains(dudosoTipo)) _avisoDudoso(),
+        if (_tipoSugeridoIa)
+          const Padding(
+            padding: EdgeInsets.only(left: 4),
+            child: Text(
+              'Sugerido por la IA',
+              style: TextStyle(color: textMuted, fontSize: 11),
+            ),
+          ),
       ],
     );
   }
 
   static const Color _ambar = Color(0xFFF59E0B);
-
-  /// Texto bajo un campo que la IA leyó con dudas.
-  Widget _avisoDudoso() {
-    return const Padding(
-      padding: EdgeInsets.only(top: 6, left: 4),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: _ambar, size: 13),
-          SizedBox(width: 5),
-          Expanded(
-            child: Text(
-              'Revisa este dato antes de guardar.',
-              style: TextStyle(color: _ambar, fontSize: 11),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// Borde ámbar y aviso cuando el campo está marcado como dudoso.
   InputDecoration _conDudoso(InputDecoration base, bool dudoso) {
@@ -912,41 +880,6 @@ class _RegistrarMantenimientoScreenState
           }),
         ),
       ),
-    );
-  }
-
-  Widget _listaComponentes() {
-    return StreamBuilder<List<ComponenteMantencion>>(
-      stream: _componentesStream,
-      initialData: componentesPorDefecto,
-      builder: (context, snapshot) {
-        final componentes = snapshot.data ?? componentesPorDefecto;
-        return Column(
-          children: [
-            for (final c in componentes)
-              CheckboxListTile(
-                value: _componentesMarcados.contains(c.id),
-                onChanged: (marcado) => setState(() {
-                  if (marcado == true) {
-                    _componentesMarcados.add(c.id);
-                  } else {
-                    _componentesMarcados.remove(c.id);
-                  }
-                }),
-                title: Text(
-                  c.nombre,
-                  style: const TextStyle(color: textMain, fontSize: 14),
-                ),
-                activeColor: primaryColor,
-                checkColor: Colors.white,
-                side: const BorderSide(color: textMuted),
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-              ),
-          ],
-        );
-      },
     );
   }
 

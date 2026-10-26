@@ -87,6 +87,8 @@ class TarjetaMantencion extends StatelessWidget {
               children: [
                 Text(
                   m.nombreTipo,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: _textMain,
                     fontSize: 15,

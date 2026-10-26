@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tag_ok/data/models/mantencion_model.dart';
-import 'package:tag_ok/data/models/tipo_mantencion.dart';
 import 'package:tag_ok/screens/mantenimiento/gasto_periodo.dart';
 import 'package:tag_ok/screens/mantenimiento/selector_periodo_gasto.dart';
 import 'package:tag_ok/screens/mantenimiento/widgets_gasto.dart';
@@ -15,7 +14,7 @@ MantencionModel _m({
       id: '',
       vehiculoId: 'v1',
       estado: estado,
-      tipo: TipoMantencion.cambioAceite,
+      tipo: 'Cambio de aceite',
       costo: costo,
       fecha: fecha,
     );

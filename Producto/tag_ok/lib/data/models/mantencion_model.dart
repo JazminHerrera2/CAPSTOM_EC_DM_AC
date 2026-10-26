@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'tipo_mantencion.dart';
+import '../../utils/titulo_mantencion.dart';
 
 /// Una mantención puede estar programada (aún por hacer) o realizada.
 enum EstadoMantencion { programada, realizada }
@@ -74,9 +74,13 @@ class MantencionModel {
 
   final DateTime? fecha;
   final int? kilometraje;
-  final TipoMantencion tipo;
 
-  /// Texto libre cuando [tipo] es [TipoMantencion.otra].
+  /// Título de la mantención, en texto libre ("Cambio de aceite"). Las
+  /// anteriores guardan un valor de la lista antigua (`cambio_aceite`...):
+  /// [nombreTipo] lo traduce al leerlo.
+  final String tipo;
+
+  /// Solo en mantenciones antiguas con tipo `otra`; las nuevas no lo usan.
   final String? tipoOtro;
   final String? taller;
 
@@ -123,13 +127,8 @@ class MantencionModel {
     this.confianzaIa,
   });
 
-  /// Nombre a mostrar: el texto libre cuando el tipo es "Otra".
-  String get nombreTipo {
-    final otro = tipoOtro?.trim() ?? '';
-    return tipo == TipoMantencion.otra && otro.isNotEmpty
-        ? otro
-        : tipo.etiqueta;
-  }
+  /// Título a mostrar. Nunca queda vacío.
+  String get nombreTipo => tituloMantencion(tipo, tipoOtro: tipoOtro);
 
   /// Texto del comprobante para el historial ("Boleta N° 458123"), o null si
   /// no se registró ninguno.
@@ -151,7 +150,7 @@ class MantencionModel {
       estado: EstadoMantencionJson.fromFirestore(json['estado']),
       fecha: (json['fecha'] as Timestamp?)?.toDate(),
       kilometraje: (json['kilometraje'] as num?)?.toInt(),
-      tipo: TipoMantencion.fromFirestore(json['tipo'] ?? ''),
+      tipo: json['tipo']?.toString() ?? '',
       tipoOtro: json['tipo_otro'],
       taller: json['taller'],
       costo: (json['costo'] as num?)?.toInt(),
@@ -178,7 +177,7 @@ class MantencionModel {
       'estado': estado.valorFirestore,
       'fecha': fecha != null ? Timestamp.fromDate(fecha!) : null,
       'kilometraje': kilometraje,
-      'tipo': tipo.valorFirestore,
+      'tipo': tipo,
       'tipo_otro': tipoOtro,
       'taller': taller,
       'costo': costo,

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/mantencion_model.dart';
-import '../../data/models/tipo_mantencion.dart';
 import '../../data/services/mantencion_service.dart';
-import 'selector_tipo_mantencion.dart';
+import '../../utils/titulo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
 
 class ProximasMantenimientosScreen extends StatelessWidget {
@@ -300,10 +299,7 @@ class _ProgramarMantencionSheetState
   static const Color textMuted = Color(0xFF94A3B8);
   static const Color borderColor = Color(0xFF334155);
 
-  String? _tipo;
-  final TextEditingController _otroTipoController = TextEditingController();
-
-  static final List<String> _tipos = TipoMantencion.etiquetas;
+  final TextEditingController _tipoController = TextEditingController();
 
   final MantencionService _service = MantencionService();
   final TextEditingController _kmController = TextEditingController();
@@ -323,14 +319,8 @@ class _ProgramarMantencionSheetState
   }
 
   Future<void> _programar() async {
-    final etiqueta = _tipo;
-    if (etiqueta == null) {
-      setState(() => _error = 'Selecciona el tipo de mantención.');
-      return;
-    }
-    final tipo = TipoMantencion.fromEtiqueta(etiqueta);
-    if (tipo == TipoMantencion.otra &&
-        _otroTipoController.text.trim().isEmpty) {
+    final tipo = normalizarTituloMantencion(_tipoController.text);
+    if (tipo == null) {
       setState(() => _error = 'Escribe el tipo de mantención.');
       return;
     }
@@ -361,7 +351,6 @@ class _ProgramarMantencionSheetState
         vehiculoId: widget.vehiculoId,
         estado: EstadoMantencion.programada,
         tipo: tipo,
-        tipoOtro: _otroTipoController.text,
         proximaFecha: proximaMantencionAnual(ultima),
         proximoKilometraje: km,
       );
@@ -379,7 +368,7 @@ class _ProgramarMantencionSheetState
 
   @override
   void dispose() {
-    _otroTipoController.dispose();
+    _tipoController.dispose();
     _kmController.dispose();
     super.dispose();
   }
@@ -438,13 +427,7 @@ class _ProgramarMantencionSheetState
 
             const SizedBox(height: 22),
 
-            SelectorTipoMantencion(
-              opciones: _tipos,
-              valor: _tipo,
-              onChanged: (v) => setState(() => _tipo = v),
-              otroController: _otroTipoController,
-              flotante: true,
-            ),
+            _campoTipo(),
 
             const SizedBox(height: 22),
 
@@ -553,6 +536,33 @@ class _ProgramarMantencionSheetState
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _campoTipo() {
+    return TextField(
+      controller: _tipoController,
+      maxLength: largoMaximoTituloMantencion,
+      textCapitalization: TextCapitalization.sentences,
+      style: const TextStyle(color: textMain, fontSize: 13),
+      decoration: InputDecoration(
+        labelText: 'Tipo de mantención',
+        hintText: 'Ej: Cambio de aceite',
+        labelStyle: const TextStyle(color: textMuted),
+        hintStyle: const TextStyle(color: textMuted),
+        counterStyle: const TextStyle(color: textMuted),
+        prefixIcon: const Icon(Icons.build_outlined, color: textMuted, size: 21),
+        filled: true,
+        fillColor: const Color(0xFF0F172A),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: borderColor),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: primaryColor, width: 1.5),
         ),
       ),
     );

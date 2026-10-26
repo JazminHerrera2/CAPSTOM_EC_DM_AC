@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import '../../data/models/componente_mantencion_model.dart';
 import '../../data/models/mantencion_model.dart';
-import '../../data/models/tipo_mantencion.dart';
+import '../../utils/titulo_mantencion.dart';
 import '../../utils/validaciones_mantencion.dart';
 import 'openai_extraction_service.dart';
 import 'preparar_imagen.dart';
@@ -32,8 +32,9 @@ const List<String> _clavesDudosas = [
 /// opcionales: lo que no se lee con certeza queda en null y el usuario lo
 /// completa en el formulario de revisión.
 class MantencionExtraida {
-  final TipoMantencion? tipo;
-  final String? tipoOtro;
+  /// Título corto que propone la IA (máximo 60 caracteres). Null si el
+  /// documento no permite deducirlo.
+  final String? tipo;
   final DateTime? fecha;
   final int? kilometraje;
   final String? taller;
@@ -48,8 +49,8 @@ class MantencionExtraida {
   final List<String> componentes;
 
   /// Campos que la revisión debe resaltar: los que la IA leyó con dudas, el
-  /// costo si no cuadra con el neto, y la fecha o el costo si no se pudieron
-  /// leer (son obligatorios).
+  /// costo si no cuadra con el neto, y la fecha, el costo o el tipo si no se
+  /// pudieron leer (son obligatorios).
   final Set<String> camposDudosos;
 
   /// Proporción (0 a 1) de campos leídos sin duda, igual que en documentos.
@@ -58,7 +59,6 @@ class MantencionExtraida {
 
   const MantencionExtraida({
     this.tipo,
-    this.tipoOtro,
     this.fecha,
     this.kilometraje,
     this.taller,
@@ -95,13 +95,10 @@ Map<String, dynamic> _campoTexto(String descripcion) => {
 /// con certeza se devuelve como null.
 Map<String, dynamic> _esquemaMantencion(List<ComponenteMantencion> componentes) {
   final properties = <String, dynamic>{
-    'tipo_mantencion': {
-      'type': ['string', 'null'],
-      'enum': [...TipoMantencion.values.map((t) => t.valorFirestore), null],
-      'description': 'Tipo de mantención que mejor describe el servicio.',
-    },
-    'tipo_otro': _campoTexto(
-      'Nombre corto del servicio, solo si tipo_mantencion es "otra".',
+    'tipo_mantencion': _campoTexto(
+      'Título corto y descriptivo de la mantención (máximo 60 caracteres, sin '
+      'precio ni nombre del taller), según el servicio o repuesto principal. '
+      'Null si el documento no permite deducirlo.',
     ),
     'fecha': _campoTexto('Fecha de emisión del documento en formato YYYY-MM-DD.'),
     'kilometraje': _campoTexto('Kilometraje del vehículo (solo el número).'),
@@ -111,7 +108,8 @@ Map<String, dynamic> _esquemaMantencion(List<ComponenteMantencion> componentes) 
       'Monto neto (antes de IVA) en pesos chilenos, solo para verificar el total.',
     ),
     'descripcion': _campoTexto(
-      'Resumen corto (máximo 200 caracteres) de los trabajos y repuestos.',
+      'Ítems del detalle del documento, tal como aparecen escritos, '
+      'separados por comas (máximo 500 caracteres).',
     ),
     'tipo_comprobante': {
       'type': ['string', 'null'],
@@ -149,9 +147,6 @@ Map<String, dynamic> _esquemaMantencion(List<ComponenteMantencion> componentes) 
 String _promptMantencion(List<ComponenteMantencion> componentes) {
   final listaComponentes =
       componentes.map((c) => '- ${c.id}: ${c.nombre}').join('\n');
-  final tipos = TipoMantencion.values
-      .map((t) => '- ${t.valorFirestore}: ${t.etiqueta}')
-      .join('\n');
   return '''
 Eres un asistente experto en boletas y facturas de talleres mecánicos
 chilenos. Analiza el comprobante recibido (imagen o PDF) de una mantención
@@ -177,17 +172,21 @@ Reglas:
 - "taller": el nombre de la empresa del membrete (la que emite el documento),
   no el del cliente. Una línea del detalle como "Mecánica Ford Liviano" o "Mano
   de obra" es un servicio, no el taller.
-- "tipo_mantencion": elige la opción que mejor describa el servicio:
-
-$tipos
-
-  Clasifica por el insumo o repuesto principal: el de mayor valor, sin contar
-  la mano de obra. Los productos de limpieza o accesorios ("limpia frenos",
-  "limpia parabrisas", "agua desmineralizada") no definen el tipo: "limpia
-  frenos" NO es "frenos". Si hay varios trabajos de naturaleza distinta, usa
-  "revision_general". Usa "otra" solo si ninguna aplica e indica "tipo_otro".
-- "descripcion": un resumen corto (máximo 200 caracteres) de los trabajos y
-  repuestos principales. No reconstruyas los ítems línea por línea.
+- "tipo_mantencion": un título corto y descriptivo de la mantención, de
+  máximo 60 caracteres (por ejemplo "Cambio de aceite", "Cambio de aceite y
+  filtro" o "Revisión de 20.000 km"). Sin precio, sin nombre del taller y sin
+  datos del cliente. Básalo en el servicio o repuesto principal: el de mayor
+  valor, sin contar la mano de obra. Los productos de limpieza o accesorios
+  ("limpia frenos", "limpia parabrisas", "agua desmineralizada") no definen el
+  título: "limpia frenos" NO implica un servicio de frenos. Si hay varios
+  trabajos distintos, un título que los resuma brevemente (por ejemplo "Aceite
+  y frenos"). Si el documento no permite deducirlo, devuelve null: no lo
+  inventes.
+- "descripcion": los ítems del detalle del documento (productos, repuestos y
+  servicios, incluida la mano de obra), con el mismo texto que aparece en la
+  imagen, separados por comas (por ejemplo "Filtro de aceite, Aceite de motor,
+  Mano de obra"). No agregues cantidades ni precios ni los resumas; si no caben
+  en 500 caracteres, deja los primeros.
 - "kilometraje": solo si aparece explícito en el documento ("KM",
   "Kilometraje"), solo con números. No lo confundas con el folio, la patente,
   el RUT ni la orden de trabajo. Casi nunca viene: en ese caso, null.
@@ -266,10 +265,7 @@ MantencionExtraida parseMantencionExtraida(
       if (idsValidos.contains(id.toString())) id.toString(),
   ].toSet().toList();
 
-  final tipoRaw = json['tipo_mantencion']?.toString();
-  final tipo = TipoMantencion.values
-      .where((t) => t.valorFirestore == tipoRaw)
-      .firstOrNull;
+  final tipo = recortarTituloMantencion(json['tipo_mantencion']?.toString());
 
   final km = _entero(json['kilometraje']);
   final costoLeido = _entero(json['costo']);
@@ -296,9 +292,10 @@ MantencionExtraida parseMantencionExtraida(
         : const [])
       if (_clavesDudosas.contains(c.toString())) c.toString(),
   };
-  // Fecha y costo son obligatorios: si no se pudieron leer, se destacan.
+  // Fecha, costo y tipo son obligatorios: si no se pudieron leer, se destacan.
   if (fecha == null) dudosos.add(dudosoFecha);
   if (costo == null) dudosos.add(dudosoCosto);
+  if (tipo == null) dudosos.add(dudosoTipo);
   // El total no cuadra con el neto: no se elige uno, se marca para revisar.
   if (costo != null &&
       neto != null &&
@@ -322,8 +319,6 @@ MantencionExtraida parseMantencionExtraida(
 
   return MantencionExtraida(
     tipo: tipo,
-    tipoOtro:
-        tipo == TipoMantencion.otra ? _texto(json['tipo_otro'], 100) : null,
     fecha: fecha,
     kilometraje: kilometraje,
     taller: taller,

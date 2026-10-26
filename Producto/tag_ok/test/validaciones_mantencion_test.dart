@@ -14,7 +14,7 @@ MantencionModel _m({
       id: '',
       vehiculoId: 'v1',
       estado: estado,
-      tipo: TipoMantencion.cambioAceite,
+      tipo: 'Cambio de aceite',
       kilometraje: km,
       fecha: fecha,
       numeroComprobante: numero,
@@ -24,8 +24,7 @@ MantencionModel _m({
 /// escritos a mano: no hay imagen ni datos personales en las pruebas).
 Map<String, dynamic> _facturaSigloXxi({Map<String, dynamic> cambios = const {}}) =>
     {
-      'tipo_mantencion': 'cambio_aceite',
-      'tipo_otro': null,
+      'tipo_mantencion': 'Cambio de aceite y filtro',
       'fecha': '2020-10-28',
       'kilometraje': null,
       'taller': 'Siglo XXI',
@@ -49,7 +48,8 @@ void main() {
       expect(m.fecha, DateTime(2020, 10, 28));
       expect(m.costo, 87520);
       expect(m.taller, 'Siglo XXI');
-      expect(m.tipo, TipoMantencion.cambioAceite);
+      expect(m.tipo, 'Cambio de aceite y filtro');
+      expect(m.tipo, isNot(contains('renos')));
       expect(m.tipoComprobante, TipoComprobante.factura);
       expect(m.numeroComprobante, '284479');
       expect(m.kilometraje, isNull);

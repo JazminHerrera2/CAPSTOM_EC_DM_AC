@@ -37,9 +37,10 @@ rules_version = '2';
 // mantenciones/{id}
 //   uid: string (req, inmutable) = dueño | vehiculo_id: string (req, inmutable)
 //   estado: programada|realizada | origen_registro: manual|ia
-//   tipo: cambio_aceite|revision_general|cambio_filtros|frenos|neumaticos|
-//         alineacion_balanceo|bateria|sistema_electrico|motor|preventiva|otra
-//   tipo_otro: string (req si tipo = otra) | taller, descripcion, observaciones
+//   tipo: string 1-60 (titulo libre; las antiguas guardan un valor de la
+//         lista anterior, ej. cambio_aceite u otra)
+//   tipo_otro: string|null (solo antiguas con tipo = otra)
+//   taller, descripcion, observaciones
 //   fecha, proxima_fecha, fecha_captura: timestamp|null
 //   kilometraje, proximo_kilometraje, costo: int|null | confianza_ia: number|null
 //   tipo_comprobante: boleta|factura|otro|null | numero_comprobante: string|null
@@ -313,9 +314,9 @@ service cloud.firestore {
           'origen_registro', 'fecha_captura', 'confianza_ia']) &&
         reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
         d.estado in ['programada', 'realizada'] &&
-        d.tipo in ['cambio_aceite', 'revision_general', 'cambio_filtros', 'frenos',
-          'neumaticos', 'alineacion_balanceo', 'bateria', 'sistema_electrico',
-          'motor', 'preventiva', 'otra'] &&
+        // Titulo libre (max 60). Las mantenciones antiguas guardan un valor de
+        // la lista anterior (cambio_aceite, otra...), que tambien es un string.
+        reqStr(d, 'tipo', 60) &&
         d.origen_registro in ['manual', 'ia'] &&
         optStr(d, 'tipo_otro', 100) && optStr(d, 'taller', 100) &&
         optStr(d, 'descripcion', 500) && optStr(d, 'observaciones', 1000) &&
@@ -329,8 +330,6 @@ service cloud.firestore {
         (!('componentes' in d) || (d.componentes is list && d.componentes.size() <= 30)) &&
         (!('confianza_ia' in d) || d.confianza_ia == null ||
           (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100)) &&
-        // "Otra" exige escribir el tipo.
-        (d.tipo != 'otra' || reqStr(d, 'tipo_otro', 100)) &&
         // Realizada: lleva fecha. Programada: lleva fecha y/o kilometraje.
         (d.estado != 'realizada' || d.get('fecha', null) is timestamp) &&
         (d.estado != 'programada' ||

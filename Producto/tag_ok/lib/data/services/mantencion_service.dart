@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/mantencion_model.dart';
-import '../models/tipo_mantencion.dart';
 import 'notificacion_service.dart';
 
 /// CRUD de la colección `mantenciones`.
@@ -37,8 +36,7 @@ class MantencionService {
   Future<String> crear({
     required String vehiculoId,
     required EstadoMantencion estado,
-    required TipoMantencion tipo,
-    String? tipoOtro,
+    required String tipo,
     DateTime? fecha,
     int? kilometraje,
     String? taller,
@@ -67,8 +65,7 @@ class MantencionService {
       fecha: fecha,
       kilometraje: kilometraje,
       tipo: tipo,
-      tipoOtro: tipo == TipoMantencion.otra ? limpio(tipoOtro) : null,
-      taller: limpio(taller),
+            taller: limpio(taller),
       costo: costo,
       descripcion: limpio(descripcion),
       observaciones: limpio(observaciones),

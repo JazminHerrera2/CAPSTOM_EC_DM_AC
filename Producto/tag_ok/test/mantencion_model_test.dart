@@ -12,21 +12,20 @@ void main() {
       estado: EstadoMantencion.realizada,
       fecha: DateTime(2026, 10, 1),
       kilometraje: 72450,
-      tipo: TipoMantencion.otra,
-      tipoOtro: 'Lavado de motor',
+      tipo: 'Lavado de motor',
       taller: 'Taller X',
       costo: 45000,
     );
 
     final json = original.toJson();
     expect(json.containsKey('archivo_path'), isFalse);
-    expect(json['tipo'], 'otra');
+    expect(json['tipo'], 'Lavado de motor');
     expect(json['estado'], 'realizada');
 
     final copia = MantencionModel.fromJson(json, 'id1');
     expect(copia.uid, 'u1');
     expect(copia.vehiculoId, 'v1');
-    expect(copia.tipo, TipoMantencion.otra);
+    expect(copia.tipo, 'Lavado de motor');
     expect(copia.nombreTipo, 'Lavado de motor');
     expect(copia.kilometraje, 72450);
     expect(copia.costo, 45000);
@@ -38,7 +37,7 @@ void main() {
       id: '',
       vehiculoId: 'v1',
       estado: EstadoMantencion.realizada,
-      tipo: TipoMantencion.cambioAceite,
+      tipo: 'Cambio de aceite',
       tipoComprobante: TipoComprobante.boleta,
       numeroComprobante: '458123',
     );
@@ -66,13 +65,25 @@ void main() {
     expect(otroSinNumero.referenciaComprobante, 'Otro');
   });
 
-  test('los 11 tipos son únicos y se resuelven por etiqueta y por valor', () {
-    expect(TipoMantencion.values.length, 11);
-    expect(TipoMantencion.etiquetas.toSet().length, 11);
+  test('mantenciones antiguas: el valor de la lista anterior se ve como título',
+      () {
     for (final t in TipoMantencion.values) {
-      expect(TipoMantencion.fromEtiqueta(t.etiqueta), t);
-      expect(TipoMantencion.fromFirestore(t.valorFirestore), t);
+      if (t == TipoMantencion.otra) continue;
+      final m = MantencionModel.fromJson({'tipo': t.valorFirestore}, 'x');
+      expect(m.nombreTipo, t.etiqueta);
     }
+    // "otra" con su texto, y sin texto nunca queda vacío.
+    expect(
+        MantencionModel.fromJson({'tipo': 'otra', 'tipo_otro': 'Pulido'}, 'x')
+            .nombreTipo,
+        'Pulido');
+    expect(MantencionModel.fromJson({'tipo': 'otra'}, 'x').nombreTipo, 'Otra');
+    expect(MantencionModel.fromJson({}, 'x').nombreTipo, 'Otra');
+    // Título libre: se muestra tal cual.
+    expect(
+        MantencionModel.fromJson({'tipo': 'Revisión de 20.000 km'}, 'x')
+            .nombreTipo,
+        'Revisión de 20.000 km');
   });
 
   test('formatoMiles', () {

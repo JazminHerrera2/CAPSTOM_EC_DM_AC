@@ -484,6 +484,8 @@ class _ResumenProximaState extends State<_ResumenProxima> {
             children: [
               Text(
                 m == null ? 'Sin mantenciones programadas' : m.nombreTipo,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: MantenimientoScreen.textMain,
                   fontSize: 16,
