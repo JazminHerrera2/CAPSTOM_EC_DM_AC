@@ -6,7 +6,7 @@ import '../../data/services/documento_vehicular_service.dart';
 import 'detalle_documento_screen.dart';
 import 'registrar_documento_ia_screen.dart';
 
-/// Documentos de UN vehículo: tarjeta con la patente y el avance (N/4), y las
+/// Documentos de UN vehículo: tarjeta con la patente, y las
 /// tarjetas de sus documentos con estado y vencimiento (o el estado vacío con
 /// el botón para agregar el primero).
 ///
@@ -523,26 +523,6 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 ],
               ),
 
-              const Spacer(),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '${documentos.length}/${TipoDocumentoVehicular.values.length} documentos',
-                  style: const TextStyle(
-                    color: Color(0xFFE0E7FF),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -601,25 +581,6 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   ],
                 ),
               ),
-
-              if (documentos.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${documentos.length}/${TipoDocumentoVehicular.values.length}',
-                    style: const TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
             ],
           ),
         ],

@@ -481,10 +481,11 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         final idsVehiculos =
             vehiculos.map((vehiculo) => vehiculo.id).toList();
 
-        // Si el vehículo filtrado ya no existe (p. ej. se eliminó), se vuelve
-        // a mostrar todo.
-        final filtroActivo =
-            idsVehiculos.contains(_filtroVehiculoId) ? _filtroVehiculoId : null;
+        // Si no se eligió vehículo o ya no existe (p. ej. se eliminó), se
+        // muestra el primero.
+        final filtroActivo = idsVehiculos.contains(_filtroVehiculoId)
+            ? _filtroVehiculoId
+            : idsVehiculos.first;
 
         return Column(
           children: [
@@ -580,7 +581,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
     );
   }
 
-  /// Botones de filtro: "Todos" y uno por cada patente. Salen de la lista de
+  /// Botones de filtro: uno por cada patente. Salen de la lista de
   /// vehículos, así que al registrar uno nuevo aparece su botón solo.
   Widget _buildFiltrosDocumentos(
     List<VehiculoModel> vehiculos,
@@ -622,13 +623,8 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Row(
         children: [
-          boton(
-            'Todos',
-            filtroActivo == null,
-            () => setState(() => _filtroVehiculoId = null),
-          ),
-          for (final vehiculo in vehiculos) ...[
-            const SizedBox(width: 8),
+          for (final (indice, vehiculo) in vehiculos.indexed) ...[
+            if (indice > 0) const SizedBox(width: 8),
             boton(
               vehiculo.patente,
               filtroActivo == vehiculo.id,

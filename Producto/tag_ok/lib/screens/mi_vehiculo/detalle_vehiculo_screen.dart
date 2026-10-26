@@ -396,37 +396,13 @@ class _DetalleVehiculoVista extends StatelessWidget {
               // DOCUMENTOS
               // --------------------------------------------------
 
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Documentos',
-                    style: TextStyle(
-                      color: _textMain,
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _primaryColor.withOpacity(0.12),
-                      borderRadius:
-                          BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${documentos.length}/${TipoDocumentoVehicular.values.length}',
-                      style: const TextStyle(
-                        color: _primaryColor,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
+              const Text(
+                'Documentos',
+                style: TextStyle(
+                  color: _textMain,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
 
               const SizedBox(height: 14),
