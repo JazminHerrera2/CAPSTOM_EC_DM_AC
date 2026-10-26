@@ -1,0 +1,899 @@
+{
+  "_meta": {
+    "proyecto": "tag-ok-v2",
+    "fase": "Fase 2 (TAG OK 2.0)",
+    "version": "1.0",
+    "descripcion": "Población de las colecciones de la Fase 2. Mismo formato que EXPORTACION_BASE_DE_DATOS.json: { coleccion: { idDocumento: { datos } } }. Datos ficticios.",
+    "aviso": "Verificar contra Producto/tag_ok/firestore.rules antes de cargar. Los valores marcados como 'a validar' en DOCUMENTACION_BASE_DE_DATOS_FASE2.md pueden diferir del código.",
+    "secciones": {
+      "base": [
+        "administradores"
+      ],
+      "catalogo": [
+        "componentes_mantencion"
+      ],
+      "demo": [
+        "vehiculos",
+        "documentos_vehiculares",
+        "mantenciones",
+        "notificaciones"
+      ]
+    },
+    "marcadores": {
+      "$OWNER_UID / $OWNER_EMAIL / $OWNER_NAME": "UID, correo y nombre del usuario dueño de los datos de ejemplo (SEED_OWNER_UID)",
+      "$ADMIN_UID / $ADMIN_EMAIL": "UID y correo del administrador (SEED_ADMIN_UID); si no se define, el administrador se omite",
+      "{\"$dias\": N, \"h\": 12, \"m\": 0}": "Fecha relativa: hoy + N días a esa hora (N puede ser negativo)",
+      "{\"$ts\": \"2026-10-12T10:30:00\"}": "Fecha y hora absolutas, en hora local",
+      "{\"$ref\": \"usuarios/$OWNER_UID\"}": "DocumentReference de Firestore"
+    }
+  },
+  "_esquema": {
+    "administradores": {
+      "descripcion": "Existir un documento con el UID del usuario lo convierte en administrador. Solo super_admin crea, edita o borra.",
+      "campos": {
+        "rol": {
+          "tipo": "string",
+          "obligatorio": true,
+          "nota": "super_admin u operador"
+        },
+        "email": {
+          "tipo": "string",
+          "obligatorio": false
+        }
+      }
+    },
+    "componentes_mantencion": {
+      "descripcion": "Catálogo de componentes. Editable solo por administradores. Si está vacío la app usa valores por defecto.",
+      "campos": {
+        "nombre": {
+          "tipo": "string",
+          "obligatorio": true
+        },
+        "orden": {
+          "tipo": "integer",
+          "obligatorio": true
+        },
+        "activo": {
+          "tipo": "boolean",
+          "obligatorio": true
+        }
+      }
+    },
+    "vehiculos": {
+      "descripcion": "Colección compartida con la Fase 1. Se documenta aquí porque los documentos y mantenciones se enlazan a ella.",
+      "campos": {
+        "id_usuario": {
+          "tipo": "reference",
+          "obligatorio": true,
+          "referencia": "usuarios",
+          "inmutable": true,
+          "nota": "Reference a usuarios/{uid}"
+        },
+        "patente": {
+          "tipo": "string",
+          "obligatorio": true,
+          "max": 20,
+          "nota": "Única por usuario"
+        },
+        "categoria": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "marca": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "modelo": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "tipo_vehiculo": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "tipo_combustible": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "alias": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "estado": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "fecha_ingreso": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "foto_path": {
+          "tipo": "string",
+          "obligatorio": false,
+          "max": 500
+        },
+        "anio": {
+          "tipo": "integer",
+          "obligatorio": false,
+          "rango": [
+            1900,
+            2100
+          ]
+        },
+        "kilometraje_actual": {
+          "tipo": "integer",
+          "obligatorio": false,
+          "rango": [
+            0,
+            10000000
+          ]
+        },
+        "fecha_registro": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        }
+      }
+    },
+    "documentos_vehiculares": {
+      "descripcion": "Permiso de circulación, revisión técnica, SOAP y seguro de cada vehículo.",
+      "campos": {
+        "uid": {
+          "tipo": "string",
+          "obligatorio": true,
+          "referencia": "usuarios",
+          "inmutable": true,
+          "nota": "UID del dueño"
+        },
+        "vehiculo_id": {
+          "tipo": "string",
+          "obligatorio": true,
+          "referencia": "vehiculos",
+          "inmutable": true
+        },
+        "tipo_documento": {
+          "tipo": "string",
+          "obligatorio": true,
+          "valores": [
+            "permiso_circulacion",
+            "revision_tecnica",
+            "soap",
+            "seguro"
+          ]
+        },
+        "origen_registro": {
+          "tipo": "string",
+          "obligatorio": true,
+          "valores": [
+            "manual",
+            "ia"
+          ]
+        },
+        "fecha_registro": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        },
+        "numero": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "compania": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "numero_poliza": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "archivo_path": {
+          "tipo": "string",
+          "obligatorio": false,
+          "nota": "Ruta en Supabase Storage"
+        },
+        "fecha_emision": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        },
+        "fecha_vencimiento": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        },
+        "fecha_captura": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        },
+        "forma_pago": {
+          "tipo": "string",
+          "obligatorio": false,
+          "valores": [
+            "total",
+            "cuota_1",
+            "cuota_2"
+          ],
+          "nota": "Casilla marcada en el permiso"
+        },
+        "fecha_emision_estimada": {
+          "tipo": "boolean",
+          "obligatorio": false,
+          "nota": "true si la emisión no figuraba y se completó con la fecha de ingreso"
+        },
+        "confianza_ia": {
+          "tipo": "number",
+          "obligatorio": false,
+          "nota": "Escala sin rango en las reglas; ver Observaciones del documento"
+        }
+      }
+    },
+    "mantenciones": {
+      "descripcion": "Mantenciones realizadas o programadas. No guarda la foto ni el PDF del comprobante.",
+      "campos": {
+        "uid": {
+          "tipo": "string",
+          "obligatorio": true,
+          "referencia": "usuarios",
+          "inmutable": true,
+          "nota": "UID del dueño"
+        },
+        "vehiculo_id": {
+          "tipo": "string",
+          "obligatorio": true,
+          "referencia": "vehiculos",
+          "inmutable": true
+        },
+        "estado": {
+          "tipo": "string",
+          "obligatorio": true,
+          "valores": [
+            "programada",
+            "realizada"
+          ]
+        },
+        "tipo": {
+          "tipo": "string",
+          "obligatorio": true,
+          "min": 1,
+          "max": 60,
+          "nota": "Título de texto libre"
+        },
+        "tipo_otro": {
+          "tipo": "string",
+          "obligatorio": false,
+          "nota": "Solo mantenciones antiguas con tipo 'otra'"
+        },
+        "fecha": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        },
+        "proxima_fecha": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        },
+        "fecha_captura": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        },
+        "kilometraje": {
+          "tipo": "integer",
+          "obligatorio": false,
+          "rango": [
+            0,
+            5000000
+          ]
+        },
+        "proximo_kilometraje": {
+          "tipo": "integer",
+          "obligatorio": false,
+          "rango": [
+            0,
+            5000000
+          ]
+        },
+        "costo": {
+          "tipo": "integer",
+          "obligatorio": false,
+          "rango": [
+            0,
+            1000000000
+          ],
+          "nota": "Pesos chilenos"
+        },
+        "taller": {
+          "tipo": "string",
+          "obligatorio": false,
+          "max": 100
+        },
+        "descripcion": {
+          "tipo": "string",
+          "obligatorio": false,
+          "max": 500
+        },
+        "observaciones": {
+          "tipo": "string",
+          "obligatorio": false,
+          "max": 1000
+        },
+        "tipo_comprobante": {
+          "tipo": "string",
+          "obligatorio": false,
+          "valores": [
+            "boleta",
+            "factura",
+            "otro"
+          ]
+        },
+        "numero_comprobante": {
+          "tipo": "string",
+          "obligatorio": false,
+          "max": 50
+        },
+        "componentes": {
+          "tipo": "list",
+          "obligatorio": false,
+          "maxItems": 30,
+          "nota": "Ids de componentes_mantencion; el formulario ya no los pide"
+        },
+        "origen_registro": {
+          "tipo": "string",
+          "obligatorio": true,
+          "valores": [
+            "manual",
+            "ia"
+          ]
+        },
+        "confianza_ia": {
+          "tipo": "number",
+          "obligatorio": false,
+          "rango": [
+            0,
+            100
+          ]
+        }
+      },
+      "condiciones": [
+        {
+          "si": {
+            "estado": "programada"
+          },
+          "alguno_de": [
+            "proxima_fecha",
+            "proximo_kilometraje"
+          ]
+        },
+        {
+          "si": {
+            "estado": "realizada"
+          },
+          "requiere": [
+            "fecha"
+          ]
+        }
+      ]
+    },
+    "notificaciones": {
+      "descripcion": "Recordatorios. El ID es {documentoId}_30dias, _15dias o _7dias para vencimientos, o el id de la mantención.",
+      "campos": {
+        "usuario_id": {
+          "tipo": "string",
+          "obligatorio": true,
+          "referencia": "usuarios",
+          "inmutable": true,
+          "nota": "UID del dueño"
+        },
+        "vehiculo_id": {
+          "tipo": "string",
+          "obligatorio": false,
+          "referencia": "vehiculos"
+        },
+        "tipo": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "referencia_id": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "mensaje": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "estado": {
+          "tipo": "string",
+          "obligatorio": false,
+          "nota": "Por defecto 'pendiente'"
+        },
+        "leida": {
+          "tipo": "boolean",
+          "obligatorio": false
+        },
+        "fecha_programada": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        },
+        "fecha_generacion": {
+          "tipo": "timestamp",
+          "obligatorio": false
+        }
+      }
+    }
+  },
+  "administradores": {
+    "$ADMIN_UID": {
+      "datos": {
+        "rol": "super_admin",
+        "email": "$ADMIN_EMAIL"
+      }
+    }
+  },
+  "componentes_mantencion": {
+    "mantencion_general": {
+      "datos": {
+        "nombre": "Mantención general",
+        "orden": 1,
+        "activo": true
+      }
+    },
+    "cambio_aceite_motor": {
+      "datos": {
+        "nombre": "Cambio de aceite de motor",
+        "orden": 2,
+        "activo": true
+      }
+    },
+    "rotacion_neumaticos": {
+      "datos": {
+        "nombre": "Rotación de neumáticos",
+        "orden": 3,
+        "activo": true
+      }
+    },
+    "frenos": {
+      "datos": {
+        "nombre": "Frenos",
+        "orden": 4,
+        "activo": true
+      }
+    },
+    "filtro_aire": {
+      "datos": {
+        "nombre": "Filtro de aire",
+        "orden": 5,
+        "activo": true
+      }
+    },
+    "bateria": {
+      "datos": {
+        "nombre": "Batería",
+        "orden": 6,
+        "activo": true
+      }
+    },
+    "liquido_frenos": {
+      "datos": {
+        "nombre": "Líquido de frenos",
+        "orden": 7,
+        "activo": true
+      }
+    }
+  },
+  "vehiculos": {
+    "seed_veh_001": {
+      "datos": {
+        "id_usuario": {
+          "$ref": "usuarios/$OWNER_UID"
+        },
+        "patente": "ZZTS12",
+        "categoria": "Auto",
+        "marca": "Mazda",
+        "modelo": "CX-5",
+        "tipo_vehiculo": "SUV",
+        "tipo_combustible": "Gasolina 95",
+        "alias": "Mi Auto",
+        "estado": "activo",
+        "fecha_ingreso": "01/10/2026",
+        "foto_path": null,
+        "anio": 2022,
+        "kilometraje_actual": 81900,
+        "fecha_registro": {
+          "$dias": -40,
+          "h": 12,
+          "m": 0
+        }
+      }
+    },
+    "seed_veh_002": {
+      "datos": {
+        "id_usuario": {
+          "$ref": "usuarios/$OWNER_UID"
+        },
+        "patente": "ZZTS13",
+        "categoria": "Auto",
+        "marca": "Toyota",
+        "modelo": "Yaris",
+        "tipo_vehiculo": "Automóvil",
+        "tipo_combustible": "Gasolina 93",
+        "alias": "Auto de respaldo",
+        "estado": "activo",
+        "fecha_ingreso": "06/10/2026",
+        "foto_path": null,
+        "anio": 2018,
+        "kilometraje_actual": 112300,
+        "fecha_registro": {
+          "$dias": -35,
+          "h": 12,
+          "m": 0
+        }
+      }
+    }
+  },
+  "documentos_vehiculares": {
+    "seed_doc_001": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "tipo_documento": "permiso_circulacion",
+        "origen_registro": "ia",
+        "fecha_registro": {
+          "$dias": -30,
+          "h": 15,
+          "m": 5
+        },
+        "numero": "PC-2026-0001",
+        "compania": "Municipalidad de Ejemplo",
+        "numero_poliza": null,
+        "archivo_path": null,
+        "fecha_emision": {
+          "$ts": "2026-03-20T12:00:00"
+        },
+        "fecha_vencimiento": {
+          "$ts": "2027-03-31T12:00:00"
+        },
+        "fecha_captura": {
+          "$dias": -30,
+          "h": 15,
+          "m": 2
+        },
+        "forma_pago": "total",
+        "fecha_emision_estimada": false,
+        "confianza_ia": 94
+      }
+    },
+    "seed_doc_002": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "tipo_documento": "revision_tecnica",
+        "origen_registro": "ia",
+        "fecha_registro": {
+          "$dias": -30,
+          "h": 15,
+          "m": 5
+        },
+        "numero": null,
+        "compania": "Planta de revisión técnica (ejemplo)",
+        "numero_poliza": null,
+        "archivo_path": null,
+        "fecha_emision": {
+          "$dias": -356,
+          "h": 12,
+          "m": 0
+        },
+        "fecha_vencimiento": {
+          "$dias": 9,
+          "h": 12,
+          "m": 0
+        },
+        "fecha_captura": {
+          "$dias": -30,
+          "h": 15,
+          "m": 2
+        },
+        "forma_pago": null,
+        "fecha_emision_estimada": false,
+        "confianza_ia": 90
+      }
+    },
+    "seed_doc_003": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "tipo_documento": "soap",
+        "origen_registro": "manual",
+        "fecha_registro": {
+          "$dias": -30,
+          "h": 15,
+          "m": 5
+        },
+        "numero": "SOAP-2027-004589",
+        "compania": "Aseguradora Ejemplo",
+        "numero_poliza": null,
+        "archivo_path": null,
+        "fecha_emision": {
+          "$ts": "2026-03-01T12:00:00"
+        },
+        "fecha_vencimiento": {
+          "$ts": "2027-03-31T12:00:00"
+        },
+        "fecha_captura": null,
+        "forma_pago": null,
+        "fecha_emision_estimada": false,
+        "confianza_ia": null
+      }
+    },
+    "seed_doc_004": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "tipo_documento": "seguro",
+        "origen_registro": "manual",
+        "fecha_registro": {
+          "$dias": -30,
+          "h": 15,
+          "m": 5
+        },
+        "numero": null,
+        "compania": "Aseguradora Ejemplo",
+        "numero_poliza": "POL-984512",
+        "archivo_path": null,
+        "fecha_emision": {
+          "$dias": -245,
+          "h": 12,
+          "m": 0
+        },
+        "fecha_vencimiento": {
+          "$dias": 120,
+          "h": 12,
+          "m": 0
+        },
+        "fecha_captura": null,
+        "forma_pago": null,
+        "fecha_emision_estimada": false,
+        "confianza_ia": null
+      }
+    },
+    "seed_doc_005": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_002",
+        "tipo_documento": "soap",
+        "origen_registro": "manual",
+        "fecha_registro": {
+          "$dias": -30,
+          "h": 15,
+          "m": 5
+        },
+        "numero": "SOAP-2027-004590",
+        "compania": "Aseguradora Ejemplo",
+        "numero_poliza": null,
+        "archivo_path": null,
+        "fecha_emision": {
+          "$ts": "2026-03-02T12:00:00"
+        },
+        "fecha_vencimiento": {
+          "$ts": "2027-03-31T12:00:00"
+        },
+        "fecha_captura": null,
+        "forma_pago": null,
+        "fecha_emision_estimada": false,
+        "confianza_ia": null
+      }
+    }
+  },
+  "mantenciones": {
+    "seed_man_001": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "estado": "realizada",
+        "tipo": "Cambio de neumáticos",
+        "tipo_otro": null,
+        "fecha": {
+          "$ts": "2026-06-10T12:00:00"
+        },
+        "proxima_fecha": null,
+        "fecha_captura": null,
+        "kilometraje": 71200,
+        "proximo_kilometraje": null,
+        "costo": 240000,
+        "taller": "Neumáticos Ejemplo",
+        "descripcion": "Cambio de cuatro neumáticos y balanceo",
+        "observaciones": null,
+        "tipo_comprobante": "boleta",
+        "numero_comprobante": "B-10234",
+        "componentes": [],
+        "origen_registro": "manual",
+        "confianza_ia": null
+      }
+    },
+    "seed_man_002": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "estado": "realizada",
+        "tipo": "Cambio de aceite",
+        "tipo_otro": null,
+        "fecha": {
+          "$ts": "2026-08-15T12:00:00"
+        },
+        "proxima_fecha": null,
+        "fecha_captura": {
+          "$ts": "2026-08-15T13:00:00"
+        },
+        "kilometraje": 78500,
+        "proximo_kilometraje": null,
+        "costo": 129900,
+        "taller": "Taller Central",
+        "descripcion": "Cambio de aceite y revisión general",
+        "observaciones": "Revisar frenos en próxima visita",
+        "tipo_comprobante": "factura",
+        "numero_comprobante": "F-000456",
+        "componentes": [],
+        "origen_registro": "ia",
+        "confianza_ia": 91
+      }
+    },
+    "seed_man_003": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "estado": "realizada",
+        "tipo": "Revisión de frenos",
+        "tipo_otro": null,
+        "fecha": {
+          "$ts": "2026-09-18T12:00:00"
+        },
+        "proxima_fecha": null,
+        "fecha_captura": null,
+        "kilometraje": 80100,
+        "proximo_kilometraje": null,
+        "costo": 45000,
+        "taller": "Taller Central",
+        "descripcion": "Revisión y limpieza del sistema de frenos",
+        "observaciones": null,
+        "tipo_comprobante": null,
+        "numero_comprobante": null,
+        "componentes": [],
+        "origen_registro": "manual",
+        "confianza_ia": null
+      }
+    },
+    "seed_man_004": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "estado": "realizada",
+        "tipo": "Cambio de aceite y filtro",
+        "tipo_otro": null,
+        "fecha": {
+          "$ts": "2026-10-05T12:00:00"
+        },
+        "proxima_fecha": null,
+        "fecha_captura": {
+          "$ts": "2026-10-05T13:00:00"
+        },
+        "kilometraje": 81900,
+        "proximo_kilometraje": null,
+        "costo": 87520,
+        "taller": "Taller Ejemplo",
+        "descripcion": "Filtro de aceite, Aceite de motor, Mano de obra",
+        "observaciones": null,
+        "tipo_comprobante": "factura",
+        "numero_comprobante": "F-000789",
+        "componentes": [],
+        "origen_registro": "ia",
+        "confianza_ia": 88
+      }
+    },
+    "seed_man_005": {
+      "datos": {
+        "uid": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "estado": "programada",
+        "tipo": "Cambio de aceite",
+        "tipo_otro": null,
+        "fecha": null,
+        "proxima_fecha": {
+          "$dias": 120,
+          "h": 12,
+          "m": 0
+        },
+        "fecha_captura": null,
+        "kilometraje": null,
+        "proximo_kilometraje": 91900,
+        "costo": null,
+        "taller": null,
+        "descripcion": null,
+        "observaciones": "Programada a partir de la última mantención",
+        "tipo_comprobante": null,
+        "numero_comprobante": null,
+        "componentes": [],
+        "origen_registro": "manual",
+        "confianza_ia": null
+      }
+    }
+  },
+  "notificaciones": {
+    "seed_doc_002_30dias": {
+      "datos": {
+        "usuario_id": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "tipo": "vencimiento_documento",
+        "referencia_id": "seed_doc_002",
+        "mensaje": "Tu revisión técnica vence en 30 días",
+        "estado": "pendiente",
+        "leida": true,
+        "fecha_programada": {
+          "$dias": -21,
+          "h": 9,
+          "m": 0
+        },
+        "fecha_generacion": {
+          "$dias": -21,
+          "h": 9,
+          "m": 0
+        }
+      }
+    },
+    "seed_doc_002_15dias": {
+      "datos": {
+        "usuario_id": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "tipo": "vencimiento_documento",
+        "referencia_id": "seed_doc_002",
+        "mensaje": "Tu revisión técnica vence en 15 días",
+        "estado": "pendiente",
+        "leida": false,
+        "fecha_programada": {
+          "$dias": -6,
+          "h": 9,
+          "m": 0
+        },
+        "fecha_generacion": {
+          "$dias": -6,
+          "h": 9,
+          "m": 0
+        }
+      }
+    },
+    "seed_doc_002_7dias": {
+      "datos": {
+        "usuario_id": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "tipo": "vencimiento_documento",
+        "referencia_id": "seed_doc_002",
+        "mensaje": "Tu revisión técnica vence en 7 días",
+        "estado": "pendiente",
+        "leida": false,
+        "fecha_programada": {
+          "$dias": 2,
+          "h": 9,
+          "m": 0
+        },
+        "fecha_generacion": {
+          "$dias": 2,
+          "h": 9,
+          "m": 0
+        }
+      }
+    },
+    "seed_man_005": {
+      "datos": {
+        "usuario_id": "$OWNER_UID",
+        "vehiculo_id": "seed_veh_001",
+        "tipo": "recordatorio_mantencion",
+        "referencia_id": "seed_man_005",
+        "mensaje": "Tienes programada una mantención: Cambio de aceite",
+        "estado": "pendiente",
+        "leida": false,
+        "fecha_programada": {
+          "$dias": 110,
+          "h": 9,
+          "m": 0
+        },
+        "fecha_generacion": {
+          "$dias": 110,
+          "h": 9,
+          "m": 0
+        }
+      }
+    }
+  }
+}
