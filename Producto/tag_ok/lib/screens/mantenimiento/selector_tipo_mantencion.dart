@@ -20,6 +20,10 @@ class SelectorTipoMantencion extends StatefulWidget {
   /// true: la lista flota sobre el contenido (overlay) en vez de empujarlo.
   final bool flotante;
 
+  /// Largo máximo de lo que se escribe en la casilla de "Otros" (null = sin
+  /// límite).
+  final int? largoMaximoOtro;
+
   const SelectorTipoMantencion({
     super.key,
     required this.opciones,
@@ -31,6 +35,7 @@ class SelectorTipoMantencion extends StatefulWidget {
     this.hint = 'Seleccionar tipo',
     this.opcionOtra = 'Otra',
     this.flotante = false,
+    this.largoMaximoOtro,
   });
 
   @override
@@ -38,12 +43,12 @@ class SelectorTipoMantencion extends StatefulWidget {
 }
 
 class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color borderColor = Color(0xFF334155);
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color borderColor = Color(0xFFCBD5E1);
 
   static const double _alturaMaxima = 220;
 
@@ -67,7 +72,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: Colors.transparent),
         boxShadow: widget.flotante
             ? [
                 BoxShadow(
@@ -113,7 +118,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                         opcion,
                         style: TextStyle(
                           color: seleccionada
-                              ? const Color(0xFFA5B4FC)
+                              ? const Color(0xFF1E3A8A)
                               : textMain,
                           fontSize: 13,
                           fontWeight: seleccionada
@@ -223,7 +228,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: _abierto ? primaryColor : borderColor,
+                    color: _abierto ? primaryColor : Colors.transparent,
                     width: _abierto ? 1.5 : 1,
                   ),
                 ),
@@ -268,7 +273,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                         ),
                         child: const Icon(
                           Icons.keyboard_arrow_down_rounded,
-                          color: Color(0xFFA5B4FC),
+                          color: Color(0xFF1E3A8A),
                         ),
                       ),
                     ),
@@ -291,6 +296,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
           const SizedBox(height: 10),
           TextField(
             controller: widget.otroController!,
+            maxLength: widget.largoMaximoOtro,
             style: const TextStyle(color: textMain, fontSize: 13),
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(

@@ -8,17 +8,18 @@ import 'login_screen.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  final Color bgColor = const Color(0xFF0F172A);
-  final Color primaryColor = const Color(0xFF4F46E5);
-  final Color navBgColor = const Color(0xFF1E293B);
-  final Color textMuted = const Color(0xFF94A3B8);
-  final Color textMain = const Color(0xFFF8FAFC);
+  final Color bgColor = const Color(0xFFF1F5F9);
+  final Color primaryColor = const Color(0xFF1E3A8A);
+  final Color navBgColor = const Color(0xFFFFFFFF);
+  final Color textMuted = const Color(0xFF64748B);
+  final Color textMain = const Color(0xFF0F172A);
   final Color accentColor = const Color(
     0xFF10B981,
   ); // Verde para el presupuesto
 
-  // Se abre como página propia desde el hub de Herramientas, así que necesita
-  // su propio Scaffold (fondo, Material para InkWell/ripples y botón atrás).
+  // Se abre como página propia desde el avatar del encabezado, así que
+  // necesita su propio Scaffold (fondo, Material para InkWell/ripples y botón
+  // para cerrar).
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,6 +28,12 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: bgColor,
         foregroundColor: textMain,
         elevation: 0,
+        // Se cierra con una X, no con la flecha de volver.
+        leading: IconButton(
+          tooltip: 'Cerrar',
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.maybePop(context),
+        ),
         title: const Text('Mi perfil'),
       ),
       body: SafeArea(child: _buildContenido(context)),
@@ -245,7 +252,7 @@ class ProfileScreen extends StatelessWidget {
               _buildProfileOption(
                 icon: Icons.lock_outline,
                 title: 'Seguridad y Contraseña',
-                onTap: () {},
+                onTap: () => _mostrarCambioContrasena(context, user),
               ),
               const SizedBox(height: 32),
 
@@ -474,6 +481,224 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // --- SEGURIDAD Y CONTRASEÑA ---
+
+  /// Cambia la contraseña del usuario: pide la actual (Firebase exige volver a
+  /// autenticar para una operación sensible), la nueva y su confirmación.
+  void _mostrarCambioContrasena(BuildContext context, User user) {
+    final esCorreo = user.providerData.any((p) => p.providerId == 'password');
+    final email = user.email;
+
+    if (!esCorreo || email == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tu cuenta no usa contraseña, así que no hay una que cambiar.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final actualCtrl = TextEditingController();
+    final nuevaCtrl = TextEditingController();
+    final confirmarCtrl = TextEditingController();
+    String? error;
+    bool guardando = false;
+    bool verActual = false;
+    bool verNueva = false;
+
+    final messenger = ScaffoldMessenger.of(context);
+
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            InputDecoration campo(String etiqueta, bool visible, VoidCallback? alternar) {
+              return InputDecoration(
+                labelText: etiqueta,
+                labelStyle: TextStyle(color: textMuted),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: textMuted.withValues(alpha: 0.5)),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: primaryColor),
+                ),
+                suffixIcon: alternar == null
+                    ? null
+                    : IconButton(
+                        icon: Icon(
+                          visible ? Icons.visibility_off : Icons.visibility,
+                          color: textMuted,
+                          size: 20,
+                        ),
+                        onPressed: alternar,
+                      ),
+              );
+            }
+
+            Future<void> guardar() async {
+              final actual = actualCtrl.text;
+              final nueva = nuevaCtrl.text;
+
+              String? problema;
+              if (actual.isEmpty || nueva.isEmpty || confirmarCtrl.text.isEmpty) {
+                problema = 'Completa los tres campos.';
+              } else if (nueva.length < 6) {
+                problema = 'La nueva contraseña debe tener al menos 6 caracteres.';
+              } else if (nueva != confirmarCtrl.text) {
+                problema = 'La confirmación no coincide con la nueva contraseña.';
+              } else if (nueva == actual) {
+                problema = 'La nueva contraseña debe ser distinta de la actual.';
+              }
+              if (problema != null) {
+                setState(() => error = problema);
+                return;
+              }
+
+              setState(() {
+                error = null;
+                guardando = true;
+              });
+
+              try {
+                await user.reauthenticateWithCredential(
+                  EmailAuthProvider.credential(email: email, password: actual),
+                );
+                await user.updatePassword(nueva);
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+                messenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Contraseña actualizada correctamente.'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              } on FirebaseAuthException catch (e) {
+                final mensaje = switch (e.code) {
+                  'wrong-password' ||
+                  'invalid-credential' ||
+                  'invalid-login-credentials' =>
+                    'La contraseña actual no es correcta.',
+                  'weak-password' => 'La nueva contraseña es muy débil.',
+                  'too-many-requests' =>
+                    'Demasiados intentos. Espera un momento e inténtalo de nuevo.',
+                  'network-request-failed' =>
+                    'Sin conexión. Revisa tu internet e inténtalo de nuevo.',
+                  'requires-recent-login' =>
+                    'Por seguridad, cierra sesión, vuelve a entrar e inténtalo de nuevo.',
+                  _ => 'No se pudo cambiar la contraseña. Inténtalo de nuevo.',
+                };
+                setState(() {
+                  error = mensaje;
+                  guardando = false;
+                });
+              } catch (_) {
+                setState(() {
+                  error = 'No se pudo cambiar la contraseña. Inténtalo de nuevo.';
+                  guardando = false;
+                });
+              }
+            }
+
+            return AlertDialog(
+              backgroundColor: navBgColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(
+                'Cambiar contraseña',
+                style: TextStyle(color: textMain, fontWeight: FontWeight.bold),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: actualCtrl,
+                      obscureText: !verActual,
+                      enabled: !guardando,
+                      style: TextStyle(color: textMain),
+                      decoration: campo(
+                        'Contraseña actual',
+                        verActual,
+                        () => setState(() => verActual = !verActual),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: nuevaCtrl,
+                      obscureText: !verNueva,
+                      enabled: !guardando,
+                      style: TextStyle(color: textMain),
+                      decoration: campo(
+                        'Nueva contraseña',
+                        verNueva,
+                        () => setState(() => verNueva = !verNueva),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: confirmarCtrl,
+                      obscureText: !verNueva,
+                      enabled: !guardando,
+                      style: TextStyle(color: textMain),
+                      decoration: campo('Confirmar nueva contraseña', false, null),
+                    ),
+                    if (error != null) ...[
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          error!,
+                          style: const TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: guardando ? null : () => Navigator.pop(dialogContext),
+                  child: Text('Cancelar', style: TextStyle(color: textMuted)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: guardando ? null : guardar,
+                  child: guardando
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Guardar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).whenComplete(() {
+      actualCtrl.dispose();
+      nuevaCtrl.dispose();
+      confirmarCtrl.dispose();
+    });
+  }
+
   // --- HELPERS PARA EL DISEÑO ---
   Widget _buildSummaryCard({
     required String title,
@@ -486,7 +711,7 @@ class ProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: navBgColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.transparent),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -532,7 +757,7 @@ class ProfileScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: navBgColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.transparent),
         ),
         child: Row(
           children: [

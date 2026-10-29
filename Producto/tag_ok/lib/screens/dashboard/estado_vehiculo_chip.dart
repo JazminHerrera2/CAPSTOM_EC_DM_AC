@@ -11,7 +11,7 @@ Color colorEstadoVehiculo(String estado) {
     case 'Todo al día':
       return const Color(0xFF10B981);
     default:
-      return const Color(0xFF94A3B8);
+      return const Color(0xFF64748B);
   }
 }
 
@@ -51,8 +51,6 @@ class EstadoVehiculoChip extends StatelessWidget {
           Flexible(
             child: Text(
               estado,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: color,
                 fontSize: 12,

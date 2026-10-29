@@ -13,12 +13,12 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   // Colores extraídos del CSS del mockup
-  final Color bgColor = const Color(0xFF0F172A);
-  final Color primaryColor = const Color(0xFF4F46E5);
-  final Color textMain = const Color(0xFFF8FAFC);
-  final Color textMuted = const Color(0xFF94A3B8);
-  final Color inputBg = const Color(0x990F172A);
-  final Color surfaceBorder = const Color(0x1AFFFFFF);
+  final Color bgColor = const Color(0xFFF1F5F9);
+  final Color primaryColor = const Color(0xFF1E3A8A);
+  final Color textMain = const Color(0xFF0F172A);
+  final Color textMuted = const Color(0xFF64748B);
+  final Color inputBg = const Color(0xFFFFFFFF);
+  final Color surfaceBorder = const Color(0xFFCBD5E1);
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -98,8 +98,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             center: Alignment.topRight,
             radius: 1.5,
             colors: [
-              Color(0xFF312E81),
-              Color(0xFF0F172A),
+              Color(0xFFDBEAFE),
+              Color(0xFFF1F5F9),
             ],
             stops: [0.0, 0.4],
           ),
@@ -175,7 +175,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF4F46E5), Color(0xFF818CF8)],
+                      colors: [Color(0xFF1E3A8A), Color(0xFF2F5BBA)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -271,7 +271,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       decoration: BoxDecoration(
         color: inputBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: surfaceBorder),
+        border: Border.all(color: Colors.transparent),
       ),
       child: TextField(
         controller: controller,
@@ -295,25 +295,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: const Color(0xFFFFFFFF),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Recuperar contraseña', style: TextStyle(color: Colors.white)),
+        title: const Text('Recuperar contraseña', style: TextStyle(color: Color(0xFF0F172A))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
               'Ingresa tu correo electrónico y te enviaremos un enlace seguro para restablecer tu contraseña.',
-              style: TextStyle(color: Color(0xFF94A3B8)),
+              style: TextStyle(color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: resetEmailController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Color(0xFF0F172A)),
               decoration: InputDecoration(
                 hintText: 'Correo electrónico',
                 hintStyle: const TextStyle(color: Color(0xFF64748B)),
                 filled: true,
-                fillColor: const Color(0xFF0F172A),
+                fillColor: const Color(0xFFF1F5F9),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
             ),
@@ -322,7 +322,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF94A3B8))),
+            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(

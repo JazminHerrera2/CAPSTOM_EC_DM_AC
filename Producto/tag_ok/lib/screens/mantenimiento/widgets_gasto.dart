@@ -6,14 +6,14 @@ import 'tarjeta_mantencion.dart';
 /// Colores del card "Gasto en mantenciones". La app no tiene un archivo de
 /// tema (cada pantalla define los suyos), así que viven acá, solo para el card.
 class TokensGasto {
-  static const Color fondoCard = Color(0xFF1C2638);
-  static const Color bordeCard = Color(0xFF2C3A52);
-  static const Color violeta = Color(0xFF5B4DE8);
-  static const Color pildora = Color(0xFF243149);
-  static const Color textoPrincipal = Color(0xFFF8FAFC);
-  static const Color textoSecundario = Color(0xFFA9B4C8);
-  static const Color acento = Color(0xFF8B7CFF);
-  static const Color flechaDeshabilitada = Color(0xFF4B5870);
+  static const Color fondoCard = Color(0xFFFFFFFF);
+  static const Color bordeCard = Color(0xFFCBD5E1);
+  static const Color violeta = Color(0xFF1E3A8A);
+  static const Color pildora = Color(0xFFE2E8F0);
+  static const Color textoPrincipal = Color(0xFF0F172A);
+  static const Color textoSecundario = Color(0xFF64748B);
+  static const Color acento = Color(0xFF2F5BBA);
+  static const Color flechaDeshabilitada = Color(0xFF94A3B8);
   static const Color iconoVerde = Color(0xFF2DD4BF);
 }
 
@@ -169,7 +169,7 @@ class MontoPeriodo extends StatelessWidget {
             clp(resumen.total),
             maxLines: 1,
             style: const TextStyle(
-              color: Colors.white,
+              color: TokensGasto.textoPrincipal,
               fontSize: 44,
               fontWeight: FontWeight.w800,
               height: 1.1,

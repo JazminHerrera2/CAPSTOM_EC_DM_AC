@@ -17,7 +17,7 @@ int idNotificacionLocal(String idFirestore) {
   var hash = 0x811c9dc5;
   for (final unidad in idFirestore.codeUnits) {
     hash ^= unidad;
-    hash = (hash * 0x01000193) & 0xFFFFFFFF;
+    hash = (hash * 0x01000193) & 0xFFF1F5F9;
   }
   return hash & 0x7FFFFFFF;
 }

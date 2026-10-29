@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/mantencion_model.dart';
+import '../../data/models/tipo_mantencion.dart';
 import '../../data/services/mantencion_service.dart';
+import '../../utils/busqueda_mantencion.dart';
+import '../dashboard/filtro_mes_anio.dart';
 import 'gasto_periodo.dart';
+import 'selector_tipo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
 
 class HistorialMantenimientosScreen extends StatefulWidget {
@@ -12,8 +16,8 @@ class HistorialMantenimientosScreen extends StatefulWidget {
   /// Vehículo elegido en Mantenciones; sus mantenciones son las que se listan.
   final String? vehiculoId;
 
-  /// Si viene (desde "Ver detalle" del card de gasto), el historial se abre
-  /// filtrado por ese mes o año; el usuario puede quitar el filtro.
+  /// Si viene, el historial se abre filtrado por ese mes o año; el usuario
+  /// puede cambiarlo en el panel de filtros.
   final PeriodoGasto? periodo;
 
   const HistorialMantenimientosScreen({
@@ -30,12 +34,12 @@ class HistorialMantenimientosScreen extends StatefulWidget {
 
 class _HistorialMantenimientosScreenState
     extends State<HistorialMantenimientosScreen> {
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color borderColor = Color(0xFF334155);
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color borderColor = Color(0xFFCBD5E1);
 
   late final String _vehiculoSeleccionado =
       widget.patente ?? 'Todos los vehículos';
@@ -43,13 +47,35 @@ class _HistorialMantenimientosScreenState
 
   Stream<List<MantencionModel>>? _stream;
 
-  /// Filtro de periodo activo (null = sin filtro).
-  PeriodoGasto? _periodo;
+  // Filtros del panel (se abre con el ícono junto a la búsqueda). null = todos.
+  int? _mes;
+  int? _anio;
+  String? _tipoFiltro;
+  bool _mostrarFiltros = false;
+
+  static const String _opcionTodos = 'Todos';
+  static const String _opcionOtros = 'Otros';
+  static final List<String> _etiquetasTipo = [
+    for (final t in TipoMantencion.values)
+      if (t != TipoMantencion.otra) t.etiqueta,
+  ];
+  static final List<String> _opcionesTipo = [
+    _opcionTodos,
+    ..._etiquetasTipo,
+    _opcionOtros,
+  ];
+
+  bool get _hayFiltros => _mes != null || _anio != null || _tipoFiltro != null;
 
   @override
   void initState() {
     super.initState();
-    _periodo = widget.periodo;
+    // Si se abre con un periodo, ese mes o año parte aplicado.
+    final periodo = widget.periodo;
+    if (periodo != null && periodo.tipo != TipoPeriodo.todo) {
+      _anio = periodo.inicio.year;
+      if (periodo.tipo == TipoPeriodo.mes) _mes = periodo.inicio.month;
+    }
     final id = widget.vehiculoId;
     if (id != null) {
       _stream = MantencionService()
@@ -59,19 +85,35 @@ class _HistorialMantenimientosScreenState
     _busquedaController.addListener(() => setState(() {}));
   }
 
-  /// Aplica la búsqueda por título (el de vehículo ya viene en la consulta).
+  void _limpiarFiltros() => setState(() {
+        _mes = null;
+        _anio = null;
+        _tipoFiltro = null;
+      });
+
+  /// ¿El título de la mantención coincide con el tipo elegido? "Otros" = los
+  /// que no corresponden a ninguno de la lista.
+  bool _coincideTipo(MantencionModel m, String tipo) {
+    final titulo = m.nombreTipo.trim().toLowerCase();
+    if (tipo == _opcionOtros) {
+      return !_etiquetasTipo.any((e) => e.toLowerCase() == titulo);
+    }
+    return titulo == tipo.toLowerCase();
+  }
+
+  /// Aplica mes, año, tipo y búsqueda en todo el texto de la mantención (el
+  /// vehículo ya viene en la consulta).
   List<MantencionModel> _filtrar(List<MantencionModel> registradas) {
-    final periodo = _periodo;
-    final todas = periodo == null
-        ? registradas
-        : registradas
-            .where((m) => m.fecha != null && periodo.contiene(m.fecha!))
-            .toList();
-    final texto = _busquedaController.text.trim().toLowerCase();
-    if (texto.isEmpty) return todas;
-    return todas
-        .where((m) => m.nombreTipo.toLowerCase().contains(texto))
-        .toList();
+    final texto = _busquedaController.text;
+    return registradas.where((m) {
+      final fecha = m.fecha;
+      if (_anio != null && (fecha == null || fecha.year != _anio)) return false;
+      if (_mes != null && (fecha == null || fecha.month != _mes)) return false;
+      final tipo = _tipoFiltro;
+      if (tipo != null && !_coincideTipo(m, tipo)) return false;
+      if (!coincideConBusqueda(m, texto)) return false;
+      return true;
+    }).toList();
   }
 
   @override
@@ -83,6 +125,7 @@ class _HistorialMantenimientosScreenState
 
   @override
   Widget build(BuildContext context) {
+    final stream = _stream;
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
@@ -100,41 +143,131 @@ class _HistorialMantenimientosScreenState
         ),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
-          children: [
-            _cabecera(),
-
-            const SizedBox(height: 24),
-
-            const Text(
-              'Filtrar historial',
-              style: TextStyle(
-                color: textMain,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+        child: stream == null
+            ? _contenido(null)
+            : StreamBuilder<List<MantencionModel>>(
+                stream: stream,
+                builder: (context, snapshot) => _contenido(snapshot),
               ),
-            ),
+      ),
+    );
+  }
 
-            const SizedBox(height: 12),
+  Widget _contenido(AsyncSnapshot<List<MantencionModel>>? snapshot) {
+    final todas = snapshot?.data ?? const <MantencionModel>[];
+    final anios = {
+      for (final m in todas)
+        if (m.fecha != null) m.fecha!.year,
+    }.toList()
+      ..sort((a, b) => b.compareTo(a));
 
-            _selectorVehiculo(),
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 30),
+      children: [
+        _selectorVehiculo(),
 
-            const SizedBox(height: 10),
+        const SizedBox(height: 10),
 
-            _campoBusqueda(),
-
-            if (_periodo != null) ...[
-              const SizedBox(height: 10),
-              _chipPeriodo(_periodo!),
-            ],
-
-            const SizedBox(height: 26),
-
-            _seccionLista(),
+        // Búsqueda y, a su lado, el ícono que abre los filtros.
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _campoBusqueda()),
+            const SizedBox(width: 10),
+            _botonFiltros(),
           ],
         ),
+
+        if (_mostrarFiltros) ...[
+          const SizedBox(height: 10),
+          _panelFiltros(anios),
+        ],
+
+        const SizedBox(height: 26),
+
+        _seccionLista(snapshot),
+      ],
+    );
+  }
+
+  // ================================================================
+  // FILTROS (MES, AÑO Y TIPO)
+  // ================================================================
+
+  /// Ícono de filtros, a la derecha de la búsqueda. Se resalta cuando el panel
+  /// está abierto o hay filtros aplicados.
+  Widget _botonFiltros() {
+    final activo = _mostrarFiltros || _hayFiltros;
+    return Tooltip(
+      message: 'Filtros',
+      child: GestureDetector(
+        onTap: () => setState(() => _mostrarFiltros = !_mostrarFiltros),
+        child: Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: activo ? primaryColor : surfaceColor,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.tune_rounded,
+                color: activo ? Colors.white : primaryColor,
+                size: 22,
+              ),
+              if (_hayFiltros && !_mostrarFiltros)
+                Positioned(
+                  top: 11,
+                  right: 11,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Colors.amber,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  /// Mes y año (mismos desplegables que el historial de gastos) y el tipo de
+  /// mantención en acordeón.
+  Widget _panelFiltros(List<int> anios) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FiltroMesAnio(
+          mes: _mes,
+          anio: _anio,
+          anios: anios,
+          alCambiarMes: (v) => setState(() => _mes = v),
+          alCambiarAnio: (v) => setState(() => _anio = v),
+        ),
+        const SizedBox(height: 10),
+        SelectorTipoMantencion(
+          label: 'Tipo de mantención',
+          hint: _opcionTodos,
+          opciones: _opcionesTipo,
+          valor: _tipoFiltro,
+          onChanged: (v) =>
+              setState(() => _tipoFiltro = v == _opcionTodos ? null : v),
+        ),
+        if (_hayFiltros)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _limpiarFiltros,
+              child: const Text('Limpiar filtros'),
+            ),
+          ),
+      ],
     );
   }
 
@@ -174,9 +307,8 @@ class _HistorialMantenimientosScreenState
     );
   }
 
-  Widget _seccionLista() {
-    final stream = _stream;
-    if (stream == null) {
+  Widget _seccionLista(AsyncSnapshot<List<MantencionModel>>? snapshot) {
+    if (snapshot == null) {
       return Column(
         children: [
           _encabezadoLista(0),
@@ -185,69 +317,46 @@ class _HistorialMantenimientosScreenState
         ],
       );
     }
+    if (snapshot.hasError) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 30),
+        child: Center(
+          child: Text(
+            'No fue posible cargar las mantenciones.',
+            style: TextStyle(color: textMuted),
+          ),
+        ),
+      );
+    }
+    if (!snapshot.hasData) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 30),
+        child: Center(
+          child: CircularProgressIndicator(color: primaryColor),
+        ),
+      );
+    }
 
-    return StreamBuilder<List<MantencionModel>>(
-      stream: stream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 30),
-            child: Center(
-              child: Text(
-                'No fue posible cargar las mantenciones.',
-                style: TextStyle(color: textMuted),
-              ),
+    final todas = snapshot.data!;
+    final lista = _filtrar(todas);
+
+    return Column(
+      children: [
+        _encabezadoLista(lista.length),
+        const SizedBox(height: 12),
+        if (lista.isEmpty)
+          _estadoVacio(
+            detalle: todas.isEmpty
+                ? null
+                : 'No hay mantenciones que coincidan con los filtros.',
+          )
+        else
+          for (final m in lista)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TarjetaMantencion(mantencion: m),
             ),
-          );
-        }
-        if (!snapshot.hasData) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 30),
-            child: Center(
-              child: CircularProgressIndicator(color: primaryColor),
-            ),
-          );
-        }
-
-        final todas = snapshot.data!;
-        final lista = _filtrar(todas);
-
-        return Column(
-          children: [
-            _encabezadoLista(lista.length),
-            const SizedBox(height: 12),
-            if (lista.isEmpty)
-              _estadoVacio(
-                detalle: todas.isEmpty
-                    ? null
-                    : _periodo != null
-                        ? 'No hay mantenciones que coincidan con los filtros.'
-                        : 'No hay mantenciones de este tipo para el vehículo.',
-              )
-            else
-              for (final m in lista)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: TarjetaMantencion(mantencion: m),
-                ),
-          ],
-        );
-      },
-    );
-  }
-
-  // ================================================================
-  // CABECERA
-  // ================================================================
-
-  Widget _cabecera() {
-    return const Text(
-      'Aquí podrás revisar las mantenciones y servicios realizados a tus vehículos.',
-      style: TextStyle(
-        color: textMuted,
-        fontSize: 13,
-        height: 1.45,
-      ),
+      ],
     );
   }
 
@@ -264,13 +373,13 @@ class _HistorialMantenimientosScreenState
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: Colors.transparent),
       ),
       child: Row(
         children: [
           const Icon(
             Icons.directions_car_outlined,
-            color: textMuted,
+            color: primaryColor,
             size: 21,
           ),
           const SizedBox(width: 12),
@@ -302,48 +411,7 @@ class _HistorialMantenimientosScreenState
   }
 
   // ================================================================
-  // FILTRO PERIODO
-  // ================================================================
-
-  /// Aviso del periodo filtrado, con una X para quitarlo.
-  Widget _chipPeriodo(PeriodoGasto periodo) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.only(left: 14, right: 4),
-        decoration: BoxDecoration(
-          color: primaryColor.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: primaryColor.withOpacity(0.5)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.event_outlined, color: primaryColor, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              'Periodo: ${periodo.etiqueta}',
-              style: const TextStyle(
-                color: textMain,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            IconButton(
-              tooltip: 'Quitar filtro de periodo',
-              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
-              onPressed: () => setState(() => _periodo = null),
-              icon: const Icon(Icons.close_rounded, size: 18),
-              color: textMuted,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ================================================================
-  // BÚSQUEDA POR TÍTULO
+  // BÚSQUEDA (EN TODO EL TEXTO)
   // ================================================================
 
   Widget _campoBusqueda() {
@@ -352,9 +420,9 @@ class _HistorialMantenimientosScreenState
       textInputAction: TextInputAction.search,
       style: const TextStyle(color: textMain, fontSize: 14),
       decoration: InputDecoration(
-        hintText: 'Buscar por tipo de mantención',
+        hintText: 'Buscar por tipo, taller, descripción...',
         hintStyle: const TextStyle(color: textMuted),
-        prefixIcon: const Icon(Icons.search_rounded, color: textMuted, size: 21),
+        prefixIcon: const Icon(Icons.search_rounded, color: primaryColor, size: 21),
         suffixIcon: _busquedaController.text.isEmpty
             ? null
             : IconButton(
@@ -392,7 +460,7 @@ class _HistorialMantenimientosScreenState
         color: surfaceColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.transparent,
         ),
       ),
       child: Column(

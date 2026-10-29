@@ -21,9 +21,9 @@ class DocumentosVehiculoScreen extends StatefulWidget {
 
 class _DocumentosVehiculoScreenState
     extends State<DocumentosVehiculoScreen> {
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color primaryColor = Color(0xFF4F46E5);
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final DocumentoVehicularService _documentoService =
       DocumentoVehicularService();

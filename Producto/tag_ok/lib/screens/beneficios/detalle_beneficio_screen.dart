@@ -12,11 +12,11 @@ class DetalleBeneficioScreen extends StatelessWidget {
 
   const DetalleBeneficioScreen({super.key, required this.beneficio});
 
-  static const Color _bgColor = Color(0xFF0F172A);
-  static const Color _surfaceColor = Color(0xFF1E293B);
-  static const Color _textMain = Color(0xFFF8FAFC);
-  static const Color _textMuted = Color(0xFF94A3B8);
-  static const Color _primaryColor = Color(0xFF4F46E5);
+  static const Color _bgColor = Color(0xFFF1F5F9);
+  static const Color _surfaceColor = Color(0xFFFFFFFF);
+  static const Color _textMain = Color(0xFF0F172A);
+  static const Color _textMuted = Color(0xFF64748B);
+  static const Color _primaryColor = Color(0xFF1E3A8A);
 
   Future<void> _abrirEnlace(BuildContext context) async {
     final uri = Uri.tryParse(beneficio.urlExterna ?? '');
@@ -150,7 +150,7 @@ class DetalleBeneficioScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: _surfaceColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: Colors.transparent),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

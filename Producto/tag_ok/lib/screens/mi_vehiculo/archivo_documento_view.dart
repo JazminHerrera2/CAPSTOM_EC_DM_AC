@@ -20,11 +20,10 @@ class ArchivoDocumentoView extends StatefulWidget {
 }
 
 class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color borderColor = Color(0xFF334155);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final StorageService _storage = StorageService();
   late Future<String> _urlFuture;
@@ -99,7 +98,7 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: Colors.transparent),
       ),
       clipBehavior: Clip.antiAlias,
       child: child,

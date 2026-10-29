@@ -11,11 +11,11 @@ class VehiculosScreen extends StatefulWidget {
 }
 
 class _VehiculosScreenState extends State<VehiculosScreen> {
-  final Color bgColor = const Color(0xFF0F172A);
-  final Color primaryColor = const Color(0xFF4F46E5);
-  final Color navBgColor = const Color(0xFF1E293B);
-  final Color textMuted = const Color(0xFF94A3B8);
-  final Color textMain = const Color(0xFFF8FAFC);
+  final Color bgColor = const Color(0xFFF1F5F9);
+  final Color primaryColor = const Color(0xFF1E3A8A);
+  final Color navBgColor = const Color(0xFFFFFFFF);
+  final Color textMuted = const Color(0xFF64748B);
+  final Color textMain = const Color(0xFF0F172A);
   final Color accentColor = const Color(0xFF10B981);
 
   final TextEditingController _patenteController = TextEditingController();
@@ -467,8 +467,8 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-        title: const Text('Mis Vehículos', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Mis Vehículos', style: TextStyle(color: Color(0xFF0F172A))),
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _mostrarFormularioAgregarVehiculo,
@@ -530,7 +530,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.directions_car_filled_outlined, size: 80, color: Colors.white.withOpacity(0.1)),
+          Icon(Icons.directions_car_filled_outlined, size: 80, color: const Color(0xFFE2E8F0)),
           const SizedBox(height: 16),
           Text(
             'Aún no hay vehículos',

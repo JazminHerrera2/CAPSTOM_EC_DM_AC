@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/services/documento_vehicular_service.dart';
+import '../../utils/orden_documentos.dart';
 import 'detalle_documento_screen.dart';
 import 'registrar_documento_ia_screen.dart';
 
@@ -14,11 +15,11 @@ import 'registrar_documento_ia_screen.dart';
 /// Documentos de Mi Vehículo (una sección por patente), para que ambas tengan
 /// exactamente la misma interfaz.
 class DocumentosVehiculoSeccion extends StatelessWidget {
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color surfaceLight = Color(0xFF27364D);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color primaryColor = Color(0xFF4F46E5);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color surfaceLight = Color(0xFFE2E8F0);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final String vehiculoId;
   final String patenteVehiculo;
@@ -32,6 +33,10 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
   /// arriba de los documentos ya registrados (cada sección lleva el suyo).
   final bool mostrarBotonAgregar;
 
+  /// Muestra la tarjeta del vehículo (patente) arriba. En el detalle del
+  /// vehículo se oculta, porque esa pantalla ya muestra la patente.
+  final bool mostrarVehiculo;
+
   const DocumentosVehiculoSeccion({
     super.key,
     required this.vehiculoId,
@@ -39,6 +44,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
     required this.documentos,
     this.mostrarTitulo = true,
     this.mostrarBotonAgregar = false,
+    this.mostrarVehiculo = true,
   });
 
   // ------------------------------------------------------------
@@ -200,36 +206,33 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        padding: const EdgeInsets.all(18),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: surfaceColor,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: const Color(0xFF334155),
+            color: Colors.transparent,
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Fila del título (ej. "Permiso de Circulación"): sobre fondo blanco,
+            // con el ícono en azul y sin recuadro de color detrás.
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
+                const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(
                     Icons.description_outlined,
-                    color: primaryColor,
-                    size: 25,
+                    color: textMuted,
+                    size: 28,
                   ),
                 ),
 
-                const SizedBox(width: 14),
+                const SizedBox(width: 10),
 
                 Expanded(
                   child: Column(
@@ -239,17 +242,17 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                         documento.tipoDocumento.etiqueta,
                         style: const TextStyle(
                           color: textMain,
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
 
-                      const SizedBox(height: 7),
+                      const SizedBox(height: 5),
 
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 9,
-                          vertical: 5,
+                          horizontal: 8,
+                          vertical: 3,
                         ),
                         decoration: BoxDecoration(
                           color: color.withOpacity(0.10),
@@ -264,9 +267,9 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                             Icon(
                               _iconoEstado(estado),
                               color: color,
-                              size: 14,
+                              size: 13,
                             ),
-                            const SizedBox(width: 5),
+                            const SizedBox(width: 4),
                             Text(
                               estado,
                               style: TextStyle(
@@ -284,28 +287,24 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
 
                 IconButton(
                   tooltip: 'Cambiar vencimiento',
+                  visualDensity: VisualDensity.compact,
                   onPressed: () {
                     _configurarVencimiento(context, documento);
                   },
                   icon: const Icon(
                     Icons.edit_calendar_outlined,
-                    color: textMuted,
+                    color: primaryColor,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 16),
-
-            const Divider(
-              color: Color(0xFF334155),
-              height: 1,
-            ),
-
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
 
             Row(
               children: [
+                const SizedBox(width: 4),
+
                 const Icon(
                   Icons.event_outlined,
                   color: textMuted,
@@ -338,20 +337,22 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+
+                const SizedBox(width: 4),
               ],
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
 
             SizedBox(
               width: double.infinity,
-              height: 44,
+              height: 38,
               child: OutlinedButton.icon(
                 onPressed: () => _actualizarDocumento(context, documento),
                 icon: const Icon(
                   Icons.autorenew_rounded,
                   color: primaryColor,
-                  size: 20,
+                  size: 19,
                 ),
                 label: const Text(
                   'Actualizar',
@@ -390,7 +391,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         color: surfaceColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF334155),
+          color: Colors.transparent,
         ),
       ),
       child: Column(
@@ -472,15 +473,16 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         // VEHÍCULO
         // --------------------------------------------------
 
+        if (mostrarVehiculo)
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             // Más claro y con acento (violeta) para distinguir al vehículo de
             // las tarjetas de documentos, que son oscuras.
-            color: const Color(0xFF312E81),
+            color: const Color(0xFF172554),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFF6366F1).withOpacity(0.55),
+              color: const Color(0xFF1E3A8A).withOpacity(0.55),
             ),
           ),
           child: Row(
@@ -489,7 +491,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6366F1).withOpacity(0.28),
+                  color: const Color(0xFF1E3A8A).withOpacity(0.28),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -507,7 +509,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   const Text(
                     'Vehículo',
                     style: TextStyle(
-                      color: Color(0xFFC7D2FE),
+                      color: Color(0xFFBFDBFE),
                       fontSize: 11,
                     ),
                   ),
@@ -515,7 +517,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   Text(
                     patenteVehiculo,
                     style: const TextStyle(
-                      color: textMain,
+                      color: Colors.white,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -530,7 +532,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         // Debajo del vehículo y arriba de los documentos ya registrados. Sin
         // documentos ya se ofrece "Agregar primer documento".
         if (mostrarBotonAgregar && documentos.isNotEmpty) ...[
-          const SizedBox(height: 14),
+          if (mostrarVehiculo) const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
             height: 50,
@@ -585,7 +587,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
           ),
         ],
 
-        const SizedBox(height: 16),
+        if (mostrarVehiculo || mostrarTitulo || mostrarBotonAgregar)
+          const SizedBox(height: 16),
 
         // --------------------------------------------------
         // SIN DOCUMENTOS / LISTADO
@@ -594,7 +597,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         if (documentos.isEmpty)
           _sinDocumentos(context)
         else
-          ...documentos.map(
+          // Del que vence primero al que vence último.
+          ...ordenarPorVencimiento(documentos).map(
             (documento) => _tarjetaDocumento(context, documento),
           ),
 

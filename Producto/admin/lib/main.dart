@@ -1276,7 +1276,7 @@ class DonutChart extends StatelessWidget {
       const Color(0xFF10B981),
       const Color(0xFFF59E0B),
       const Color(0xFFEC4899),
-      const Color(0xFF8B5CF6),
+      const Color(0xFF1E3A8A),
       const Color(0xFF64748B),
     ];
 
@@ -1783,14 +1783,14 @@ class _UsersPageState extends State<UsersPage> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: presupuesto > 50000
-                                                ? const Color(0xFFEEF2FF)
+                                                ? const Color(0xFFEFF6FF)
                                                 : const Color(0xFFF1F5F9),
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
                                             border: Border.all(
                                               color: presupuesto > 50000
-                                                  ? const Color(0xFFC7D2FE)
+                                                  ? const Color(0xFFBFDBFE)
                                                   : const Color(0xFFE2E8F0),
                                             ),
                                           ),
@@ -1799,7 +1799,7 @@ class _UsersPageState extends State<UsersPage> {
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: presupuesto > 50000
-                                                  ? const Color(0xFF4F46E5)
+                                                  ? const Color(0xFF1E3A8A)
                                                   : const Color(0xFF475569),
                                               fontSize: 13,
                                             ),
@@ -3700,7 +3700,7 @@ class _ReportsPageState extends State<ReportsPage> {
       case 'Vespucio Sur':
         return [const Color(0xFFEC4899), const Color(0xFFD946EF)];
       case 'Vespucio Oriente (AVO)':
-        return [const Color(0xFF8B5CF6), const Color(0xFF7C3AED)];
+        return [const Color(0xFF1E3A8A), const Color(0xFF1E3A8A)];
       default:
         return [const Color(0xFF64748B), const Color(0xFF475569)];
     }
@@ -3862,10 +3862,10 @@ class _ReportsPageState extends State<ReportsPage> {
                       title: 'Total Peajes',
                       value: _formatCurrency(metrics.totalTollCost),
                       icon: Icons.monetization_on_outlined,
-                      iconColor: const Color(0xFF8B5CF6),
+                      iconColor: const Color(0xFF1E3A8A),
                       gradientColors: const [
-                        Color(0xFF8B5CF6),
-                        Color(0xFFA78BFA),
+                        Color(0xFF1E3A8A),
+                        Color(0xFF1E3A8A),
                       ],
                     ),
                     _ReportStatCard(
@@ -5085,8 +5085,8 @@ class _AuditLogPageState extends State<AuditLogPage> {
     String label;
     switch (action) {
       case 'EDIT_USER':
-        bgColor = const Color(0xFFE0E7FF);
-        textColor = const Color(0xFF4338CA);
+        bgColor = const Color(0xFFDBEAFE);
+        textColor = const Color(0xFF1E3A8A);
         label = 'Editar Usuario';
         break;
       case 'RESET_PASSWORD':
@@ -5617,8 +5617,8 @@ Color _getColorFromName(String name) {
   final List<Color> colors = [
     const Color(0xFF0EA5E9),
     const Color(0xFF10B981),
-    const Color(0xFF6366F1),
-    const Color(0xFF8B5CF6),
+    const Color(0xFF1E3A8A),
+    const Color(0xFF1E3A8A),
     const Color(0xFFEC4899),
     const Color(0xFFF59E0B),
   ];
@@ -5647,7 +5647,7 @@ Widget _getHighwayBadge(String highway) {
       break;
     case 'Vespucio Oriente (AVO)':
       bgColor = const Color(0xFFF5F3FF);
-      textColor = const Color(0xFF6D28D9);
+      textColor = const Color(0xFF1E3A8A);
       break;
     default:
       bgColor = const Color(0xFFF8FAFC);

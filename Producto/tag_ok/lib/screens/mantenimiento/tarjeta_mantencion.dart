@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/models/mantencion_model.dart';
+import 'detalle_mantenimiento_screen.dart';
 
 /// Formatea un entero con separador de miles (72450 -> 72.450).
 String formatoMiles(int valor) {
@@ -19,22 +20,31 @@ String formatoFecha(DateTime fecha) {
   return '$d/$m/${fecha.year}';
 }
 
-/// Tarjeta de una mantención, para las listas de Historial y Próximas.
+/// Tarjeta de una mantención, para las listas de Historial y Próximas. Las
+/// realizadas (historial) se abren al tocarlas y muestran su detalle; las
+/// programadas no tienen detalle y, si se indica [onEliminar], llevan un botón
+/// de eliminar a su derecha.
 class TarjetaMantencion extends StatelessWidget {
   final MantencionModel mantencion;
 
-  const TarjetaMantencion({super.key, required this.mantencion});
+  /// Si viene, se muestra un botón de eliminar al lado de la tarjeta.
+  final VoidCallback? onEliminar;
 
-  static const Color _surfaceColor = Color(0xFF1E293B);
-  static const Color _textMain = Color(0xFFF8FAFC);
-  static const Color _textMuted = Color(0xFF94A3B8);
+  const TarjetaMantencion({
+    super.key,
+    required this.mantencion,
+    this.onEliminar,
+  });
+
+  static const Color _surfaceColor = Color(0xFFFFFFFF);
+  static const Color _textMain = Color(0xFF0F172A);
+  static const Color _textMuted = Color(0xFF64748B);
+  static const Color _iconoColor = Color(0xFF1E3A8A);
 
   @override
   Widget build(BuildContext context) {
     final m = mantencion;
     final programada = m.estado == EstadoMantencion.programada;
-    final color =
-        programada ? const Color(0xFFF59E0B) : const Color(0xFF3B82F6);
 
     final lineas = <String>[
       if (programada) ...[
@@ -54,30 +64,40 @@ class TarjetaMantencion extends StatelessWidget {
       ],
     ].where((l) => l.isNotEmpty).toList();
 
-    return Container(
+    return Material(
+      color: _surfaceColor,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        // Solo las realizadas (historial) tienen detalle.
+        onTap: programada
+            ? null
+            : () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DetalleMantenimientoScreen(mantencion: m),
+                  ),
+                ),
+        child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Colors.transparent),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
+          // Solo el ícono, en azul y sin recuadro de color de fondo.
+          SizedBox(
             width: 42,
             height: 42,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
             child: Icon(
               programada
                   ? Icons.event_available_outlined
                   : Icons.build_circle_outlined,
-              color: color,
-              size: 22,
+              color: _iconoColor,
+              size: 28,
             ),
           ),
           const SizedBox(width: 14),
@@ -111,7 +131,18 @@ class TarjetaMantencion extends StatelessWidget {
               ],
             ),
           ),
+          if (onEliminar != null)
+            IconButton(
+              tooltip: 'Eliminar programación',
+              visualDensity: VisualDensity.compact,
+              onPressed: onEliminar,
+              icon: const Icon(Icons.delete_outline, color: Color(0xFFE11D48)),
+            )
+          else if (!programada)
+            const Icon(Icons.chevron_right, color: _textMuted),
         ],
+      ),
+    ),
       ),
     );
   }

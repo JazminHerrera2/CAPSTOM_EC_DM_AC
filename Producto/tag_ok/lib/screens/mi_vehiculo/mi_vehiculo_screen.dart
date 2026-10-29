@@ -2,11 +2,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../data/models/documento_vehicular_model.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/vehiculo_service.dart';
+import '../dashboard/encabezado_tag_ok.dart';
 import 'detalle_vehiculo_screen.dart';
-import 'documentos_vehiculo_seccion.dart';
 import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
 
@@ -19,19 +18,14 @@ class MiVehiculoScreen extends StatefulWidget {
 
 class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
   // Colores principales de TAG OK
-  final Color bgColor = const Color(0xFF0F172A);
-  final Color surfaceColor = const Color(0xFF1E293B);
-  final Color surfaceLight = const Color(0xFF263449);
-  final Color textMain = const Color(0xFFF8FAFC);
-  final Color textMuted = const Color(0xFF94A3B8);
-  final Color primaryColor = const Color(0xFF4F46E5);
+  final Color bgColor = const Color(0xFFF1F5F9);
+  final Color surfaceColor = const Color(0xFFFFFFFF);
+  final Color surfaceLight = const Color(0xFFE2E8F0);
+  final Color textMain = const Color(0xFF0F172A);
+  final Color textMuted = const Color(0xFF64748B);
+  final Color primaryColor = const Color(0xFF1E3A8A);
 
   final VehiculoService _vehiculoService = VehiculoService();
-
-  int _activeSubTab = 0;
-
-  // Filtro de la pestaña Documentos: id del vehículo, o null para todos.
-  String? _filtroVehiculoId;
 
   String get _usuarioId =>
       FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
@@ -41,134 +35,31 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
     return Scaffold(
       backgroundColor: bgColor,
 
-      appBar: AppBar(
-        backgroundColor: bgColor,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Mi VehÍculo',
-          style: TextStyle(
-            color: textMain,
-            fontSize: 27,
-            fontWeight: FontWeight.bold,
-          ),
+      // El + siempre significa AGREGAR VEHíCULO.
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'agregarVehiculo',
+        backgroundColor: primaryColor,
+        tooltip: 'Agregar vehículo',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const RegistrarEditarVehiculoScreen(),
+            ),
+          );
+        },
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 30,
         ),
       ),
-
-      // El + siempre significa AGREGAR VEHíCULO.
-      floatingActionButton: _activeSubTab == 0
-          ? FloatingActionButton(
-              heroTag: 'agregarVehiculo',
-              backgroundColor: primaryColor,
-              tooltip: 'Agregar vehículo',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const RegistrarEditarVehiculoScreen(),
-                  ),
-                );
-              },
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 30,
-              ),
-            )
-          : null,
 
       body: Column(
         children: [
-          // ---------------------------------------------------------
-          // TABS
-          // ---------------------------------------------------------
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildTabButton(
-                    label: 'Mis Vehículos',
-                    icon: Icons.directions_car_outlined,
-                    index: 0,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildTabButton(
-                    label: 'Documentos',
-                    icon: Icons.description_outlined,
-                    index: 1,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Expanded(
-            child: _activeSubTab == 0
-                ? _buildListaVehiculos()
-                : _buildDocumentosAgregados(),
-          ),
+          const EncabezadoTagOk(),
+          Expanded(child: _buildListaVehiculos()),
         ],
-      ),
-    );
-  }
-
-  // ================================================================
-  // BOTONES SUPERIORES
-  // ================================================================
-
-  Widget _buildTabButton({
-    required String label,
-    required IconData icon,
-    required int index,
-  }) {
-    final activo = _activeSubTab == index;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(15),
-      onTap: () {
-        setState(() {
-          _activeSubTab = index;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 44,
-        decoration: BoxDecoration(
-          color: activo ? primaryColor : surfaceColor,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: activo ? Colors.white : textMuted,
-              size: 19,
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              // Una sola línea y sin cortar la palabra: si no cabe, se reduce
-              // el tamaño del texto en vez de partirlo o truncarlo.
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  softWrap: false,
-                  style: TextStyle(
-                    color: activo ? Colors.white : textMuted,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -242,8 +133,20 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
                 );
 
                 return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 84),
           children: [
+            // Título de la página: se desplaza con el contenido.
+            Padding(
+              padding: const EdgeInsets.only(top: 6, bottom: 6),
+              child: Text(
+                'Mi Vehículo',
+                style: TextStyle(
+                  color: textMain,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
             Text(
               'Consulta la información, documentos y estado de cada vehículo.',
               style: TextStyle(
@@ -255,38 +158,26 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
 
             const SizedBox(height: 16),
 
-            _buildVehiculoPrincipal(vehiculos, principal),
-
-            const SizedBox(height: 18),
-
             ...ordenados.map(
               (vehiculo) => Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: _VehiculoCard(
                   vehiculo: vehiculo,
                   esPrincipal: vehiculo.patente == principal,
+                  onMarcarPrincipal: () => _setVehiculoPrincipal(vehiculo.patente),
                   surfaceColor: surfaceColor,
                   surfaceLight: surfaceLight,
                   textMain: textMain,
                   textMuted: textMuted,
                   primaryColor: primaryColor,
                   onTap: () async {
-                    final resultado = await Navigator.push<Object>(
+                    await Navigator.push<void>(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
                             DetalleVehiculoScreen(vehiculo: vehiculo),
                       ),
                     );
-
-                    // "Ver más detalles" en el detalle del vehículo pide abrir
-                    // la pestaña Documentos, filtrada por ese vehículo.
-                    if (resultado is VerDocumentosDe && mounted) {
-                      setState(() {
-                        _activeSubTab = 1;
-                        _filtroVehiculoId = resultado.vehiculoId;
-                      });
-                    }
                   },
                 ),
               ),
@@ -312,6 +203,15 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              'Mi Vehículo',
+              style: TextStyle(
+                color: textMain,
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 24),
             // Tres tipos de vehículos disponibles
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -424,295 +324,9 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
   }
 
   // ================================================================
-  // DOCUMENTOS DE TODOS LOS VEHiCULOS
-  // ================================================================
-
-  Widget _buildDocumentosAgregados() {
-    return StreamBuilder<List<VehiculoModel>>(
-      stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
-      builder: (context, snapshotVehiculos) {
-        if (snapshotVehiculos.connectionState ==
-            ConnectionState.waiting) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: primaryColor,
-            ),
-          );
-        }
-
-        final vehiculos = snapshotVehiculos.data ?? [];
-
-        if (vehiculos.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.description_outlined,
-                    size: 58,
-                    color: textMuted,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Primero agrega un vehículo',
-                    style: TextStyle(
-                      color: textMain,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Los documentos registrados para tus vehículos aparecerán aquí.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: textMuted,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        final idsVehiculos =
-            vehiculos.map((vehiculo) => vehiculo.id).toList();
-
-        // Si no se eligió vehículo o ya no existe (p. ej. se eliminó), se
-        // muestra el primero.
-        final filtroActivo = idsVehiculos.contains(_filtroVehiculoId)
-            ? _filtroVehiculoId
-            : idsVehiculos.first;
-
-        return Column(
-          children: [
-            _buildFiltrosDocumentos(vehiculos, filtroActivo),
-            Expanded(
-              child: StreamBuilder<
-            QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('documentos_vehiculares')
-              .where('uid', isEqualTo: _usuarioId)
-              .where(
-                'vehiculo_id',
-                whereIn: idsVehiculos,
-              )
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState ==
-                ConnectionState.waiting) {
-              return Center(
-                child: CircularProgressIndicator(
-                  color: primaryColor,
-                ),
-              );
-            }
-
-            if (snapshot.hasError) {
-              return _buildEstadoError(
-                'No fue posible cargar los documentos.',
-              );
-            }
-
-            final docs = snapshot.data?.docs ?? [];
-
-            // Documentos agrupados por vehículo, en el orden de la lista de
-            // vehículos. Los vehículos sin documentos no aparecen.
-            final porVehiculo = <String, List<DocumentoVehicularModel>>{};
-            for (final doc in docs) {
-              final documento =
-                  DocumentoVehicularModel.fromJson(doc.data(), doc.id);
-              porVehiculo
-                  .putIfAbsent(documento.vehiculoId, () => [])
-                  .add(documento);
-            }
-
-            // Todos los vehículos aparecen, también los que aún no tienen
-            // documentos (con el botón para agregar el primero).
-            final secciones = <Widget>[];
-            for (final vehiculo in vehiculos) {
-              if (filtroActivo != null && vehiculo.id != filtroActivo) {
-                continue;
-              }
-
-              final lista = porVehiculo[vehiculo.id] ?? [];
-
-              lista.sort(
-                (a, b) =>
-                    a.tipoDocumento.index.compareTo(b.tipoDocumento.index),
-              );
-
-              // Línea que separa un vehículo del siguiente.
-              if (secciones.isNotEmpty) {
-                secciones.add(const SizedBox(height: 14));
-                secciones.add(
-                  const Divider(
-                    color: Color(0xFF475569),
-                    thickness: 1,
-                    height: 1,
-                  ),
-                );
-                secciones.add(const SizedBox(height: 26));
-              }
-              secciones.add(
-                DocumentosVehiculoSeccion(
-                  vehiculoId: vehiculo.id,
-                  patenteVehiculo: vehiculo.patente,
-                  documentos: lista,
-                  mostrarTitulo: false,
-                  mostrarBotonAgregar: true,
-                ),
-              );
-            }
-
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-              children: secciones,
-            );
-          },
-        ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  /// Botones de filtro: uno por cada patente. Salen de la lista de
-  /// vehículos, así que al registrar uno nuevo aparece su botón solo.
-  Widget _buildFiltrosDocumentos(
-    List<VehiculoModel> vehiculos,
-    String? filtroActivo,
-  ) {
-    Widget boton(String texto, bool activo, VoidCallback onTap) {
-      return InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 10,
-          ),
-          decoration: BoxDecoration(
-            color: activo ? primaryColor : surfaceColor,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: activo ? primaryColor : const Color(0xFF334155),
-            ),
-          ),
-          child: Text(
-            texto,
-            maxLines: 1,
-            softWrap: false,
-            style: TextStyle(
-              color: activo ? Colors.white : textMuted,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-      child: Row(
-        children: [
-          for (final (indice, vehiculo) in vehiculos.indexed) ...[
-            if (indice > 0) const SizedBox(width: 8),
-            boton(
-              vehiculo.patente,
-              filtroActivo == vehiculo.id,
-              () => setState(() => _filtroVehiculoId = vehiculo.id),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // ================================================================
   // VEHÍCULO PRINCIPAL
   // ================================================================
-
-  Widget _buildVehiculoPrincipal(
-    List<VehiculoModel> vehiculos,
-    String principal,
-  ) {
-    final actual = vehiculos
-        .where((v) => v.patente == principal)
-        .cast<VehiculoModel?>()
-        .firstWhere((_) => true, orElse: () => null);
-
-    final detalle = actual == null
-        ? null
-        : [actual.marca, actual.modelo]
-            .where((e) => e != null && e.trim().isNotEmpty)
-            .join(' ');
-
-    return InkWell(
-      onTap: () => _mostrarSelectorPrincipal(vehiculos, principal),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: primaryColor.withOpacity(0.14),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: primaryColor.withOpacity(0.6),
-          ),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.star_rounded,
-              color: Colors.amber,
-              size: 26,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Vehículo principal',
-                    style: TextStyle(
-                      color: textMuted,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    actual == null
-                        ? 'Seleccionar'
-                        : (detalle != null && detalle.isNotEmpty
-                            ? '${actual.patente} · $detalle'
-                            : actual.patente),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: textMain,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_drop_down,
-              color: textMain,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Se elige con la estrella de cada tarjeta de vehículo.
 
   Future<void> _setVehiculoPrincipal(String patente) async {
     try {
@@ -741,67 +355,6 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         ),
       );
     }
-  }
-
-  void _mostrarSelectorPrincipal(
-    List<VehiculoModel> vehiculos,
-    String principal,
-  ) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: surfaceColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'Seleccionar vehículo principal',
-            style: TextStyle(color: textMain),
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: vehiculos.length,
-              itemBuilder: (context, index) {
-                final vehiculo = vehiculos[index];
-                final detalle = [vehiculo.alias, vehiculo.marca, vehiculo.modelo]
-                    .where((e) => e != null && e.trim().isNotEmpty)
-                    .take(2)
-                    .join(' · ');
-
-                return ListTile(
-                  title: Text(
-                    vehiculo.patente,
-                    style: TextStyle(color: textMain),
-                  ),
-                  subtitle: detalle.isEmpty
-                      ? null
-                      : Text(
-                          detalle,
-                          style: TextStyle(color: textMuted),
-                        ),
-                  trailing: vehiculo.patente == principal
-                      ? Icon(Icons.check_circle, color: primaryColor)
-                      : null,
-                  onTap: () {
-                    Navigator.pop(dialogContext);
-                    _setVehiculoPrincipal(vehiculo.patente);
-                  },
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancelar'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   /// Orden de la lista de vehículos:
@@ -900,6 +453,9 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
 class _VehiculoCard extends StatelessWidget {
   final VehiculoModel vehiculo;
   final bool esPrincipal;
+
+  /// Se llama al tocar la estrella: este vehículo pasa a ser el principal.
+  final VoidCallback onMarcarPrincipal;
   final Color surfaceColor;
   final Color surfaceLight;
   final Color textMain;
@@ -910,6 +466,7 @@ class _VehiculoCard extends StatelessWidget {
   const _VehiculoCard({
     required this.vehiculo,
     this.esPrincipal = false,
+    required this.onMarcarPrincipal,
     required this.surfaceColor,
     required this.surfaceLight,
     required this.textMain,
@@ -988,21 +545,24 @@ class _VehiculoCard extends StatelessWidget {
 
         return Material(
           color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(22),
-            child: Container(
+          child: Container(
               decoration: BoxDecoration(
                 color: surfaceColor,
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.transparent,
                 ),
               ),
               clipBehavior: Clip.antiAlias,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Todo lo que está por encima del estado abre el detalle.
+                  InkWell(
+                    onTap: onTap,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                   // -------------------------------------------------
                   // IMAGEN
                   // -------------------------------------------------
@@ -1032,7 +592,7 @@ class _VehiculoCard extends StatelessWidget {
                   // -------------------------------------------------
 
                   Padding(
-                    padding: const EdgeInsets.all(18),
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
                     child: Column(
                       crossAxisAlignment:
                           CrossAxisAlignment.start,
@@ -1129,50 +689,75 @@ class _VehiculoCard extends StatelessWidget {
                           ],
                         ),
 
-                        const SizedBox(height: 17),
+                      ],
+                    ),
+                  ),
+                      ],
+                    ),
+                  ),
 
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 13,
-                            vertical: 11,
-                          ),
-                          decoration: BoxDecoration(
-                            color:
-                                colorEstado.withOpacity(0.10),
-                            borderRadius:
-                                BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: colorEstado,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 9),
-                              Expanded(
-                                child: Text(
-                                  estado,
-                                  style: TextStyle(
+                  // -------------------------------------------------
+                  // ESTADO Y ESTRELLA: separados, y no abren el detalle
+                  // -------------------------------------------------
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 17, 18, 18),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 13,
+                              vertical: 11,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorEstado.withOpacity(0.10),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
                                     color: colorEstado,
-                                    fontSize: 13,
-                                    fontWeight:
-                                        FontWeight.w700,
+                                    shape: BoxShape.circle,
                                   ),
                                 ),
-                              ),
-                              Text(
-                                'Ver detalles',
-                                style: TextStyle(
-                                  color: textMuted,
-                                  fontSize: 12,
+                                const SizedBox(width: 9),
+                                Expanded(
+                                  child: Text(
+                                    estado,
+                                    style: TextStyle(
+                                      color: colorEstado,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                                 ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        // Estrella: dorada si es el vehículo principal; si no,
+                        // vacía. Al tocarla, este pasa a ser el principal.
+                        Tooltip(
+                          message: esPrincipal
+                              ? 'Vehículo principal'
+                              : 'Marcar como vehículo principal',
+                          child: InkResponse(
+                            onTap: esPrincipal ? null : onMarcarPrincipal,
+                            radius: 24,
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(
+                                esPrincipal
+                                    ? Icons.star_rounded
+                                    : Icons.star_border_rounded,
+                                color: esPrincipal ? Colors.amber : textMuted,
+                                size: 30,
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ],
@@ -1181,7 +766,6 @@ class _VehiculoCard extends StatelessWidget {
                 ],
               ),
             ),
-          ),
         );
       },
     );

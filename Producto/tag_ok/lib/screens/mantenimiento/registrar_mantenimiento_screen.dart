@@ -8,6 +8,7 @@ import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
 import '../../features/registro_inteligente/boton_foto_velocimetro.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
+import '../../data/models/tipo_mantencion.dart';
 import '../../utils/titulo_mantencion.dart';
 import '../../utils/validaciones_mantencion.dart';
 import 'selector_tipo_mantencion.dart';
@@ -39,12 +40,12 @@ class RegistrarMantenimientoScreen extends StatefulWidget {
 
 class _RegistrarMantenimientoScreenState
     extends State<RegistrarMantenimientoScreen> {
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color borderColor = Color(0xFF334155);
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color borderColor = Color(0xFFCBD5E1);
 
   final _formKey = GlobalKey<FormState>();
 
@@ -59,6 +60,16 @@ class _RegistrarMantenimientoScreenState
   String? _vehiculoId;
   /// El título lo propuso la IA y el usuario aún no lo toca.
   bool _tipoSugeridoIa = false;
+
+  /// Tipo elegido en el acordeón (solo en el registro manual). "Otros" abre una
+  /// casilla para escribirlo. La IA no lo usa: propone el título libre.
+  String? _tipoElegido;
+  static const String _opcionOtros = 'Otros';
+  static final List<String> _opcionesTipo = [
+    for (final t in TipoMantencion.values)
+      if (t != TipoMantencion.otra) t.etiqueta,
+    _opcionOtros,
+  ];
 
   /// Fecha de emisión del documento. Parte vacía: nunca se inventa ni se
   /// rellena con "hoy"; hay que leerla o elegirla.
@@ -240,6 +251,13 @@ class _RegistrarMantenimientoScreenState
     if (vehiculoId == null) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Selecciona un vehículo.')),
+      );
+      return;
+    }
+
+    if (!_desdeIa && _tipoElegido == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Selecciona el tipo de mantención.')),
       );
       return;
     }
@@ -733,7 +751,7 @@ class _RegistrarMantenimientoScreenState
       decoration: BoxDecoration(
         color: surfaceColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: Colors.transparent),
       ),
       child: Row(
         children: [
@@ -795,9 +813,32 @@ class _RegistrarMantenimientoScreenState
     );
   }
 
+  /// Tipo de mantención. En el registro manual es un acordeón con una lista y
+  /// la opción "Otros", que abre una casilla para escribirlo. Cuando los datos
+  /// vienen de la IA se mantiene el título libre.
+  Widget _campoTipo() {
+    if (_desdeIa) return _campoTipoLibre();
+    return SelectorTipoMantencion(
+      label: 'Tipo de mantención *',
+      hint: 'Seleccionar tipo',
+      icono: Icons.build_outlined,
+      opciones: _opcionesTipo,
+      valor: _tipoElegido,
+      otroController: _tipoController,
+      opcionOtra: _opcionOtros,
+      largoMaximoOtro: largoMaximoTituloMantencion,
+      flotante: true,
+      onChanged: (elegido) => setState(() {
+        _tipoElegido = elegido;
+        // Una opción de la lista es el título; con "Otros" se escribe.
+        _tipoController.text = elegido == _opcionOtros ? '' : elegido;
+      }),
+    );
+  }
+
   /// Título de la mantención en texto libre. Si lo propuso la IA, se avisa y
   /// se resalta hasta que el usuario lo edite (o si venía como dudoso).
-  Widget _campoTipo() {
+  Widget _campoTipoLibre() {
     final dudoso = _dudosos.contains(dudosoTipo);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -873,7 +914,7 @@ class _RegistrarMantenimientoScreenState
             style: const TextStyle(color: textMain, fontSize: 12),
           ),
           backgroundColor: surfaceColor,
-          side: const BorderSide(color: borderColor),
+          side: const BorderSide(color: Colors.transparent),
           onPressed: () => setState(() {
             _kilometrajeController.text = sugerido.toString();
             _dudosos.remove(dudosoKilometraje);

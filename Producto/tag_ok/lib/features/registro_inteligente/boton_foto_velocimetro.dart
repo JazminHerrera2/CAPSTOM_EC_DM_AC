@@ -17,9 +17,9 @@ class BotonFotoVelocimetro extends StatefulWidget {
 }
 
 class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color primaryColor = Color(0xFF4F46E5);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color primaryColor = Color(0xFF1E3A8A);
 
   // La IA está leyendo la foto.
   bool _leyendo = false;

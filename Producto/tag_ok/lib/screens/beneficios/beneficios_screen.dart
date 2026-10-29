@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/beneficio_model.dart';
 import '../../data/services/beneficio_service.dart';
 import '../dashboard/dashboard_logica.dart';
+import '../dashboard/encabezado_tag_ok.dart';
 import 'detalle_beneficio_screen.dart';
 import 'imagen_beneficio.dart';
 
@@ -16,11 +17,11 @@ class BeneficiosScreen extends StatefulWidget {
 }
 
 class _BeneficiosScreenState extends State<BeneficiosScreen> {
-  static const Color _bgColor = Color(0xFF0F172A);
-  static const Color _surfaceColor = Color(0xFF1E293B);
-  static const Color _textMain = Color(0xFFF8FAFC);
-  static const Color _textMuted = Color(0xFF94A3B8);
-  static const Color _primaryColor = Color(0xFF4F46E5);
+  static const Color _bgColor = Color(0xFFF1F5F9);
+  static const Color _surfaceColor = Color(0xFFFFFFFF);
+  static const Color _textMain = Color(0xFF0F172A);
+  static const Color _textMuted = Color(0xFF64748B);
+  static const Color _primaryColor = Color(0xFF1E3A8A);
 
   final Stream<List<BeneficioModel>> _stream = BeneficioService().streamTodos();
   final TextEditingController _ubicacion = TextEditingController();
@@ -44,64 +45,88 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bgColor,
-      appBar: AppBar(
-        backgroundColor: _bgColor,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: _textMain),
-        title: const Text('Beneficios', style: TextStyle(color: _textMain)),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: Column(
-              children: [
-                _filtros(),
-                Expanded(
-                  child: StreamBuilder<List<BeneficioModel>>(
-                    stream: _stream,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return _mensaje(
+      body: Column(
+        children: [
+          // Lo único fijo es el encabezado (logo, notificaciones y perfil). Los
+          // filtros y los beneficios se desplazan juntos.
+          const EncabezadoTagOk(),
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: StreamBuilder<List<BeneficioModel>>(
+                  stream: _stream,
+                  builder: (context, snapshot) {
+                    final List<Widget> cuerpo;
+                    if (snapshot.hasError) {
+                      cuerpo = [
+                        _mensajeEnLista(
                           Icons.cloud_off_outlined,
                           'No se pudieron cargar los beneficios. Inténtalo más tarde.',
-                        );
-                      }
-                      if (!snapshot.hasData) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+                        ),
+                      ];
+                    } else if (!snapshot.hasData) {
+                      cuerpo = const [
+                        Padding(
+                          padding: EdgeInsets.only(top: 60),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ];
+                    } else {
                       final lista = catalogoParaConductor(
                         snapshot.data!,
                         filtro: _filtro,
                       );
-                      if (lista.isEmpty) {
-                        return _mensaje(
-                          Icons.card_giftcard_outlined,
-                          'No hay beneficios disponibles con estos filtros.',
-                        );
-                      }
-                      return ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                        itemCount: lista.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) => TarjetaBeneficio(
-                          beneficio: lista[i],
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  DetalleBeneficioScreen(beneficio: lista[i]),
+                      cuerpo = lista.isEmpty
+                          ? [
+                              _mensajeEnLista(
+                                Icons.card_giftcard_outlined,
+                                'No hay beneficios disponibles con estos filtros.',
+                              ),
+                            ]
+                          : [
+                              for (final b in lista)
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                                  child: TarjetaBeneficio(
+                                    beneficio: b,
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            DetalleBeneficioScreen(beneficio: b),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ];
+                    }
+                    return ListView(
+                      // El botón del mapa sobresale un poco de la barra.
+                      padding: const EdgeInsets.only(top: 8, bottom: 36),
+                      children: [
+                        // Título de la página: se desplaza con el contenido.
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(16, 6, 16, 4),
+                          child: Text(
+                            'Beneficios',
+                            style: TextStyle(
+                              color: _textMain,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
+                        _filtros(),
+                        ...cuerpo,
+                      ],
+                    );
+                  },
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -185,6 +210,11 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
     );
   }
 
+  /// Mensaje dentro de la lista desplazable (con un alto propio).
+  Widget _mensajeEnLista(IconData icono, String texto) {
+    return SizedBox(height: 260, child: _mensaje(icono, texto));
+  }
+
   Widget _mensaje(IconData icono, String texto) {
     return Center(
       child: Padding(
@@ -218,7 +248,7 @@ class TarjetaBeneficio extends StatelessWidget {
     final b = beneficio;
     final fin = b.fechaFin;
     return Material(
-      color: const Color(0xFF1E293B),
+      color: const Color(0xFFFFFFFF),
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -227,7 +257,7 @@ class TarjetaBeneficio extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.white10),
+            border: Border.all(color: Colors.transparent),
           ),
           child: Row(
             children: [
@@ -254,7 +284,7 @@ class TarjetaBeneficio extends StatelessWidget {
                           child: Text(
                             b.etiquetaCategoria,
                             style: const TextStyle(
-                              color: Color(0xFF94A3B8),
+                              color: Color(0xFF64748B),
                               fontSize: 11,
                             ),
                           ),
@@ -267,7 +297,7 @@ class TarjetaBeneficio extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFFF8FAFC),
+                        color: Color(0xFF0F172A),
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
@@ -277,7 +307,7 @@ class TarjetaBeneficio extends StatelessWidget {
                         b.empresa!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                       ),
                     if (fin != null)
                       Padding(
@@ -285,7 +315,7 @@ class TarjetaBeneficio extends StatelessWidget {
                         child: Text(
                           'Hasta ${formatearFecha(fin)}',
                           style: const TextStyle(
-                            color: Color(0xFF94A3B8),
+                            color: Color(0xFF64748B),
                             fontSize: 11,
                           ),
                         ),
@@ -293,7 +323,7 @@ class TarjetaBeneficio extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: Color(0xFF94A3B8)),
+              const Icon(Icons.chevron_right, color: Color(0xFF64748B)),
             ],
           ),
         ),

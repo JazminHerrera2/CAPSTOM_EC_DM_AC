@@ -42,7 +42,7 @@ class CampanaNotificaciones extends StatelessWidget {
             label: Text(sinLeer > 9 ? '9+' : '$sinLeer'),
             child: const Icon(
               Icons.notifications_outlined,
-              color: Color(0xFFF8FAFC),
+              color: Color(0xFF0F172A),
               size: 28,
             ),
           ),
@@ -57,11 +57,11 @@ class CampanaNotificaciones extends StatelessWidget {
 class NotificacionesScreen extends StatelessWidget {
   const NotificacionesScreen({super.key});
 
-  static const Color _bgColor = Color(0xFF0F172A);
-  static const Color _surfaceColor = Color(0xFF1E293B);
-  static const Color _textMain = Color(0xFFF8FAFC);
-  static const Color _textMuted = Color(0xFF94A3B8);
-  static const Color _primaryColor = Color(0xFF4F46E5);
+  static const Color _bgColor = Color(0xFFF1F5F9);
+  static const Color _surfaceColor = Color(0xFFFFFFFF);
+  static const Color _textMain = Color(0xFF0F172A);
+  static const Color _textMuted = Color(0xFF64748B);
+  static const Color _primaryColor = Color(0xFF1E3A8A);
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +269,7 @@ class _TarjetaAviso extends StatelessWidget {
           style: const TextStyle(color: NotificacionesScreen._textMuted),
         ),
         trailing: noLeida
-            ? const Icon(Icons.circle, size: 10, color: Color(0xFF4F46E5))
+            ? const Icon(Icons.circle, size: 10, color: Color(0xFF1E3A8A))
             : null,
       ),
     );

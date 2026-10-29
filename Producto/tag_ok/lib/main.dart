@@ -50,29 +50,29 @@ class InitErrorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'TagOk',
       home: Scaffold(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: const Color(0xFFF1F5F9),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: Color(0xFFF8FAFC), size: 48),
+                const Icon(Icons.error_outline, color: Color(0xFF0F172A), size: 48),
                 const SizedBox(height: 16),
                 const Text(
                   'No se pudo iniciar TAG OK',
-                  style: TextStyle(color: Color(0xFFF8FAFC), fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   error,
-                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F46E5)),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E3A8A)),
                   onPressed: reloadApp,
                   child: const Text('Reintentar'),
                 ),
@@ -102,6 +102,14 @@ class MyApp extends StatelessWidget {
       ],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: ThemeData(
+        // Las tarjetas no cambian de color al pasar el mouse ni al presionarlas:
+        // sin gris de hover, sin resaltado y sin ondas. Lo toman por defecto
+        // todos los InkWell de la app.
+        splashFactory: NoSplash.splashFactory,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        focusColor: Colors.transparent,
         // Avisos flotantes: Flutter los coloca encima del botón central del
         // mapa. Los fijos (por defecto) quedan al fondo y ese botón los tapa.
         snackBarTheme: SnackBarThemeData(

@@ -18,11 +18,17 @@ class FotoVehiculo extends StatefulWidget {
   /// dentro del marco (sin recortarse).
   final EdgeInsets paddingPredeterminado;
 
+  /// Cómo se ajusta la imagen al marco, tanto la foto del usuario como el
+  /// dibujo predeterminado. `contain` (por defecto) la muestra entera; `cover`
+  /// llena el marco y recorta lo que sobre.
+  final BoxFit fit;
+
   const FotoVehiculo({
     super.key,
     required this.fotoPath,
     required this.assetPredeterminado,
     this.paddingPredeterminado = EdgeInsets.zero,
+    this.fit = BoxFit.contain,
   });
 
   @override
@@ -62,11 +68,11 @@ class _FotoVehiculoState extends State<FotoVehiculo> {
       padding: widget.paddingPredeterminado,
       child: Image.asset(
         widget.assetPredeterminado,
-        fit: BoxFit.contain,
+        fit: widget.fit,
         errorBuilder: (context, error, stackTrace) {
           return const Icon(
             Icons.directions_car_outlined,
-            color: Color(0xFF4F46E5),
+            color: Color(0xFF1E3A8A),
             size: 70,
           );
         },
@@ -91,9 +97,9 @@ class _FotoVehiculoState extends State<FotoVehiculo> {
             imageUrl: url,
             // La URL firmada cambia en cada petición: se cachea por ruta.
             cacheKey: widget.fotoPath!.trim(),
-            // contain: la foto se ve entera y se achica según el espacio,
-            // igual que la imagen predeterminada.
-            fit: BoxFit.contain,
+            // Por defecto contain: la foto se ve entera y se achica según el
+            // espacio, igual que la imagen predeterminada.
+            fit: widget.fit,
             width: double.infinity,
             height: double.infinity,
             placeholder: (_, _) => _predeterminada(),

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 /// bastante la lectura de la IA. Devuelve `true` si el usuario quiere seguir
 /// y tomar la foto, `false` si cancela.
 Future<bool> mostrarConsejosCaptura(BuildContext context) async {
-  const textMain = Color(0xFFF8FAFC);
-  const textMuted = Color(0xFF94A3B8);
-  const primaryColor = Color(0xFF4F46E5);
+  const textMain = Color(0xFF0F172A);
+  const textMuted = Color(0xFF64748B);
+  const primaryColor = Color(0xFF1E3A8A);
 
   Widget consejo(IconData icono, String texto) => Padding(
         padding: const EdgeInsets.only(top: 10),
@@ -28,7 +28,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
   final seguir = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: const Color(0xFFFFFFFF),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Row(
         children: [

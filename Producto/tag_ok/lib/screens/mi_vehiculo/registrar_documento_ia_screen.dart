@@ -80,12 +80,12 @@ TipoDocumentoVehicular _aTipoDocumentoVehicular(
 
 class _RegistrarDocumentoIaScreenState
     extends State<RegistrarDocumentoIaScreen> {
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color surfaceLight = Color(0xFF27364D);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color primaryColor = Color(0xFF4F46E5);
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color surfaceLight = Color(0xFFE2E8F0);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final SmartCaptureController _controller =
       SmartCaptureController();
@@ -546,7 +546,7 @@ class _RegistrarDocumentoIaScreenState
           border: Border.all(
             color: principal
                 ? primaryColor.withOpacity(0.65)
-                : const Color(0xFF334155),
+                : Colors.transparent,
           ),
         ),
         child: Row(
@@ -620,7 +620,7 @@ class _RegistrarDocumentoIaScreenState
         borderRadius:
             BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF334155),
+          color: Colors.transparent,
         ),
       ),
       child: Text(
@@ -689,7 +689,7 @@ class _RegistrarDocumentoIaScreenState
             borderRadius:
                 BorderRadius.circular(20),
             border: Border.all(
-              color: const Color(0xFF334155),
+              color: Colors.transparent,
             ),
           ),
           child: Column(
@@ -756,6 +756,20 @@ class _RegistrarDocumentoIaScreenState
           onTap: _elegirArchivo,
         ),
 
+        const SizedBox(height: 12),
+
+        // Debajo de los otros botones, como una opción más.
+        _opcion(
+          icono: Icons.edit_note_outlined,
+          titulo: 'Ingresar datos manualmente',
+          descripcion: 'Completa los datos tú mismo, sin usar la IA.',
+          onTap: () => _abrirRevision(
+            resultado: null,
+            bytesOriginal: Uint8List(0),
+            mimeType: 'application/octet-stream',
+          ),
+        ),
+
         const SizedBox(height: 26),
 
         const Text(
@@ -784,72 +798,6 @@ class _RegistrarDocumentoIaScreenState
           ],
         ),
 
-        const SizedBox(height: 30),
-
-        Row(
-          children: [
-            const Expanded(
-              child: Divider(
-                color: Color(0xFF334155),
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(
-                horizontal: 12,
-              ),
-              child: Text(
-                'o',
-                style: TextStyle(
-                  color:
-                      textMuted.withOpacity(0.8),
-                  fontSize: 12,
-                ),
-              ),
-            ),
-            const Expanded(
-              child: Divider(
-                color: Color(0xFF334155),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 20),
-
-        SizedBox(
-          width: double.infinity,
-          height: 54,
-          child: OutlinedButton.icon(
-            onPressed: () => _abrirRevision(
-              resultado: null,
-              bytesOriginal: Uint8List(0),
-              mimeType: 'application/octet-stream',
-            ),
-            icon: const Icon(
-              Icons.edit_note_outlined,
-              color: textMain,
-              size: 22,
-            ),
-            label: const Text(
-              'Ingresar datos manualmente',
-              style: TextStyle(
-                color: textMain,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              backgroundColor: surfaceColor,
-              side: const BorderSide(
-                color: Color(0xFF475569),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -927,7 +875,7 @@ class _RegistrarDocumentoIaScreenState
                     BorderRadius.circular(14),
                 border: Border.all(
                   color:
-                      const Color(0xFF334155),
+                      Colors.transparent,
                 ),
               ),
               child: const Row(

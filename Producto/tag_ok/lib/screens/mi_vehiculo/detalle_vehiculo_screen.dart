@@ -5,17 +5,9 @@ import 'package:flutter/material.dart';
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/vehiculo_service.dart';
+import 'documentos_vehiculo_seccion.dart';
 import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
-
-/// Resultado con el que el detalle de un vehículo se cierra cuando el usuario
-/// pide ver sus documentos: Mi Vehículo abre su pestaña Documentos filtrada
-/// por ese vehículo.
-class VerDocumentosDe {
-  final String vehiculoId;
-
-  const VerDocumentosDe(this.vehiculoId);
-}
 
 /// Detalle de un vehículo. Escucha el documento en Firestore para reflejar al
 /// instante los cambios (por ejemplo, el kilometraje tras editarlo); mientras
@@ -54,12 +46,11 @@ class _DetalleVehiculoVista extends StatelessWidget {
     required this.vehiculo,
   });
 
-  static const Color _bgColor = Color(0xFF0F172A);
-  static const Color _surfaceColor = Color(0xFF1E293B);
-  static const Color _surfaceLight = Color(0xFF27364D);
-  static const Color _textMain = Color(0xFFF8FAFC);
-  static const Color _textMuted = Color(0xFF94A3B8);
-  static const Color _primaryColor = Color(0xFF4F46E5);
+  static const Color _bgColor = Color(0xFFF1F5F9);
+  static const Color _surfaceColor = Color(0xFFFFFFFF);
+  static const Color _surfaceLight = Color(0xFFE2E8F0);
+  static const Color _textMain = Color(0xFF0F172A);
+  static const Color _textMuted = Color(0xFF64748B);
 
   // ------------------------------------------------------------
   // IMAGEN SEGÚN TIPO DE VEHÍCULO
@@ -161,7 +152,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
           color: _textMain,
         ),
         title: const Text(
-          'Información del vehículo',
+          'Detalle de vehículo',
           style: TextStyle(
             color: _textMain,
             fontSize: 20,
@@ -245,7 +236,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                   color: _surfaceColor,
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(
-                    color: const Color(0xFF334155),
+                    color: Colors.transparent,
                   ),
                 ),
                 child: Column(
@@ -255,7 +246,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                       height: 220,
                       clipBehavior: Clip.antiAlias,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF172033),
+                        color: Color(0xFFFFFFFF),
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(22),
                         ),
@@ -272,14 +263,32 @@ class _DetalleVehiculoVista extends StatelessWidget {
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          Text(
-                            nombrePrincipal,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: _textMain,
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  nombrePrincipal,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: _textMain,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              IconButton(
+                                tooltip: 'Información del vehículo',
+                                visualDensity: VisualDensity.compact,
+                                onPressed: () => _mostrarInformacion(context),
+                                icon: const Icon(
+                                  Icons.info_outline,
+                                  color: _textMuted,
+                                  size: 24,
+                                ),
+                              ),
+                            ],
                           ),
 
                           if (marcaModelo.isNotEmpty &&
@@ -338,51 +347,6 @@ class _DetalleVehiculoVista extends StatelessWidget {
                             ),
                           ),
 
-                          const SizedBox(height: 14),
-
-                          SizedBox(
-                            width: double.infinity,
-                            child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                              spacing: 8,
-                              children: [
-                              _chip(
-                                Icons.badge_outlined,
-                                'Patente: ${vehiculo.patente}',
-                              ),
-                              _chip(
-                                Icons.directions_car_outlined,
-                                'Tipo: ${_nombreTipo()}',
-                              ),
-                              if (_tieneValor(vehiculo.marca))
-                                _chip(
-                                  Icons.directions_car_filled_outlined,
-                                  'Marca: ${vehiculo.marca}',
-                                ),
-                              if (_tieneValor(vehiculo.modelo))
-                                _chip(
-                                  Icons.car_repair_outlined,
-                                  'Modelo: ${vehiculo.modelo}',
-                                ),
-                              if (vehiculo.anio != null)
-                                _chip(
-                                  Icons.calendar_today_outlined,
-                                  'Año: ${vehiculo.anio}',
-                                ),
-                              if (_tieneValor(vehiculo.tipoCombustible))
-                                _chip(
-                                  Icons.local_gas_station_outlined,
-                                  'Combustible: ${vehiculo.tipoCombustible}',
-                                ),
-                              if (vehiculo.kilometrajeActual != null)
-                                _chip(
-                                  Icons.speed_outlined,
-                                  'Kilometraje: ${_conMiles(vehiculo.kilometrajeActual!)} km',
-                                ),
-                            ],
-                          ),
-                          ),
                         ],
                       ),
                     ),
@@ -407,97 +371,15 @@ class _DetalleVehiculoVista extends StatelessWidget {
 
               const SizedBox(height: 14),
 
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: _surfaceColor,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: const Color(0xFF334155),
-                  ),
-                ),
-                child: documentos.isEmpty
-                    ? const Row(
-                        children: [
-                          Icon(
-                            Icons.description_outlined,
-                            color: _textMuted,
-                            size: 22,
-                          ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Aún no hay documentos registrados',
-                              style: TextStyle(
-                                color: _textMuted,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                        spacing: 12,
-                        children: [
-                          for (final documento in documentos)
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.description_outlined,
-                                  color: _primaryColor,
-                                  size: 22,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    documento
-                                        .tipoDocumento.etiqueta,
-                                    style: const TextStyle(
-                                      color: _textMain,
-                                      fontSize: 15,
-                                      fontWeight:
-                                          FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
-              ),
-
-              const SizedBox(height: 14),
-
-              SizedBox(
-                height: 50,
-                child: OutlinedButton.icon(
-                  // Vuelve a Mi Vehículo y le pide abrir la pestaña Documentos
-                  // filtrada por este vehículo.
-                  onPressed: () {
-                    Navigator.pop(
-                      context,
-                      VerDocumentosDe(vehiculo.id),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.description_outlined,
-                  ),
-                  label: const Text(
-                    'Ver más detalles',
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _textMain,
-                    side: const BorderSide(
-                      color: Color(0xFF475569),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
+              // Mismas tarjetas que la pantalla Documentos: nombre, estado,
+              // vencimiento y "Actualizar". Al tocar una se abre su detalle.
+              DocumentosVehiculoSeccion(
+                vehiculoId: vehiculo.id,
+                patenteVehiculo: vehiculo.patente,
+                documentos: documentos,
+                mostrarTitulo: false,
+                mostrarVehiculo: false,
+                mostrarBotonAgregar: true,
               ),
 
               const SizedBox(height: 28),
@@ -633,40 +515,139 @@ class _DetalleVehiculoVista extends StatelessWidget {
       valor != null && valor.trim().isNotEmpty;
 
   // ------------------------------------------------------------
-  // CHIP
+  // INFORMACIÓN ADICIONAL
   // ------------------------------------------------------------
 
-  Widget _chip(
-    IconData icono,
-    String texto,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 13,
-        vertical: 9,
+  /// Ventana emergente con los datos del vehículo: patente, tipo, marca, modelo,
+  /// año, combustible y kilometraje (solo los que existen).
+  void _mostrarInformacion(BuildContext context) {
+    final filas = <Widget>[
+      _filaInformacion(
+        Icons.badge_outlined,
+        'Patente',
+        vehiculo.patente,
       ),
+      _filaInformacion(
+        Icons.directions_car_outlined,
+        'Tipo',
+        _nombreTipo(),
+      ),
+      if (_tieneValor(vehiculo.marca))
+        _filaInformacion(
+          Icons.directions_car_filled_outlined,
+          'Marca',
+          vehiculo.marca!,
+        ),
+      if (_tieneValor(vehiculo.modelo))
+        _filaInformacion(
+          Icons.car_repair_outlined,
+          'Modelo',
+          vehiculo.modelo!,
+        ),
+      if (vehiculo.anio != null)
+        _filaInformacion(
+          Icons.calendar_today_outlined,
+          'Año',
+          '${vehiculo.anio}',
+        ),
+      if (_tieneValor(vehiculo.tipoCombustible))
+        _filaInformacion(
+          Icons.local_gas_station_outlined,
+          'Combustible',
+          vehiculo.tipoCombustible!,
+        ),
+      if (vehiculo.kilometrajeActual != null)
+        _filaInformacion(
+          Icons.speed_outlined,
+          'Kilometraje',
+          '${_conMiles(vehiculo.kilometrajeActual!)} km',
+        ),
+    ];
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: _surfaceColor,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: _textMuted),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'Información del vehículo',
+                          style: TextStyle(
+                            color: _textMain,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Cerrar',
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () => Navigator.pop(dialogContext),
+                        icon: const Icon(Icons.close, color: _textMuted),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  ...filas,
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('Cerrar'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _filaInformacion(IconData icono, String etiqueta, String valor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: _surfaceLight,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFF334155),
-        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.transparent),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icono,
-            color: _textMuted,
-            size: 18,
-          ),
-          const SizedBox(width: 6),
+          Icon(icono, color: _textMuted, size: 20),
+          const SizedBox(width: 12),
           Text(
-            texto,
-            style: const TextStyle(
-              color: _textMain,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+            etiqueta,
+            style: const TextStyle(color: _textMuted, fontSize: 13),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              valor,
+              textAlign: TextAlign.end,
+              style: const TextStyle(
+                color: _textMain,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

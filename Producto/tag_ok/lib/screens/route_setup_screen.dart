@@ -16,13 +16,13 @@ class RouteSetupScreen extends StatefulWidget {
 
 class _RouteSetupScreenState extends State<RouteSetupScreen> {
   // Colores del tema dark
-  final Color bgColor = const Color(0xFF0F172A);
-  final Color primaryColor = const Color(0xFF4F46E5);
-  final Color textMain = const Color(0xFFF8FAFC);
-  final Color textMuted = const Color(0xFF94A3B8);
-  final Color inputBg = const Color(0x990F172A);
-  final Color surfaceBorder = const Color(0x1AFFFFFF);
-  final Color navBgColor = const Color(0xFF1E293B);
+  final Color bgColor = const Color(0xFFF1F5F9);
+  final Color primaryColor = const Color(0xFF1E3A8A);
+  final Color textMain = const Color(0xFF0F172A);
+  final Color textMuted = const Color(0xFF64748B);
+  final Color inputBg = const Color(0xFFFFFFFF);
+  final Color surfaceBorder = const Color(0xFFCBD5E1);
+  final Color navBgColor = const Color(0xFFFFFFFF);
 
   Map<String, dynamic>? _selectedVehicleMap;
   bool _isLoading = false;
@@ -82,12 +82,12 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
               children: [
                 const Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Text('Seleccionar Vehículo', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: Text('Seleccionar Vehículo', style: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
                 if (vehicles.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(16.0),
-                    child: Text('No tienes vehículos registrados.', style: TextStyle(color: Colors.white70)),
+                    child: Text('No tienes vehículos registrados.', style: TextStyle(color: Color(0xFF64748B))),
                   )
                 else
                   Flexible(
@@ -97,8 +97,8 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                       itemBuilder: (context, index) {
                         final v = vehicles[index];
                         return ListTile(
-                          leading: const Icon(Icons.directions_car, color: Colors.white70),
-                          title: Text(v['patente'] ?? '', style: const TextStyle(color: Colors.white)),
+                          leading: const Icon(Icons.directions_car, color: Color(0xFF64748B)),
+                          title: Text(v['patente'] ?? '', style: const TextStyle(color: Color(0xFF0F172A))),
                           subtitle: Text(v['marca'] ?? '', style: TextStyle(color: textMuted)),
                           onTap: () {
                             setState(() {
@@ -196,7 +196,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                   decoration: BoxDecoration(
                     color: inputBg,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: surfaceBorder),
+                    border: Border.all(color: Colors.transparent),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   child: Row(
@@ -230,7 +230,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF4F46E5), Color(0xFF818CF8)],
+                    colors: [Color(0xFF1E3A8A), Color(0xFF2F5BBA)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -359,7 +359,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
           decoration: BoxDecoration(
             color: inputBg,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: surfaceBorder),
+            border: Border.all(color: Colors.transparent),
           ),
           child: TextField(
             controller: textEditingController,
@@ -402,7 +402,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 itemBuilder: (BuildContext context, int index) {
                   final PlaceSuggestion option = options.elementAt(index);
                   return ListTile(
-                    leading: const Icon(Icons.location_city, color: Colors.white54),
+                    leading: const Icon(Icons.location_city, color: Color(0xFF64748B)),
                     title: Text(
                       option.address,
                       style: TextStyle(color: textMain, fontSize: 14),

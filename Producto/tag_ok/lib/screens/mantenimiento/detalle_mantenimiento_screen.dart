@@ -1,17 +1,55 @@
 import 'package:flutter/material.dart';
 
-class DetalleMantenimientoScreen extends StatelessWidget {
-  const DetalleMantenimientoScreen({super.key});
+import '../../data/models/componente_mantencion_model.dart';
+import '../../data/models/mantencion_model.dart';
+import 'tarjeta_mantencion.dart';
 
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color borderColor = Color(0xFF334155);
+/// Detalle de una mantención: todos los datos que se guardaron al registrarla
+/// o programarla. Se abre al tocar una tarjeta del historial o de las próximas.
+class DetalleMantenimientoScreen extends StatelessWidget {
+  final MantencionModel mantencion;
+
+  const DetalleMantenimientoScreen({super.key, required this.mantencion});
+
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+
+  bool get _programada => mantencion.estado == EstadoMantencion.programada;
+
+  /// Nombre legible de un componente revisado (los ids vienen de la lista).
+  String _nombreComponente(String id) {
+    for (final c in componentesPorDefecto) {
+      if (c.id == id) return c.nombre;
+    }
+    final texto = id.replaceAll('_', ' ').trim();
+    return texto.isEmpty ? id : texto[0].toUpperCase() + texto.substring(1);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final m = mantencion;
+    final filas = <(IconData, String, String)>[
+      if (m.fecha != null)
+        (Icons.event_outlined, 'Fecha', formatoFecha(m.fecha!)),
+      if (m.kilometraje != null)
+        (Icons.speed_outlined, 'Kilometraje', '${formatoMiles(m.kilometraje!)} km'),
+      if ((m.taller ?? '').trim().isNotEmpty)
+        (Icons.storefront_outlined, 'Taller', m.taller!.trim()),
+      if (m.costo != null)
+        (Icons.payments_outlined, 'Costo', '\$${formatoMiles(m.costo!)}'),
+      if (m.proximaFecha != null)
+        (Icons.event_repeat_outlined, 'Próxima fecha', formatoFecha(m.proximaFecha!)),
+      if (m.proximoKilometraje != null)
+        (
+          Icons.flag_outlined,
+          'Próximo kilometraje',
+          '${formatoMiles(m.proximoKilometraje!)} km'
+        ),
+    ];
+
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
@@ -20,196 +58,121 @@ class DetalleMantenimientoScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: textMain),
         title: const Text(
           'Detalle de mantención',
-          style: TextStyle(
-            color: textMain,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(color: textMain, fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-          children: [
-            _cabecera(),
-
-            const SizedBox(height: 24),
-
-            _tituloSeccion('Información general'),
-
-            const SizedBox(height: 10),
-
-            _contenedorInformacion(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
               children: [
-                _filaInformacion(
-                  icon: Icons.build_outlined,
-                  titulo: 'Tipo de mantención',
-                ),
-                _separador(),
-                _filaInformacion(
-                  icon: Icons.directions_car_outlined,
-                  titulo: 'Vehículo',
-                ),
-                _separador(),
-                _filaInformacion(
-                  icon: Icons.calendar_today_outlined,
-                  titulo: 'Fecha',
-                ),
-                _separador(),
-                _filaInformacion(
-                  icon: Icons.speed_outlined,
-                  titulo: 'Kilometraje',
-                ),
-              ],
-            ),
+                _cabecera(),
 
-            const SizedBox(height: 22),
-
-            _tituloSeccion('Servicio'),
-
-            const SizedBox(height: 10),
-
-            _contenedorInformacion(
-              children: [
-                _filaInformacion(
-                  icon: Icons.storefront_outlined,
-                  titulo: 'Taller',
-                ),
-                _separador(),
-                _filaInformacion(
-                  icon: Icons.attach_money_rounded,
-                  titulo: 'Costo',
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 22),
-
-            _tituloSeccion('Detalles'),
-
-            const SizedBox(height: 10),
-
-            _campoDetalle(
-              icon: Icons.description_outlined,
-              titulo: 'Descripción',
-              textoVacio: 'Sin descripción registrada',
-            ),
-
-            const SizedBox(height: 10),
-
-            _campoDetalle(
-              icon: Icons.notes_rounded,
-              titulo: 'Observaciones',
-              textoVacio: 'Sin observaciones registradas',
-            ),
-
-            const SizedBox(height: 22),
-
-            _tituloSeccion('Comprobante'),
-
-            const SizedBox(height: 10),
-
-            _comprobanteVacio(),
-
-            const SizedBox(height: 26),
-
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    // Solo diseño.
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.edit_outlined,
-                      size: 19,
-                    ),
-                    label: const Text('Editar'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: textMain,
-                      minimumSize: const Size(0, 50),
-                      side: const BorderSide(
-                        color: borderColor,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                if (filas.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  _titulo('Información general'),
+                  const SizedBox(height: 10),
+                  _tarjeta(
+                    Column(
+                      children: [
+                        for (var i = 0; i < filas.length; i++) ...[
+                          if (i > 0) const Divider(height: 18, color: bgColor),
+                          _fila(filas[i].$1, filas[i].$2, filas[i].$3),
+                        ],
+                      ],
                     ),
                   ),
-                ),
+                ],
 
-                const SizedBox(width: 12),
+                if ((m.descripcion ?? '').trim().isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  _titulo('Descripción'),
+                  const SizedBox(height: 10),
+                  _tarjeta(_texto(m.descripcion!.trim())),
+                ],
 
-                Expanded(
-                  child: OutlinedButton.icon(
-                    // Solo diseño.
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.delete_outline_rounded,
-                      size: 19,
-                    ),
-                    label: const Text('Eliminar'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFF87171),
-                      minimumSize: const Size(0, 50),
-                      side: BorderSide(
-                        color:
-                            const Color(0xFFF87171).withOpacity(0.45),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                if ((m.observaciones ?? '').trim().isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  _titulo('Observaciones'),
+                  const SizedBox(height: 10),
+                  _tarjeta(_texto(m.observaciones!.trim())),
+                ],
+
+                if (!_programada) ...[
+                  const SizedBox(height: 22),
+                  _titulo('Comprobante'),
+                  const SizedBox(height: 10),
+                  _tarjeta(
+                    _fila(
+                      Icons.receipt_long_outlined,
+                      'Documento',
+                      m.referenciaComprobante ?? 'Sin comprobante',
                     ),
                   ),
-                ),
+                ],
+
+                if (m.componentes.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  _titulo('Componentes revisados'),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final id in m.componentes) _chip(_nombreComponente(id)),
+                    ],
+                  ),
+                ],
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  // ================================================================
-  // CABECERA
-  // ================================================================
-
   Widget _cabecera() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: primaryColor.withOpacity(0.25),
-        ),
-      ),
-      child: const Row(
+    final m = mantencion;
+    final color = _programada ? const Color(0xFFF59E0B) : primaryColor;
+    return _tarjeta(
+      Row(
         children: [
-          _IconBox(
-            icon: Icons.car_repair_outlined,
-            color: primaryColor,
+          // Solo el ícono, en azul y sin recuadro de color de fondo.
+          SizedBox(
+            width: 50,
+            height: 50,
+            child: Icon(
+              _programada
+                  ? Icons.event_available_outlined
+                  : Icons.build_circle_outlined,
+              color: primaryColor,
+              size: 32,
+            ),
           ),
-          SizedBox(width: 14),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Mantención registrada',
-                  style: TextStyle(
+                  m.nombreTipo,
+                  style: const TextStyle(
                     color: textMain,
-                    fontSize: 16,
+                    fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Consulta toda la información asociada a esta mantención.',
-                  style: TextStyle(
-                    color: textMuted,
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _etiqueta(_programada ? 'Programada' : 'Realizada', color),
+                    if (m.origenRegistro == 'ia')
+                      _etiqueta('Registrada con IA', textMuted),
+                  ],
                 ),
               ],
             ),
@@ -219,13 +182,23 @@ class DetalleMantenimientoScreen extends StatelessWidget {
     );
   }
 
-  // ================================================================
-  // TÍTULO
-  // ================================================================
+  Widget _etiqueta(String texto, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        texto,
+        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
 
-  Widget _tituloSeccion(String titulo) {
+  Widget _titulo(String texto) {
     return Text(
-      titulo,
+      texto,
       style: const TextStyle(
         color: textMain,
         fontSize: 15,
@@ -234,234 +207,62 @@ class DetalleMantenimientoScreen extends StatelessWidget {
     );
   }
 
-  // ================================================================
-  // CONTENEDOR DE INFORMACIÓN
-  // ================================================================
-
-  Widget _contenedorInformacion({
-    required List<Widget> children,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-        ),
-      ),
-      child: Column(
-        children: children,
-      ),
-    );
-  }
-
-  Widget _filaInformacion({
-    required IconData icon,
-    required String titulo,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.10),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(
-              icon,
-              color: const Color(0xFFA5B4FC),
-              size: 19,
-            ),
-          ),
-
-          const SizedBox(width: 13),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    color: textMuted,
-                    fontSize: 11,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                const Text(
-                  '—',
-                  style: TextStyle(
-                    color: textMain,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _separador() {
-    return Divider(
-      height: 1,
-      thickness: 1,
-      color: Colors.white.withOpacity(0.05),
-    );
-  }
-
-  // ================================================================
-  // DESCRIPCIÓN / OBSERVACIONES
-  // ================================================================
-
-  Widget _campoDetalle({
-    required IconData icon,
-    required String titulo,
-    required String textoVacio,
-  }) {
+  Widget _tarjeta(Widget hijo) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-        ),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            icon,
-            color: textMuted,
-            size: 21,
-          ),
-
-          const SizedBox(width: 13),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    color: textMain,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  textoVacio,
-                  style: const TextStyle(
-                    color: textMuted,
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      child: hijo,
     );
   }
 
-  // ================================================================
-  // COMPROBANTE
-  // ================================================================
+  Widget _fila(IconData icono, String etiqueta, String valor) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icono, color: primaryColor, size: 19),
+        const SizedBox(width: 10),
+        Text(etiqueta, style: const TextStyle(color: textMuted, fontSize: 13)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            valor,
+            textAlign: TextAlign.end,
+            style: const TextStyle(
+              color: textMain,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-  Widget _comprobanteVacio() {
+  Widget _texto(String texto) {
+    return Text(
+      texto,
+      style: const TextStyle(color: textMain, fontSize: 14, height: 1.5),
+    );
+  }
+
+  Widget _chip(String texto) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        texto,
+        style: const TextStyle(
+          color: textMain,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
-      ),
-      child: const Row(
-        children: [
-          _IconBox(
-            icon: Icons.receipt_long_outlined,
-            color: Color(0xFF64748B),
-          ),
-
-          SizedBox(width: 14),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Sin comprobante asociado',
-                  style: TextStyle(
-                    color: textMain,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Esta mantención no tiene un documento adjunto.',
-                  style: TextStyle(
-                    color: textMuted,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ==================================================================
-// ICONO
-// ==================================================================
-
-class _IconBox extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-
-  const _IconBox({
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: Icon(
-        icon,
-        color: color,
-        size: 23,
       ),
     );
   }

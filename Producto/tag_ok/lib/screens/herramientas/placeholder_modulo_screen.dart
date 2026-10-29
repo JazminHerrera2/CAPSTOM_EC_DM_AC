@@ -18,9 +18,9 @@ class PlaceholderModuloScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color(0xFF0F172A);
-    const textMain = Color(0xFFF8FAFC);
-    const textMuted = Color(0xFF94A3B8);
+    const bgColor = Color(0xFFF1F5F9);
+    const textMain = Color(0xFF0F172A);
+    const textMuted = Color(0xFF64748B);
 
     return Scaffold(
       backgroundColor: bgColor,

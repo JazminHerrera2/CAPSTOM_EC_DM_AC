@@ -77,11 +77,11 @@ class _ImagenBeneficioState extends State<ImagenBeneficio> {
 
   Widget _respaldo() {
     return Container(
-      color: const Color(0xFF4F46E5).withValues(alpha: 0.15),
+      color: const Color(0xFF1E3A8A).withValues(alpha: 0.15),
       alignment: Alignment.center,
       child: Icon(
         iconoCategoriaBeneficio(widget.beneficio.categoria),
-        color: const Color(0xFF4F46E5),
+        color: const Color(0xFF1E3A8A),
         size: 36,
       ),
     );

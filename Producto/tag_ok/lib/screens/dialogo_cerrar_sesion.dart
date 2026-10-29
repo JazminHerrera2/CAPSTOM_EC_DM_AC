@@ -7,7 +7,7 @@ Future<bool> confirmarCerrarSesion(BuildContext context) async {
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: const Color(0xFFFFFFFF),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
         ),
@@ -18,14 +18,14 @@ Future<bool> confirmarCerrarSesion(BuildContext context) async {
             Expanded(
               child: Text(
                 '¿Cerrar sesión?',
-                style: TextStyle(color: Color(0xFFF8FAFC)),
+                style: TextStyle(color: Color(0xFF0F172A)),
               ),
             ),
           ],
         ),
         content: const Text(
           'Tendrás que volver a iniciar sesión para usar la aplicación.',
-          style: TextStyle(color: Color(0xFF94A3B8), height: 1.4),
+          style: TextStyle(color: Color(0xFF64748B), height: 1.4),
         ),
         actions: [
           TextButton(

@@ -6,6 +6,10 @@ import '../../data/models/mantencion_model.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
+import '../dashboard/dashboard_logica.dart';
+import '../dashboard/gastos_historial.dart';
+import '../dashboard/historial_gastos_screen.dart';
+import '../herramientas/placeholder_modulo_screen.dart';
 import 'historial_mantenimientos_screen.dart';
 import 'proximas_mantenciones_screen.dart';
 import 'registro_ia_mantenimiento_screen.dart';
@@ -18,13 +22,16 @@ class MantenimientoScreen extends StatefulWidget {
   /// ruta que se pueda cerrar con Navigator.pop).
   final VoidCallback? onVolver;
 
-  const MantenimientoScreen({super.key, this.onVolver});
+  /// Desde el historial de gastos, el apartado TAG abre la pestaña Auditoría.
+  final VoidCallback? onIrAAuditoria;
 
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
+  const MantenimientoScreen({super.key, this.onVolver, this.onIrAAuditoria});
+
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
 
   @override
   State<MantenimientoScreen> createState() => _MantenimientoScreenState();
@@ -45,6 +52,84 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
 
   String get _usuarioId =>
       FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+
+  /// "Ver todo" de Gasto en mantenciones: abre el historial de gastos del
+  /// vehículo (el mismo que se abre desde el Inicio).
+  Future<void> _abrirHistorialGastos(VehiculoModel vehiculo) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    // Indicador de carga mientras se leen los gastos.
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
+
+    List<MovimientoGasto> movimientos;
+    try {
+      // El TAG (viajes) se asigna al vehículo principal.
+      var esPrincipal = false;
+      try {
+        final usuario =
+            await FirebaseFirestore.instance.collection('usuarios').doc(uid).get();
+        esPrincipal = usuario.data()?['vehiculo_principal_id'] == vehiculo.patente;
+      } catch (_) {}
+      movimientos = await cargarMovimientosDeGasto(
+        uid: uid,
+        vehiculoId: vehiculo.id,
+        esPrincipal: esPrincipal,
+      );
+    } finally {
+      if (mounted) Navigator.of(context, rootNavigator: true).pop();
+    }
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HistorialGastosScreen(
+          nombreVehiculo: nombreParaHistorial(vehiculo),
+          movimientos: movimientos,
+          alAbrirCategoria: (categoria) {
+            switch (categoria) {
+              case CategoriaGasto.mantenciones:
+                // Ya estamos en Mantenciones: se vuelve a esta página.
+                Navigator.pop(context);
+              case CategoriaGasto.tag:
+                Navigator.pop(context);
+                widget.onIrAAuditoria?.call();
+              case CategoriaGasto.combustible:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PlaceholderModuloScreen(
+                      titulo: 'Combustible y carga',
+                      icono: Icons.local_gas_station_outlined,
+                      sprintEstimado: 'Sprint 4',
+                    ),
+                  ),
+                );
+              case CategoriaGasto.estacionamientos:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PlaceholderModuloScreen(
+                      titulo: 'Estacionamiento',
+                      icono: Icons.local_parking_outlined,
+                      sprintEstimado: 'Sprint 4',
+                    ),
+                  ),
+                );
+            }
+          },
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +255,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                   border: Border.all(
                     color: activo == v.id
                         ? primaryColor
-                        : const Color(0xFF334155),
+                        : Colors.transparent,
                   ),
                 ),
                 child: Text(
@@ -196,23 +281,23 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
     final patente = vehiculo?.patente;
     final vehiculoId = vehiculo?.id;
     return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 84),
           children: [
             // Gasto total y por mes
             if (vehiculoId != null) ...[
-              ResumenGastosMantenciones(vehiculoId: vehiculoId),
+              ResumenGastosMantenciones(
+                vehiculoId: vehiculoId,
+                onVerTodo: () => _abrirHistorialGastos(vehiculo!),
+              ),
               const SizedBox(height: 12),
             ],
 
-            // Próxima mantención
+            // Anuncio con el nombre de la próxima mantención programada.
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: surfaceColor,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.05),
-                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,10 +312,29 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                   ),
                   const SizedBox(height: 16),
                   _ResumenProxima(vehiculoId: vehiculoId),
-                  const SizedBox(height: 14),
-                  _LinkMantenciones(patente: patente, vehiculoId: vehiculoId),
                 ],
               ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Programar mantención: abre la lista de las programadas (con su
+            // botón para programar una nueva y el de eliminar cada una).
+            _MenuCard(
+              icon: Icons.event_available_outlined,
+              title: 'Programar mantención',
+              subtitle: 'Programa y revisa tus próximas mantenciones',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProximasMantenimientosScreen(
+                      patente: patente,
+                      vehiculoId: vehiculoId,
+                    ),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 12),
@@ -239,16 +343,14 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               icon: Icons.history_rounded,
               title: 'Historial de mantenciones',
               subtitle: 'Revisa los servicios realizados',
-              color: const Color(0xFF3B82F6),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        HistorialMantenimientosScreen(
-                    patente: patente,
-                    vehiculoId: vehiculoId,
-                  ),
+                    builder: (context) => HistorialMantenimientosScreen(
+                      patente: patente,
+                      vehiculoId: vehiculoId,
+                    ),
                   ),
                 );
               },
@@ -267,14 +369,12 @@ class _MenuCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
-  final Color color;
   final VoidCallback onTap;
 
   const _MenuCard({
     required this.icon,
     required this.title,
     this.subtitle,
-    required this.color,
     required this.onTap,
   });
 
@@ -290,10 +390,7 @@ class _MenuCard extends StatelessWidget {
           padding: const EdgeInsets.all(15),
           child: Row(
             children: [
-              _IconBox(
-                icon: icon,
-                color: color,
-              ),
+              _IconBox(icon: icon),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -336,85 +433,32 @@ class _MenuCard extends StatelessWidget {
 // CONTENEDOR DE ICONOS
 // ================================================================
 
+/// Ícono de una tarjeta de Mantenciones: azul y sin recuadro de color detrás.
 class _IconBox extends StatelessWidget {
   final IconData icon;
-  final Color color;
 
-  const _IconBox({
-    required this.icon,
-    required this.color,
-  });
+  const _IconBox({required this.icon});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 42,
       height: 42,
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(12),
-      ),
       child: Icon(
         icon,
-        color: color,
-        size: 22,
+        color: MantenimientoScreen.primaryColor,
+        size: 28,
       ),
     );
   }
 }
 
-/// Enlace "Mantenciones →" al pie de la tarjeta de próxima mantención.
-class _LinkMantenciones extends StatelessWidget {
-  final String? patente;
-  final String? vehiculoId;
+// ================================================================
+// ANUNCIO DE LA PRÓXIMA MANTENCIÓN
+// ================================================================
 
-  const _LinkMantenciones({this.patente, this.vehiculoId});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                ProximasMantenimientosScreen(
-                  patente: patente,
-                  vehiculoId: vehiculoId,
-                ),
-          ),
-        );
-      },
-      child: const Padding(
-        padding: EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Programar mantenciones',
-              style: TextStyle(
-                color: MantenimientoScreen.primaryColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            SizedBox(width: 6),
-            Icon(
-              Icons.arrow_forward_rounded,
-              size: 16,
-              color: MantenimientoScreen.primaryColor,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-/// Texto de la tarjeta "Próxima mantención": la programada más cercana del
-/// vehículo, o el aviso de que no hay ninguna.
+/// Nombre de la próxima mantención programada del vehículo (y su fecha o
+/// kilometraje), como un anuncio. Sin ninguna programada, lo avisa.
 class _ResumenProxima extends StatefulWidget {
   final String? vehiculoId;
 
@@ -473,10 +517,7 @@ class _ResumenProximaState extends State<_ResumenProxima> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _IconBox(
-          icon: Icons.event_available_outlined,
-          color: Color(0xFFF59E0B),
-        ),
+        const _IconBox(icon: Icons.event_available_outlined),
         const SizedBox(width: 14),
         Expanded(
           child: Column(

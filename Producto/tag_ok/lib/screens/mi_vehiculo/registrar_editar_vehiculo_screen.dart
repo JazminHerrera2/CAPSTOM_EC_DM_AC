@@ -29,12 +29,12 @@ class RegistrarEditarVehiculoScreen extends StatefulWidget {
 class _RegistrarEditarVehiculoScreenState
     extends State<RegistrarEditarVehiculoScreen> {
   // COLORES
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color surfaceLight = Color(0xFF27364D);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color primaryColor = Color(0xFF4F46E5);
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color surfaceLight = Color(0xFFE2E8F0);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final VehiculoService _vehiculoService = VehiculoService();
 
@@ -270,7 +270,7 @@ class _RegistrarEditarVehiculoScreenState
           decoration: BoxDecoration(
             color: surfaceColor,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFF334155)),
+            border: Border.all(color: Colors.transparent),
           ),
           child: _fotoBytes != null
               ? Padding(
@@ -315,7 +315,7 @@ class _RegistrarEditarVehiculoScreenState
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: textMain,
-                    side: const BorderSide(color: Color(0xFF475569)),
+                    side: const BorderSide(color: Colors.transparent),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -595,7 +595,7 @@ class _RegistrarEditarVehiculoScreenState
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(
-          color: Color(0xFF334155),
+          color: Color(0xFFCBD5E1),
         ),
       ),
       focusedBorder: OutlineInputBorder(
@@ -608,7 +608,7 @@ class _RegistrarEditarVehiculoScreenState
       disabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(
-          color: Color(0xFF334155),
+          color: Color(0xFFCBD5E1),
         ),
       ),
     );
@@ -952,7 +952,7 @@ class _RegistrarEditarVehiculoScreenState
                   border: Border.all(
                     color: seleccionado
                         ? primaryColor
-                        : const Color(0xFF334155),
+                        : Colors.transparent,
                     width: seleccionado ? 2 : 1,
                   ),
                 ),
@@ -1105,7 +1105,7 @@ class _RegistrarEditarVehiculoScreenState
                       'Patente',
                       icon: Icons.badge_outlined,
                     ).copyWith(
-                      fillColor: const Color(0xFF334155).withOpacity(0.55),
+                      fillColor: const Color(0xFFCBD5E1).withOpacity(0.55),
                       suffixIcon: const Icon(
                         Icons.lock_outline,
                         color: textMuted,

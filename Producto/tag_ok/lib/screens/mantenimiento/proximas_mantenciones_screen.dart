@@ -18,11 +18,11 @@ class ProximasMantenimientosScreen extends StatelessWidget {
     this.vehiculoId,
   });
 
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 90),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 84),
           children: [
             _cabecera(),
 
@@ -78,7 +78,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
 
   Widget _cabecera() {
     return const Text(
-      'Indica la fecha de tu última mantención: la próxima se programa a un año y te avisamos 7 días antes y el mismo día.',
+      'Programa tus próximas mantenciones por fecha, por kilometraje o por ambos. Si eliges fecha, te avisamos 7 días antes y el mismo día.',
       style: TextStyle(
         color: textMuted,
         fontSize: 13,
@@ -98,7 +98,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
         color: surfaceColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.transparent,
         ),
       ),
       child: Column(
@@ -178,28 +178,36 @@ class ProximasMantenimientosScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _mostrarProgramarMantencion(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final id = vehiculoId;
-    if (id == null) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Primero registra un vehículo.')),
-      );
-      return;
-    }
+  Future<void> _mostrarProgramarMantencion(BuildContext context) =>
+      mostrarProgramarMantencion(context, vehiculoId: vehiculoId);
+}
 
-    final guardada = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => _ProgramarMantencionSheet(vehiculoId: id),
+/// Abre la ventana para programar una mantención del vehículo. La usan esta
+/// pantalla y la página principal de Mantenciones.
+Future<void> mostrarProgramarMantencion(
+  BuildContext context, {
+  required String? vehiculoId,
+}) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final id = vehiculoId;
+  if (id == null) {
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Primero registra un vehículo.')),
     );
+    return;
+  }
 
-    if (guardada == true) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Mantención programada.')),
-      );
-    }
+  final guardada = await showModalBottomSheet<bool>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (context) => _ProgramarMantencionSheet(vehiculoId: id),
+  );
+
+  if (guardada == true) {
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Mantención programada.')),
+    );
   }
 }
 
@@ -221,6 +229,47 @@ class _ListaProgramadas extends StatefulWidget {
 
 class _ListaProgramadasState extends State<_ListaProgramadas> {
   Stream<List<MantencionModel>>? _stream;
+
+  /// Elimina una programación (y sus recordatorios) tras confirmar.
+  Future<void> _eliminar(MantencionModel m) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Eliminar programación'),
+        content: Text(
+          '¿Eliminar la mantención programada "${m.nombreTipo}"? También se '
+          'borrarán sus recordatorios.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFE11D48)),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true) return;
+
+    try {
+      await MantencionService().eliminar(m.id);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Programación eliminada.')),
+      );
+    } catch (e) {
+      debugPrint('No se pudo eliminar la programación ${m.id}: $e');
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo eliminar. Intenta nuevamente.'),
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -246,7 +295,7 @@ class _ListaProgramadasState extends State<_ListaProgramadas> {
             child: Center(
               child: Text(
                 'No fue posible cargar las mantenciones.',
-                style: TextStyle(color: Color(0xFF94A3B8)),
+                style: TextStyle(color: Color(0xFF64748B)),
               ),
             ),
           );
@@ -255,7 +304,7 @@ class _ListaProgramadasState extends State<_ListaProgramadas> {
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 30),
             child: Center(
-              child: CircularProgressIndicator(color: Color(0xFF4F46E5)),
+              child: CircularProgressIndicator(color: Color(0xFF1E3A8A)),
             ),
           );
         }
@@ -268,7 +317,10 @@ class _ListaProgramadasState extends State<_ListaProgramadas> {
             for (final m in lista)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: TarjetaMantencion(mantencion: m),
+                child: TarjetaMantencion(
+                  mantencion: m,
+                  onEliminar: () => _eliminar(m),
+                ),
               ),
           ],
         );
@@ -291,31 +343,52 @@ class _ProgramarMantencionSheet extends StatefulWidget {
       _ProgramarMantencionSheetState();
 }
 
+/// Cómo se programa la próxima mantención: por fecha, por kilometraje o por
+/// ambos.
+enum _ModoProgramacion {
+  fecha('Por fecha'),
+  kilometraje('Por kilometraje'),
+  ambos('Ambos');
+
+  const _ModoProgramacion(this.etiqueta);
+  final String etiqueta;
+}
+
 class _ProgramarMantencionSheetState
     extends State<_ProgramarMantencionSheet> {
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color borderColor = Color(0xFF334155);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color borderColor = Color(0xFFCBD5E1);
+  static const Color fondoCampo = Color(0xFFF1F5F9);
 
   final TextEditingController _tipoController = TextEditingController();
 
   final MantencionService _service = MantencionService();
   final TextEditingController _kmController = TextEditingController();
-  DateTime? _ultimaFecha;
+  _ModoProgramacion _modo = _ModoProgramacion.fecha;
+  DateTime? _proximaFecha;
   bool _guardando = false;
   String? _error;
+
+  bool get _usaFecha => _modo != _ModoProgramacion.kilometraje;
+  bool get _usaKm => _modo != _ModoProgramacion.fecha;
 
   Future<void> _elegirFecha() async {
     final hoy = DateTime.now();
     final fecha = await showDatePicker(
       context: context,
-      initialDate: _ultimaFecha ?? hoy,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(hoy.year, hoy.month, hoy.day),
+      initialDate: _proximaFecha ?? hoy,
+      firstDate: DateTime(hoy.year, hoy.month, hoy.day),
+      lastDate: DateTime(hoy.year + 10, 12, 31),
     );
-    if (fecha != null) setState(() => _ultimaFecha = fecha);
+    if (fecha != null) {
+      setState(() {
+        _proximaFecha = fecha;
+        _error = null;
+      });
+    }
   }
 
   Future<void> _programar() async {
@@ -325,18 +398,23 @@ class _ProgramarMantencionSheetState
       return;
     }
 
-    final ultima = _ultimaFecha;
-    if (ultima == null) {
-      setState(() => _error = 'Selecciona la fecha de la última mantención.');
-      return;
+    // Solo se exige lo que el modo elegido usa.
+    DateTime? fecha;
+    if (_usaFecha) {
+      fecha = _proximaFecha;
+      if (fecha == null) {
+        setState(() => _error = 'Selecciona la fecha de la próxima mantención.');
+        return;
+      }
     }
 
     int? km;
-    final textoKm = _kmController.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (textoKm.isNotEmpty) {
+    if (_usaKm) {
+      final textoKm = _kmController.text.replaceAll(RegExp(r'[^0-9]'), '');
       km = int.tryParse(textoKm);
-      if (km == null || km > 5000000) {
-        setState(() => _error = 'Ingresa un kilometraje válido.');
+      if (km == null || km <= 0 || km > 5000000) {
+        setState(
+            () => _error = 'Ingresa el kilometraje de la próxima mantención.');
         return;
       }
     }
@@ -347,11 +425,12 @@ class _ProgramarMantencionSheetState
     });
 
     try {
+      // Con fecha, el servicio también deja programados los recordatorios.
       await _service.crear(
         vehiculoId: widget.vehiculoId,
         estado: EstadoMantencion.programada,
         tipo: tipo,
-        proximaFecha: proximaMantencionAnual(ultima),
+        proximaFecha: fecha,
         proximoKilometraje: km,
       );
       if (!mounted) return;
@@ -418,7 +497,8 @@ class _ProgramarMantencionSheetState
             const SizedBox(height: 5),
 
             const Text(
-              'La próxima mantención se programa a un año de la última.',
+              'Programa la próxima mantención por fecha, por kilometraje o por '
+              'ambos.',
               style: TextStyle(
                 color: textMuted,
                 fontSize: 12,
@@ -429,25 +509,23 @@ class _ProgramarMantencionSheetState
 
             _campoTipo(),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 18),
 
-            _campoFecha(),
+            _selectorModo(),
 
-            if (_ultimaFecha != null) ...[
-              const SizedBox(height: 10),
-              Text(
-                'Próxima mantención: ${formatoFecha(proximaMantencionAnual(_ultimaFecha!))}',
-                style: const TextStyle(
-                  color: Color(0xFFA5B4FC),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            if (_usaFecha) ...[
+              const SizedBox(height: 14),
+              _campoFecha(),
             ],
 
-            const SizedBox(height: 12),
+            if (_usaKm) ...[
+              const SizedBox(height: 14),
+              _campoKilometraje(),
+            ],
 
-            _campoKilometraje(),
+            const SizedBox(height: 14),
+
+            _avisoRecordatorios(),
 
             if (_error != null) ...[
               const SizedBox(height: 14),
@@ -493,6 +571,85 @@ class _ProgramarMantencionSheetState
     );
   }
 
+  /// Tres botones del mismo tamaño: por fecha, por kilometraje o ambos.
+  Widget _selectorModo() {
+    return Row(
+      children: [
+        for (final modo in _ModoProgramacion.values) ...[
+          if (modo != _ModoProgramacion.values.first) const SizedBox(width: 8),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() {
+                _modo = modo;
+                _error = null;
+              }),
+              child: Container(
+                height: 44,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                decoration: BoxDecoration(
+                  color: _modo == modo ? primaryColor : fondoCampo,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    modo.etiqueta,
+                    style: TextStyle(
+                      color: _modo == modo ? Colors.white : textMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Aviso de los recordatorios: se generan solo si hay fecha.
+  Widget _avisoRecordatorios() {
+    final conFecha = _usaFecha;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: fondoCampo,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            conFecha
+                ? Icons.notifications_active_outlined
+                : Icons.notifications_off_outlined,
+            color: conFecha ? primaryColor : textMuted,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              conFecha
+                  ? 'Se generarán recordatorios 7 días antes y el mismo día de '
+                      'la fecha programada.'
+                  : 'Sin una fecha no se generan recordatorios. Elige "Por '
+                      'fecha" o "Ambos" para recibirlos.',
+              style: const TextStyle(
+                color: textMuted,
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _campoFecha() {
     return InkWell(
       onTap: _elegirFecha,
@@ -501,9 +658,9 @@ class _ProgramarMantencionSheetState
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F172A),
+          color: fondoCampo,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderColor),
+          border: Border.all(color: Colors.transparent),
         ),
         child: Row(
           children: [
@@ -518,16 +675,16 @@ class _ProgramarMantencionSheetState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Fecha de la última mantención',
+                    'Fecha de la próxima mantención',
                     style: TextStyle(color: textMuted, fontSize: 10),
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    _ultimaFecha == null
+                    _proximaFecha == null
                         ? 'Seleccionar fecha'
-                        : formatoFecha(_ultimaFecha!),
+                        : formatoFecha(_proximaFecha!),
                     style: TextStyle(
-                      color: _ultimaFecha == null ? textMuted : textMain,
+                      color: _proximaFecha == null ? textMuted : textMain,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -555,7 +712,7 @@ class _ProgramarMantencionSheetState
         counterStyle: const TextStyle(color: textMuted),
         prefixIcon: const Icon(Icons.build_outlined, color: textMuted, size: 21),
         filled: true,
-        fillColor: const Color(0xFF0F172A),
+        fillColor: fondoCampo,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: borderColor),
@@ -574,14 +731,14 @@ class _ProgramarMantencionSheetState
       keyboardType: TextInputType.number,
       style: const TextStyle(color: textMain, fontSize: 13),
       decoration: InputDecoration(
-        labelText: 'Próximo kilometraje (opcional)',
+        labelText: 'Kilometraje de la próxima mantención',
         hintText: 'Ej: 80000',
         suffixText: 'km',
         labelStyle: const TextStyle(color: textMuted),
         hintStyle: const TextStyle(color: textMuted),
         prefixIcon: const Icon(Icons.speed_outlined, color: textMuted, size: 21),
         filled: true,
-        fillColor: const Color(0xFF0F172A),
+        fillColor: fondoCampo,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: borderColor),

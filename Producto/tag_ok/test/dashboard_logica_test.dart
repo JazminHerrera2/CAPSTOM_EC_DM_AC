@@ -3,8 +3,8 @@ import 'package:tag_ok/data/models/documento_vehicular_model.dart';
 import 'package:tag_ok/data/models/mantencion_model.dart';
 import 'package:tag_ok/screens/dashboard/dashboard_logica.dart';
 
-GastoRegistro _g(DateTime fecha, int monto, [String? v]) =>
-    (vehiculoId: v, fecha: fecha, monto: monto);
+GastoRegistro _g(DateTime fecha, int monto, [String? v, String titulo = 'Gasto']) =>
+    (vehiculoId: v, fecha: fecha, monto: monto, titulo: titulo, detalle: null);
 
 DocumentoVehicularModel _doc(String id, DateTime? vence) =>
     DocumentoVehicularModel(
@@ -41,41 +41,41 @@ void main() {
   final hoy = DateTime(2026, 10, 28);
 
   group('calcularResumenGastos', () {
-    test('sin datos: siempre 6 meses en \$0 y variación null', () {
+    test('sin datos: siempre 5 meses en \$0 y variación null', () {
       final r = calcularResumenGastos(const {}, ahora: hoy);
-      expect(r.meses.length, 6);
-      expect(r.totales, [0, 0, 0, 0, 0, 0]);
+      expect(r.meses.length, 5);
+      expect(r.totales, [0, 0, 0, 0, 0]);
       expect(r.totalMes, 0);
       expect(r.variacionPct, isNull);
       expect(r.desglose.keys.length, 4);
       expect(r.desglose.values.every((v) => v == 0), isTrue);
     });
 
-    test('los meses van del más antiguo (mayo) al actual (octubre)', () {
+    test('los meses van del más antiguo (junio) al actual (octubre)', () {
       final r = calcularResumenGastos(const {}, ahora: hoy);
-      expect(r.meses.first, DateTime(2026, 5));
+      expect(r.meses.first, DateTime(2026, 6));
       expect(r.meses.last, DateTime(2026, 10));
     });
 
     test('cruza el cambio de año', () {
       final r = calcularResumenGastos(const {}, ahora: DateTime(2026, 2, 10));
-      expect(r.meses.first, DateTime(2025, 9));
+      expect(r.meses.first, DateTime(2025, 10));
       expect(r.meses.last, DateTime(2026, 2));
     });
 
-    test('suma por mes y categoría; ignora fuera de los 6 meses', () {
+    test('suma por mes y categoría; ignora fuera de los 5 meses', () {
       final r = calcularResumenGastos({
         CategoriaGasto.tag: [_g(DateTime(2026, 10, 3), 1000)],
         CategoriaGasto.mantenciones: [
           _g(DateTime(2026, 10, 20), 5000),
           _g(DateTime(2026, 9, 1), 2000),
-          _g(DateTime(2026, 4, 30), 9999), // antes de los 6 meses
+          _g(DateTime(2026, 5, 31), 9999), // antes de los 5 meses
           _g(DateTime(2026, 11, 1), 9999), // futuro
         ],
       }, ahora: hoy);
       expect(r.totalMes, 6000);
       expect(r.totalMesAnterior, 2000);
-      expect(r.totales[3], 0); // julio
+      expect(r.totales[1], 0); // julio
       expect(r.desglose[CategoriaGasto.tag], 1000);
       expect(r.desglose[CategoriaGasto.mantenciones], 5000);
       expect(r.desglose[CategoriaGasto.combustible], 0);
@@ -90,6 +90,110 @@ void main() {
         CategoriaGasto.tag: [_g(DateTime(2026, 10, 1), 50), _g(DateTime(2026, 9, 1), 100)],
       }, ahora: hoy);
       expect(baja.variacionPct, closeTo(-50, 0.001));
+    });
+  });
+
+  group('alturasPorPosicion (gráfico)', () {
+    test('el mes que más gastó llega al tope y los demás bajan por puesto', () {
+      expect(alturasPorPosicion([10, 50, 30, 0, 40]), [0.4, 1.0, 0.6, 0.0, 0.8]);
+    });
+
+    test('no importa cuánto más gastó: solo el orden', () {
+      // Mismo orden de gasto, montos muy distintos: mismas alturas.
+      expect(alturasPorPosicion([1, 1000000, 2, 3, 4]),
+          alturasPorPosicion([10, 50, 20, 30, 40]));
+      final alturas = alturasPorPosicion([1, 1000000, 2, 3, 4]);
+      const esperadas = [0.2, 1.0, 0.4, 0.6, 0.8];
+      for (var i = 0; i < esperadas.length; i++) {
+        expect(alturas[i], closeTo(esperadas[i], 1e-9));
+      }
+    });
+
+    test('gastos iguales comparten altura; sin gastos, 0', () {
+      expect(alturasPorPosicion([20, 20, 5, 0, 0]), [1.0, 1.0, 0.8, 0.0, 0.0]);
+      expect(alturasPorPosicion([0, 0, 0, 0, 0]), [0.0, 0.0, 0.0, 0.0, 0.0]);
+    });
+  });
+
+  group('historial de gastos', () {
+    final regs = {
+      CategoriaGasto.mantenciones: [
+        _g(DateTime(2026, 10, 20), 5000, 'v1', 'Cambio de aceite'),
+        _g(DateTime(2026, 9, 5), 2000, 'v1', 'Frenos'),
+      ],
+      CategoriaGasto.tag: [_g(DateTime(2026, 10, 20), 8000, null, 'Viaje con peajes')],
+      CategoriaGasto.combustible: [_g(DateTime(2026, 8, 1), 30000, 'v1', 'Carga de combustible')],
+    };
+
+    test('junta todo, del más reciente al más antiguo (a igual fecha, el mayor primero)', () {
+      final m = movimientosDeGasto(regs);
+      expect(m.map((x) => x.titulo), [
+        'Viaje con peajes',
+        'Cambio de aceite',
+        'Frenos',
+        'Carga de combustible',
+      ]);
+    });
+
+    test('filtra por año y por mes', () {
+      final m = movimientosDeGasto(regs);
+      expect(filtrarMovimientos(m).length, 4);
+      expect(filtrarMovimientos(m, anio: 2026, mes: 10).length, 2);
+      expect(filtrarMovimientos(m, mes: 9).single.titulo, 'Frenos');
+      expect(filtrarMovimientos(m, anio: 2025), isEmpty);
+      expect(filtrarMovimientos(m, anio: 2026).length, 4);
+      // Mismo mes de otro año no se mezcla.
+      final conOtroAnio = movimientosDeGasto({
+        ...regs,
+        CategoriaGasto.estacionamientos: [_g(DateTime(2025, 10, 2), 700, null, 'Estacionamiento')],
+      });
+      expect(filtrarMovimientos(conOtroAnio, anio: 2026, mes: 10).length, 2);
+      expect(filtrarMovimientos(conOtroAnio, anio: 2025, mes: 10).single.monto, 700);
+    });
+
+    test('años con gastos (recientes primero), suma y nombres', () {
+      final m = movimientosDeGasto({
+        ...regs,
+        CategoriaGasto.estacionamientos: [_g(DateTime(2025, 3, 2), 700)],
+      });
+      expect(aniosConMovimientos(m), [2026, 2025]);
+      expect(sumarMovimientos(movimientosDeGasto(regs)), 45000);
+      expect(sumarMovimientos(const []), 0);
+      expect(nombreMes(DateTime(2026, 10, 3)), 'Octubre 2026');
+      expect(nombreDelMes(1), 'Enero');
+      expect(nombreDelMes(12), 'Diciembre');
+    });
+
+    test('totales por categoría incluyen las cuatro', () {
+      final t = totalesPorCategoria(movimientosDeGasto(regs));
+      expect(t[CategoriaGasto.combustible], 30000);
+      expect(t[CategoriaGasto.tag], 8000);
+      expect(t[CategoriaGasto.mantenciones], 7000);
+      expect(t[CategoriaGasto.estacionamientos], 0);
+      expect(t.length, 4);
+      expect(totalesPorCategoria(const []).values.every((v) => v == 0), isTrue);
+    });
+
+    test('sin gastos: todo vacío', () {
+      expect(movimientosDeGasto(const {}), isEmpty);
+      expect(aniosConMovimientos(const []), isEmpty);
+    });
+  });
+
+  group('próxima mantención por kilometraje', () {
+    test('suma 10.000 km al kilometraje del vehículo', () {
+      expect(kilometrajeProximaMantencion(64500), 74500);
+      expect(kilometrajeProximaMantencion(0), 10000);
+      expect(intervaloMantencionKm, 10000);
+    });
+
+    test('sin kilometraje no hay cálculo', () {
+      expect(kilometrajeProximaMantencion(null), isNull);
+      expect(kilometrajeProximaMantencion(-5), isNull);
+    });
+
+    test('el intervalo se puede cambiar', () {
+      expect(kilometrajeProximaMantencion(1000, intervalo: 5000), 6000);
     });
   });
 

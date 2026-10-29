@@ -157,7 +157,7 @@ class _DialogoPeriodo extends StatelessWidget {
       backgroundColor: TokensGasto.fondoCard,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: TokensGasto.bordeCard),
+        side: const BorderSide(color: Colors.transparent),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),

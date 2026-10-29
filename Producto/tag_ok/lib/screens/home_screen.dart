@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/services/aviso_navegador_service.dart';
 import '../data/services/notificacion_service.dart';
 import 'audit_screen.dart';
-import 'herramientas/herramientas_hub_screen.dart';
+import 'beneficios/beneficios_screen.dart';
 import 'inicio_dashboard_screen.dart';
 import 'live_map_screen.dart';
 import 'mi_vehiculo/mi_vehiculo_screen.dart';
@@ -65,14 +65,27 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  final Color bgColor = const Color(0xFF0F172A);
-  final Color primaryColor = const Color(0xFF4F46E5);
-  final Color navBgColor = const Color(0xFF1E293B);
-  final Color textMuted = const Color(0xFF94A3B8);
+  final Color bgColor = const Color(0xFFF1F5F9);
+  final Color primaryColor = const Color(0xFF1E3A8A);
+  final Color navBgColor = Colors.white;
+  final Color textMuted = const Color(0xFF64748B);
 
-  void _volverAHerramientas() {
+  /// Abre Mantenciones SIEMPRE en su página principal. Su navegador propio
+  /// sigue vivo mientras se está en otra pestaña, así que si se había dejado un
+  /// detalle abierto (de una mantención, del historial, etc.) se cierran todas
+  /// las pantallas apiladas antes de mostrarlo.
+  void _abrirMantenciones() {
+    _mantenimientoNavKey.currentState?.popUntil((ruta) => ruta.isFirst);
     setState(() {
-      _selectedIndex = 3;
+      _mostrandoMantenimiento = true;
+      _mostrandoMapa = false;
+    });
+  }
+
+  // Mantenciones se abre desde el Inicio, así que al salir se vuelve a él.
+  void _volverAlInicio() {
+    setState(() {
+      _selectedIndex = 0;
       _mostrandoMapa = false;
       _mostrandoMantenimiento = false;
     });
@@ -98,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (nav != null && nav.canPop()) {
           nav.pop();
         } else {
-          _volverAHerramientas();
+          _volverAlInicio();
         }
       },
       child: Scaffold(
@@ -131,7 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 key: _mantenimientoNavKey,
                 onGenerateRoute: (_) => MaterialPageRoute(
                   builder: (_) => MantenimientoScreen(
-                    onVolver: _volverAHerramientas,
+                    onVolver: _volverAlInicio,
+                    onIrAAuditoria: () => _onItemTapped(1),
                   ),
                 ),
               ),
@@ -140,7 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      // Botón central flotante: abre el mapa en tiempo real.
+      // Botón central: abre el mapa en tiempo real. Va en el centro de la barra,
+      // dentro de un hueco curvo: la barra rodea al círculo y moldea su silueta.
       floatingActionButton: Container(
         height: 72,
         width: 72,
@@ -171,26 +186,35 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // Centrado en la barra pero más abajo que el centerDocked normal: el
+      // círculo queda más metido en la barra y el hueco curvo traza su silueta.
+      floatingActionButtonLocation: const _CentroDockedMasAbajo(18),
 
-      // Menú de navegación inferior con el "hueco" en el medio
+      // Barra blanca con el "hueco" curvo en el medio; el contorno gris lo da la
+      // sombra, que sigue la forma del hueco. Íconos grises; el azul marca la
+      // pestaña seleccionada.
       bottomNavigationBar: BottomAppBar(
         color: navBgColor,
+        elevation: 10,
+        shadowColor: const Color(0xFF94A3B8),
+        surfaceTintColor: Colors.transparent,
         shape: const CircularNotchedRectangle(),
         notchMargin: 10.0,
         padding: EdgeInsets.zero,
         child: SizedBox(
           height: 70,
+          // Las cuatro pestañas se reparten el ancho; el hueco del centro es más
+          // ancho que el botón del mapa para que Auditoría y Vehículos no queden
+          // pegados a él.
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildNavIcon(Icons.dashboard_outlined, 0, 'Inicio'),
-              _buildNavIcon(Icons.receipt_long_outlined, 1, 'Auditoría'),
+              Expanded(child: _buildNavIcon(Icons.dashboard_outlined, 0, 'Inicio')),
+              Expanded(child: _buildNavIcon(Icons.receipt_long_outlined, 1, 'Auditoría')),
 
-              const SizedBox(width: 50), // Espacio para el botón central flotante
+              const SizedBox(width: 104), // Espacio para el botón central
 
-              _buildNavIcon(Icons.directions_car_outlined, 2, 'Vehículos'),
-              _buildNavIcon(Icons.build_outlined, 3, 'Herramientas'),
+              Expanded(child: _buildNavIcon(Icons.directions_car_outlined, 2, 'Vehículos')),
+              Expanded(child: _buildNavIcon(Icons.card_giftcard_outlined, 3, 'Beneficios')),
             ],
           ),
         ),
@@ -207,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () => _onItemTapped(index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 65,
+        width: double.infinity,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -237,30 +261,38 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (_selectedIndex) {
       case 0:
         return InicioDashboardScreen(
-          onIrAHerramientas: () => _onItemTapped(3),
           onIrAVehiculos: () => _onItemTapped(2),
-          onAbrirMantenciones: () {
-            setState(() {
-              _mostrandoMantenimiento = true;
-              _mostrandoMapa = false;
-            });
-          },
+          onIrAAuditoria: () => _onItemTapped(1),
+          onIrABeneficios: () => _onItemTapped(3),
+          onAbrirMantenciones: _abrirMantenciones,
         );
       case 1:
         return const AuditScreen();
       case 2:
         return const MiVehiculoScreen();
       case 3:
-        return HerramientasHubScreen(
-          onAbrirMantenciones: () {
-            setState(() {
-              _mostrandoMantenimiento = true;
-              _mostrandoMapa = false;
-            });
-          },
-        );
+        return const BeneficiosScreen();
       default:
         return const SizedBox.shrink();
     }
   }
+}
+
+/// Igual que [FloatingActionButtonLocation.centerDocked] (centrado, apoyado en
+/// el borde superior de la barra inferior) pero [bajada] píxeles más abajo. El
+/// hueco curvo de la barra se calcula con la posición real del botón, así que
+/// sigue su silueta.
+class _CentroDockedMasAbajo extends FloatingActionButtonLocation {
+  final double bajada;
+
+  const _CentroDockedMasAbajo(this.bajada);
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final base = FloatingActionButtonLocation.centerDocked.getOffset(scaffoldGeometry);
+    return Offset(base.dx, base.dy + bajada);
+  }
+
+  @override
+  String toString() => 'centerDocked bajado $bajada px';
 }

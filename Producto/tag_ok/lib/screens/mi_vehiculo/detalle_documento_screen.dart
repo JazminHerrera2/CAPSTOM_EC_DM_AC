@@ -15,12 +15,12 @@ class DetalleDocumentoScreen extends StatelessWidget {
     required this.patenteVehiculo,
   });
 
-  static const Color bgColor = Color(0xFF0F172A);
-  static const Color surfaceColor = Color(0xFF1E293B);
-  static const Color surfaceLight = Color(0xFF27364D);
-  static const Color textMain = Color(0xFFF8FAFC);
-  static const Color textMuted = Color(0xFF94A3B8);
-  static const Color primaryColor = Color(0xFF4F46E5);
+  static const Color bgColor = Color(0xFFF1F5F9);
+  static const Color surfaceColor = Color(0xFFFFFFFF);
+  static const Color surfaceLight = Color(0xFFE2E8F0);
+  static const Color textMain = Color(0xFF0F172A);
+  static const Color textMuted = Color(0xFF64748B);
+  static const Color primaryColor = Color(0xFF1E3A8A);
 
   // ------------------------------------------------------------
   // ESTADO
@@ -244,7 +244,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
               color: surfaceColor,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFF334155),
+                color: Colors.transparent,
               ),
             ),
             child: Column(
@@ -350,7 +350,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
               color: surfaceColor,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: const Color(0xFF334155),
+                color: Colors.transparent,
               ),
             ),
             child: Column(
@@ -366,7 +366,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   ),
 
                   const Divider(
-                    color: Color(0xFF334155),
+                    color: Color(0xFFCBD5E1),
                     height: 1,
                   ),
                 ],
@@ -380,7 +380,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                 ),
 
                 const Divider(
-                  color: Color(0xFF334155),
+                  color: Color(0xFFCBD5E1),
                   height: 1,
                 ),
 
@@ -397,7 +397,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                         .trim()
                         .isNotEmpty) ...[
                   const Divider(
-                    color: Color(0xFF334155),
+                    color: Color(0xFFCBD5E1),
                     height: 1,
                   ),
                   _dato(
@@ -412,7 +412,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                         .trim()
                         .isNotEmpty) ...[
                   const Divider(
-                    color: Color(0xFF334155),
+                    color: Color(0xFFCBD5E1),
                     height: 1,
                   ),
                   _dato(
@@ -451,7 +451,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
               color: surfaceColor,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: const Color(0xFF334155),
+                color: Colors.transparent,
               ),
             ),
             child: Column(
@@ -467,7 +467,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                 ),
 
                 const Divider(
-                  color: Color(0xFF334155),
+                  color: Color(0xFFCBD5E1),
                   height: 1,
                 ),
 
