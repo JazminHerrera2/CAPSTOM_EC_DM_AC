@@ -1,5 +1,14 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert@1";
-import { extraerBearer, HttpError, validarPath } from "./validate.ts";
+import {
+  CONTENT_TYPES_BENEFICIO,
+  esPathBeneficio,
+  esRolSuperAdmin,
+  extraerBearer,
+  HttpError,
+  rolDeDocumentoFirestore,
+  validarPath,
+  validarPathBeneficio,
+} from "./validate.ts";
 
 const UID = "abc123UID";
 
@@ -52,4 +61,46 @@ Deno.test("Bearer: 401 sin header o con formato erróneo", () => {
   assertEquals(status(() => extraerBearer("Basic xxx")), 401);
   assertEquals(extraerBearer("Bearer tok.en.x"), "tok.en.x");
   assertThrows(() => extraerBearer(""), HttpError);
+});
+
+Deno.test("beneficios: acepta beneficios/{archivo} y rechaza el resto", () => {
+  assertEquals(validarPathBeneficio("beneficios/123_ab.png"), "beneficios/123_ab.png");
+  for (
+    const p of [
+      "beneficios",
+      "beneficios/",
+      "beneficios/a/b.png",
+      "beneficios/../usuarios/x/1.png",
+      "beneficios/a b.png",
+      "beneficios/..png",
+      "/beneficios/a.png",
+      "usuarios/u/beneficios/a.png",
+      "",
+      null,
+      42,
+    ]
+  ) {
+    assertEquals(status(() => validarPathBeneficio(p)), 400, String(p));
+  }
+});
+
+Deno.test("beneficios: esPathBeneficio distingue la carpeta", () => {
+  assertEquals(esPathBeneficio("beneficios/a.png"), true);
+  assertEquals(esPathBeneficio("usuarios/u/a.png"), false);
+  assertEquals(esPathBeneficio(undefined), false);
+});
+
+Deno.test("beneficios: solo imágenes, no PDF", () => {
+  assertEquals(CONTENT_TYPES_BENEFICIO.has("image/webp"), true);
+  assertEquals(CONTENT_TYPES_BENEFICIO.has("application/pdf"), false);
+});
+
+Deno.test("roles de super admin como en las reglas", () => {
+  assertEquals(esRolSuperAdmin("super_admin"), true);
+  assertEquals(esRolSuperAdmin("Super Administrador"), true);
+  assertEquals(esRolSuperAdmin("operador"), false);
+  assertEquals(esRolSuperAdmin(undefined), false);
+  assertEquals(rolDeDocumentoFirestore({ fields: { rol: { stringValue: "super_admin" } } }), "super_admin");
+  assertEquals(rolDeDocumentoFirestore({ fields: { role: { stringValue: "operador" } } }), "operador");
+  assertEquals(rolDeDocumentoFirestore({}), undefined);
 });

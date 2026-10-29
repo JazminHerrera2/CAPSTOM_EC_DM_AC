@@ -210,6 +210,33 @@ class AdminFirestoreService {
     });
   }
 
+  // --- Beneficios (catálogo global; lo leen todos los usuarios de la app) ---
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> streamBeneficios() {
+    return _firestore.collection('beneficios').snapshots();
+  }
+
+  /// Crea (sin [id]) o reemplaza (con [id]) un beneficio. Con `set` completo,
+  /// un campo opcional que se dejó vacío desaparece del documento.
+  Future<String> guardarBeneficio(Map<String, dynamic> datos, {String? id}) async {
+    final coleccion = _firestore.collection('beneficios');
+    if (id == null) {
+      final ref = await coleccion.add(datos);
+      return ref.id;
+    }
+    await coleccion.doc(id).set(datos);
+    return id;
+  }
+
+  Future<void> cambiarEstadoBeneficio(String id, String campo, bool valor) {
+    assert(campo == 'activo' || campo == 'destacado');
+    return _firestore.collection('beneficios').doc(id).update({campo: valor});
+  }
+
+  Future<void> eliminarBeneficio(String id) {
+    return _firestore.collection('beneficios').doc(id).delete();
+  }
+
   Future<void> logAction({
     required String action,
     required String target,

@@ -236,7 +236,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBodyTab() {
     switch (_selectedIndex) {
       case 0:
-        return const InicioDashboardScreen();
+        return InicioDashboardScreen(
+          onIrAHerramientas: () => _onItemTapped(3),
+          onIrAVehiculos: () => _onItemTapped(2),
+          onAbrirMantenciones: () {
+            setState(() {
+              _mostrandoMantenimiento = true;
+              _mostrandoMapa = false;
+            });
+          },
+        );
       case 1:
         return const AuditScreen();
       case 2:

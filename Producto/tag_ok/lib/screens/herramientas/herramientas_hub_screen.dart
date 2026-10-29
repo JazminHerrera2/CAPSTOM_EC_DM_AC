@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../data/services/recordatorio_local_service.dart';
 import '../dialogo_cerrar_sesion.dart';
+import '../beneficios/beneficios_screen.dart';
 import '../login_screen.dart';
 import '../profile_screen.dart';
 import 'placeholder_modulo_screen.dart';
@@ -93,13 +94,7 @@ class _HerramientasHubScreenState extends State<HerramientasHubScreen> {
         icono: Icons.card_giftcard_outlined,
         onTap: (context) => Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const PlaceholderModuloScreen(
-              titulo: 'Beneficios',
-              icono: Icons.card_giftcard_outlined,
-              sprintEstimado: 'Sprint 5',
-            ),
-          ),
+          MaterialPageRoute(builder: (context) => const BeneficiosScreen()),
         ),
       ),
       _AccesoHerramienta(

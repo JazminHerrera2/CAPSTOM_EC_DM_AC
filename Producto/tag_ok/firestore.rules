@@ -65,6 +65,14 @@ rules_version = '2';
 //   Un usuario es admin si existe administradores/{su uid}.
 //   El panel admin crea ese documento con id = uid (ver _createAdminAccount).
 //
+// beneficios/{id}   catalogo global (lo administra el super admin; id = beneficio_id)
+//   categoria: Combustible|Talleres|Mantenciones|Estacionamientos|Lavado|
+//   Neumáticos|Seguros|Accesorios|Otros | titulo, empresa: string (req)
+//   categoria_otra: string 1-60 (req solo si categoria = Otros; si no, no existe)
+//   descripcion, condiciones, ubicacion: string|null
+//   imagen_path: beneficios/{archivo} (o https)|null | url_externa: string https|null
+//   fecha_inicio, fecha_fin: timestamp|null | destacado, activo: bool (req)
+//
 // porticos, tarifas   datos de referencia (no PII); alertas   solo admin
 // ===============================================================
 
@@ -476,6 +484,58 @@ service cloud.firestore {
     match /alertas/{id} {
       allow read: if isAdmin();
       allow write: if isAdmin();
+    }
+
+    // ===============================================================
+    // beneficios  (catalogo global: lo lee todo usuario con sesion y solo lo
+    // administra el super admin del Backoffice)
+    // ===============================================================
+    // El id del documento es el beneficio_id. activo/vigencia se filtran en la
+    // app. imagen_path es la ruta de la imagen subida a Supabase por la Edge
+    // Function (beneficios/{archivo}); url_externa es un enlace https.
+    // Escribe isSuperAdmin() y no isAdmin(): el panel solo muestra el apartado
+    // Beneficios a super admin, y asi un operador tampoco podria escribir.
+
+    function enlaceHttps(d, k) {
+      return !(k in d) || d[k] == null ||
+        (d[k] is string && d[k].size() <= 500 && d[k].matches('https://.+'));
+    }
+
+    // Imagen subida desde el panel: ruta en el bucket (beneficios/{archivo}),
+    // que la app muestra pidiendo una URL firmada a la Edge Function. Tambien
+    // se acepta una URL https.
+    function imagenBeneficio(d) {
+      return !('imagen_path' in d) || d.imagen_path == null ||
+        (d.imagen_path is string && d.imagen_path.size() <= 500 &&
+         (d.imagen_path.matches('beneficios/[A-Za-z0-9][A-Za-z0-9._-]{0,127}') ||
+          d.imagen_path.matches('https://.+')));
+    }
+
+    function beneficioValido(d) {
+      return d.keys().hasOnly(['categoria', 'titulo', 'descripcion', 'empresa',
+          'imagen_path', 'url_externa', 'ubicacion', 'fecha_inicio', 'fecha_fin',
+          'condiciones', 'destacado', 'activo', 'categoria_otra']) &&
+        d.categoria in ['Combustible', 'Talleres', 'Mantenciones',
+          'Estacionamientos', 'Lavado', 'Neumáticos', 'Seguros', 'Accesorios',
+          'Otros'] &&
+        // "Otros" exige el nombre de la categoria; las demas no lo llevan.
+        (d.categoria != 'Otros' || reqStr(d, 'categoria_otra', 60)) &&
+        (d.categoria == 'Otros' || !('categoria_otra' in d)) &&
+        reqStr(d, 'titulo', 120) && reqStr(d, 'empresa', 120) &&
+        optStr(d, 'descripcion', 1000) && optStr(d, 'condiciones', 2000) &&
+        optStr(d, 'ubicacion', 200) &&
+        imagenBeneficio(d) && enlaceHttps(d, 'url_externa') &&
+        optTs(d, 'fecha_inicio') && optTs(d, 'fecha_fin') &&
+        (!(d.get('fecha_inicio', null) is timestamp &&
+           d.get('fecha_fin', null) is timestamp) ||
+          d.fecha_fin >= d.fecha_inicio) &&
+        d.destacado is bool && d.activo is bool;
+    }
+
+    match /beneficios/{beneficioId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSuperAdmin() && beneficioValido(request.resource.data);
+      allow delete: if isSuperAdmin();
     }
 
     // ===============================================================

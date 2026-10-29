@@ -1,0 +1,7 @@
+{
+  "name": "tag-ok-rules-test",
+  "private": true,
+  "description": "Pruebas de firestore.rules en el Emulator (no tocan produccion)",
+  "scripts": { "test": "firebase emulators:exec --only firestore --project demo-tag-ok --config firebase.rules-test.json \"node --test beneficios.test.js\"" },
+  "devDependencies": { "@firebase/rules-unit-testing": "^3.0.4", "firebase": "^10.14.1" }
+}

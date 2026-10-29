@@ -135,6 +135,7 @@ flutter clean
 flutter pub get
 flutter build web --release --pwa-strategy=none
 firebase deploy --only hosting --project tag-ok-v2
+flutter build web --release; firebase deploy --only hosting 
 
 Luego abre en el navegador: `http://127.0.0.1:8090/`
 

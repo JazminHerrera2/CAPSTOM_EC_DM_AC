@@ -4,11 +4,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'file_downloader.dart';
 
 import 'login_screen.dart';
 import 'admin_firestore_service.dart';
+import 'beneficios_page.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -34,6 +36,14 @@ class TagOkAdminApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'TAG OK Admin',
+      // Idioma del panel: calendarios, relojes y diálogos de Material en
+      // español (Chile), sin depender del idioma del navegador o del sistema.
+      locale: const Locale('es', 'CL'),
+      supportedLocales: const [
+        Locale('es', 'CL'),
+        Locale('es'),
+      ],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -123,6 +133,11 @@ class _AdminShellState extends State<AdminShell> {
         title: 'Reportes',
         icon: Icons.bar_chart_outlined,
         pageBuilder: (s) => ReportsPage(service: s),
+      ),
+      SidebarItem(
+        title: 'Beneficios',
+        icon: Icons.card_giftcard_outlined,
+        pageBuilder: (s) => BeneficiosPage(service: s),
       ),
       SidebarItem(
         title: 'Auditoría',
