@@ -6,6 +6,7 @@ import '../../data/models/mantencion_model.dart';
 import '../../data/models/vehiculo_model.dart';
 import '../../data/services/mantencion_service.dart';
 import '../../data/services/vehiculo_service.dart';
+import '../combustible/combustible_screen.dart';
 import '../dashboard/dashboard_logica.dart';
 import '../dashboard/gastos_historial.dart';
 import '../dashboard/historial_gastos_screen.dart';
@@ -18,14 +19,10 @@ import 'tarjeta_mantencion.dart';
 
 
 class MantenimientoScreen extends StatefulWidget {
-  /// Vuelve a Herramientas (el módulo vive dentro de HomeScreen, no es una
-  /// ruta que se pueda cerrar con Navigator.pop).
-  final VoidCallback? onVolver;
-
   /// Desde el historial de gastos, el apartado TAG abre la pestaña Auditoría.
   final VoidCallback? onIrAAuditoria;
 
-  const MantenimientoScreen({super.key, this.onVolver, this.onIrAAuditoria});
+  const MantenimientoScreen({super.key, this.onIrAAuditoria});
 
   static const Color bgColor = Color(0xFFF1F5F9);
   static const Color surfaceColor = Color(0xFFFFFFFF);
@@ -106,11 +103,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const PlaceholderModuloScreen(
-                      titulo: 'Combustible y carga',
-                      icono: Icons.local_gas_station_outlined,
-                      sprintEstimado: 'Sprint 4',
-                    ),
+                    builder: (_) => const CombustibleScreen(),
                   ),
                 );
               case CategoriaGasto.estacionamientos:
@@ -138,13 +131,6 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-        leading: widget.onVolver == null
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.arrow_back),
-                tooltip: 'Volver a Herramientas',
-                onPressed: widget.onVolver,
-              ),
         title: const Text(
           'Mantenciones',
           style: TextStyle(

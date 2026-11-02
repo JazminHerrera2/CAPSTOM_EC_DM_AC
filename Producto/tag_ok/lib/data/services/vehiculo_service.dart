@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/vehiculo_model.dart';
+import 'abastecimiento_service.dart';
 import 'auditoria_service.dart';
 import 'documento_vehicular_service.dart';
 import 'mantencion_service.dart';
@@ -123,6 +124,13 @@ class VehiculoService {
 
     await DocumentoVehicularService().eliminarDocumentosDeVehiculo(vehiculoId);
     await MantencionService().eliminarDeVehiculo(vehiculoId);
+    // Las cargas son "best effort": si las reglas de abastecimientos aún no
+    // están publicadas, no deben impedir borrar el vehículo.
+    try {
+      await AbastecimientoService().eliminarDeVehiculo(vehiculoId);
+    } catch (e) {
+      debugPrint('No se pudieron borrar las cargas de $vehiculoId: $e');
+    }
     await _vehiculos.doc(vehiculoId).delete();
 
     // Si era el vehículo principal del usuario, ese dato deja de apuntar a él.

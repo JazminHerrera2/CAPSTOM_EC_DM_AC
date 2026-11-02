@@ -323,3 +323,57 @@ test('9b el dueño lee, marca como leído y borra su recordatorio; B no lo lee',
 test('9c borrar un recordatorio que no existe no falla (eliminar mantención sin avisos)', async () => {
   await assertSucceeds(como(UID_A).doc('notificaciones/noExiste_7dias').delete());
 });
+
+// --- Prueba 10: abastecimientos (combustible y carga eléctrica) -------------
+const nuevaCarga = (uid, extra = {}) => ({
+  uid, vehiculo_id: 'vehA', fecha: Timestamp.now(), kilometraje: 72450,
+  estacion_servicio: 'Copec Providencia', tipo_abastecimiento: 'combustible',
+  tipo_combustible: 'Gasolina 95', cantidad: 32.451, unidad: 'L',
+  precio_unitario: 1289.9, total: 41857, origen_registro: 'ia',
+  fecha_captura: Timestamp.now(), confianza_ia: 85, ...extra,
+});
+test('10a crear carga propia pasa; con uid ajeno, sin sesión o con vehículo ajeno falla', async () => {
+  await assertSucceeds(como(UID_A).doc('abastecimientos/c1').set(nuevaCarga(UID_A)));
+  await assertFails(como(UID_A).doc('abastecimientos/c2').set(nuevaCarga(UID_B)));
+  await assertFails(anonimo().doc('abastecimientos/c3').set(nuevaCarga(UID_A)));
+  await assertFails(como(UID_A).doc('abastecimientos/c4').set(nuevaCarga(UID_A, { vehiculo_id: 'vehB' })));
+});
+test('10b registro parcial: solo la fecha es obligatoria (lo demás null)', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('abastecimientos/p1').set({
+    uid: UID_A, vehiculo_id: 'vehA', fecha: Timestamp.now(),
+    tipo_abastecimiento: 'combustible', unidad: 'L', origen_registro: 'manual',
+    kilometraje: null, estacion_servicio: null, tipo_combustible: null,
+    cantidad: null, precio_unitario: null, total: null,
+    fecha_captura: null, confianza_ia: null,
+  }));
+  await assertFails(db.doc('abastecimientos/p2').set(nuevaCarga(UID_A, { fecha: null })));
+});
+test('10c carga eléctrica en kWh pasa; unidad que no corresponde al tipo falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('abastecimientos/e1').set(nuevaCarga(UID_A, {
+    tipo_abastecimiento: 'carga_electrica', tipo_combustible: 'Eléctrico', unidad: 'kWh', cantidad: 32.5,
+  })));
+  await assertFails(db.doc('abastecimientos/e2').set(nuevaCarga(UID_A, { tipo_abastecimiento: 'carga_electrica', unidad: 'L' })));
+  await assertFails(db.doc('abastecimientos/e3').set(nuevaCarga(UID_A, { unidad: 'kWh' })));
+});
+test('10d datos inválidos, campos extra y archivo_path fallan', async () => {
+  const db = como(UID_A);
+  await assertFails(db.doc('abastecimientos/m1').set(nuevaCarga(UID_A, { tipo_abastecimiento: 'inventado' })));
+  await assertFails(db.doc('abastecimientos/m2').set(nuevaCarga(UID_A, { total: -1 })));
+  await assertFails(db.doc('abastecimientos/m3').set(nuevaCarga(UID_A, { cantidad: 'mucho' })));
+  await assertFails(db.doc('abastecimientos/m4').set(nuevaCarga(UID_A, { origen_registro: 'otro' })));
+  await assertFails(db.doc('abastecimientos/m5').set(nuevaCarga(UID_A, { archivo_path: 'x/y.jpg' })));
+});
+test('10e el dueño lee y borra su carga; B no la lee ni la borra; nadie la edita', async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc('abastecimientos/cA').set(nuevaCarga(UID_A));
+  });
+  await assertSucceeds(como(UID_A).doc('abastecimientos/cA').get());
+  await assertFails(como(UID_B).doc('abastecimientos/cA').get());
+  await assertFails(como(UID_A).collection('abastecimientos').get());
+  await assertSucceeds(como(UID_A).collection('abastecimientos').where('uid', '==', UID_A).get());
+  await assertFails(como(UID_A).doc('abastecimientos/cA').update({ total: 1 }));
+  await assertFails(como(UID_B).doc('abastecimientos/cA').delete());
+  await assertSucceeds(como(UID_A).doc('abastecimientos/cA').delete());
+});

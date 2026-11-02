@@ -13,6 +13,7 @@ import '../data/services/beneficio_service.dart';
 import '../data/services/vehiculo_service.dart';
 import 'beneficios/detalle_beneficio_screen.dart';
 import 'beneficios/imagen_beneficio.dart';
+import 'combustible/combustible_screen.dart';
 import 'dashboard/dashboard_logica.dart';
 import 'dashboard/encabezado_tag_ok.dart';
 import 'dashboard/estado_vehiculo_chip.dart';
@@ -26,8 +27,7 @@ import 'mi_vehiculo/foto_vehiculo.dart';
 ///
 /// Datos reales del vehículo seleccionado en el carrusel. Cada fuente se lee
 /// por separado y, si no existe, está vacía o no se puede leer (p. ej. las
-/// colecciones de Combustible y Estacionamientos del Sprint 4, que aún no
-/// existen), cuenta como $0 / "Sin registros" en vez de romper la pantalla.
+/// colección de Estacionamientos del Sprint 4, que aún no existe), cuenta como $0 / "Sin registros" en vez de romper la pantalla.
 ///
 /// Decisiones de alcance: el TAG (viajes) no guarda `vehiculo_id`, así que su
 /// gasto se suma solo al vehículo principal (deuda técnica: agregar
@@ -260,7 +260,8 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
 
   /// Abre la página de un tipo de gasto desde el historial. Mantenciones y TAG
   /// viven en pestañas de la app, así que se cierra el historial antes de ir.
-  /// Combustible y Estacionamientos aún son "Próximamente" (Sprint 4).
+  /// Combustible se abre como pantalla aparte; Estacionamientos aún es
+  /// "Próximamente" (Sprint 4).
   void _abrirCategoriaDeGasto(CategoriaGasto categoria) {
     switch (categoria) {
       case CategoriaGasto.mantenciones:
@@ -270,8 +271,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         Navigator.pop(context);
         widget.onIrAAuditoria?.call();
       case CategoriaGasto.combustible:
-        _abrirPlaceholder(
-            'Combustible y carga', Icons.local_gas_station_outlined, 'Sprint 4');
+        _abrirCombustible();
       case CategoriaGasto.estacionamientos:
         _abrirPlaceholder(
             'Estacionamiento', Icons.local_parking_outlined, 'Sprint 4');
@@ -288,6 +288,11 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   }
 
   // --- Navegación --------------------------------------------------------
+
+  void _abrirCombustible() => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const CombustibleScreen()),
+      );
 
   void _abrirPlaceholder(String titulo, IconData icono, String sprint) {
     Navigator.push(
@@ -703,8 +708,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         titulo: 'Combustible',
         icono: Icons.local_gas_station_outlined,
         color: _moradoAcciones,
-        onTap: () => _abrirPlaceholder(
-            'Combustible y carga', Icons.local_gas_station_outlined, 'Sprint 4'),
+        onTap: _abrirCombustible,
       ),
       (
         titulo: 'Estacionamiento',

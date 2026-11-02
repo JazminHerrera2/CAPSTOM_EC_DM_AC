@@ -24,6 +24,9 @@ import 'mantenimiento/mantenimiento_screen.dart';
 ///   Vehículo" de Fase 2 se sacó de la navegación principal.
 /// - "Perfil" se renombró a "Herramientas" y ahora abre un hub de accesos
 ///   en vez de ir directo a la pantalla de perfil.
+/// - Mantenciones, Combustible y Estacionamiento no son pestañas: se abren
+///   desde el Inicio como pantallas aparte (Navigator.push), sin el menú
+///   inferior.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -39,13 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // menú inferior nunca desaparezca — por eso es un flag aparte en vez de
   // un Navigator.push a una pantalla completa.
   bool _mostrandoMapa = false;
-  bool _mostrandoMantenimiento = false;
-
-  // Navigator propio del módulo de mantenciones: las pantallas que se abren
-  // desde ahí (historial, próximas, registrar) se apilan dentro del cuerpo de
-  // HomeScreen y así el menú inferior siempre queda visible.
-  final GlobalKey<NavigatorState> _mantenimientoNavKey =
-      GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -70,51 +66,34 @@ class _HomeScreenState extends State<HomeScreen> {
   final Color navBgColor = Colors.white;
   final Color textMuted = const Color(0xFF64748B);
 
-  /// Abre Mantenciones SIEMPRE en su página principal. Su navegador propio
-  /// sigue vivo mientras se está en otra pestaña, así que si se había dejado un
-  /// detalle abierto (de una mantención, del historial, etc.) se cierran todas
-  /// las pantallas apiladas antes de mostrarlo.
+  /// Abre Mantenciones como una pantalla aparte, sin el menú inferior (igual
+  /// que Combustible y Estacionamiento). Siempre parte en su página principal.
   void _abrirMantenciones() {
-    _mantenimientoNavKey.currentState?.popUntil((ruta) => ruta.isFirst);
-    setState(() {
-      _mostrandoMantenimiento = true;
-      _mostrandoMapa = false;
-    });
-  }
-
-  // Mantenciones se abre desde el Inicio, así que al salir se vuelve a él.
-  void _volverAlInicio() {
-    setState(() {
-      _selectedIndex = 0;
-      _mostrandoMapa = false;
-      _mostrandoMantenimiento = false;
-    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MantenimientoScreen(
+          // Desde el historial de gastos, el apartado TAG abre la pestaña
+          // Auditoría: se cierra Mantenciones y se vuelve al menú.
+          onIrAAuditoria: () {
+            Navigator.of(context).popUntil((ruta) => ruta.isFirst);
+            _onItemTapped(1);
+          },
+        ),
+      ),
+    );
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
       _mostrandoMapa = false;
-      _mostrandoMantenimiento = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      // En mantenciones, "atrás" cierra la pantalla abierta y, desde la
-      // principal, vuelve a Herramientas en vez de salir de la app.
-      canPop: !_mostrandoMantenimiento,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) return;
-        final nav = _mantenimientoNavKey.currentState;
-        if (nav != null && nav.canPop()) {
-          nav.pop();
-        } else {
-          _volverAlInicio();
-        }
-      },
-      child: Scaffold(
+    return Scaffold(
       backgroundColor: bgColor,
       // LiveMapScreen se mantiene siempre montado (Offstage) en vez de
       // construirse/destruirse con el resto de las pestañas: en Fase 1 el
@@ -128,28 +107,9 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            Offstage(
-              offstage: _mostrandoMapa || _mostrandoMantenimiento,
-              child: _buildBodyTab(),
-            ),
+            Offstage(offstage: _mostrandoMapa, child: _buildBodyTab()),
 
-            Offstage(
-              offstage: !_mostrandoMapa,
-              child: const LiveMapScreen(),
-            ),
-
-            Offstage(
-              offstage: !_mostrandoMantenimiento,
-              child: Navigator(
-                key: _mantenimientoNavKey,
-                onGenerateRoute: (_) => MaterialPageRoute(
-                  builder: (_) => MantenimientoScreen(
-                    onVolver: _volverAlInicio,
-                    onIrAAuditoria: () => _onItemTapped(1),
-                  ),
-                ),
-              ),
-            ),
+            Offstage(offstage: !_mostrandoMapa, child: const LiveMapScreen()),
           ],
         ),
       ),
@@ -171,19 +131,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: FloatingActionButton(
           onPressed: () {
-            setState(() {
-              _mostrandoMapa = true;
-              _mostrandoMantenimiento = false;
-            });
+            setState(() => _mostrandoMapa = true);
           },
           backgroundColor: primaryColor,
           elevation: 0,
           shape: const CircleBorder(),
-          child: const Icon(
-            Icons.map_outlined,
-            size: 34,
-            color: Colors.white,
-          ),
+          child: const Icon(Icons.map_outlined, size: 34, color: Colors.white),
         ),
       ),
       // Centrado en la barra pero más abajo que el centerDocked normal: el
@@ -208,18 +161,37 @@ class _HomeScreenState extends State<HomeScreen> {
           // pegados a él.
           child: Row(
             children: [
-              Expanded(child: _buildNavIcon(Icons.dashboard_outlined, 0, 'Inicio')),
-              Expanded(child: _buildNavIcon(Icons.receipt_long_outlined, 1, 'Auditoría')),
+              Expanded(
+                child: _buildNavIcon(Icons.dashboard_outlined, 0, 'Inicio'),
+              ),
+              Expanded(
+                child: _buildNavIcon(
+                  Icons.receipt_long_outlined,
+                  1,
+                  'Auditoría',
+                ),
+              ),
 
               const SizedBox(width: 104), // Espacio para el botón central
 
-              Expanded(child: _buildNavIcon(Icons.directions_car_outlined, 2, 'Vehículos')),
-              Expanded(child: _buildNavIcon(Icons.card_giftcard_outlined, 3, 'Beneficios')),
+              Expanded(
+                child: _buildNavIcon(
+                  Icons.directions_car_outlined,
+                  2,
+                  'Vehículos',
+                ),
+              ),
+              Expanded(
+                child: _buildNavIcon(
+                  Icons.card_giftcard_outlined,
+                  3,
+                  'Beneficios',
+                ),
+              ),
             ],
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -235,11 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? primaryColor : textMuted,
-              size: 26,
-            ),
+            Icon(icon, color: isSelected ? primaryColor : textMuted, size: 26),
             const SizedBox(height: 4),
             Text(
               label,
@@ -289,7 +257,9 @@ class _CentroDockedMasAbajo extends FloatingActionButtonLocation {
 
   @override
   Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final base = FloatingActionButtonLocation.centerDocked.getOffset(scaffoldGeometry);
+    final base = FloatingActionButtonLocation.centerDocked.getOffset(
+      scaffoldGeometry,
+    );
     return Offset(base.dx, base.dy + bajada);
   }
 

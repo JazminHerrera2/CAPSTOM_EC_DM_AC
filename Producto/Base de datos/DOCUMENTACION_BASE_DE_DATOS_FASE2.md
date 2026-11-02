@@ -13,7 +13,7 @@ Firestore es NoSQL: **no hay un script SQL de creación**. Las colecciones se cr
 | Mantenciones | Implementado | `mantenciones`, `componentes_mantencion` |
 | Notificaciones | Implementado para vencimientos y mantenciones | `notificaciones` |
 | Estacionamientos | **Planificado (Sprint 4); sin reglas aún** | `estacionamientos` |
-| Combustible y carga | **Planificado (Sprint 4); sin reglas aún** | `abastecimientos` |
+| Combustible y carga | Implementado (registro con IA o manual, historial y gasto mensual) | `abastecimientos` |
 | Beneficios | **Planificado (Sprint 5); sin reglas aún** | `beneficios` |
 | Dashboard "Mi Auto" | Sin colección propia: consolida las anteriores | — |
 
@@ -40,6 +40,7 @@ erDiagram
 | `vehiculos/{id}` | Vehículos registrados (compartida con la Fase 1) | Su dueño |
 | `documentos_vehiculares/{id}` | Permiso de circulación, revisión técnica, SOAP, seguro | Su dueño |
 | `mantenciones/{id}` | Mantenciones realizadas o programadas | Su dueño |
+| `abastecimientos/{id}` | Cargas de combustible o de energía eléctrica | Su dueño |
 | `componentes_mantencion/{id}` | Catálogo de componentes de mantención | Solo admins |
 | `notificaciones/{id}` | Recordatorios de vencimientos y mantenciones | Su dueño |
 
@@ -81,6 +82,17 @@ No se guarda la foto ni el PDF de la boleta: solo los datos extraídos y la refe
 - **componentes**: lista de ids de `componentes_mantencion` (máximo 30). El formulario ya no los pide; las mantenciones antiguas conservan los suyos.
 - **origen_registro** *(req)*: `manual` | `ia` | **confianza_ia**: número (0 a 100) | null.
 
+### `abastecimientos/{id}`
+Combustible y carga eléctrica. No se guarda la foto ni el PDF de la boleta: solo los datos extraídos. Solo la **fecha** es obligatoria (registros parciales); la app no edita cargas, solo las crea, lee y borra.
+- **uid** *(req, inmutable)*: dueño | **vehiculo_id** *(req, inmutable)*.
+- **fecha** *(req)*: timestamp | **fecha_captura**: timestamp | null.
+- **tipo_abastecimiento** *(req)*: `combustible` (litros) | `carga_electrica` (kWh). Deja lista la estructura para vehículos híbridos y eléctricos: cada registro lleva su propio tipo y unidad.
+- **unidad** *(L o kWh)*: `L` con `combustible`, `kWh` con `carga_electrica`.
+- **estacion_servicio** (máx. 100), **tipo_combustible** (máx. 40; "Gasolina 93/95/97", "Diésel", "Gas licuado (GLP)", "Eléctrico"): string | null.
+- **kilometraje**: entero (0 a 5.000.000) | null | **total**: entero en pesos (0 a 1.000.000.000) | null.
+- **cantidad** (0 a 100.000) y **precio_unitario** (0 a 1.000.000): número | null. Si falta uno de cantidad, precio o total y se conocen los otros dos, la app lo calcula al guardar.
+- **origen_registro** *(req)*: `manual` | `ia` | **confianza_ia**: número (0 a 100) | null.
+
 ### `componentes_mantencion/{id}`
 Catálogo editable por admins. Si la colección está vacía, la app usa estos valores por defecto: `mantencion_general`, `cambio_aceite_motor`, `rotacion_neumaticos`, `frenos`, `filtro_aire`, `bateria`, `liquido_frenos`.
 - **nombre** *(req)*: string | **orden** *(req)*: entero | **activo** *(req)*: bool.
@@ -98,7 +110,6 @@ Estos campos vienen del Diccionario de Datos y del Modelo Relacional de la Fase 
 | Colección | Módulo | Campos de diseño |
 |---|---|---|
 | `estacionamientos/{id}` | Estacionamientos (Sprint 4) | `vehiculo_id`, `fecha`, `lugar`, `hora_entrada`, `hora_salida`, `duracion_min`, `costo`, `ubicacion` (GeoPoint), `observacion`, `estado`, `origen_registro`, `fecha_captura`, `confianza_ia` |
-| `abastecimientos/{id}` | Combustible y carga (Sprint 4) | `vehiculo_id`, `fecha`, `kilometraje`, `estacion_servicio`, `tipo_abastecimiento`, `tipo_combustible`, `cantidad`, `unidad`, `precio_unitario`, `total`, `origen_registro`, `fecha_captura`, `confianza_ia` |
 | `beneficios/{id}` | Beneficios (Sprint 5) | `categoria`, `titulo`, `descripcion`, `empresa` o `comercio`, `imagen_path`, `url_externa`, `ubicacion`, `fecha_inicio`, `fecha_fin`, `condiciones`, `destacado`, `activo` (catálogo global, sin referencia a usuario ni vehículo; lo administra el backoffice) |
 
 Decisiones de diseño ya tomadas: no se guarda la foto de boletas ni tickets (solo los datos extraídos), el cronómetro de estacionamiento debe sobrevivir al cierre de la app (se guarda la hora de inicio en Firestore) y las ubicaciones usan GeoPoint.
@@ -217,7 +228,7 @@ Al comparar la base real con el Diccionario de Datos y el Modelo Relacional de l
 
 - La fuente de verdad de campos y validaciones es `Producto/tag_ok/firestore.rules` (comentario del encabezado y funciones `*Valida`).
 - Al agregar o cambiar una colección o campo, hay que actualizar las reglas, probarlas en el emulador (`Producto/tag_ok/tools/rules_test`), este documento y el `_esquema` del JSON de población.
-- Al implementar `estacionamientos`, `abastecimientos` o `beneficios`, mover su descripción desde la sección 4 a la sección 3.
+- Al implementar `estacionamientos` o `beneficios`, mover su descripción desde la sección 4 a la sección 3.
 - Las reglas se publican con `firebase deploy --only firestore:rules --project tag-ok-v2`.
 
 ---

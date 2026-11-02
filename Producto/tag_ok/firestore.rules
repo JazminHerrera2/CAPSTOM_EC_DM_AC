@@ -48,6 +48,17 @@ rules_version = '2';
 //   (sin archivo_path: no se guarda la boleta, solo los datos extraídos y la
 //   referencia del comprobante)
 //
+// abastecimientos/{id}   (combustible y carga electrica)
+//   uid: string (req, inmutable) = dueño | vehiculo_id: string (req, inmutable)
+//   fecha: timestamp (req) | tipo_abastecimiento: combustible|carga_electrica
+//   unidad: L|kWh (L solo con combustible, kWh solo con carga_electrica)
+//   estacion_servicio: string 100 | tipo_combustible: string 40
+//   kilometraje, total: int|null | cantidad, precio_unitario: number|null
+//   origen_registro: manual|ia | fecha_captura: timestamp|null
+//   confianza_ia: number|null
+//   (solo la fecha es obligatoria: se permiten registros parciales; sin
+//   archivo_path, no se guarda la boleta)
+//
 // componentes_mantencion/{id}   catalogo (lo escriben solo admins)
 //   nombre: string (req) | orden: int (req) | activo: bool (req)
 //
@@ -139,6 +150,10 @@ service cloud.firestore {
 
     function optInt(d, k, min, max) {
       return !(k in d) || d[k] == null || (d[k] is int && d[k] >= min && d[k] <= max);
+    }
+
+    function optNum(d, k, min, max) {
+      return !(k in d) || d[k] == null || (d[k] is number && d[k] >= min && d[k] <= max);
     }
 
     // ===============================================================
@@ -362,6 +377,49 @@ service cloud.firestore {
           'proximo_kilometraje', 'tipo_comprobante', 'numero_comprobante',
           'componentes']) &&
         mantencionValida(request.resource.data);
+
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // abastecimientos  (dueno = uid)
+    // ===============================================================
+    // Combustible y carga electrica. Solo la fecha es obligatoria (registros
+    // parciales). Sin archivo_path: no se guarda foto de la boleta. La app solo
+    // crea, lee y borra: no hay edicion.
+
+    function abastecimientoValido(d) {
+      return d.keys().hasOnly(['uid', 'vehiculo_id', 'fecha', 'kilometraje',
+          'estacion_servicio', 'tipo_abastecimiento', 'tipo_combustible',
+          'cantidad', 'unidad', 'precio_unitario', 'total', 'origen_registro',
+          'fecha_captura', 'confianza_ia']) &&
+        reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
+        d.fecha is timestamp &&
+        d.tipo_abastecimiento in ['combustible', 'carga_electrica'] &&
+        // La unidad acompana al tipo: litros o kWh.
+        (d.tipo_abastecimiento == 'combustible' ? d.get('unidad', 'L') == 'L'
+                                                : d.get('unidad', 'kWh') == 'kWh') &&
+        d.origen_registro in ['manual', 'ia'] &&
+        optStr(d, 'estacion_servicio', 100) && optStr(d, 'tipo_combustible', 40) &&
+        optInt(d, 'kilometraje', 0, 5000000) &&
+        optNum(d, 'cantidad', 0, 100000) &&
+        optNum(d, 'precio_unitario', 0, 1000000) &&
+        optInt(d, 'total', 0, 1000000000) &&
+        optTs(d, 'fecha_captura') &&
+        (!('confianza_ia' in d) || d.confianza_ia == null ||
+          (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100));
+    }
+
+    match /abastecimientos/{abastecimientoId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+
+      // uid debe ser el del autor y el vehiculo debe ser suyo.
+      allow create: if isSignedIn() &&
+        request.resource.data.uid == request.auth.uid &&
+        abastecimientoValido(request.resource.data) &&
+        vehiculoEsDe(request.resource.data.vehiculo_id, request.auth.uid);
+
+      allow update: if false;
 
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
