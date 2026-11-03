@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'route_model.dart';
 
 class TollRecord {
   final String name;
@@ -46,6 +47,39 @@ class TripHistory {
     required this.duration,
     required this.vehicleName,
   });
+
+  /// Arma el viaje que se guarda al finalizar: solo cuenta los pórticos
+  /// efectivamente cruzados ([TollData.isCrossed]); `totalCost` es la suma de
+  /// sus costos y cada pórtico lleva su hora de cruce (o [fecha] si no hay).
+  /// Los no cruzados no entran ni a `tolls` ni a `totalCost`.
+  ///
+  /// [fecha] es la fecha del viaje (por defecto, ahora). El `id` queda vacío:
+  /// lo genera Firestore.
+  factory TripHistory.desdePeajes({
+    required List<TollData> peajes,
+    required double distanceKm,
+    required String duration,
+    required String vehicleName,
+    DateTime? fecha,
+  }) {
+    final ahora = fecha ?? DateTime.now();
+    final cruzados = peajes.where((t) => t.isCrossed).toList();
+    return TripHistory(
+      id: '',
+      date: ahora,
+      totalCost: cruzados.fold(0.0, (suma, t) => suma + t.cost),
+      distanceKm: distanceKm,
+      duration: duration,
+      vehicleName: vehicleName,
+      tolls: cruzados
+          .map((t) => TollRecord(
+                name: t.name,
+                cost: t.cost, // el costo base o el que se haya aplicado
+                timestamp: t.crossedAt ?? ahora,
+              ))
+          .toList(),
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {

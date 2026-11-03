@@ -967,22 +967,15 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                               // Guardar en el historial antes de limpiar
                               if (_currentRoute != null) {
                                 final historyService = HistoryService();
-                                final trip = TripHistory(
-                                  id: '', // Se genera en Firestore
-                                  date: DateTime.now(),
-                                  totalCost: _currentRoute!.tolls.where((t) => t.isCrossed).fold(0.0, (sum, t) => sum + t.cost),
+                                // Solo los pórticos cruzados entran al viaje y a su costo
+                                // (filtro y suma en TripHistory.desdePeajes, con tests).
+                                final trip = TripHistory.desdePeajes(
+                                  peajes: _currentRoute!.tolls,
                                   distanceKm: _currentRoute!.distanceKm,
                                   duration: _currentRoute!.durationText,
                                   vehicleName: _selectedVehicle != null
                                     ? '${_selectedVehicle!['marca']} (${_selectedVehicle!['patente']})'
                                     : 'Vehículo Principal',
-                                  tolls: _currentRoute!.tolls
-                                    .where((t) => t.isCrossed)
-                                    .map((t) => TollRecord(
-                                      name: t.name,
-                                      cost: t.cost, // Usamos el costo base o el que se haya aplicado
-                                      timestamp: t.crossedAt ?? DateTime.now(),
-                                    )).toList(),
                                 );
                                 await historyService.saveTrip(trip);
 
