@@ -25,18 +25,28 @@ class AuditoriaSelectorVehiculo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Row(
-        children: [
-          _boton('Todos', patenteElegida == null, () => alElegir(null)),
-          for (final v in vehiculos) ...[
-            const SizedBox(width: 8),
-            _boton(v.patente, patenteElegida == v.patente,
-                () => alElegir(v.patente)),
-          ],
-        ],
+    // Centrados cuando caben; si son muchos, se desplazan hacia el lado.
+    return LayoutBuilder(
+      builder: (context, c) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: c.maxWidth),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _boton('Todos', patenteElegida == null, () => alElegir(null)),
+              for (final v in vehiculos) ...[
+                const SizedBox(width: 8),
+                _boton(
+                  v.patente,
+                  patenteElegida == v.patente,
+                  () => alElegir(v.patente),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
