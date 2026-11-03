@@ -78,7 +78,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   // (1.0 = igual que la de Gastos del mes). Con menos de 1 queda alineada a la
   // izquierda y la siguiente se asoma a la derecha. El alto es el mismo que el
   // de Gastos del mes: [_altoTarjetaPrincipal].
-  static const double _anchoTarjetaVehiculo = 0.8;
+  static const double _anchoTarjetaVehiculo = 1.0;
   final PageController _paginas =
       PageController(viewportFraction: _anchoTarjetaVehiculo);
   final List<StreamSubscription<dynamic>> _subs = [];
