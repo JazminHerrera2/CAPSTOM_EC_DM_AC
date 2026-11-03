@@ -219,8 +219,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? '¿No tienes cuenta? Regístrate aquí'
                         : '¿Ya tienes cuenta? Inicia sesión',
                     style: TextStyle(
-                      color: textMuted,
-                      fontWeight: FontWeight.w500,
+                      color: primaryColor,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
