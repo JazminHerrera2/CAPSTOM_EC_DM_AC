@@ -1,3 +1,19 @@
+// ⚠️ HERRAMIENTA MANUAL — NO es un test de la suite.
+//
+// Este archivo vive en `tools/` (y no en `test/`) a propósito: al correrlo
+// SOBRESCRIBE `lib/data/mock/tolls_database.dart` con pórticos geocodificados
+// desde los PDF de `pdf porticos/` (tarifa fija de 600, sin autopista, sentido
+// ni tarifas de punta/saturación). Estando en `test/`, un simple
+// `flutter test` lo ejecutaba y dejó el catálogo vacío en el commit afae4e9.
+//
+// Si de verdad quieres regenerar el catálogo (necesita MAPBOX_ACCESS_TOKEN en
+// `.env`), ejecútalo de forma explícita:
+//
+//   flutter test tools/geocode_tolls_test.dart
+//
+// y revisa el resultado con `git diff` antes de commitearlo. El catálogo
+// vigente es el de Fase 1 (104 pórticos); `test/catalogo_porticos_test.dart`
+// falla si se vacía o se pisa.
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
