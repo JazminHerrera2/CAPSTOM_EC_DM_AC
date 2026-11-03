@@ -12,6 +12,7 @@ import '../dashboard/gastos_historial.dart' show altoContenidoTarjetaGastos;
 import '../mantenimiento/tarjeta_mantencion.dart'
     show formatoFecha, formatoMiles;
 import '../mantenimiento/widgets_gasto.dart' show TokensGasto, clp;
+import 'detalle_combustible_screen.dart';
 import 'gasto_combustible.dart';
 import 'registro_ia_combustible_screen.dart';
 
@@ -63,47 +64,6 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
     _mes = null;
     _anio = null;
   });
-
-  Future<void> _eliminar(AbastecimientoModel carga) async {
-    final confirmar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Eliminar carga', style: TextStyle(color: textMain)),
-        content: Text(
-          '¿Eliminar la carga del ${formatoFecha(carga.fecha)}? '
-          'Esta acción no se puede deshacer.',
-          style: const TextStyle(color: textMuted, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Eliminar',
-              style: TextStyle(color: Color(0xFFE11D48)),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirmar != true || !mounted) return;
-
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      await _service.eliminar(carga.id);
-      messenger.showSnackBar(const SnackBar(content: Text('Carga eliminada.')));
-    } catch (e) {
-      debugPrint('No se pudo eliminar la carga: $e');
-      messenger.showSnackBar(
-        const SnackBar(content: Text('No fue posible eliminar la carga.')),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -449,13 +409,19 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       ].join(' · '),
     ].where((l) => l.isNotEmpty).toList();
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 6, 14),
-      decoration: BoxDecoration(
-        color: surfaceColor,
+    return Material(
+      color: surfaceColor,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-      ),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DetalleCombustibleScreen(carga: c),
+          ),
+        ),
+        child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -514,13 +480,9 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
               ),
             ),
           ),
-          IconButton(
-            tooltip: 'Eliminar carga',
-            visualDensity: VisualDensity.compact,
-            onPressed: () => _eliminar(c),
-            icon: const Icon(Icons.delete_outline, color: Color(0xFFE11D48)),
-          ),
         ],
+      ),
+        ),
       ),
     );
   }
