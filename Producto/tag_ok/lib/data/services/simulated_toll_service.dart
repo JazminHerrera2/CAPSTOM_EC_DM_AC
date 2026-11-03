@@ -146,45 +146,47 @@ class SimulatedTollService {
 
     List<_CandidateToll> filteredCandidates = [];
 
+    // Un pórtico se cobra solo si la ruta circula EN SU SENTIDO. El sentido de
+    // la ruta en ese punto es el rumbo del tramo de la polilínea de Mapbox (que
+    // viene en orden de viaje) que pasa por el pórtico. Esto aplica siempre,
+    // haya uno o varios pórticos candidatos en la misma autopista: antes, con
+    // 2 o más candidatos, se ignoraba el rumbo y se elegía el sentido más
+    // frecuente entre ellos (en empate, el primero), y como los pórticos de ida
+    // y vuelta están casi en el mismo punto, a veces se cobraba el de la
+    // calzada contraria.
     for (var entry in tollsByHighway.entries) {
-      final highwayCandidates = entry.value;
+      final candidatos = entry.value;
+      for (var i = 0; i < candidatos.length; i++) {
+        final ct = candidatos[i];
+        if (ct.toll.direction == null) {
+          // Sin sentido en el catálogo: no se puede filtrar; se mantiene.
+          filteredCandidates.add(ct);
+          continue;
+        }
 
-      if (highwayCandidates.length < 2 || entry.key == 'Unknown') {
-        for (var ct in highwayCandidates) {
-          if (ct.toll.direction != null) {
-            bool isMatch = _checkDirectionMatch(
-              ct.segmentBearing,
-              ct.toll.direction!,
-              highway: ct.toll.highway,
-              location: ct.toll.location,
-            );
-            if (isMatch) filteredCandidates.add(ct);
-          } else {
-            filteredCandidates.add(ct);
-          }
+        final rivales = _calzadasContrarias(ct, candidatos);
+        final bool enSuSentido;
+        if (rivales.isEmpty) {
+          // Pórtico sin calzada contraria cerca: el rumbo debe caer en su cuadrante.
+          enSuSentido = _checkDirectionMatch(
+            ct.segmentBearing,
+            ct.toll.direction!,
+            highway: ct.toll.highway,
+            location: ct.toll.location,
+          );
+        } else {
+          // Hay un pórtico de la calzada contraria a menos de 150 m (a veces en
+          // las mismas coordenadas): no basta el cuadrante (en curvas y
+          // diagonales ninguno de los dos lo cumple). Se cobra el que mejor
+          // calza con el rumbo de la ruta, y solo si no va claramente al revés.
+          final mio = _diferenciaDeRumbo(ct);
+          enSuSentido = mio <= 90 &&
+              rivales.every((r) {
+                final suyo = _diferenciaDeRumbo(r);
+                return mio < suyo || (mio == suyo && i < candidatos.indexOf(r));
+              });
         }
-      } else {
-        Map<String, int> directionCounts = {};
-        for (var ct in highwayCandidates) {
-          if (ct.toll.direction != null) {
-            directionCounts[ct.toll.direction!] = (directionCounts[ct.toll.direction!] ?? 0) + 1;
-          }
-        }
-        
-        String? dominantDirection;
-        int maxCount = 0;
-        directionCounts.forEach((dir, count) {
-          if (count > maxCount) {
-            maxCount = count;
-            dominantDirection = dir;
-          }
-        });
-
-        for (var ct in highwayCandidates) {
-          if (ct.toll.direction == dominantDirection || ct.toll.direction == null) {
-            filteredCandidates.add(ct);
-          }
-        }
+        if (enSuSentido) filteredCandidates.add(ct);
       }
     }
 
@@ -302,6 +304,49 @@ class SimulatedTollService {
     double bearing = math.atan2(y, x);
     bearing = (bearing * 180.0 / math.pi + 360.0) % 360.0;
     return bearing;
+  }
+
+  /// Rumbo central (grados, 0 = norte) de un sentido de circulación, con la
+  /// misma excepción del anillo poniente de Vespucio Norte que usa
+  /// [_checkDirectionMatch]. Null si el sentido no es uno de los 4 conocidos.
+  double? _rumboDeSentido(String tollDir, {String? highway, LatLng? location}) {
+    final anilloPoniente =
+        highway == "Vespucio Norte" && location != null && location.longitude < -70.73;
+    switch (tollDir) {
+      case "S-N":
+        return 0;
+      case "P-O":
+        return anilloPoniente ? 0 : 90;
+      case "N-S":
+        return 180;
+      case "O-P":
+        return anilloPoniente ? 180 : 270;
+    }
+    return null;
+  }
+
+  /// Diferencia angular (0..180) entre el rumbo de la ruta y el del pórtico.
+  double _diferenciaDeRumbo(_CandidateToll ct) {
+    final objetivo = _rumboDeSentido(
+      ct.toll.direction!,
+      highway: ct.toll.highway,
+      location: ct.toll.location,
+    );
+    if (objetivo == null) return 0;
+    final d = (ct.segmentBearing - objetivo).abs() % 360;
+    return d > 180 ? 360 - d : d;
+  }
+
+  /// Pórticos de [candidatos] de la calzada contraria a [ct] (sentido opuesto)
+  /// a menos de 150 m de él. Vacío si no hay ninguno.
+  List<_CandidateToll> _calzadasContrarias(_CandidateToll ct, List<_CandidateToll> candidatos) {
+    const opuesto = {"N-S": "S-N", "S-N": "N-S", "O-P": "P-O", "P-O": "O-P"};
+    return candidatos
+        .where((o) =>
+            o.toll.direction != null &&
+            opuesto[ct.toll.direction] == o.toll.direction &&
+            _calculateDistance(ct.toll.location, o.toll.location) <= 150)
+        .toList();
   }
 
   bool _checkDirectionMatch(double bearing, String tollDir, {String? highway, LatLng? location}) {
