@@ -21,6 +21,7 @@ import '../data/models/route_model.dart';
 import '../data/models/trip_history.dart';
 import '../data/services/history_service.dart';
 import '../utils/alerta_presupuesto.dart';
+import '../utils/simulacion_recorrido.dart';
 
 /// Mapa en tiempo real con seguimiento de pórticos, tracking GPS y cobro de
 /// peajes. Antes vivía en la pestaña "Inicio" de `home_screen.dart`; se
@@ -76,6 +77,13 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
   bool _isGpsWeak = false;
   Future<void>? _locationInitializationFuture;
 
+  // Simulación de recorrido: SOLO modo debug (kDebugMode). Reutiliza
+  // _simulateMovement y _checkTollCrossings; no hay lógica de cruce propia.
+  bool _isSimulating = false;
+  double _simMultiplier = multiplicadoresSimulacion.first;
+  Timer? _simTimer;
+  bool _tripWasSimulated = false; // el viaje actual tuvo la simulación activa
+
   // Notificaciones y Ciclo de vida
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
@@ -101,6 +109,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
   void _startInertialTimer() {
     _inertialTimer?.cancel();
     _inertialTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (kDebugMode && _isSimulating) return; // la simulación mueve el mapa, no el timer inercial
       if (!_isNavigating || _lastGpsUpdateTime == null || _currentPosition == null) return;
 
       final secondsSinceLastUpdate = DateTime.now().difference(_lastGpsUpdateTime!).inSeconds;
@@ -167,9 +176,113 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
     _checkTollCrossings(_currentPosition!);
   }
 
+  // ================================================================
+  // SIMULAR RECORRIDO (solo modo debug)
+  // ================================================================
+
+  /// Recorre la ruta activa sin moverse: un temporizador llama a
+  /// [_simulateMovement] (la misma interpolación del GPS débil) con pasos
+  /// cortos, y los cruces los registra [_checkTollCrossings] como siempre.
+  /// Mientras corre, el GPS real y el timer inercial no mueven el mapa.
+  /// Los viajes que se guarden con la simulación activa llevan " [SIMULADO]".
+  void _iniciarSimulacion() {
+    if (!kDebugMode) return;
+    if (_isSimulating || !_isNavigating || _currentRoute == null || _remainingPolyline.isEmpty) return;
+
+    setState(() {
+      // Si no hay posición o está lejos del inicio de la ruta (probando desde
+      // el escritorio), se parte del inicio de la ruta.
+      final inicio = _remainingPolyline.first;
+      if (_currentPosition == null || _calculateDistance(_currentPosition!, inicio) > 200) {
+        _currentPosition = inicio;
+      }
+      _isSimulating = true;
+      _tripWasSimulated = true;
+      _isGpsWeak = false;
+      _currentSpeedKmH = velocidadBaseSimulacionKmH * _simMultiplier;
+    });
+
+    _simTimer?.cancel();
+    _simTimer = Timer.periodic(pasoSimulacion, (_) {
+      // Se detiene sola al pausar, al llegar al final o al salir de la pantalla.
+      if (!mounted || !_isNavigating || _remainingPolyline.isEmpty) {
+        _detenerSimulacion();
+        return;
+      }
+      _simulateMovement(metrosPorPasoSimulacion(_simMultiplier));
+    });
+  }
+
+  void _detenerSimulacion() {
+    _simTimer?.cancel();
+    _simTimer = null;
+    if (!_isSimulating) return;
+    if (mounted) {
+      setState(() {
+        _isSimulating = false;
+        _currentSpeedKmH = 0.0;
+      });
+    } else {
+      _isSimulating = false;
+    }
+  }
+
+  void _cambiarVelocidadSimulacion(double multiplicador) {
+    setState(() {
+      _simMultiplier = multiplicador;
+      if (_isSimulating) _currentSpeedKmH = velocidadBaseSimulacionKmH * multiplicador;
+    });
+  }
+
+  /// Botón "Simular recorrido" / "Detener simulación" y selector de velocidad.
+  /// Solo se construye en modo debug (ver el uso, envuelto en kDebugMode).
+  Widget _buildControlesSimulacion() {
+    const naranja = Color(0xFFEA580C);
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: naranja.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: naranja.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('SOLO DEBUG', style: TextStyle(color: naranja, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _isSimulating ? _detenerSimulacion : _iniciarSimulacion,
+                  icon: Icon(_isSimulating ? Icons.stop : Icons.play_arrow, color: naranja, size: 18),
+                  label: Text(_isSimulating ? 'Detener simulación' : 'Simular recorrido', style: const TextStyle(color: naranja, fontWeight: FontWeight.bold, fontSize: 12)),
+                  style: OutlinedButton.styleFrom(side: const BorderSide(color: naranja)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              for (final m in multiplicadoresSimulacion)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: ChoiceChip(
+                    label: Text('${m.toStringAsFixed(0)}x', style: const TextStyle(fontSize: 11)),
+                    selected: _simMultiplier == m,
+                    visualDensity: VisualDensity.compact,
+                    onSelected: (_) => _cambiarVelocidadSimulacion(m),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _simTimer?.cancel();
     _positionStreamSubscription?.cancel();
     _inertialTimer?.cancel();
     WakelockPlus.disable();
@@ -440,6 +553,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
       _positionStreamSubscription = Geolocator.getPositionStream(locationSettings: locationSettings).listen(
         (Position position) {
           if (!mounted) return;
+          if (kDebugMode && _isSimulating) return; // la simulación manda sobre el GPS real
           setState(() {
             _currentPosition = LatLng(position.latitude, position.longitude);
             _currentSpeedKmH = position.speed > 0 ? position.speed * 3.6 : 0.0;
@@ -674,6 +788,11 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
         _hasStartedTrip = false;
       });
 
+      if (kDebugMode) {
+        // Ruta nueva = viaje nuevo: sin simulación ni marca de simulado.
+        _detenerSimulacion();
+        _tripWasSimulated = false;
+      }
       WakelockPlus.disable();
       _saveNavigationState();
       _determinePosition();
@@ -890,6 +1009,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       }
                       return const SizedBox.shrink();
                     }),
+                    // Solo en modo debug: no existe en builds release.
+                    if (kDebugMode) _buildControlesSimulacion(),
                   ],
                   if (!_isNavigating) ...[
                     const SizedBox(height: 16),
@@ -966,17 +1087,22 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                           child: GestureDetector(
                             onTap: () async {
                               // Guardar en el historial antes de limpiar
+                              if (kDebugMode) _detenerSimulacion(); // deja de generar cruces antes de armar el viaje
                               if (_currentRoute != null) {
                                 final historyService = HistoryService();
+                                final nombreVehiculo = _selectedVehicle != null
+                                    ? '${_selectedVehicle!['marca']} (${_selectedVehicle!['patente']})'
+                                    : 'Vehículo Principal';
                                 // Solo los pórticos cruzados entran al viaje y a su costo
                                 // (filtro y suma en TripHistory.desdePeajes, con tests).
                                 final trip = TripHistory.desdePeajes(
                                   peajes: _currentRoute!.tolls,
                                   distanceKm: _currentRoute!.distanceKm,
                                   duration: _currentRoute!.durationText,
-                                  vehicleName: _selectedVehicle != null
-                                    ? '${_selectedVehicle!['marca']} (${_selectedVehicle!['patente']})'
-                                    : 'Vehículo Principal',
+                                  // Solo en debug: los viajes con simulación activa se marcan.
+                                  vehicleName: (kDebugMode && _tripWasSimulated)
+                                      ? nombreVehiculoSimulado(nombreVehiculo)
+                                      : nombreVehiculo,
                                 );
                                 await historyService.saveTrip(trip);
 
@@ -1006,6 +1132,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                                 _passedPolyline = [];
                                 _selectedVehicle = null;
                               });
+                              if (kDebugMode) _tripWasSimulated = false;
                               WakelockPlus.disable();
                               _saveNavigationState(); // Limpia la caché
                               _determinePosition();
