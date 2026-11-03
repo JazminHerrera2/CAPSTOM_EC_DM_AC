@@ -2051,13 +2051,14 @@ Instrucciones para redactar el "aiReport":
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
             // Tarjeta de Carga de Archivos
             _buildUploadCard(),
             const SizedBox(height: 24),
             Text(
               'HISTORIAL DE AUDITORÍAS (${auditedInvoices.length})',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: textMuted,
                 fontSize: 11,
@@ -2112,6 +2113,7 @@ Instrucciones para redactar el "aiReport":
             const SizedBox(height: 10),
             Text(
               _useAI ? 'Auditar Cuenta con IA' : 'Subir Cuenta de Autopista',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: textMain,
                 fontSize: 13,
@@ -2119,11 +2121,15 @@ Instrucciones para redactar el "aiReport":
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              _useAI
-                  ? 'Análisis inteligente, semántico y detección de fraude por OpenAI'
-                  : 'Soporta formato oficial mensual (PDF / CSV / XLSX)',
-              style: TextStyle(color: textMuted, fontSize: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                _useAI
+                    ? 'Análisis inteligente, semántico y detección de fraude por OpenAI'
+                    : 'Soporta formato oficial mensual (PDF / CSV / XLSX)',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: textMuted, fontSize: 10),
+              ),
             ),
           ],
         ),
