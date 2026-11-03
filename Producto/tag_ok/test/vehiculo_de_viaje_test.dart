@@ -26,4 +26,18 @@ void main() {
     expect(viajeEsDeVehiculo('Vehículo Principal', 'ABCD12'), isFalse);
     expect(viajeEsDeVehiculo('Toyota (ABCD12)', ''), isFalse);
   });
+
+  group('boletaEsDeVehiculo', () {
+    test('ignora guiones, puntos, espacios y mayúsculas', () {
+      expect(boletaEsDeVehiculo('ab-cd 12', 'ABCD12'), isTrue);
+      expect(boletaEsDeVehiculo('ABCD12', 'abcd12'), isTrue);
+    });
+
+    test('otra patente, RUT o dato vacío no coinciden', () {
+      expect(boletaEsDeVehiculo('ZZZZ99', 'ABCD12'), isFalse);
+      expect(boletaEsDeVehiculo('20.904.281-9', 'ABCD12'), isFalse);
+      expect(boletaEsDeVehiculo(null, 'ABCD12'), isFalse);
+      expect(boletaEsDeVehiculo('ABCD12', ''), isFalse);
+    });
+  });
 }

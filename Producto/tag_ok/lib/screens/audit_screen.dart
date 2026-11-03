@@ -2042,7 +2042,15 @@ Instrucciones para redactar el "aiReport":
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: _getAuditedInvoices(),
       builder: (context, snapshot) {
-        final auditedInvoices = snapshot.data ?? [];
+        final todasLasBoletas = snapshot.data ?? [];
+        // Mismo selector de vehículo que en Consumo e Historial: muestra solo
+        // las boletas cuya patente es la del vehículo elegido.
+        final auditedInvoices = _selectedPatente == null
+            ? todasLasBoletas
+            : todasLasBoletas
+                .where((b) => boletaEsDeVehiculo(
+                    b['patent']?.toString(), _selectedPatente!))
+                .toList();
 
         return ListView(
           padding: const EdgeInsets.only(bottom: 24),
@@ -2055,7 +2063,9 @@ Instrucciones para redactar el "aiReport":
                 children: [
             // Tarjeta de Carga de Archivos
             _buildUploadCard(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+            _buildSelectorVehiculo(),
+            const SizedBox(height: 8),
             Text(
               'HISTORIAL DE AUDITORÍAS (${auditedInvoices.length})',
               textAlign: TextAlign.center,
@@ -2067,7 +2077,16 @@ Instrucciones para redactar el "aiReport":
               ),
             ),
             const SizedBox(height: 12),
-            if (auditedInvoices.isEmpty)
+            if (auditedInvoices.isEmpty && todasLasBoletas.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  'Ninguna boleta corresponde a este vehículo.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: textMuted, fontSize: 12),
+                ),
+              )
+            else if (auditedInvoices.isEmpty)
               _buildEmptyAuditsState()
             else
               ...auditedInvoices.map((inv) => _buildAuditedInvoiceCard(inv)),
