@@ -982,7 +982,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
 
                                 // Lógica de Notificación de Límite
                                 final allTrips = await historyService.getTripHistory().first;
-                                final double newTotal = allTrips.fold(0, (sum, t) => sum + t.totalCost);
+                                // Solo el gasto del mes en curso (antes sumaba todos los viajes históricos).
+                                final double newTotal = gastoDelMes(allTrips, DateTime.now());
                                 final double limit = await historyService.getMonthlyLimit().first;
 
                                 if (mounted) {

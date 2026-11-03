@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/trip_history.dart';
+import '../../utils/alerta_presupuesto.dart';
 
 class HistoryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -81,8 +82,7 @@ class HistoryService {
   // --- GESTIÓN DE ALERTAS (Para evitar spam) ---
   
   Future<bool> hasAlertBeenNotified(int threshold) async {
-    final now = DateTime.now();
-    final monthKey = "${now.year}-${now.month}_$threshold";
+    final monthKey = claveAlertaMensual(DateTime.now(), threshold);
     
     final doc = await _firestore.collection('usuarios').doc(_userId).get();
     if (!doc.exists) return false;
@@ -92,8 +92,7 @@ class HistoryService {
   }
 
   Future<void> markAlertAsNotified(int threshold) async {
-    final now = DateTime.now();
-    final monthKey = "${now.year}-${now.month}_$threshold";
+    final monthKey = claveAlertaMensual(DateTime.now(), threshold);
     
     await _firestore.collection('usuarios').doc(_userId).set({
       'alertas_vistas': {
