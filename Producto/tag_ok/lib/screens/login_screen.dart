@@ -159,7 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: TextButton(
                           onPressed: _showForgotPasswordDialog,
                           child: Text(
-                            '¿Olvidaste tu contraseña?',
+                            'Olvidé mi contraseña',
                             style: TextStyle(
                               color: primaryColor,
                               fontSize: 13,
@@ -228,20 +228,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         Expanded(
                           child: Divider(color: surfaceBorder, height: 1),
                         ),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 12),
-                          width: 26,
-                          height: 26,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: surfaceBorder),
-                          ),
+                        // Un solo círculo: la letra "o" es el círculo.
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Text(
                             'o',
                             style: TextStyle(
                               color: textMuted,
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -370,8 +364,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : 'Ver contraseña',
                   icon: Icon(
                     verPassword
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
                     color: textMuted,
                   ),
                   onPressed: alAlternarVer,
