@@ -21,7 +21,9 @@ void main() {
 
   test('Validar Base de Datos de Pórticos', () {
     final tolls = TollsDatabase.santiagoTolls;
-    expect(tolls.length, 106);
+    // Catálogo de Fase 1: 104 pórticos reales (sin los 2 "Pórtico de Prueba
+    // Local"). Debe coincidir con EXPORTACION_BASE_DE_DATOS.json.
+    expect(tolls.length, 104);
     
     final p3 = tolls.firstWhere((t) => t.name == "P3 Puente Lo Saldes - Vivaceta" && t.direction == "O-P");
     expect(p3.cost, 719.04);
