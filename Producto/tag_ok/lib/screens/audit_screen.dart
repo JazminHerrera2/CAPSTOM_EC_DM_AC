@@ -2061,11 +2061,11 @@ Instrucciones para redactar el "aiReport":
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-            // Tarjeta de Carga de Archivos
-            _buildUploadCard(),
-            const SizedBox(height: 16),
+            // Selector de vehículo y, debajo, la tarjeta de carga
             _buildSelectorVehiculo(),
             const SizedBox(height: 8),
+            _buildUploadCard(),
+            const SizedBox(height: 24),
             Text(
               'HISTORIAL DE AUDITORÍAS (${auditedInvoices.length})',
               textAlign: TextAlign.center,
