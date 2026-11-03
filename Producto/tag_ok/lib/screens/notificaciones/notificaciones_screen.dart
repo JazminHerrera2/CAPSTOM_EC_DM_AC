@@ -1,11 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/models/documento_vehicular_model.dart';
 import '../../data/models/notificacion_config_model.dart';
 import '../../data/services/aviso_navegador_service.dart';
+import '../../data/services/mantencion_service.dart';
 import '../../data/services/notificacion_service.dart';
+import '../../data/services/vehiculo_service.dart';
 import '../../utils/notificacion_navegador.dart';
+import '../mantenimiento/detalle_mantenimiento_screen.dart';
+import '../mi_vehiculo/detalle_documento_screen.dart';
 
 /// Un aviso "ya toca" cuando su fecha programada es hoy o anterior.
 bool avisoYaCorresponde(NotificacionConfigModel n, DateTime ahora) {
@@ -140,12 +146,62 @@ class NotificacionesScreen extends StatelessWidget {
                     for (final n in recientes)
                       _TarjetaAviso(
                         aviso: n,
-                        onTap: n.leida ? null : () => servicio.marcarLeida(n.id),
+                        onTap: () => _abrirAviso(context, servicio, n),
                       ),
                   ],
                 );
               },
             ),
+    );
+  }
+}
+
+/// Al tocar un aviso: se marca como leído y se abre lo que indica. Un aviso de
+/// documento abre el detalle de ese documento; uno de mantención, el detalle de
+/// esa mantención. Si ya no existe (se eliminó), se avisa con un mensaje.
+Future<void> _abrirAviso(
+  BuildContext context,
+  NotificacionService servicio,
+  NotificacionConfigModel aviso,
+) async {
+  final navegador = Navigator.of(context);
+  final mensajes = ScaffoldMessenger.of(context);
+  void noDisponible() => mensajes.showSnackBar(
+        const SnackBar(content: Text('Ya no existe lo que indica este aviso.')),
+      );
+
+  if (!aviso.leida) servicio.marcarLeida(aviso.id);
+
+  final referencia = aviso.referenciaId;
+  if (referencia == null || referencia.isEmpty) return noDisponible();
+
+  try {
+    if (aviso.tipo == tipoAvisoMantencion) {
+      final mantencion = await MantencionService().obtener(referencia);
+      if (mantencion == null) return noDisponible();
+      await navegador.push(MaterialPageRoute(
+        builder: (_) => DetalleMantenimientoScreen(mantencion: mantencion),
+      ));
+    } else if (aviso.tipo == tipoAvisoVencimientoDocumento) {
+      final doc = await FirebaseFirestore.instance
+          .collection('documentos_vehiculares')
+          .doc(referencia)
+          .get();
+      final data = doc.data();
+      if (!doc.exists || data == null) return noDisponible();
+      final documento = DocumentoVehicularModel.fromJson(data, doc.id);
+      final vehiculoId = aviso.vehiculoId ?? documento.vehiculoId;
+      final vehiculo = await VehiculoService().obtenerVehiculo(vehiculoId);
+      await navegador.push(MaterialPageRoute(
+        builder: (_) => DetalleDocumentoScreen(
+          documento: documento,
+          patenteVehiculo: vehiculo?.patente ?? '',
+        ),
+      ));
+    }
+  } catch (_) {
+    mensajes.showSnackBar(
+      const SnackBar(content: Text('No se pudo abrir el aviso.')),
     );
   }
 }
@@ -270,7 +326,7 @@ class _TarjetaAviso extends StatelessWidget {
         ),
         trailing: noLeida
             ? const Icon(Icons.circle, size: 10, color: Color(0xFF1E3A8A))
-            : null,
+            : const Icon(Icons.chevron_right, color: NotificacionesScreen._textMuted),
       ),
     );
   }
