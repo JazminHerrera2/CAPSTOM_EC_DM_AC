@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/auth_provider.dart';
+import 'dashboard/logo_tag_ok.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -111,17 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(
-                  Icons.route_outlined,
-                  size: 80,
-                  color: primaryColor,
-                  shadows: [
-                    Shadow(
-                      color: primaryColor.withValues(alpha: 0.5),
-                      blurRadius: 20,
-                    )
-                  ],
-                ),
+                const Center(child: LogoTagOk(alto: 90)),
                 const SizedBox(height: 24),
                 
                 Text(
@@ -174,18 +165,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   height: 56,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1E3A8A), Color(0xFF2F5BBA)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryColor.withValues(alpha: 0.5),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
+                    // Mismo azul sólido que los demás botones de la app.
+                    color: primaryColor,
                   ),
                   child: ElevatedButton(
                     onPressed: authState.isLoading ? null : _submit,
@@ -196,6 +177,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       disabledBackgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
                     ),
                     child: authState.isLoading
                         ? const SizedBox(
@@ -211,14 +193,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             children: [
                               Text(
                                 _isLogin ? 'Continuar' : 'Registrarse',
-                                style: TextStyle(
-                                  color: textMain,
+                                style: const TextStyle(
+                                  color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Icon(Icons.arrow_forward, color: textMain),
+                              const Icon(Icons.arrow_forward, color: Colors.white),
                             ],
                           ),
                   ),
@@ -248,8 +230,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Text(
                       '¿Olvidaste tu contraseña?',
                       style: TextStyle(
-                        color: textMuted.withValues(alpha: 0.8),
-                        fontWeight: FontWeight.w400,
+                        color: primaryColor,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
