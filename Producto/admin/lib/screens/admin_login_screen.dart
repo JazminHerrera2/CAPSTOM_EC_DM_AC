@@ -249,19 +249,17 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                 style: TextStyle(color: _textoGris, fontSize: 14),
               ),
               const SizedBox(height: 28),
-              const _Etiqueta('Correo electrónico'),
-              const SizedBox(height: 6),
               _campo(
                 controller: _emailCtrl,
+                hint: 'Correo electrónico',
                 icono: Icons.mail_outline,
                 tipo: TextInputType.emailAddress,
                 accion: TextInputAction.next,
               ),
               const SizedBox(height: 16),
-              const _Etiqueta('Contraseña'),
-              const SizedBox(height: 6),
               _campo(
                 controller: _passwordCtrl,
+                hint: 'Contraseña',
                 icono: Icons.lock_outline,
                 oculto: !_verPassword,
                 accion: TextInputAction.done,
@@ -335,6 +333,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
   Widget _campo({
     required TextEditingController controller,
     required IconData icono,
+    required String hint,
     TextInputType? tipo,
     bool oculto = false,
     TextInputAction? accion,
@@ -353,6 +352,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
       onSubmitted: alEnviar,
       style: const TextStyle(color: _textoPrincipal, fontSize: 14),
       decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: _textoGris.withValues(alpha: 0.7), fontSize: 14),
         filled: true,
         fillColor: _campoFondo,
         isDense: true,
@@ -365,21 +366,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
       ),
     );
   }
-}
-
-class _Etiqueta extends StatelessWidget {
-  final String texto;
-  const _Etiqueta(this.texto);
-
-  @override
-  Widget build(BuildContext context) => Text(
-        texto,
-        style: const TextStyle(
-          color: _textoPrincipal,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
-      );
 }
 
 class _Caracteristica extends StatelessWidget {
