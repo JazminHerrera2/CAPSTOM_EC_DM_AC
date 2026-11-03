@@ -17,6 +17,8 @@ import '../data/models/vehiculo_model.dart';
 import '../data/services/vehiculo_service.dart';
 import '../utils/vehiculo_de_viaje.dart';
 import 'auditoria_selector_vehiculo.dart';
+import 'dashboard/filtro_mes_anio.dart';
+import 'mantenimiento/selector_tipo_mantencion.dart';
 import '../data/services/history_service.dart';
 import '../data/demo_data.dart';
 import '../features/registro_inteligente/openai_extraction_service.dart';
@@ -41,9 +43,22 @@ class _AuditScreenState extends State<AuditScreen> {
   // Vehículo elegido en el carrusel (patente); null = todos.
   String? _selectedPatente;
   String _selectedHighway = 'Todas';
-  String _selectedDatePreset =
-      'Todos'; // 'Todos', 'Hoy', 'Últimos 7 días', 'Este Mes', 'Personalizado'
-  DateTimeRange? _customDateRange;
+  // Mes y año del panel de filtros (como en Mantenciones). null = todos.
+  int? _mes;
+  int? _anio;
+  bool _mostrarFiltros = false;
+  static const String _opcionTodas = 'Todas';
+  static const List<String> _autopistas = [
+    _opcionTodas,
+    'Autopista Central',
+    'Costanera Norte',
+    'Vespucio Norte',
+    'Vespucio Sur',
+    'Vespucio Oriente (AVO)',
+    'Ruta 68',
+    'Ruta 78',
+    'Autopista de Conexión',
+  ];
 
   // Colores globales premium (Dark Mode)
   final Color bgColor = const Color(0xFFF1F5F9);
@@ -192,38 +207,8 @@ class _AuditScreenState extends State<AuditScreen> {
       return false;
     }
 
-    final now = DateTime.now();
-    DateTime? start;
-    DateTime? end;
-
-    if (_selectedDatePreset == 'Hoy') {
-      start = DateTime(now.year, now.month, now.day);
-      end = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
-    } else if (_selectedDatePreset == 'Últimos 7 días') {
-      start = now.subtract(const Duration(days: 7));
-      end = now;
-    } else if (_selectedDatePreset == 'Este Mes') {
-      start = DateTime(now.year, now.month, 1);
-      end = now;
-    } else if (_selectedDatePreset == 'Personalizado' &&
-        _customDateRange != null) {
-      start = _customDateRange!.start;
-      end = DateTime(
-        _customDateRange!.end.year,
-        _customDateRange!.end.month,
-        _customDateRange!.end.day,
-        23,
-        59,
-        59,
-        999,
-      );
-    }
-
-    if (start != null && end != null) {
-      if (trip.date.isBefore(start) || trip.date.isAfter(end)) {
-        return false;
-      }
-    }
+    if (_anio != null && trip.date.year != _anio) return false;
+    if (_mes != null && trip.date.month != _mes) return false;
 
     if (_selectedHighway != 'Todas') {
       final hasTollInHighway = trip.tolls.any(
@@ -241,8 +226,8 @@ class _AuditScreenState extends State<AuditScreen> {
     setState(() {
       _selectedPatente = null;
       _selectedHighway = 'Todas';
-      _selectedDatePreset = 'Todos';
-      _customDateRange = null;
+      _mes = null;
+      _anio = null;
     });
   }
 
@@ -1917,6 +1902,9 @@ Instrucciones para redactar el "aiReport":
         final allTrips = snapshot.data!;
         final filteredTrips = allTrips.where(_shouldKeepTrip).toList();
 
+        final aniosViajes = {for (final t in allTrips) t.date.year}.toList()
+          ..sort((a, b) => b.compareTo(a));
+
         // Calcular desglose exacto por autopista
         final Map<String, double> highwayCosts = {};
         final Map<String, int> highwayTollsCount = {};
@@ -1954,7 +1942,7 @@ Instrucciones para redactar el "aiReport":
                     children: [
                       _encabezadoDePagina(),
                       _buildSelectorVehiculo(),
-                      _buildFiltersBar(),
+                      _buildFiltersBar(aniosViajes),
                       _buildTotalSpentCard(
                         totalSpent,
                         filteredTrips.length,
@@ -2601,303 +2589,102 @@ Instrucciones para redactar el "aiReport":
     );
   }
 
-  Widget _buildFiltersBar() {
-    final bool hasActiveFilters =
-        _selectedPatente != null ||
-        _selectedHighway != 'Todas' ||
-        _selectedDatePreset != 'Todos';
+  bool get _hayFiltros =>
+      _selectedPatente != null ||
+      _selectedHighway != _opcionTodas ||
+      _mes != null ||
+      _anio != null;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: surfaceColor.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.transparent),
-      ),
+  /// Igual que en Mantenciones: un ícono de filtros que abre un panel con Mes y
+  /// Año (los mismos desplegables del historial de gastos) y la autopista en
+  /// acordeón, con "Limpiar filtros" cuando hay alguno aplicado.
+  Widget _buildFiltersBar(List<int> anios) {
+    final activo = _mostrarFiltros || _hayFiltros;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Filtros de Reporte',
-                style: TextStyle(
-                  color: textMain,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (hasActiveFilters)
-                GestureDetector(
-                  onTap: _clearAllFilters,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Limpiar',
-                      style: TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFilterChip(
-                  icon: Icons.calendar_today,
-                  label:
-                      _selectedDatePreset == 'Personalizado' &&
-                          _customDateRange != null
-                      ? '${DateFormat('dd/MM').format(_customDateRange!.start)} - ${DateFormat('dd/MM').format(_customDateRange!.end)}'
-                      : 'Fecha: $_selectedDatePreset',
-                  onTap: _showDateFilterSelector,
-                ),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  icon: Icons.alt_route,
-                  label: _selectedHighway == 'Todas'
-                      ? 'Autopistas: Todas'
-                      : _selectedHighway,
-                  onTap: _showHighwaySelector,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    final bool isActive = !label.contains('Todos') && !label.contains('Todas');
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? primaryColor : const Color(0xFFE2E8F0),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isActive ? Colors.transparent : Colors.transparent,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: isActive ? Colors.white : textMuted, size: 14),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: isActive ? Colors.white : textMain,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_drop_down,
-              color: isActive ? Color(0xFF64748B) : textMuted,
-              size: 14,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDateFilterSelector() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Filtrar por Rango de Fechas',
-                style: TextStyle(
-                  color: textMain,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...['Todos', 'Hoy', 'Últimos 7 días', 'Este Mes'].map(
-                (preset) => ListTile(
-                  title: Text(
-                    preset,
-                    style: TextStyle(color: textMain, fontSize: 15),
-                  ),
-                  trailing: _selectedDatePreset == preset
-                      ? Icon(Icons.check_circle, color: primaryColor)
-                      : null,
-                  onTap: () {
-                    setState(() {
-                      _selectedDatePreset = preset;
-                      _customDateRange = null;
-                    });
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.date_range, color: primaryColor),
-                title: Text(
-                  'Rango Personalizado...',
+              Expanded(
+                child: Text(
+                  'Filtros de reporte',
                   style: TextStyle(
                     color: textMain,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                trailing: _selectedDatePreset == 'Personalizado'
-                    ? Icon(Icons.check_circle, color: primaryColor)
-                    : null,
-                onTap: () async {
-                  Navigator.pop(context);
-                  final picked = await showDateRangePicker(
-                    context: context,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime.now().add(const Duration(days: 1)),
-                    initialDateRange: _customDateRange,
-                    builder: (context, child) {
-                      return Theme(
-                        data: ThemeData.light().copyWith(
-                          colorScheme: ColorScheme.light(
-                            primary: primaryColor,
-                            onPrimary: Colors.white,
-                            surface: surfaceColor,
-                            onSurface: textMain,
-                          ),
-                          scaffoldBackgroundColor: bgColor,
-                          dialogTheme: DialogThemeData(
-                            backgroundColor: surfaceColor,
-                          ),
-                          appBarTheme: AppBarTheme(
-                            backgroundColor: surfaceColor,
-                            iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
-                          ),
+              ),
+              Tooltip(
+                message: 'Filtros',
+                child: GestureDetector(
+                  onTap: () => setState(() => _mostrarFiltros = !_mostrarFiltros),
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: activo ? primaryColor : surfaceColor,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          Icons.tune_rounded,
+                          color: activo ? Colors.white : primaryColor,
+                          size: 22,
                         ),
-                        child: Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
+                        if (_hayFiltros && !_mostrarFiltros)
+                          Positioned(
+                            top: 11,
+                            right: 11,
                             child: Container(
-                              constraints: const BoxConstraints(
-                                maxWidth: 420,
-                                maxHeight: 580,
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Colors.amber,
+                                shape: BoxShape.circle,
                               ),
-                              child: child!,
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _selectedDatePreset = 'Personalizado';
-                      _customDateRange = picked;
-                    });
-                  }
-                },
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  void _showHighwaySelector() {
-    final highways = [
-      'Todas',
-      'Autopista Central',
-      'Costanera Norte',
-      'Vespucio Norte',
-      'Vespucio Sur',
-      'Vespucio Oriente (AVO)',
-      'Ruta 68',
-      'Ruta 78',
-      'Autopista de Conexión',
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          if (_mostrarFiltros) ...[
+            const SizedBox(height: 10),
+            FiltroMesAnio(
+              mes: _mes,
+              anio: _anio,
+              anios: anios,
+              alCambiarMes: (v) => setState(() => _mes = v),
+              alCambiarAnio: (v) => setState(() => _anio = v),
+            ),
+            const SizedBox(height: 10),
+            SelectorTipoMantencion(
+              label: 'Autopista',
+              hint: _opcionTodas,
+              icono: Icons.alt_route,
+              opciones: _autopistas,
+              valor: _selectedHighway == _opcionTodas ? null : _selectedHighway,
+              onChanged: (v) => setState(() => _selectedHighway = v),
+            ),
+            if (_hayFiltros)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _clearAllFilters,
+                  child: const Text('Limpiar filtros'),
+                ),
+              ),
+          ],
+        ],
       ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Filtrar por Autopista Concesionada',
-                style: TextStyle(
-                  color: textMain,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: highways.length,
-                  itemBuilder: (context, index) {
-                    final h = highways[index];
-                    return ListTile(
-                      title: Text(
-                        h == 'Todas' ? 'Todas las autopistas' : h,
-                        style: TextStyle(color: textMain, fontSize: 15),
-                      ),
-                      trailing: _selectedHighway == h
-                          ? Icon(Icons.check_circle, color: primaryColor)
-                          : null,
-                      onTap: () {
-                        setState(() {
-                          _selectedHighway = h;
-                        });
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
