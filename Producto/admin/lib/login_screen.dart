@@ -174,16 +174,14 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(Icons.shield_outlined, size: 48, color: Color(0xFF0EA5E9)),
-              const SizedBox(height: 16),
-              const Text(
-                'Acceso Seguro',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
+              Image.asset(
+                'assets/logo_tagok.png',
+                height: 120,
+                fit: BoxFit.contain,
               ),
               const SizedBox(height: 8),
               const Text(
-                'Panel de Administración TAG OK',
+                'Panel de Administración',
                 style: TextStyle(color: Color(0xFF64748B)),
                 textAlign: TextAlign.center,
               ),

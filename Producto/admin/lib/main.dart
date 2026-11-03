@@ -69,6 +69,13 @@ class TagOkAdminApp extends StatelessWidget {
   }
 }
 
+/// Ancho (en px) por debajo del cual el panel pasa a la vista de celular:
+/// menú en cajón con botón de hamburguesa y espaciados reducidos.
+const double kAnchoCelular = 820;
+
+bool isCompactLayout(BuildContext context) =>
+    MediaQuery.sizeOf(context).width < kAnchoCelular;
+
 class SidebarItem {
   final String title;
   final IconData icon;
@@ -93,11 +100,18 @@ class _AdminShellState extends State<AdminShell> {
   final AdminFirestoreService _service = AdminFirestoreService();
   int _selectedIndex = 0;
   late final List<SidebarItem> _sidebarItems;
+  final ScrollController _menuScroll = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _sidebarItems = _getSidebarItems(widget.role);
+  }
+
+  @override
+  void dispose() {
+    _menuScroll.dispose();
+    super.dispose();
   }
 
   List<SidebarItem> _getSidebarItems(String role) {
@@ -176,144 +190,122 @@ class _AdminShellState extends State<AdminShell> {
     final item = _sidebarItems[_selectedIndex];
     final Widget content = item.pageBuilder(_service);
 
-    return Scaffold(
-      body: Row(
-        children: [
-          Container(
-            width: 280,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF111827)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+    final bool compact = isCompactLayout(context);
+
+    final Widget sidebar = Container(
+      width: compact ? null : 280,
+      decoration: const BoxDecoration(color: Color(0xFFE2E8F0)),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(padding: EdgeInsets.all(24), child: _BrandBlock()),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Backoffice',
+                style: TextStyle(
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _WindowControls(),
-                  const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: _BrandBlock(),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      'Backoffice',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemCount: _sidebarItems.length,
-                      itemBuilder: (context, index) {
-                        final bool selected = _selectedIndex == index;
-                        final sidebarItem = _sidebarItems[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            selected: selected,
-                            selectedTileColor: const Color(0xFF1E293B),
-                            iconColor: selected
-                                ? const Color(0xFF38BDF8)
-                                : const Color(0xFFCBD5E1),
-                            textColor: selected
-                                ? Colors.white
-                                : const Color(0xFFCBD5E1),
-                            leading: Icon(sidebarItem.icon),
-                            title: Text(sidebarItem.title),
-                            onTap: () => setState(() => _selectedIndex = index),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const Divider(color: Color(0xFF1E293B)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    child: _UserProfileCard(role: widget.role),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+            const SizedBox(height: 12),
+            Expanded(
+              // Barra de desplazamiento siempre visible: indica que hay más
+              // opciones abajo cuando el menú no cabe en pantalla.
+              child: Scrollbar(
+                controller: _menuScroll,
+                thumbVisibility: true,
+                trackVisibility: true,
+                child: ListView.builder(
+                controller: _menuScroll,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: _sidebarItems.length,
+                itemBuilder: (context, index) {
+                  final bool selected = _selectedIndex == index;
+                  final sidebarItem = _sidebarItems[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     child: ListTile(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      iconColor: const Color(0xFFEF4444),
-                      textColor: const Color(0xFFEF4444),
-                      leading: const Icon(Icons.logout),
-                      title: const Text('Cerrar sesión'),
-                      onTap: () async {
-                        await FirebaseAuth.instance.signOut();
+                      selected: selected,
+                      selectedTileColor: const Color(0xFFCBD5E1),
+                      iconColor: selected
+                          ? const Color(0xFF0369A1)
+                          : const Color(0xFF475569),
+                      textColor: selected
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFF475569),
+                      leading: Icon(sidebarItem.icon),
+                      title: Text(sidebarItem.title),
+                      onTap: () {
+                        setState(() => _selectedIndex = index);
+                        // En móvil el menú es un cajón: se cierra al elegir.
+                        if (compact) Navigator.of(context).pop();
                       },
                     ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    child: _AdminHintCard(),
-                  ),
-                ],
+                  );
+                },
+                ),
               ),
             ),
-          ),
-          Expanded(child: content),
-        ],
+            const Divider(color: Color(0xFFCBD5E1)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: _UserProfileCard(role: widget.role),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                iconColor: const Color(0xFFEF4444),
+                textColor: const Color(0xFFEF4444),
+                leading: const Icon(Icons.logout),
+                title: const Text('Cerrar sesión'),
+                onTap: () async {
+                  await FirebaseAuth.instance.signOut();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
-  }
-}
 
-class _WindowControls extends StatelessWidget {
-  const _WindowControls();
+    if (compact) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFE2E8F0),
+          surfaceTintColor: Colors.transparent,
+          iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
+          toolbarHeight: 64,
+          title: Image.asset(
+            'assets/logo_tagok.png',
+            height: 48,
+            fit: BoxFit.contain,
+          ),
+          centerTitle: false,
+        ),
+        drawer: Drawer(
+          width: 280,
+          backgroundColor: const Color(0xFFE2E8F0),
+          child: sidebar,
+        ),
+        body: content,
+      );
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 24, top: 16),
-      child: Row(
+    return Scaffold(
+      body: Row(
         children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: Color(0xFFEF4444),
-              shape: BoxShape.circle,
-            ),
-          ),
-          SizedBox(width: 8),
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: Color(0xFFF59E0B),
-              shape: BoxShape.circle,
-            ),
-          ),
-          SizedBox(width: 8),
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: Color(0xFF10B981),
-              shape: BoxShape.circle,
-            ),
-          ),
+          sidebar,
+          Expanded(child: content),
         ],
       ),
     );
@@ -325,27 +317,7 @@ class _BrandBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _LogoMark(),
-        SizedBox(height: 16),
-        Text(
-          'TAG OK',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.8,
-          ),
-        ),
-        SizedBox(height: 6),
-        Text(
-          'Panel de administración web',
-          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-        ),
-      ],
-    );
+    return const _LogoMark();
   }
 }
 
@@ -354,51 +326,11 @@ class _LogoMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0EA5E9).withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Icon(
-        Icons.route_outlined,
-        color: Color(0xFF38BDF8),
-        size: 32,
-      ),
-    );
-  }
-}
-
-class _AdminHintCard extends StatelessWidget {
-  const _AdminHintCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Acceso interno',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Este panel comparte el mismo Firestore que la app final. Usa roles para restringir edición y publicación.',
-            style: TextStyle(
-              color: Color(0xFFCBD5E1),
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
+    return Image.asset(
+      'assets/logo_tagok.png',
+      height: 110,
+      fit: BoxFit.contain,
+      alignment: Alignment.centerLeft,
     );
   }
 }
@@ -425,15 +357,15 @@ class _UserProfileCard extends StatelessWidget {
         ? const Color(0xFF0EA5E9).withValues(alpha: 0.12)
         : const Color(0xFFF59E0B).withValues(alpha: 0.12);
     final Color badgeText = isSuper
-        ? const Color(0xFF38BDF8)
-        : const Color(0xFFFBBF24);
+        ? const Color(0xFF0369A1)
+        : const Color(0xFFB45309);
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334155), width: 1),
+        border: Border.all(color: const Color(0xFFCBD5E1), width: 1),
       ),
       child: Row(
         children: [
@@ -455,7 +387,7 @@ class _UserProfileCard extends StatelessWidget {
                 Text(
                   email,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Color(0xFF0F172A),
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -1103,94 +1035,125 @@ class _DashboardPageState extends State<DashboardPage> {
               );
             }
 
+            final bool compact = isCompactLayout(context);
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(compact ? 16 : 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Dashboard',
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.8,
-                                color: Color(0xFF0F172A),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Dashboard',
+                                style: TextStyle(
+                                  fontSize: compact ? 24 : 30,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.8,
+                                  color: Color(0xFF0F172A),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: List.generate(_tabs.length, (index) {
-                                final isSelected = _activeTabIndex == index;
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 24),
-                                  child: InkWell(
-                                    onTap: () => setState(() => _activeTabIndex = index),
-                                    hoverColor: Colors.transparent,
-                                    splashColor: Colors.transparent,
-                                    highlightColor: Colors.transparent,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _tabs[index],
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                            color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
-                                          ),
+                              const SizedBox(height: 8),
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: List.generate(_tabs.length, (
+                                    index,
+                                  ) {
+                                    final isSelected = _activeTabIndex == index;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(right: 24),
+                                      child: InkWell(
+                                        onTap: () => setState(
+                                          () => _activeTabIndex = index,
                                         ),
-                                        const SizedBox(height: 4),
-                                        Container(
-                                          width: 24,
-                                          height: 2,
-                                          color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        splashColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _tabs[index],
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w600,
+                                                color: isSelected
+                                                    ? const Color(0xFF0F172A)
+                                                    : const Color(0xFF64748B),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Container(
+                                              width: 24,
+                                              height: 2,
+                                              color: isSelected
+                                                  ? const Color(0xFF2563EB)
+                                                  : Colors.transparent,
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      ),
+                                    );
+                                  }),
+                                ),
                               ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.shield_outlined, size: 14, color: Color(0xFF64748B)),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    adminEmail,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF475569),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            const CircleAvatar(
-                              backgroundColor: Color(0xFFF1F5F9),
-                              child: Icon(Icons.person_outline_rounded, color: Color(0xFF475569)),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                        // En celular el correo ya aparece en el menú lateral.
+                        if (!compact)
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: const Color(0xFFE2E8F0),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.shield_outlined,
+                                      size: 14,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      adminEmail,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF475569),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const CircleAvatar(
+                                backgroundColor: Color(0xFFF1F5F9),
+                                child: Icon(
+                                  Icons.person_outline_rounded,
+                                  color: Color(0xFF475569),
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -4221,16 +4184,17 @@ class _AdminPageScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool compact = isCompactLayout(context);
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(compact ? 16 : 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 30,
+              style: TextStyle(
+                fontSize: compact ? 24 : 30,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.8,
               ),
