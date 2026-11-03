@@ -26,6 +26,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   
   bool _isLogin = true; // Para alternar entre Iniciar Sesión y Registrarse
+  bool _verPassword = false;
+  bool _verConfirmacion = false;
 
   @override
   void dispose() {
@@ -147,15 +149,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   controller: _passwordController,
                   hintText: 'Contraseña',
                   icon: Icons.lock_outline,
-                  obscureText: true,
+                  obscureText: !_verPassword,
+                  esPassword: true,
+                  verPassword: _verPassword,
+                  alAlternarVer: () =>
+                      setState(() => _verPassword = !_verPassword),
                 ),
+                if (_isLogin)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _showForgotPasswordDialog,
+                      child: Text(
+                        '¿Olvidaste tu contraseña?',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
                 if (!_isLogin) ...[
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _confirmPasswordController,
                     hintText: 'Confirmar contraseña',
                     icon: Icons.lock_outline,
-                    obscureText: true,
+                    obscureText: !_verConfirmacion,
+                    esPassword: true,
+                    verPassword: _verConfirmacion,
+                    alAlternarVer: () =>
+                        setState(() => _verConfirmacion = !_verConfirmacion),
                   ),
                 ],
                 const SizedBox(height: 32),
@@ -205,8 +229,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                
+                const SizedBox(height: 16),
+
+                // Continuar con Google
+                SizedBox(
+                  height: 56,
+                  child: OutlinedButton(
+                    onPressed: authState.isLoading
+                        ? null
+                        : () => ref
+                            .read(authNotifierProvider.notifier)
+                            .signInWithGoogle(),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      side: BorderSide(color: surfaceBorder),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'G',
+                          style: TextStyle(
+                            color: Color(0xFF4285F4),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Continuar con Google',
+                          style: TextStyle(
+                            color: textMain,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
                 // Botón para alternar entre Login y Registro
                 TextButton(
                   onPressed: () {
@@ -224,17 +290,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ),
-                if (_isLogin)
-                  TextButton(
-                    onPressed: _showForgotPasswordDialog,
-                    child: Text(
-                      '¿Olvidaste tu contraseña?',
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -248,6 +303,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     required String hintText,
     required IconData icon,
     bool obscureText = false,
+    bool esPassword = false,
+    bool verPassword = false,
+    VoidCallback? alAlternarVer,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -259,11 +317,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         controller: controller,
         obscureText: obscureText,
         style: TextStyle(color: textMain),
-        keyboardType: obscureText ? TextInputType.text : TextInputType.emailAddress,
+        keyboardType: esPassword ? TextInputType.text : TextInputType.emailAddress,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: textMuted.withValues(alpha: 0.7)),
           prefixIcon: Icon(icon, color: textMuted),
+          suffixIcon: esPassword
+              ? IconButton(
+                  tooltip: verPassword ? 'Ocultar contraseña' : 'Ver contraseña',
+                  icon: Icon(
+                    verPassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: textMuted,
+                  ),
+                  onPressed: alAlternarVer,
+                )
+              : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),

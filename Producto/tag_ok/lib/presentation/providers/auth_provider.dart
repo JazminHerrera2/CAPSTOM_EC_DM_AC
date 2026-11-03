@@ -55,6 +55,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Continuar con Google. Si la persona cierra la ventana, no es un error.
+  Future<void> signInWithGoogle() async {
+    state = AuthState(isLoading: true);
+    try {
+      final credencial = await _authRepository.signInWithGoogle();
+      state = credencial == null ? AuthState() : AuthState(isSuccess: true);
+    } catch (e) {
+      state = AuthState(error: e.toString());
+    }
+  }
+
   Future<void> signOut() async {
     await _authRepository.signOut();
   }

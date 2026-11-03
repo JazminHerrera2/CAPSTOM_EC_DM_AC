@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/usuario_model.dart';
@@ -50,6 +51,47 @@ class AuthRepository {
     }
   }
 
+  // Continuar con Google. Usa el proveedor de Firebase Auth (ventana emergente
+  // en web; navegador del sistema en Android/iOS), sin paquetes extra. Requiere
+  // que "Google" esté habilitado en Firebase Console > Authentication.
+  // Devuelve null si la persona cierra la ventana sin elegir cuenta.
+  // La primera vez crea su documento en `usuarios` (igual que el registro).
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      final provider = GoogleAuthProvider();
+      final credencial = kIsWeb
+          ? await _auth.signInWithPopup(provider)
+          : await _auth.signInWithProvider(provider);
+
+      final user = credencial.user;
+      if (user != null) {
+        final ref = _firestore.collection('usuarios').doc(user.uid);
+        if (!(await ref.get()).exists) {
+          await ref.set(UsuarioModel(
+            uid: user.uid,
+            email: user.email ?? '',
+            nombreMostrar: user.displayName,
+            fechaCreacion: DateTime.now(),
+            limitePresupuestoMensual: 50000.0,
+          ).toJson());
+        }
+      }
+      return credencial;
+    } on FirebaseAuthException catch (e) {
+      if (const {
+        'popup-closed-by-user',
+        'cancelled-popup-request',
+        'web-context-canceled',
+        'canceled',
+      }.contains(e.code)) {
+        return null;
+      }
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
   // Cerrar Sesión
   Future<void> signOut() async {
     await _auth.signOut();
@@ -67,6 +109,10 @@ class AuthRepository {
           return 'El correo ya está registrado.';
         case 'invalid-email':
           return 'El formato del correo es inválido.';
+        case 'account-exists-with-different-credential':
+          return 'Ese correo ya está registrado con otro método de acceso.';
+        case 'operation-not-allowed':
+          return 'El acceso con Google no está habilitado todavía.';
         case 'weak-password':
           return 'La contraseña es muy débil (mínimo 6 caracteres).';
         default:
