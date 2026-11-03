@@ -13,6 +13,10 @@ import 'package:excel/excel.dart' hide Border, TextSpan;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../data/models/trip_history.dart';
+import '../data/models/vehiculo_model.dart';
+import '../data/services/vehiculo_service.dart';
+import '../utils/vehiculo_de_viaje.dart';
+import 'auditoria_selector_vehiculo.dart';
 import '../data/services/history_service.dart';
 import '../data/demo_data.dart';
 import '../features/registro_inteligente/openai_extraction_service.dart';
@@ -34,7 +38,8 @@ class _AuditScreenState extends State<AuditScreen> {
   bool _useAI = true;
 
   // Variables de Filtro (Subpestaña 1)
-  String _selectedVehicle = 'Todos';
+  // Vehículo elegido en el carrusel (patente); null = todos.
+  String? _selectedPatente;
   String _selectedHighway = 'Todas';
   String _selectedDatePreset =
       'Todos'; // 'Todos', 'Hoy', 'Últimos 7 días', 'Este Mes', 'Personalizado'
@@ -182,7 +187,8 @@ class _AuditScreenState extends State<AuditScreen> {
 
   // Comprueba si un viaje cumple con los filtros activos
   bool _shouldKeepTrip(TripHistory trip) {
-    if (_selectedVehicle != 'Todos' && trip.vehicleName != _selectedVehicle) {
+    if (_selectedPatente != null &&
+        !viajeEsDeVehiculo(trip.vehicleName, _selectedPatente!)) {
       return false;
     }
 
@@ -233,7 +239,7 @@ class _AuditScreenState extends State<AuditScreen> {
 
   void _clearAllFilters() {
     setState(() {
-      _selectedVehicle = 'Todos';
+      _selectedPatente = null;
       _selectedHighway = 'Todas';
       _selectedDatePreset = 'Todos';
       _customDateRange = null;
@@ -1911,13 +1917,6 @@ Instrucciones para redactar el "aiReport":
         final allTrips = snapshot.data!;
         final filteredTrips = allTrips.where(_shouldKeepTrip).toList();
 
-        final uniqueVehicles = allTrips
-            .map((t) => t.vehicleName)
-            .where((name) => name.isNotEmpty)
-            .toSet()
-            .toList();
-        uniqueVehicles.sort();
-
         // Calcular desglose exacto por autopista
         final Map<String, double> highwayCosts = {};
         final Map<String, int> highwayTollsCount = {};
@@ -1954,7 +1953,8 @@ Instrucciones para redactar el "aiReport":
                     padding: const EdgeInsets.only(bottom: 24),
                     children: [
                       _encabezadoDePagina(),
-                      _buildFiltersBar(uniqueVehicles),
+                      _buildSelectorVehiculo(),
+                      _buildFiltersBar(),
                       _buildTotalSpentCard(
                         totalSpent,
                         filteredTrips.length,
@@ -2580,9 +2580,30 @@ Instrucciones para redactar el "aiReport":
 
   // --- FILTROS DE CONSUMO Y DETALLES DE VIAJES ---
 
-  Widget _buildFiltersBar(List<String> vehicles) {
+  /// Carrusel de vehículos (como el del Inicio). Sin vehículos registrados no
+  /// se muestra y Auditoría queda como antes.
+  Widget _buildSelectorVehiculo() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return const SizedBox.shrink();
+    return StreamBuilder<List<VehiculoModel>>(
+      stream: VehiculoService().streamVehiculosUsuario(uid),
+      builder: (context, snap) {
+        final vehiculos = snap.data ?? const <VehiculoModel>[];
+        if (vehiculos.isEmpty) return const SizedBox.shrink();
+        return AuditoriaSelectorVehiculo(
+          vehiculos: vehiculos,
+          patenteElegida: _selectedPatente,
+          alElegir: (p) {
+            if (p != _selectedPatente) setState(() => _selectedPatente = p);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildFiltersBar() {
     final bool hasActiveFilters =
-        _selectedVehicle != 'Todos' ||
+        _selectedPatente != null ||
         _selectedHighway != 'Todas' ||
         _selectedDatePreset != 'Todos';
 
@@ -2645,14 +2666,6 @@ Instrucciones para redactar el "aiReport":
                       ? '${DateFormat('dd/MM').format(_customDateRange!.start)} - ${DateFormat('dd/MM').format(_customDateRange!.end)}'
                       : 'Fecha: $_selectedDatePreset',
                   onTap: _showDateFilterSelector,
-                ),
-                const SizedBox(width: 8),
-                _buildFilterChip(
-                  icon: Icons.directions_car,
-                  label: _selectedVehicle == 'Todos'
-                      ? 'Vehículo: Todos'
-                      : _selectedVehicle,
-                  onTap: () => _showVehicleSelector(vehicles),
                 ),
                 const SizedBox(width: 8),
                 _buildFilterChip(
@@ -2815,89 +2828,6 @@ Instrucciones para redactar el "aiReport":
                   }
                 },
               ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showVehicleSelector(List<String> vehicles) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Filtrar por Patente o Auto',
-                style: TextStyle(
-                  color: textMain,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                title: Text(
-                  'Todos los vehículos',
-                  style: TextStyle(color: textMain, fontSize: 15),
-                ),
-                trailing: _selectedVehicle == 'Todos'
-                    ? Icon(Icons.check_circle, color: primaryColor)
-                    : null,
-                onTap: () {
-                  setState(() {
-                    _selectedVehicle = 'Todos';
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-              if (vehicles.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  child: Center(
-                    child: Text(
-                      'No hay vehículos detectados en tus viajes',
-                      style: TextStyle(color: textMuted, fontSize: 13),
-                    ),
-                  ),
-                )
-              else
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: vehicles.length,
-                    itemBuilder: (context, index) {
-                      final v = vehicles[index];
-                      return ListTile(
-                        leading: const Icon(
-                          Icons.directions_car,
-                          color: Color(0xFF64748B),
-                        ),
-                        title: Text(
-                          v,
-                          style: TextStyle(color: textMain, fontSize: 15),
-                        ),
-                        trailing: _selectedVehicle == v
-                            ? Icon(Icons.check_circle, color: primaryColor)
-                            : null,
-                        onTap: () {
-                          setState(() {
-                            _selectedVehicle = v;
-                          });
-                          Navigator.pop(context);
-                        },
-                      );
-                    },
-                  ),
-                ),
             ],
           ),
         );
