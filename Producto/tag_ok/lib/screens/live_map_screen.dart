@@ -20,6 +20,7 @@ import 'mi_vehiculo/registrar_editar_vehiculo_screen.dart';
 import '../data/models/route_model.dart';
 import '../data/models/trip_history.dart';
 import '../data/services/history_service.dart';
+import '../utils/alerta_presupuesto.dart';
 
 /// Mapa en tiempo real con seguimiento de pórticos, tracking GPS y cobro de
 /// peajes. Antes vivía en la pestaña "Inicio" de `home_screen.dart`; se
@@ -1311,26 +1312,23 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
   }
 
   void _checkAndShowLimitAlert(BuildContext context, double total, double limit) async {
-    final double percentage = (total / limit) * 100;
+    // Qué umbral corresponde lo decide umbralDeAlerta (función pura, con tests);
+    // aquí solo se elige el texto y se muestra el diálogo.
+    final int threshold = umbralDeAlerta(total, limit) ?? 0;
     String? message;
     Color alertColor = Colors.blue;
-    int threshold = 0;
 
-    if (percentage >= 100) {
+    if (threshold == 100) {
       message = "¡Has alcanzado el 100% de tu límite mensual!";
       alertColor = Colors.redAccent;
-      threshold = 100;
-    } else if (percentage >= 90) {
+    } else if (threshold == 90) {
       message = "Atención: Llevas el 90% de tu límite gastado.";
       alertColor = Colors.orangeAccent;
-      threshold = 90;
-    } else if (percentage >= 75) {
+    } else if (threshold == 75) {
       message = "Aviso: Llevas el 75% de tu presupuesto consumido.";
       alertColor = Colors.yellowAccent;
-      threshold = 75;
-    } else if (percentage >= 50) {
+    } else if (threshold == 50) {
       message = "Informativo: Has llegado al 50% de tu presupuesto mensual.";
-      threshold = 50;
     }
 
     if (message != null && threshold > 0) {
