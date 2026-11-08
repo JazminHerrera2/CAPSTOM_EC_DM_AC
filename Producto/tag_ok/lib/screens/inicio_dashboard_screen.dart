@@ -214,6 +214,9 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   List<DocumentoVehicularModel> _documentosDe(VehiculoModel v) =>
       _documentos.where((d) => d.vehiculoId == v.id).toList();
 
+  Iterable<MantencionModel> _mantencionesDe(VehiculoModel v) =>
+      _mantenciones.where((m) => m.vehiculoId == v.id);
+
   String _estadoDe(VehiculoModel v) => VehiculoModel.calcularEstadoGeneral(
         _documentosDe(v).map((d) => d.fechaVencimiento).toList(),
       );
@@ -228,7 +231,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
       CategoriaGasto.combustible: _combustible.where(esDe),
       CategoriaGasto.estacionamientos: _estacionamientos.where(esDe),
       CategoriaGasto.mantenciones: gastosDeMantenciones(
-        _mantenciones.where((m) => m.vehiculoId == v.id),
+        _mantencionesDe(v),
       ),
     };
   }
@@ -576,12 +579,12 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   // --- Atención: próxima mantención y próximo vencimiento ----------------------
 
   /// Dos filas alargadas, una debajo de la otra, justo bajo Gastos del mes:
-  /// primero el próximo vencimiento y luego la próxima mantención. la próxima
-  /// mantención según el kilometraje del vehículo (el que se pidió al
-  /// registrarlo, más 10.000 km) y la fecha del documento que vence primero.
-  /// Ambas abren el detalle del vehículo.
+  /// primero el documento que vence primero (RF-046) y luego la próxima
+  /// mantención programada del vehículo (RF-045).
   Widget _seccionAtencion(VehiculoModel? v) {
-    final kmMantencion = kilometrajeProximaMantencion(v?.kilometrajeActual);
+    final mantencion = textoProximaMantencion(
+      v == null ? null : calcularProximaMantencion(_mantencionesDe(v)),
+    );
 
     final proximo = v == null
         ? null
@@ -613,10 +616,8 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
           icono: Icons.handyman_outlined,
           color: _colorIconos,
           titulo: 'Próxima mantención',
-          valor: kmMantencion == null ? '--' : '${formatearMiles(kmMantencion)} km',
-          detalle: kmMantencion == null
-              ? 'Sin kilometraje registrado'
-              : 'A tus',
+          valor: mantencion.valor,
+          detalle: mantencion.detalle,
           onTap: () => widget.onAbrirMantenciones?.call(),
         ),
       ],

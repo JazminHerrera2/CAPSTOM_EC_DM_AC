@@ -180,20 +180,55 @@ void main() {
     });
   });
 
-  group('próxima mantención por kilometraje', () {
-    test('suma 10.000 km al kilometraje del vehículo', () {
-      expect(kilometrajeProximaMantencion(64500), 74500);
-      expect(kilometrajeProximaMantencion(0), 10000);
-      expect(intervaloMantencionKm, 10000);
+  group('textoProximaMantencion (fila del Inicio, RF-045)', () {
+    test('sin mantención programada invita a programar una', () {
+      final t = textoProximaMantencion(null, ahora: hoy);
+      expect(t.valor, '--');
+      expect(t.detalle, 'Sin mantenciones programadas');
     });
 
-    test('sin kilometraje no hay cálculo', () {
-      expect(kilometrajeProximaMantencion(null), isNull);
-      expect(kilometrajeProximaMantencion(-5), isNull);
+    test('con fecha: muestra la fecha y el nombre', () {
+      final t = textoProximaMantencion(
+        _mant('a', estado: EstadoMantencion.programada, proxima: DateTime(2026, 11, 15)),
+        ahora: hoy,
+      );
+      expect(t.valor, '15/11/2026');
+      expect(t.detalle, 'Cambio de aceite');
     });
 
-    test('el intervalo se puede cambiar', () {
-      expect(kilometrajeProximaMantencion(1000, intervalo: 5000), 6000);
+    test('con fecha y kilometraje: agrega la referencia de km', () {
+      final t = textoProximaMantencion(
+        _mant('a',
+            estado: EstadoMantencion.programada,
+            proxima: DateTime(2026, 11, 15),
+            proximoKm: 74500),
+        ahora: hoy,
+      );
+      expect(t.valor, '15/11/2026');
+      expect(t.detalle, 'Cambio de aceite · a los 74.500 km');
+    });
+
+    test('solo kilometraje: muestra los km', () {
+      final t = textoProximaMantencion(
+        _mant('a', estado: EstadoMantencion.programada, proximoKm: 74500),
+        ahora: hoy,
+      );
+      expect(t.valor, '74.500 km');
+      expect(t.detalle, 'Cambio de aceite');
+    });
+
+    test('fecha pasada: se marca como atrasada; hoy no', () {
+      final atrasada = textoProximaMantencion(
+        _mant('a', estado: EstadoMantencion.programada, proxima: DateTime(2026, 10, 20)),
+        ahora: hoy,
+      );
+      expect(atrasada.detalle, 'Cambio de aceite · Atrasada');
+
+      final deHoy = textoProximaMantencion(
+        _mant('a', estado: EstadoMantencion.programada, proxima: DateTime(2026, 10, 28)),
+        ahora: hoy,
+      );
+      expect(deHoy.detalle, 'Cambio de aceite');
     });
   });
 
