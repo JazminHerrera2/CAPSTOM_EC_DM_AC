@@ -4,16 +4,28 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 const String tipoAvisoVencimientoDocumento = 'vencimiento_documento';
 const String tipoAvisoMantencion = 'mantencion_programada';
 
+/// Aviso de una mantención programada por kilometraje (HU-11/HU-48): se crea
+/// cuando el km del vehículo se acerca o llega al programado.
+const String tipoAvisoMantencionKm = 'mantencion_km';
+
 /// Tipos de aviso que la app entrega (bandeja, teléfono y navegador).
 const Set<String> tiposAvisoEntregables = {
   tipoAvisoVencimientoDocumento,
   tipoAvisoMantencion,
+  tipoAvisoMantencionKm,
 };
 
+/// `true` si el aviso es de una mantención (por fecha o por kilometraje):
+/// su `referencia_id` es el id de la mantención.
+bool esAvisoDeMantencion(String tipo) =>
+    tipo == tipoAvisoMantencion || tipo == tipoAvisoMantencionKm;
+
 /// Título con que se muestra un aviso según su tipo.
-String tituloAviso(String tipo) => tipo == tipoAvisoMantencion
-    ? 'Mantención programada'
-    : 'Documento por vencer';
+String tituloAviso(String tipo) => switch (tipo) {
+      tipoAvisoMantencion => 'Mantención programada',
+      tipoAvisoMantencionKm => 'Mantención por kilometraje',
+      _ => 'Documento por vencer',
+    };
 
 /// Entidad NOTIFICACIONES: avisos de vencimiento de documentos (CU4) y
 /// recordatorios de mantenciones programadas (RF-012). El envío ocurre en el

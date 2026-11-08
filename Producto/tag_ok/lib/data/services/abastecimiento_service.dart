@@ -2,12 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/abastecimiento_model.dart';
+import 'vehiculo_service.dart';
 
 /// CRUD de la colección `abastecimientos` (Combustible y carga).
 ///
 /// Mismo patrón de seguridad que `mantenciones`: cada carga guarda el `uid` de
 /// su dueño y toda consulta filtra por `uid` y por `vehiculo_id`. No se guarda
-/// ningún archivo: este servicio no usa Firebase Storage.
+/// ningún archivo: este servicio no usa Firebase Storage. Una carga con
+/// kilometraje actualiza el km del vehículo.
 class AbastecimientoService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -60,6 +62,11 @@ class AbastecimientoService {
     );
 
     final ref = await _abastecimientos.add(abastecimiento.toJson());
+    // El vehículo queda con el último km conocido (no falla si no se puede).
+    await VehiculoService().actualizarKilometrajeSiEsMayor(
+      vehiculoId,
+      kilometraje,
+    );
     return ref.id;
   }
 

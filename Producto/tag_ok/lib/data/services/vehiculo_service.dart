@@ -29,6 +29,19 @@ bool patenteYaRegistrada(Iterable<String> existentes, String nueva) {
   return existentes.any((p) => patenteParaComparar(p) == buscada);
 }
 
+/// Kilometraje que debe quedar en el vehículo al registrar [registrado]
+/// (de una mantención realizada o una carga), o null si no hay que cambiarlo.
+/// Solo sube: una mantención o carga antigua puede traer menos km que el
+/// vehículo, y eso no significa que el auto haya retrocedido.
+int? kilometrajeNuevoDelVehiculo({
+  required int? actual,
+  required int? registrado,
+}) {
+  if (registrado == null || registrado <= 0) return null;
+  if (actual != null && registrado <= actual) return null;
+  return registrado;
+}
+
 /// CRUD de la colección `vehiculos` — compartida entre Fase 1
 /// (`vehiculos_screen.dart`) y Fase 2 (módulo Mi Vehículo). Ver
 /// `docs/07-desviaciones-diccionario-datos.md` para el detalle de por qué
@@ -111,6 +124,51 @@ class VehiculoService {
 
     if (cambios.isEmpty) return;
     await _vehiculos.doc(vehiculoId).update(cambios);
+
+    // Con el km nuevo puede tocar avisar alguna mantención por kilometraje.
+    if (kilometrajeActual != null) {
+      await MantencionService().revisarAvisosKilometraje(
+        vehiculoId,
+        kilometrajeActual,
+      );
+    }
+  }
+
+  /// Sube `kilometraje_actual` del vehículo a [kilometraje] si es mayor que el
+  /// guardado (ver [kilometrajeNuevoDelVehiculo]). Lo llaman Mantenciones y
+  /// Combustible al guardar un registro con kilometraje, para que el vehículo
+  /// refleje el último km conocido (base de los avisos por kilometraje).
+  ///
+  /// Usa una transacción para no pisar un valor mayor guardado al mismo tiempo
+  /// desde otro dispositivo. Si el km subió, revisa los avisos de las
+  /// mantenciones programadas por kilometraje. Es "best effort": si falla, el
+  /// registro que lo originó ya quedó guardado; se informa en consola y
+  /// devuelve false. Devuelve true si actualizó el kilometraje.
+  Future<bool> actualizarKilometrajeSiEsMayor(
+    String vehiculoId,
+    int? kilometraje,
+  ) async {
+    if (kilometraje == null) return false;
+    final int? nuevo;
+    try {
+      final ref = _vehiculos.doc(vehiculoId);
+      nuevo = await _firestore.runTransaction<int?>((tx) async {
+        final snapshot = await tx.get(ref);
+        if (!snapshot.exists) return null;
+        final valor = kilometrajeNuevoDelVehiculo(
+          actual: (snapshot.data()?['kilometraje_actual'] as num?)?.toInt(),
+          registrado: kilometraje,
+        );
+        if (valor != null) tx.update(ref, {'kilometraje_actual': valor});
+        return valor;
+      });
+    } catch (e) {
+      debugPrint('No se pudo actualizar el kilometraje de $vehiculoId: $e');
+      return false;
+    }
+    if (nuevo == null) return false;
+    await MantencionService().revisarAvisosKilometraje(vehiculoId, nuevo);
+    return true;
   }
 
   /// Elimina el vehículo junto con sus documentos (y avisos y archivos de

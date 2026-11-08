@@ -45,7 +45,7 @@ DateTime? momentoDeAviso(DateTime fechaProgramada, DateTime ahora) {
 /// Canal de Android de cada tipo de aviso: el usuario puede silenciar uno sin
 /// perder el otro desde los ajustes del teléfono.
 ({String id, String nombre, String descripcion}) _canalDe(String tipo) =>
-    tipo == tipoAvisoMantencion
+    esAvisoDeMantencion(tipo)
         ? (
             id: 'recordatorios_mantencion_v1',
             nombre: 'Mantenciones programadas',

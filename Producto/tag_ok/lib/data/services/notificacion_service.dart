@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import '../../screens/dashboard/dashboard_logica.dart' show formatearMiles;
 import '../models/notificacion_config_model.dart';
+import 'aviso_navegador_service.dart';
 import 'recordatorio_local_service.dart';
 
 /// Un aviso por crear: su id en `notificaciones`, el día en que corresponde y
@@ -19,9 +23,7 @@ List<AvisoProgramado> avisosMantencion({
   required DateTime proximaFecha,
   String? patente,
 }) {
-  final que = (patente ?? '').trim().isEmpty
-      ? nombreMantencion
-      : '$nombreMantencion (${patente!.trim()})';
+  final que = _queMantencion(nombreMantencion, patente);
   return [
     (
       id: '${mantencionId}_7dias',
@@ -34,6 +36,57 @@ List<AvisoProgramado> avisosMantencion({
       mensaje: 'Hoy tienes una mantención programada: $que.',
     ),
   ];
+}
+
+/// "Cambio de aceite (ABCD12)", o solo el nombre si no hay patente.
+String _queMantencion(String nombreMantencion, String? patente) =>
+    (patente ?? '').trim().isEmpty
+        ? nombreMantencion
+        : '$nombreMantencion (${patente!.trim()})';
+
+/// Cuántos km antes del kilometraje programado se avisa que la mantención se
+/// acerca (acordado en el Sprint 5; los requisitos no fijan un valor).
+const int margenAvisoKilometraje = 1000;
+
+/// Sufijos de id de los avisos por kilometraje de una mantención
+/// (`{id}_km_cerca`, `{id}_km_alcanzado`).
+const List<String> sufijosAvisoMantencionKm = ['km_cerca', 'km_alcanzado'];
+
+/// Aviso por kilometraje (HU-11/HU-48) que corresponde a una mantención
+/// programada a los [proximoKilometraje] km, con el vehículo en
+/// [kilometrajeActual]:
+///  - llegó o pasó el km programado: `{id}_km_alcanzado`;
+///  - le faltan [margenAvisoKilometraje] km o menos: `{id}_km_cerca`;
+///  - le falta más: null (todavía no se avisa).
+/// El aviso queda para [ahora]: se genera cuando sube el km, no se agenda.
+AvisoProgramado? avisoMantencionKm({
+  required String mantencionId,
+  required String nombreMantencion,
+  required int proximoKilometraje,
+  required int kilometrajeActual,
+  required DateTime ahora,
+  String? patente,
+}) {
+  final que = _queMantencion(nombreMantencion, patente);
+  final programado = formatearMiles(proximoKilometraje);
+  final faltan = proximoKilometraje - kilometrajeActual;
+  if (faltan <= 0) {
+    return (
+      id: '${mantencionId}_km_alcanzado',
+      fechaProgramada: ahora,
+      mensaje: 'Tu vehículo llegó a los $programado km: toca la mantención '
+          '$que.',
+    );
+  }
+  if (faltan <= margenAvisoKilometraje) {
+    return (
+      id: '${mantencionId}_km_cerca',
+      fechaProgramada: ahora,
+      mensaje: 'Faltan ${formatearMiles(faltan)} km para la mantención $que '
+          '(a los $programado km).',
+    );
+  }
+  return null;
 }
 
 /// Servicio para configurar avisos preventivos en Firestore y entregarlos al
@@ -118,10 +171,83 @@ class NotificacionService {
     );
   }
 
-  /// Borra los recordatorios de una mantención (7 días antes y el mismo día).
+  /// Crea el aviso por kilometraje de una mantención programada si el
+  /// vehículo ya está cerca o llegó a [proximoKilometraje] (ver
+  /// [avisoMantencionKm]). Cada aviso se crea una sola vez: si ya existe, se
+  /// deja como está (leído o no), así cada nueva carga no lo repite.
+  /// [kilometrajeActual] es el km recién guardado; si es null se usa el del
+  /// vehículo.
+  Future<void> configurarAvisoKilometrajeMantencion({
+    required String vehiculoId,
+    required String mantencionId,
+    required String nombreMantencion,
+    required int proximoKilometraje,
+    int? kilometrajeActual,
+  }) async {
+    final vehiculo = await _datosVehiculo(vehiculoId);
+    final km = kilometrajeActual ??
+        (vehiculo['kilometraje_actual'] as num?)?.toInt();
+    if (km == null) return;
+
+    final patente = vehiculo['patente'];
+    final ahora = DateTime.now();
+    final aviso = avisoMantencionKm(
+      mantencionId: mantencionId,
+      nombreMantencion: nombreMantencion,
+      proximoKilometraje: proximoKilometraje,
+      kilometrajeActual: km,
+      ahora: ahora,
+      patente: patente is String ? patente : null,
+    );
+    if (aviso == null) return;
+
+    final ref = _notificaciones.doc(aviso.id);
+    if ((await ref.get()).exists) return;
+
+    final notificacion = NotificacionConfigModel(
+      id: aviso.id,
+      usuarioId: _resolverUsuarioId(vehiculo),
+      vehiculoId: vehiculoId,
+      tipo: tipoAvisoMantencionKm,
+      referenciaId: mantencionId,
+      mensaje: aviso.mensaje,
+      fechaProgramada: aviso.fechaProgramada,
+      fechaGeneracion: ahora,
+      leida: false,
+      estado: 'pendiente',
+    );
+    await ref.set(notificacion.toJson());
+    await RecordatoriosLocalesService.instance.programar(notificacion);
+    // En web el navegador revisa los avisos cada 15 minutos; éste nace ahora
+    // (al subir el km), así que se muestra sin esperar esa revisión.
+    if (kIsWeb) {
+      unawaited(
+        AvisoNavegadorService.instance.revisar(notificacion.usuarioId),
+      );
+    }
+  }
+
+  /// Borra todos los avisos de una mantención: por fecha (7 días antes y el
+  /// mismo día) y por kilometraje (cerca y alcanzado).
   Future<void> eliminarRecordatoriosMantencion(String mantencionId) async {
-    for (final sufijo in sufijosAvisoMantencion) {
-      final id = '${mantencionId}_$sufijo';
+    await eliminarRecordatoriosFechaMantencion(mantencionId);
+    await eliminarAvisosKilometrajeMantencion(mantencionId);
+  }
+
+  /// Borra los recordatorios por fecha de una mantención.
+  Future<void> eliminarRecordatoriosFechaMantencion(String mantencionId) =>
+      _eliminarAvisos(mantencionId, sufijosAvisoMantencion);
+
+  /// Borra los avisos por kilometraje de una mantención.
+  Future<void> eliminarAvisosKilometrajeMantencion(String mantencionId) =>
+      _eliminarAvisos(mantencionId, sufijosAvisoMantencionKm);
+
+  Future<void> _eliminarAvisos(
+    String referenciaId,
+    List<String> sufijos,
+  ) async {
+    for (final sufijo in sufijos) {
+      final id = '${referenciaId}_$sufijo';
       await _notificaciones.doc(id).delete();
       await RecordatoriosLocalesService.instance.cancelar(id);
     }
@@ -199,13 +325,8 @@ class NotificacionService {
   }
 
   /// Borra los avisos de vencimiento de un documento (30, 15 y 7 días).
-  Future<void> eliminarNotificacionesDocumento(String documentoId) async {
-    for (final sufijo in const ['30dias', '15dias', '7dias']) {
-      final id = '${documentoId}_$sufijo';
-      await _notificaciones.doc(id).delete();
-      await RecordatoriosLocalesService.instance.cancelar(id);
-    }
-  }
+  Future<void> eliminarNotificacionesDocumento(String documentoId) =>
+      _eliminarAvisos(documentoId, const ['30dias', '15dias', '7dias']);
 
   /// Avisos del usuario en tiempo real (más recientes primero). Se filtra
   /// solo por `usuario_id` para no requerir un índice compuesto; el orden y
