@@ -1,3 +1,10 @@
+# Copiar como .env. La app lo lee AL COMPILAR:
+#   flutter run --dart-define-from-file=.env
+# (ver lib/entorno.dart). Las variables que usa quedan escritas dentro de la
+# app compilada, asi que solo van datos que pueden ser publicos.
+# NUNCA poner aqui claves secretas (OpenAI, Gemini, service role, etc.):
+# esas van como secretos de Supabase y las usan las Edge Functions.
+
 WEB_API_KEY=TU_WEB_API_KEY
 WEB_APP_ID=TU_WEB_APP_ID
 ANDROID_API_KEY=TU_ANDROID_API_KEY
@@ -9,9 +16,8 @@ PROJECT_ID=TU_PROJECT_ID
 STORAGE_BUCKET=TU_STORAGE_BUCKET
 IOS_BUNDLE_ID=TU_IOS_BUNDLE_ID
 MAPBOX_ACCESS_TOKEN=TU_MAPBOX_ACCESS_TOKEN
-# OpenAI: Registro Inteligente (documentos y mantenciones) y auditoría de boletas
-OPENAI_API_KEY=AQUI_VA_TU_CLAVE
 
-# Supabase Storage (solo se usa la URL: el acceso a archivos pasa por la
-# Edge Function secure-document-upload, no hay anon key en el cliente)
+# Supabase: solo la URL. Archivos -> Edge Function secure-document-upload.
+# IA (Registro Inteligente y auditoria de boletas) -> Edge Function
+# ia-extraccion, que guarda la clave de OpenAI como secreto del servidor.
 SUPABASE_URL=https://TU_PROYECTO.supabase.co

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importa FirebaseAuth
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // Importa dotenv
 import 'firebase_options.dart'; // El archivo que generaste recién
 import 'screens/login_screen.dart'; // Importa tu nueva pantalla
 import 'screens/home_screen.dart'; // Importa la pantalla principal
@@ -15,22 +14,18 @@ void main() async {
   // 1. Asegura que los widgets estén listos
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. Carga las variables de entorno desde el archivo .env local
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (e) {
-    debugPrint("Error al cargar variables de entorno: $e");
-  }
-
-  // 3. Inicializa Firebase con tus opciones generadas
+  // 2. Inicializa Firebase. La configuración viene del .env al compilar
+  //    (--dart-define-from-file=.env, ver entorno.dart): ya no se carga un
+  //    archivo .env en tiempo de ejecución.
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
-    // Si el .env desplegado está vacío/incompleto, Firebase.initializeApp
-    // lanzaba antes una excepción no capturada que mataba la app antes de
-    // llegar a runApp(), dejando una pantalla en blanco sin ningún mensaje.
+    // Si se compiló sin --dart-define-from-file=.env (o con un .env
+    // incompleto), Firebase.initializeApp lanzaba antes una excepción no
+    // capturada que mataba la app antes de llegar a runApp(), dejando una
+    // pantalla en blanco sin ningún mensaje.
     debugPrint("Error al inicializar Firebase: $e");
     runApp(InitErrorApp(error: e.toString()));
     return;

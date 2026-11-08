@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/foundation.dart';
+import '../../entorno.dart';
 
 class PlaceSuggestion {
   final String address;
@@ -20,7 +20,7 @@ class GeocodingService {
   final String _baseUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
   
   String get _accessToken {
-    return dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
+    return Entorno.mapboxAccessToken;
   }
 
   /// Busca lugares basados en el texto ingresado.
