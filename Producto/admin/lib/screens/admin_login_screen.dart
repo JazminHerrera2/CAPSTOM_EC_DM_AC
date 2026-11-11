@@ -251,7 +251,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
               const SizedBox(height: 28),
               _campo(
                 controller: _emailCtrl,
-                hint: 'Correo electrónico',
+                etiqueta: 'Correo electrónico',
+                hint: 'correo@ejemplo.com',
                 icono: Icons.mail_outline,
                 tipo: TextInputType.emailAddress,
                 accion: TextInputAction.next,
@@ -259,7 +260,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
               const SizedBox(height: 16),
               _campo(
                 controller: _passwordCtrl,
-                hint: 'Contraseña',
+                etiqueta: 'Contraseña',
+                hint: '••••••••',
                 icono: Icons.lock_outline,
                 oculto: !_verPassword,
                 accion: TextInputAction.done,
@@ -333,6 +335,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
   Widget _campo({
     required TextEditingController controller,
     required IconData icono,
+    required String etiqueta,
     required String hint,
     TextInputType? tipo,
     bool oculto = false,
@@ -344,26 +347,40 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: color, width: ancho),
         );
-    return TextField(
-      controller: controller,
-      obscureText: oculto,
-      keyboardType: tipo,
-      textInputAction: accion,
-      onSubmitted: alEnviar,
-      style: const TextStyle(color: _textoPrincipal, fontSize: 14),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: _textoGris.withValues(alpha: 0.7), fontSize: 14),
-        filled: true,
-        fillColor: _campoFondo,
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 14),
-        prefixIcon: Icon(icono, color: _textoGris, size: 20),
-        suffixIcon: sufijo,
-        border: borde(Colors.transparent, 0),
-        enabledBorder: borde(Colors.transparent, 0),
-        focusedBorder: borde(_azulBoton, 1.5),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          etiqueta,
+          style: const TextStyle(
+            color: _textoPrincipal,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          obscureText: oculto,
+          keyboardType: tipo,
+          textInputAction: accion,
+          onSubmitted: alEnviar,
+          style: const TextStyle(color: _textoPrincipal, fontSize: 14),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: _textoGris.withValues(alpha: 0.7), fontSize: 14),
+            filled: true,
+            fillColor: _campoFondo,
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+            prefixIcon: Icon(icono, color: _textoGris, size: 20),
+            suffixIcon: sufijo,
+            border: borde(Colors.transparent, 0),
+            enabledBorder: borde(Colors.transparent, 0),
+            focusedBorder: borde(_azulBoton, 1.5),
+          ),
+        ),
+      ],
     );
   }
 }

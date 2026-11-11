@@ -67,6 +67,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
   List<LatLng> _passedPolyline = []; // Coordenadas ya recorridas (línea gris)
   bool _isNavigating = false; // Estado de navegación activa
   bool _hasStartedTrip = false; // Indica si el viaje actual ya fue confirmado y comenzó
+  bool _finalizandoViaje = false; // Evita guardar el viaje dos veces si se toca "Finalizar" de nuevo mientras guarda
   bool _isFollowingUser = true; // Si el mapa debe seguir al usuario
   double _currentSpeedKmH = 0.0; // Velocidad actual
   Map<String, dynamic>? _selectedVehicle; // Vehículo para el viaje actual
@@ -1086,6 +1087,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                           flex: 3,
                           child: GestureDetector(
                             onTap: () async {
+                              // Un segundo toque mientras se guarda duplicaría el viaje en el historial.
+                              if (_finalizandoViaje) return;
+                              _finalizandoViaje = true;
+                              try {
                               // Guardar en el historial antes de limpiar
                               if (kDebugMode) _detenerSimulacion(); // deja de generar cruces antes de armar el viaje
                               if (_currentRoute != null) {
@@ -1137,6 +1142,9 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                               _saveNavigationState(); // Limpia la caché
                               _determinePosition();
                               _centerOnUser();
+                              } finally {
+                                _finalizandoViaje = false;
+                              }
                             },
                             child: Container(
                               height: 48,
