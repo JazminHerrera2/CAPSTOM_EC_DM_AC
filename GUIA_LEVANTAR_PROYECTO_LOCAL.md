@@ -127,6 +127,7 @@ cd ../..
 cd Producto/tag_ok
 flutter build web --pwa-strategy=none
 flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8090
+flutter run -d chrome --web-hostname localhost --web-port 8090
 flutter build web --release
 firebase deploy --only hosting
 flutter build web --release; firebase deploy --only hosting --project tag-ok-v2
