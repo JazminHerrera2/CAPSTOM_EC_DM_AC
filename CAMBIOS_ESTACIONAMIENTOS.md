@@ -16,7 +16,8 @@ Este archivo reúne los cambios del módulo Estacionamientos. Cada cambio nuevo 
 | 1 | 11-nov | [Reglas de Firestore para `estacionamientos`](#1-reglas-de-firestore-para-estacionamientos) | HU-15 a HU-21 / RF-016 a RF-022 | Tests OK en el emulador. **Publicado el 11-nov** (commit `10cc760`) |
 | 2 | 11-nov | [Servicio de estacionamientos y "¿Dónde está mi auto?"](#2-servicio-de-estacionamientos-y-dónde-está-mi-auto) | HU-15 a HU-18 / RF-016 a RF-019 | Tests OK (commits `588841c` y `13fe939`). **Falta conectarlo a las pantallas** del módulo |
 | 3 | 12-nov | [Seguimiento en vivo en el mapa y errores del GPS en el navegador](#3-seguimiento-en-vivo-en-el-mapa-y-errores-del-gps-en-el-navegador) | HU-18 / RF-019 / CU18 | Tests OK, sin commit |
-| 4 | 12-nov | [Tope de 30 días en la duración guardada](#4-tope-de-30-días-en-la-duración-guardada) | HU-17 / RF-018 | Tests OK, sin commit |
+| 4 | 12-nov | [Tope de 30 días en la duración guardada](#4-tope-de-30-días-en-la-duración-guardada) | HU-17 / RF-018 | Tests OK |
+| 5 | 12-nov | [Registro con IA desde el ticket](#5-registro-con-ia-desde-el-ticket) | HU-19 a HU-21 / RF-020 a RF-022 / CU19 a CU21 | Tests OK, sin commit. **Falta el formulario definitivo** (front) |
 
 ## Qué piden los requisitos
 
@@ -263,6 +264,63 @@ Lo mismo pasaría al registrar a mano un estacionamiento con la entrada y la sal
 
 ---
 
+## 5. Registro con IA desde el ticket
+
+### Para qué
+- **HU-19 / CU19 / RF-020:** el usuario sube la foto o el PDF del ticket o boleta y la IA lee el lugar, la fecha, las horas de entrada y salida, la duración y el monto, **cuando estén disponibles**.
+- **HU-20 / CU20 / RF-021:** lo que la IA no reconoció queda para completar a mano, o vacío si no es obligatorio.
+- **HU-21 / CU21 / RF-022:** nada se guarda sin la confirmación explícita del usuario.
+
+### Decisiones (12-nov, Estephany)
+- **Alcance:** se hace definitivo el componente de IA (lectura, validación y tests), que es la parte de arquitectura e IA. **El formulario definitivo de revisión es el mismo del registro manual (CU15), precargado con lo que leyó la IA**, igual que en combustible. Es del front de Almendra y se conecta al integrar. Para probar ahora se agregó un formulario simple en la pantalla de prueba local.
+- **Ticket sin hora de salida** (por ejemplo, el de entrada de un mall): se guarda **finalizado**, con lo que haya. El usuario puede completar la salida a mano o dejarla vacía (CU19 E1, CU20 E1). El cronómetro solo se inicia con "Iniciar estacionamiento" (cambio 1).
+- **Ticket con tarifa pero sin total pagado:** el monto queda vacío para que el usuario lo complete. **No se calcula**, porque sería inferir un valor que el ticket no dice.
+
+### Cómo funciona
+Es el mismo patrón que combustible (`combustible_extraction.dart`) y **no requiere cambios en la Edge Function** `ia-extraccion`, porque acepta cualquier esquema:
+```
+Foto/PDF → prepararImagenParaIa → Edge Function ia-extraccion → OpenAI
+        → JSON con los campos → parseEstacionamientoExtraido (valida) → revisión → registrarManual(origen 'ia')
+```
+
+### Funciones (`lib/features/registro_inteligente/estacionamiento_extraction.dart`, nuevo)
+- **Claves de campos dudosos** (líneas 15 a 20): `lugar`, `fecha`, `hora_entrada`, `hora_salida`, `duracion` y `costo`. La revisión resalta estos campos.
+- **`HoraDelDia`** (línea 32): una hora leída del ticket, sin fecha.
+- **`EstacionamientoExtraido`** (línea 38): lo que leyó la IA. Todo es opcional.
+  - **`entrada`** (línea 84): fecha y hora completas de entrada.
+  - **`salida`** (línea 90): fecha y hora completas de salida. Si el ticket no trae fecha de salida, se usa la de entrada. Si así la salida queda antes que la entrada, se asume que pasó la medianoche.
+- **`_esquemaEstacionamiento`** (línea 113): el formato JSON estricto que debe devolver la IA. Todo campo puede ser `null`.
+- **`_promptEstacionamiento`** (línea 147): las instrucciones a la IA, para tickets chilenos (malls, Saba, Central Parking, República, parquímetros municipales).
+  - Lo que no se lee con certeza vuelve `null`: **nunca se inventa, se calcula ni se infiere**.
+  - Las fechas chilenas son día/mes/año y en el monto el punto separa los miles. Las horas se piden en formato de 24 horas ("3:15 PM" es "15:15").
+  - Si solo aparece una tarifa y no el total pagado, el monto vuelve `null`.
+  - **Privacidad:** se ignoran la patente, el nombre, el RUT, el correo y el teléfono.
+- **`interpretarHora`** (línea 192): entiende "10:30", "09:05:59", "15.45" y "15h30". Descarta horas imposibles como "25:00".
+- **`minutosDeTexto`** (línea 204): entiende "95", "1:35", "1 h 35 min", "2 horas" y "45 min".
+- **`parseEstacionamientoExtraido`** (línea 251): valida lo que devolvió la IA, con los mismos límites de las reglas publicadas, para que siempre se pueda guardar:
+  - **Fecha:** se descarta si es futura o anterior a 1990, y se marca como dudosa. Es obligatoria para guardar.
+  - **Salida antes que la entrada:** sin fecha de salida, se asume que pasó la medianoche y la salida se marca como dudosa. Con fecha de salida explícita anterior a la entrada, es un error de lectura: se marca y no se calcula la duración.
+  - **Duración:** si el ticket la trae y no cuadra con las horas (tolerancia de 2 minutos, `toleranciaDuracionMin`, línea 246), **no se elige una**: se muestra la del ticket marcada como dudosa. Si el ticket no la trae, se calcula con las horas leídas. Siempre con tope de 30 días (cambio 4).
+  - **Monto:** entero de hasta $10.000.000. **Lugar:** hasta 100 caracteres.
+  - **Campos dudosos:** de la lista que entrega la IA, solo se aceptan las claves conocidas.
+  - **Confianza:** la proporción de campos leídos sin duda (de 0 a 1), igual que en combustible. Se guarda en `confianza_ia`.
+- **`extraerEstacionamiento`** (línea 353): prepara la imagen, la envía a la IA con la misma cascada de modelos y reintentos del Registro Inteligente, e interpreta la respuesta. Si la IA falla, lanza el error para que la pantalla ofrezca el registro manual (CU19 E2).
+
+### Funciones: servicio (`lib/data/services/estacionamiento_service.dart`)
+- **`registrarManual`**: nuevo parámetro opcional **`duracionMin`** (línea 51). Antes, un ticket con la duración pero sin las horas (por ejemplo, un parquímetro que solo dice "60 min · $1.200") perdía la duración. Ahora:
+  - si vienen las dos horas, la duración se calcula con ellas;
+  - si no, se usa `duracionMin` (línea 75), con tope de 30 días.
+
+### Pruebas
+| Pruebas | Resultado |
+|---|---|
+| `test/estacionamiento_extraction_test.dart` (nuevo, 14 tests, **sin llamar a OpenAI**: respuestas simuladas): formatos de hora y duración; ticket completo; duración que cuadra y que no cuadra; ticket solo de entrada; cruce de medianoche; fecha de salida explícita y una anterior a la entrada; fecha chilena, futura o ilegible; tarifa sin total; límites de las reglas; claves dudosas desconocidas; respuesta vacía | 14 OK |
+| App completa (`flutter test`) | 370 OK. `flutter analyze` sin errores |
+
+**Prueba local:** la pantalla de prueba (no se sube) tiene ahora el botón **"Registrar con IA (foto o PDF del ticket)"** y un formulario simple de revisión, con los campos dudosos en naranja y botones para confirmar o cancelar. Sirve para probar con tickets reales; **cada lectura consume una llamada a OpenAI**.
+
+---
+
 ## Pendiente
 
 | Pendiente | Quién |
@@ -273,6 +331,7 @@ Lo mismo pasaría al registrar a mano un estacionamiento con la entrada y la sal
 | **Probar en la app** el GPS y el mapa "¿Dónde está mi auto?" | Al integrar |
 | **Decidir si estacionamientos se registra en `auditoria`**, como mantenciones y cargas | Equipo |
 | **iOS:** `ios/Runner/Info.plist` no tiene el texto de permiso de ubicación (`NSLocationWhenInUseUsageDescription`). Solo importa si se compila para iPhone | — |
-| **IA del ticket** (HU-19 a HU-21): agregar el tipo "ticket de estacionamiento" al componente de IA | Estephany |
+| **Formulario definitivo de revisión con IA:** el registro manual del front, precargado con `EstacionamientoExtraido` y con los campos dudosos resaltados (cambio 5) | Al integrar |
+| **Probar la IA con tickets reales** (pantalla de prueba local) | Estephany |
 | **Diccionario de datos:** agregar el dueño (`uid`) y cambiar `hora_entrada` y `hora_salida` a fecha y hora | Estephany |
 | **Plantillas de casos de uso:** CU19 dice "Gemini API"; la app usa OpenAI | Documentación |
