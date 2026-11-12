@@ -377,3 +377,103 @@ test('10e el dueño lee y borra su carga; B no la lee ni la borra; nadie la edit
   await assertFails(como(UID_B).doc('abastecimientos/cA').delete());
   await assertSucceeds(como(UID_A).doc('abastecimientos/cA').delete());
 });
+
+// --- Prueba 11: estacionamientos (RF-016 a RF-022) --------------------------
+const GeoPoint = firebase.firestore.GeoPoint;
+const hace = (min) => Timestamp.fromMillis(Date.now() - min * 60000);
+// Registro manual terminado (o leído de un ticket con IA).
+const estacionamientoFinalizado = (uid, extra = {}) => ({
+  uid, vehiculo_id: 'vehA', fecha: hace(95), lugar: 'Costanera Center',
+  hora_entrada: hace(95), hora_salida: hace(0), duracion_min: 95, costo: 3500,
+  ubicacion: new GeoPoint(-33.417, -70.606), observacion: 'Nivel -2, sector B',
+  estado: 'finalizado', origen_registro: 'manual', ...extra,
+});
+// Cronómetro recién iniciado: entrada sin salida.
+const estacionamientoActivo = (uid, extra = {}) => ({
+  uid, vehiculo_id: 'vehA', fecha: hace(10), hora_entrada: hace(10),
+  estado: 'activo', origen_registro: 'manual', ...extra,
+});
+test('11a crear manual propio pasa; con uid ajeno, sin sesión o con vehículo ajeno falla', async () => {
+  await assertSucceeds(como(UID_A).doc('estacionamientos/m1').set(estacionamientoFinalizado(UID_A)));
+  await assertFails(como(UID_A).doc('estacionamientos/m2').set(estacionamientoFinalizado(UID_B)));
+  await assertFails(anonimo().doc('estacionamientos/m3').set(estacionamientoFinalizado(UID_A)));
+  await assertFails(como(UID_A).doc('estacionamientos/m4').set(estacionamientoFinalizado(UID_A, { vehiculo_id: 'vehB' })));
+});
+test('11b registro parcial: solo fecha, estado y origen son obligatorios', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('estacionamientos/p1').set({
+    uid: UID_A, vehiculo_id: 'vehA', fecha: Timestamp.now(), estado: 'finalizado',
+    origen_registro: 'manual', lugar: null, hora_entrada: null, hora_salida: null,
+    duracion_min: null, costo: null, ubicacion: null, observacion: null,
+    fecha_captura: null, confianza_ia: null,
+  }));
+  await assertFails(db.doc('estacionamientos/p2').set(estacionamientoFinalizado(UID_A, { fecha: null })));
+  const { estado, ...sinEstado } = estacionamientoFinalizado(UID_A);
+  await assertFails(db.doc('estacionamientos/p3').set(sinEstado));
+});
+test('11c con IA desde el ticket pasa finalizado; la IA no puede crear uno activo', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('estacionamientos/ia1').set(estacionamientoFinalizado(UID_A, {
+    origen_registro: 'ia', fecha_captura: Timestamp.now(), confianza_ia: 88,
+  })));
+  await assertFails(db.doc('estacionamientos/ia2').set(estacionamientoActivo(UID_A, { origen_registro: 'ia' })));
+});
+test('11d cronómetro: activo con entrada y sin salida pasa; sin entrada o con salida falla', async () => {
+  const db = como(UID_A);
+  await assertSucceeds(db.doc('estacionamientos/a1').set(estacionamientoActivo(UID_A)));
+  await assertFails(db.doc('estacionamientos/a2').set(estacionamientoActivo(UID_A, { hora_entrada: null })));
+  await assertFails(db.doc('estacionamientos/a3').set(estacionamientoActivo(UID_A, { hora_salida: hace(0) })));
+});
+test('11e datos inválidos y campos extra fallan', async () => {
+  const db = como(UID_A);
+  await assertFails(db.doc('estacionamientos/x1').set(estacionamientoFinalizado(UID_A, { estado: 'pausado' })));
+  await assertFails(db.doc('estacionamientos/x2').set(estacionamientoFinalizado(UID_A, { origen_registro: 'otro' })));
+  await assertFails(db.doc('estacionamientos/x3').set(estacionamientoFinalizado(UID_A, { costo: -1 })));
+  await assertFails(db.doc('estacionamientos/x4').set(estacionamientoFinalizado(UID_A, { costo: 3500.5 })));
+  await assertFails(db.doc('estacionamientos/x5').set(estacionamientoFinalizado(UID_A, { duracion_min: 50000 })));
+  await assertFails(db.doc('estacionamientos/x6').set(estacionamientoFinalizado(UID_A, { hora_entrada: hace(0), hora_salida: hace(30) })));
+  await assertFails(db.doc('estacionamientos/x7').set(estacionamientoFinalizado(UID_A, { ubicacion: 'Costanera' })));
+  await assertFails(db.doc('estacionamientos/x8').set(estacionamientoFinalizado(UID_A, { hora_entrada: '10:30' })));
+  await assertFails(db.doc('estacionamientos/x9').set(estacionamientoFinalizado(UID_A, { archivo_path: 'x/y.jpg' })));
+  await assertFails(db.doc('estacionamientos/x10').set(estacionamientoFinalizado(UID_A, { lugar: 'x'.repeat(101) })));
+});
+test('11f finalizar el cronómetro con hora de salida pasa; sin ella, o cambiando uid, vehículo, fecha, entrada u origen, falla', async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc('estacionamientos/act').set(estacionamientoActivo(UID_A));
+  });
+  const ref = como(UID_A).doc('estacionamientos/act');
+  await assertSucceeds(ref.update({ ubicacion: new GeoPoint(-33.45, -70.66), lugar: 'Mall Plaza' }));
+  await assertFails(ref.update({ uid: UID_B }));
+  await assertFails(ref.update({ vehiculo_id: 'vehB' }));
+  await assertFails(ref.update({ fecha: Timestamp.now() }));
+  await assertFails(ref.update({ hora_entrada: hace(5) }));
+  await assertFails(ref.update({ origen_registro: 'ia' }));
+  // Finalizar exige la hora de término (RF-018).
+  await assertFails(ref.update({ estado: 'finalizado' }));
+  // Poner hora de salida sin finalizar tampoco: activo no tiene salida.
+  await assertFails(ref.update({ hora_salida: hace(0) }));
+  await assertSucceeds(ref.update({ estado: 'finalizado', hora_salida: hace(0), duracion_min: 10, costo: 1200 }));
+});
+test('11g un estacionamiento finalizado no se modifica', async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc('estacionamientos/fin').set(estacionamientoFinalizado(UID_A));
+  });
+  const ref = como(UID_A).doc('estacionamientos/fin');
+  await assertFails(ref.update({ costo: 1 }));
+  await assertFails(ref.update({ observacion: 'corrección' }));
+  await assertFails(ref.update({ estado: 'activo', hora_salida: null }));
+});
+test('11h el dueño lee, lista por uid y borra; B no lee, no edita ni borra', async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc('estacionamientos/eA').set(estacionamientoActivo(UID_A));
+  });
+  await assertSucceeds(como(UID_A).doc('estacionamientos/eA').get());
+  await assertFails(como(UID_B).doc('estacionamientos/eA').get());
+  await assertFails(anonimo().doc('estacionamientos/eA').get());
+  await assertFails(como(UID_A).collection('estacionamientos').get());
+  // La misma consulta que hacen el Inicio y Gastos.
+  await assertSucceeds(como(UID_A).collection('estacionamientos').where('uid', '==', UID_A).get());
+  await assertFails(como(UID_B).doc('estacionamientos/eA').update({ lugar: 'x' }));
+  await assertFails(como(UID_B).doc('estacionamientos/eA').delete());
+  await assertSucceeds(como(UID_A).doc('estacionamientos/eA').delete());
+});

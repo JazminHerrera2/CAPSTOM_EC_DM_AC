@@ -59,6 +59,19 @@ rules_version = '2';
 //   (solo la fecha es obligatoria: se permiten registros parciales; sin
 //   archivo_path, no se guarda la boleta)
 //
+// estacionamientos/{id}   (Sprint 5: manual, cronometro e IA del ticket)
+//   uid: string (req, inmutable) = dueño | vehiculo_id: string (req, inmutable)
+//   fecha: timestamp (req, inmutable) | estado: activo|finalizado (req)
+//   origen_registro: manual|ia (req, inmutable)
+//   hora_entrada, hora_salida: timestamp|null (fecha y hora completas, para
+//   que el cronometro sobreviva al cierre de la app y cruce la medianoche)
+//   duracion_min: int|null | costo: int|null (pesos) | lugar: string 100
+//   observacion: string 500 | ubicacion: latlng|null (GPS)
+//   fecha_captura: timestamp|null | confianza_ia: number|null
+//   (activo = cronometro corriendo: tiene hora_entrada y no hora_salida.
+//   Solo se edita mientras esta activo; finalizado ya no se modifica. Sin
+//   archivo_path: no se guarda la foto del ticket)
+//
 // componentes_mantencion/{id}   catalogo (lo escriben solo admins)
 //   nombre: string (req) | orden: int (req) | activo: bool (req)
 //
@@ -420,6 +433,70 @@ service cloud.firestore {
         vehiculoEsDe(request.resource.data.vehiculo_id, request.auth.uid);
 
       allow update: if false;
+
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // estacionamientos  (dueno = uid)
+    // ===============================================================
+    // RF-016 a RF-022 (HU-15 a HU-21). Tres formas de crear:
+    //  - manual: estado finalizado, datos parciales permitidos;
+    //  - cronometro: estado activo, con hora_entrada y sin hora_salida;
+    //  - IA desde el ticket: siempre finalizado (el ticket es de un
+    //    estacionamiento ya terminado).
+    // Solo se edita mientras esta activo (para finalizarlo, con hora_salida,
+    // o agregar lugar, observacion o ubicacion). Una vez finalizado no se
+    // modifica.
+    // "Un solo activo por vehiculo" no se puede exigir aca: lo controla la app.
+
+    function estacionamientoValido(d) {
+      return d.keys().hasOnly(['uid', 'vehiculo_id', 'fecha', 'lugar',
+          'hora_entrada', 'hora_salida', 'duracion_min', 'costo', 'ubicacion',
+          'observacion', 'estado', 'origen_registro', 'fecha_captura',
+          'confianza_ia']) &&
+        reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
+        d.fecha is timestamp &&
+        d.estado in ['activo', 'finalizado'] &&
+        d.origen_registro in ['manual', 'ia'] &&
+        optTs(d, 'hora_entrada') && optTs(d, 'hora_salida') &&
+        // Con las dos horas, la salida no puede ser anterior a la entrada.
+        (d.get('hora_entrada', null) == null || d.get('hora_salida', null) == null ||
+          d.hora_salida >= d.hora_entrada) &&
+        // Activo = cronometro corriendo: entrada sin salida y nunca desde IA.
+        (d.estado != 'activo' ||
+          (d.get('hora_entrada', null) is timestamp &&
+           d.get('hora_salida', null) == null &&
+           d.origen_registro == 'manual')) &&
+        optInt(d, 'duracion_min', 0, 43200) &&
+        optInt(d, 'costo', 0, 10000000) &&
+        optStr(d, 'lugar', 100) && optStr(d, 'observacion', 500) &&
+        (!('ubicacion' in d) || d.ubicacion == null || d.ubicacion is latlng) &&
+        optTs(d, 'fecha_captura') &&
+        (!('confianza_ia' in d) || d.confianza_ia == null ||
+          (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100));
+    }
+
+    match /estacionamientos/{estacionamientoId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+
+      // uid debe ser el del autor y el vehiculo debe ser suyo.
+      allow create: if isSignedIn() &&
+        request.resource.data.uid == request.auth.uid &&
+        estacionamientoValido(request.resource.data) &&
+        vehiculoEsDe(request.resource.data.vehiculo_id, request.auth.uid);
+
+      // Solo mientras esta activo. uid, vehiculo_id, fecha, hora_entrada y
+      // origen_registro no estan en la lista: son inmutables.
+      allow update: if isSignedIn() && resource.data.uid == request.auth.uid &&
+        resource.data.estado == 'activo' &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'hora_salida', 'duracion_min', 'costo', 'estado', 'lugar',
+          'observacion', 'ubicacion']) &&
+        // Al finalizar el cronometro se registra el termino (RF-018).
+        (request.resource.data.estado != 'finalizado' ||
+          request.resource.data.get('hora_salida', null) is timestamp) &&
+        estacionamientoValido(request.resource.data);
 
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
