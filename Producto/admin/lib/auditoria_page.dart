@@ -77,16 +77,6 @@ class _AuditoriaPageState extends State<AuditoriaPage> {
               subtitulo:
                   'Bitácora de cambios administrativos: qué se modificó y qué usuario lo hizo.',
               acciones: [
-                DesplegableFiltro(
-                  valor: _filtro,
-                  opciones: ['Todas', ...TipoAccion.values.map((e) => e.etiqueta)],
-                  etiquetas: const {'Todas': 'Todas las acciones'},
-                  ancho: 200,
-                  onChanged: (v) => setState(() {
-                    _filtro = v;
-                    _pagina = 0;
-                  }),
-                ),
                 BotonContorno(
                   texto: 'Actualizar',
                   icono: Icons.refresh,
@@ -143,18 +133,24 @@ class _AuditoriaPageState extends State<AuditoriaPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Registros recientes',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: kTinta,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${filtrados.length} registros',
-                        style: const TextStyle(color: kGris, fontSize: 14),
+                      CabeceraListado(
+                        titulo: 'Registros recientes',
+                        subtitulo: '${filtrados.length} registros',
+                        controles: [
+                          DesplegableFiltro(
+                            valor: _filtro,
+                            opciones: [
+                              'Todas',
+                              ...TipoAccion.values.map((e) => e.etiqueta),
+                            ],
+                            etiquetas: const {'Todas': 'Todas las acciones'},
+                            ancho: 200,
+                            onChanged: (v) => setState(() {
+                              _filtro = v;
+                              _pagina = 0;
+                            }),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       if (filtrados.isEmpty)

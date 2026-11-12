@@ -45,23 +45,19 @@ class TablaUsuarios extends StatelessWidget {
     super.key,
     required this.filas,
     required this.ahora,
-    required this.onReset,
-    required this.onEliminar,
     required this.onAbrir,
   });
 
   final void Function(FilaUsuario) onAbrir;
   final List<FilaUsuario> filas;
   final DateTime ahora;
-  final void Function(FilaUsuario) onReset;
-  final void Function(FilaUsuario) onEliminar;
 
   static const double _wEstado = 110;
   static const double _wRol = 210;
   static const double _wVehiculos = 200;
   static const double _wRegistrado = 130;
   static const double _wActividad = 150;
-  static const double _wAcciones = 130;
+  static const double _wAcciones = 70;
   static const double _minUsuario = 260;
 
   static const double _minTotal =
@@ -90,7 +86,7 @@ class TablaUsuarios extends StatelessWidget {
                 vehiculos: const _Encabezado('Vehículos'),
                 registrado: const _Encabezado('Registrado'),
                 actividad: const _Encabezado('Última actividad'),
-                acciones: const _Encabezado('Acciones'),
+                acciones: const SizedBox.shrink(),
               ),
               for (final f in filas)
                 InkWell(onTap: () => onAbrir(f), child: _filaDe(f)),
@@ -181,24 +177,10 @@ class TablaUsuarios extends StatelessWidget {
         f.ultimaActividad == null ? '—' : haceCuanto(f.ultimaActividad, ahora),
         style: const TextStyle(color: _tinta, fontSize: 14),
       ),
-      acciones: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(
-              Icons.lock_reset_outlined,
-              color: Colors.orange,
-              size: 20,
-            ),
-            tooltip: 'Restablecer Contraseña',
-            onPressed: () => onReset(f),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-            tooltip: 'Eliminar Usuario',
-            onPressed: () => onEliminar(f),
-          ),
-        ],
+      acciones: IconButton(
+        tooltip: 'Ver detalle',
+        icon: const Icon(Icons.visibility_outlined, color: _tinta, size: 20),
+        onPressed: () => onAbrir(f),
       ),
     );
   }

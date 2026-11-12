@@ -15,6 +15,9 @@ const Color kAzulSuave = Color(0xFFE0ECFF);
 const Color kVerde = Color(0xFF059669);
 const Color kRojo = Color(0xFFE11D48);
 
+/// Alto común de botones, filtros y buscadores de las barras de herramientas.
+const double kAltoControl = 46;
+
 // ---------------------------------------------------------------------------
 // Fechas
 // ---------------------------------------------------------------------------
@@ -327,7 +330,9 @@ class BotonContorno extends StatelessWidget {
       foregroundColor: kTinta,
       side: const BorderSide(color: kBorde),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      minimumSize: const Size(0, kAltoControl),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       textStyle: const TextStyle(fontWeight: FontWeight.w600),
     ),
   );
@@ -354,7 +359,9 @@ class BotonPrimario extends StatelessWidget {
       backgroundColor: kAzul,
       foregroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      minimumSize: const Size(0, kAltoControl),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       textStyle: const TextStyle(fontWeight: FontWeight.w600),
     ),
   );
@@ -477,8 +484,10 @@ class CampoBusqueda extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: ancho,
+    height: kAltoControl,
     child: TextField(
       controller: controller,
+      textAlignVertical: TextAlignVertical.center,
       decoration: decoCampo(hint: hint, icono: Icons.search),
     ),
   );
@@ -704,9 +713,12 @@ class _SelectorAcordeonState extends State<SelectorAcordeon> {
           onTap: _alternar,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
+            constraints: widget.compacto && !conEtiqueta
+                ? const BoxConstraints(minHeight: kAltoControl)
+                : null,
             padding: EdgeInsets.symmetric(
               horizontal: 14,
-              vertical: widget.compacto && !conEtiqueta ? 7 : 11,
+              vertical: widget.compacto && !conEtiqueta ? 0 : 11,
             ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
@@ -715,7 +727,10 @@ class _SelectorAcordeonState extends State<SelectorAcordeon> {
                 width: _abierto ? 1.5 : 1,
               ),
             ),
-            child: Row(
+            child: Center(
+              widthFactor: 1,
+              heightFactor: 1,
+              child: Row(
               children: [
                 if (widget.icono != null) ...[
                   Icon(widget.icono, color: kGris, size: 20),
@@ -765,6 +780,7 @@ class _SelectorAcordeonState extends State<SelectorAcordeon> {
                   ),
                 ),
               ],
+            ),
             ),
           ),
         ),

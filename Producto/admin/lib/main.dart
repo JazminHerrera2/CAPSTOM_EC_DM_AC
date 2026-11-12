@@ -12,7 +12,6 @@ import 'admin_firestore_service.dart';
 import 'beneficios_page.dart';
 import 'admin_ui.dart';
 import 'auditoria_page.dart';
-import 'carga_masiva_page.dart';
 import 'admin_paneles.dart';
 import 'concesionarios_page.dart';
 import 'dashboard_page.dart';
@@ -94,6 +93,8 @@ class TagOkAdminApp extends StatelessWidget {
           style: FilledButton.styleFrom(
             backgroundColor: kAzul,
             foregroundColor: Colors.white,
+            minimumSize: const Size(0, kAltoControl),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             textStyle: const TextStyle(fontWeight: FontWeight.w600),
           ),
@@ -102,6 +103,8 @@ class TagOkAdminApp extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             foregroundColor: kTinta,
             side: const BorderSide(color: kBorde),
+            minimumSize: const Size(0, kAltoControl),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             textStyle: const TextStyle(fontWeight: FontWeight.w600),
           ),
@@ -256,12 +259,6 @@ class _AdminShellState extends State<AdminShell> {
         section: 'Administración',
         icon: Icons.receipt_long_outlined,
         pageBuilder: (s) => AuditoriaPage(service: s),
-      ),
-      SidebarItem(
-        title: 'Carga masiva',
-        section: 'Administración',
-        icon: Icons.upload_file_outlined,
-        pageBuilder: (s) => CargaMasivaPage(service: s),
       ),
       SidebarItem(
         title: 'Beneficios',
@@ -1267,9 +1264,6 @@ class _UsersPageState extends State<UsersPage> {
                         usuario: f,
                         ahora: ahora,
                       ),
-                      onReset: (f) => _enviarResetPassword(context, f.correo),
-                      onEliminar: (f) =>
-                          _mostrarDialogoEliminar(context, f.docId, f.nombre),
                     ),
                   const Divider(),
                   Paginador(
@@ -1292,78 +1286,6 @@ class _UsersPageState extends State<UsersPage> {
     );
   }
 
-  void _enviarResetPassword(BuildContext context, String correo) async {
-    if (correo == 'Sin correo') return;
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: correo);
-      widget.service.logAction(
-        action: 'RESET_PASSWORD',
-        target: correo,
-        details: 'Se envió un correo de restablecimiento de contraseña.',
-      );
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Correo de restablecimiento enviado a $correo'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al enviar correo: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _mostrarDialogoEliminar(
-    BuildContext context,
-    String docId,
-    String nombre,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text('Eliminar Usuario'),
-        content: Text(
-          '¿Estás seguro que deseas eliminar el registro y los datos de $nombre? Esta acción es irreversible.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0EA5E9),
-            ),
-            onPressed: () {
-              FirebaseFirestore.instance
-                  .collection('usuarios')
-                  .doc(docId)
-                  .delete();
-              widget.service.logAction(
-                action: 'DELETE_USER',
-                target: nombre,
-                details: 'Se eliminó definitivamente el usuario y sus datos.',
-              );
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Sí, Eliminar',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class AdminsManagementPage extends StatefulWidget {

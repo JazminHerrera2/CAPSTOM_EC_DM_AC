@@ -100,6 +100,58 @@ class _PanelUsuarioState extends State<_PanelUsuario> {
     }
   }
 
+  Future<void> _restablecer() async {
+    final correo = widget.usuario.correo;
+    if (correo == 'Sin correo') {
+      avisar(context, 'Este usuario no tiene correo registrado.', error: true);
+      return;
+    }
+    setState(() => _guardando = true);
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: correo);
+      await _service.logAction(
+        action: 'RESET_PASSWORD',
+        target: correo,
+        details: 'Se envió un correo de restablecimiento de contraseña.',
+      );
+      if (mounted) avisar(context, 'Correo de restablecimiento enviado a $correo');
+    } catch (e) {
+      if (mounted) avisar(context, 'Error al enviar el correo: $e', error: true);
+    } finally {
+      if (mounted) setState(() => _guardando = false);
+    }
+  }
+
+  Future<void> _eliminar() async {
+    final u = widget.usuario;
+    final ok = await confirmar(
+      context,
+      titulo: 'Eliminar usuario',
+      mensaje:
+          '¿Eliminar el registro y los datos de ${u.correo}? Esta acción es irreversible.',
+      confirmar: 'Sí, eliminar',
+      peligro: true,
+    );
+    if (!ok || !mounted) return;
+    setState(() => _guardando = true);
+    try {
+      await FirebaseFirestore.instance.collection('usuarios').doc(u.docId).delete();
+      await _service.logAction(
+        action: 'DELETE_USER',
+        target: u.correo,
+        details: 'Se eliminó definitivamente el usuario y sus datos.',
+      );
+      if (!mounted) return;
+      avisar(context, 'Usuario eliminado.');
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _guardando = false);
+        avisar(context, 'No se pudo eliminar el usuario: $e', error: true);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final u = widget.usuario;
@@ -113,7 +165,7 @@ class _PanelUsuarioState extends State<_PanelUsuario> {
         ? '${partes[0][0]}${partes[1][0]}'.toUpperCase()
         : u.correo.substring(0, u.correo.length >= 2 ? 2 : 1).toUpperCase();
 
-    return ListView(
+    final contenido = ListView(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
       children: [
         Row(
@@ -284,6 +336,36 @@ class _PanelUsuarioState extends State<_PanelUsuario> {
           )
         else
           for (final v in u.vehiculos) _TarjetaVehiculo(datos: v),
+      ],
+    );
+
+    return Column(
+      children: [
+        Expanded(child: contenido),
+        const Divider(height: 1, color: kBorde),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _guardando ? null : _restablecer,
+                  icon: const Icon(Icons.lock_reset_outlined, size: 18),
+                  label: const Text('Restablecer contraseña'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: (_guardando || _esUnoMismo) ? null : _eliminar,
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: Text(_esUnoMismo ? 'Tu cuenta' : 'Eliminar usuario'),
+                  style: FilledButton.styleFrom(backgroundColor: kRojo),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

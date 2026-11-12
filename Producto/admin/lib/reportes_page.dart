@@ -277,12 +277,6 @@ class _ReportesPageState extends State<ReportesPage> {
               subtitulo:
                   'Adopción, uso funcional y estado operativo del sistema.',
               acciones: [
-                DesplegableFiltro(
-                  valor: _periodo,
-                  opciones: _periodos,
-                  ancho: 180,
-                  onChanged: (v) => setState(() => _periodo = v),
-                ),
                 BotonContorno(
                   texto: 'Actualizar',
                   icono: Icons.refresh,
@@ -297,7 +291,15 @@ class _ReportesPageState extends State<ReportesPage> {
             ),
             children: [
 
-            const _Seccion('ADOPCIÓN'),
+            _Seccion(
+              'ADOPCIÓN',
+              derecha: DesplegableFiltro(
+                valor: _periodo,
+                opciones: _periodos,
+                ancho: 180,
+                onChanged: (v) => setState(() => _periodo = v),
+              ),
+            ),
             GrillaTarjetas(
               tarjetas: [
                 TarjetaDato(
@@ -461,21 +463,31 @@ class _ReportesPageState extends State<ReportesPage> {
 }
 
 class _Seccion extends StatelessWidget {
-  const _Seccion(this.texto);
+  const _Seccion(this.texto, {this.derecha});
 
   final String texto;
+
+  /// Control alineado a la derecha, en la misma fila del título.
+  final Widget? derecha;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(bottom: 12),
-    child: Text(
-      texto,
-      style: const TextStyle(
-        color: kGris,
-        fontSize: 12.5,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.1,
-      ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            texto,
+            style: const TextStyle(
+              color: kGris,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.1,
+            ),
+          ),
+        ),
+        ?derecha,
+      ],
     ),
   );
 }
