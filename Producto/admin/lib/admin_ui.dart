@@ -864,13 +864,19 @@ class TablaSimple extends StatelessWidget {
     required this.anchos,
     required this.filas,
     this.onTapFila,
+    this.anchosPorColumna,
   });
 
-  /// Un título por columna (el primero corresponde a la columna flexible).
+  /// Un título por columna (por defecto el primero es la columna flexible).
   final List<String> encabezados;
 
   /// Ancho de cada columna salvo la primera (debe tener `encabezados.length-1`).
+  /// Se ignora si se da [anchosPorColumna].
   final List<double> anchos;
+
+  /// Ancho de cada columna, en orden. Un `null` reparte el espacio sobrante en
+  /// partes iguales con las demás columnas `null`.
+  final List<double?>? anchosPorColumna;
   final List<List<Widget>> filas;
   final void Function(int index)? onTapFila;
 
@@ -878,7 +884,11 @@ class TablaSimple extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final minTotal = _minPrimera + anchos.fold<double>(0, (a, b) => a + b);
+    final List<double?> cols = anchosPorColumna ?? [null, ...anchos];
+    final minTotal = cols.fold<double>(
+      0,
+      (a, w) => a + (w ?? (anchosPorColumna == null ? _minPrimera : 110)),
+    );
     return LayoutBuilder(
       builder: (context, c) {
         final ancho = c.maxWidth < minTotal ? minTotal : c.maxWidth;
@@ -892,15 +902,22 @@ class TablaSimple extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Expanded(child: celdas.first),
-                for (int k = 1; k < celdas.length; k++)
-                  SizedBox(
-                    width: anchos[k - 1],
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: celdas[k],
+                for (int k = 0; k < celdas.length; k++)
+                  if (cols[k] == null)
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: celdas[k],
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: cols[k],
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: celdas[k],
+                      ),
                     ),
-                  ),
               ],
             ),
           );

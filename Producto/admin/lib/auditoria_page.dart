@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -65,6 +67,40 @@ class _AuditoriaPageState extends State<AuditoriaPage> {
   int _pagina = 0;
   int _porPagina = 20;
 
+  /// uid -> correo. Los registros de la app móvil solo guardan el uid del
+  /// usuario; con esto se muestra el correo en vez del id.
+  final Map<String, String> _correos = {};
+  final List<StreamSubscription<QuerySnapshot<Map<String, dynamic>>>> _subs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    void escuchar(Stream<QuerySnapshot<Map<String, dynamic>>> s) {
+      _subs.add(
+        s.listen((snap) {
+          if (!mounted) return;
+          setState(() {
+            for (final d in snap.docs) {
+              final e = (d.data()['email'] ?? '').toString().trim();
+              if (e.isNotEmpty) _correos[d.id] = e;
+            }
+          });
+        }, onError: (_) {}),
+      );
+    }
+
+    escuchar(widget.service.streamUsers());
+    escuchar(widget.service.streamAdministradores());
+  }
+
+  @override
+  void dispose() {
+    for (final s in _subs) {
+      s.cancel();
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 820;
@@ -107,7 +143,7 @@ class _AuditoriaPageState extends State<AuditoriaPage> {
                   final codigo = (m['action'] ?? m['accion'] ?? '').toString();
                   return _Registro(
                     fecha: fechaDe(m['fecha']),
-                    usuario: (m['adminEmail'] ?? m['usuario_id'] ?? '—').toString(),
+                    usuario: _correoDe(m),
                     tipo: tipoDeAccion(codigo),
                     codigo: codigo,
                     entidad: entidadDeAccion(
@@ -167,7 +203,10 @@ class _AuditoriaPageState extends State<AuditoriaPage> {
                             'Entidad',
                             'Detalle',
                           ],
-                          anchos: const [250, 150, 130, 420],
+                          // Fecha, Usuario, Acción y Entidad se reparten el espacio por
+                          // igual (null); Detalle mantiene sus 420 px.
+                          anchos: const [],
+                          anchosPorColumna: const [null, null, null, null, 420],
                           filas: [
                             for (final r in pagina)
                               [
@@ -243,6 +282,16 @@ class _AuditoriaPageState extends State<AuditoriaPage> {
             ],
           ),
     );
+  }
+
+  /// Correo de quien hizo la acción: el del panel (`adminEmail`) o, si el
+  /// registro viene de la app móvil, el que corresponde a su uid.
+  String _correoDe(Map<String, dynamic> m) {
+    final admin = (m['adminEmail'] ?? '').toString().trim();
+    if (admin.isNotEmpty) return admin;
+    final uid = (m['usuario_id'] ?? '').toString().trim();
+    if (uid.isEmpty) return '—';
+    return _correos[uid] ?? uid;
   }
 
   static String _siglas(String correo) {
