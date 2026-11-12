@@ -635,6 +635,13 @@ El detalle está en [`CAMBIOS_ESTACIONAMIENTOS.md`](CAMBIOS_ESTACIONAMIENTOS.md)
   - un estacionamiento finalizado no se modifica.
 - Se agregaron 8 pruebas en `tools/rules_test/rules.test.js` ("Prueba 11"). Todas pasan.
 - **Reglas publicadas el 11-nov** y verificadas contra el commit `10cc760`.
+- **Después de las reglas**, el módulo siguió en `CAMBIOS_ESTACIONAMIENTOS.md`:
+  - servicio completo y mapa "¿Dónde está mi auto?" (cambios 2 a 4);
+  - registro con IA desde el ticket (cambio 5);
+  - dirección escrita y nombre de las calles (cambios 6 y 7);
+  - pantalla de prueba y su conexión **temporal** desde el Inicio (cambios 8 y 9; ⚠️ se debe quitar antes de integrar).
+
+  Su sección **"Mapa del código"** reúne cada función con su archivo, línea, qué hace y por qué existe.
 
 ---
 
