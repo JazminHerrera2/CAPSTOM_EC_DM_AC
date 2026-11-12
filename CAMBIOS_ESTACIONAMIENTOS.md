@@ -14,7 +14,9 @@ Este archivo reúne los cambios del módulo Estacionamientos. Cada cambio nuevo 
 | # | Fecha | Cambio | Requisito | Estado |
 |---|---|---|---|---|
 | 1 | 11-nov | [Reglas de Firestore para `estacionamientos`](#1-reglas-de-firestore-para-estacionamientos) | HU-15 a HU-21 / RF-016 a RF-022 | Tests OK en el emulador. **Publicado el 11-nov** (commit `10cc760`) |
-| 2 | 11-nov | [Servicio de estacionamientos y "¿Dónde está mi auto?"](#2-servicio-de-estacionamientos-y-dónde-está-mi-auto) | HU-15 a HU-18 / RF-016 a RF-019 | Tests OK, sin commit. **Falta conectarlo a las pantallas** del módulo |
+| 2 | 11-nov | [Servicio de estacionamientos y "¿Dónde está mi auto?"](#2-servicio-de-estacionamientos-y-dónde-está-mi-auto) | HU-15 a HU-18 / RF-016 a RF-019 | Tests OK (commits `588841c` y `13fe939`). **Falta conectarlo a las pantallas** del módulo |
+| 3 | 12-nov | [Seguimiento en vivo en el mapa y errores del GPS en el navegador](#3-seguimiento-en-vivo-en-el-mapa-y-errores-del-gps-en-el-navegador) | HU-18 / RF-019 / CU18 | Tests OK, sin commit |
+| 4 | 12-nov | [Tope de 30 días en la duración guardada](#4-tope-de-30-días-en-la-duración-guardada) | HU-17 / RF-018 | Tests OK, sin commit |
 
 ## Qué piden los requisitos
 
@@ -193,6 +195,71 @@ firebase emulators:exec --only firestore --project demo-tag-ok --config firebase
 | Reglas, emulador: nuevo test `11i` (`rules.test.js`, línea 480) con **exactamente lo que escribe el servicio**: iniciar con los opcionales en `null`, guardar solo la ubicación, finalizar sin costo, y que después de finalizar ya no se pueda guardar la ubicación | OK (50 de 51; `8g` ya fallaba) |
 
 **Lo que no se puede probar sin pantallas:** el GPS real y el mapa. Se prueban en la app cuando el módulo tenga los botones "Iniciar", "Guardar ubicación", "Ver dónde está mi auto" y "Finalizar".
+
+---
+
+## 3. Seguimiento en vivo en el mapa y errores del GPS en el navegador
+
+### Para qué
+Al probar el cambio 2 en la app (12-nov) aparecieron dos cosas:
+- **El punto azul no seguía al usuario.** La posición se leía una sola vez, al abrir el mapa. Si el usuario caminaba con el mapa abierto, el punto azul y la distancia ("a 230 m") quedaban congelados. Para buscar el auto lo útil es que la distancia vaya bajando mientras se camina.
+- **Un error del navegador no tenía mensaje claro.** Con la ubicación de Windows apagada, el navegador responde "posición no disponible" (`PositionUpdateException`), y ese error no se traducía a un mensaje para el usuario.
+
+### Decisión (12-nov, Estephany)
+- **Activar el seguimiento en vivo** de la posición del usuario en "¿Dónde está mi auto?".
+- **El punto del auto queda fijo:** es la ubicación guardada con "Guardar ubicación". Solo cambia si se vuelve a guardar mientras el estacionamiento sigue activo.
+
+### Funciones (`lib/data/services/ubicacion_service.dart`)
+- **`seguirUbicacion({metrosMinimos})`** (línea 111): entrega la posición del usuario cada vez que se mueve al menos 3 metros, con `Geolocator.getPositionStream`, la misma técnica con que el mapa de TAG sigue al usuario en la autopista. Los errores llegan traducidos a `ErrorUbicacion`.
+- **`traducirErrorUbicacion(error)`** (línea 126): convierte los errores de `geolocator` en un motivo del CU18:
+  - ubicación apagada → `gpsDesactivado`;
+  - permiso denegado → `permisoDenegado`;
+  - "posición no disponible", tiempo agotado u otro → `sinSenal`.
+
+  Ahora la usan tanto `obtenerUbicacionActual()` (línea 101) como el seguimiento en vivo.
+
+### Funciones (`lib/screens/estacionamientos/mapa_auto_screen.dart`)
+- **`_buscarMiUbicacion`** (línea 79): obtiene la primera posición, que es cuando se pide el permiso, y luego inicia el seguimiento.
+- **`_seguirEnVivo`** (línea 97): cada posición nueva mueve el punto azul y recalcula la distancia. Si se pierde la señal, se mantiene el último punto conocido, se muestra el aviso y el seguimiento sigue intentando.
+- **`dispose`** (línea 70): **detiene el seguimiento al cerrar el mapa**, para no seguir usando el GPS ni la batería.
+- **Tarjeta inferior** (línea 341): bajo la distancia dice *"Se actualiza mientras caminas."*, o el aviso si se perdió la señal.
+
+### Pruebas
+| Pruebas | Resultado |
+|---|---|
+| `test/estacionamiento_test.dart`: nuevo test `traducirErrorUbicacion convierte los errores de geolocator` (línea 136) | 12 OK |
+
+### Prueba manual (12-nov, web local)
+- Se inició y se finalizó un estacionamiento: se guardaron bien la entrada, la salida, la duración y el costo.
+- El mapa no se abrió porque **ese estacionamiento no tenía ubicación**: no se guardó antes de finalizar. Se confirmó en Firestore que no hubo ninguna escritura entre iniciar y finalizar.
+- Se comprobó que **el cronómetro sigue corriendo aunque se cierre la ventana**: el inicio queda en Firestore y la duración se calcula al volver a abrir.
+
+**Pantalla de prueba:** para probar sin el front del módulo se usa `lib/screens/estacionamientos/prueba_estacionamiento_screen.dart`, más un cambio temporal en la acción rápida "Estacionamiento" del Inicio. **Ninguno de los dos se sube a GitHub:** la pantalla está excluida en `.git/info/exclude`, y el cambio del Inicio se deshace con `git checkout -- Producto/tag_ok/lib/screens/inicio_dashboard_screen.dart`.
+
+---
+
+## 4. Tope de 30 días en la duración guardada
+
+### Para qué
+Las reglas publicadas (cambio 1) aceptan `duracion_min` hasta 43.200 minutos (30 días), para rechazar datos absurdos. Si alguien inicia el cronómetro y se olvida de finalizarlo por más de un mes, al presionar "Finalizar":
+1. la duración calculada supera el máximo (por ejemplo, 34 días = 48.960 minutos);
+2. las reglas rechazan la escritura;
+3. el estacionamiento **queda activo para siempre**, y como sigue activo, **tampoco se puede iniciar otro** en ese vehículo. Solo quedaría eliminarlo.
+
+Lo mismo pasaría al registrar a mano un estacionamiento con la entrada y la salida separadas por más de 30 días.
+
+### Decisión (12-nov, Estephany)
+**Opción A:** guardar la duración con un tope de 30 días desde el servicio. Un estacionamiento de más de un mes es casi seguro un olvido, así que el número exacto no importa. **No se modificaron las reglas publicadas.** La opción descartada era subir el máximo de las reglas y volver a publicarlas.
+
+### Funciones
+- **`duracionMaximaMin = 43200`** (`lib/data/models/estacionamiento_model.dart`, línea 38): el mismo máximo de las reglas. Si se cambia en `firestore.rules`, hay que cambiarlo aquí también.
+- **`duracionParaGuardar(entrada, salida)`** (línea 44): la duración real, pero con tope de 30 días. `duracionEnMinutos` sigue entregando la duración real, sin tope, para mostrar el tiempo transcurrido.
+- **`EstacionamientoService`** (`lib/data/services/estacionamiento_service.dart`): `registrarManual` (línea 70) y `finalizar` (línea 140) usan ahora `duracionParaGuardar`. Las horas de entrada y salida se guardan igual, con su valor real.
+
+### Pruebas
+| Pruebas | Resultado |
+|---|---|
+| `test/estacionamiento_test.dart`: nuevo test `duracionParaGuardar` (línea 31). Comprueba que 34 días se guardan como 30, que 30 días o menos se guardan tal cual, y que `duracionEnMinutos` sigue entregando la duración real | 13 OK |
 
 ---
 
