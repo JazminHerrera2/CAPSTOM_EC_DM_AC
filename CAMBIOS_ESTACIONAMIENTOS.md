@@ -17,7 +17,8 @@ Este archivo reúne los cambios del módulo Estacionamientos. Cada cambio nuevo 
 | 2 | 11-nov | [Servicio de estacionamientos y "¿Dónde está mi auto?"](#2-servicio-de-estacionamientos-y-dónde-está-mi-auto) | HU-15 a HU-18 / RF-016 a RF-019 | Tests OK (commits `588841c` y `13fe939`). **Falta conectarlo a las pantallas** del módulo |
 | 3 | 12-nov | [Seguimiento en vivo en el mapa y errores del GPS en el navegador](#3-seguimiento-en-vivo-en-el-mapa-y-errores-del-gps-en-el-navegador) | HU-18 / RF-019 / CU18 | Tests OK, sin commit |
 | 4 | 12-nov | [Tope de 30 días en la duración guardada](#4-tope-de-30-días-en-la-duración-guardada) | HU-17 / RF-018 | Tests OK |
-| 5 | 12-nov | [Registro con IA desde el ticket](#5-registro-con-ia-desde-el-ticket) | HU-19 a HU-21 / RF-020 a RF-022 / CU19 a CU21 | Tests OK, sin commit. **Falta el formulario definitivo** (front) |
+| 5 | 12-nov | [Registro con IA desde el ticket](#5-registro-con-ia-desde-el-ticket) | HU-19 a HU-21 / RF-020 a RF-022 / CU19 a CU21 | Tests OK y probado con 3 tickets simulados. **Falta el formulario definitivo** (front) |
+| 6 | 12-nov | [Dirección escrita del auto en el mapa](#6-dirección-escrita-del-auto-en-el-mapa) | HU-18 / RF-019 | Tests OK, sin commit. **No funciona hasta reemplazar el token de Mapbox**, que es inválido |
 
 ## Qué piden los requisitos
 
@@ -319,6 +320,66 @@ Foto/PDF → prepararImagenParaIa → Edge Function ia-extraccion → OpenAI
 
 **Prueba local:** la pantalla de prueba (no se sube) tiene ahora el botón **"Registrar con IA (foto o PDF del ticket)"** y un formulario simple de revisión, con los campos dudosos en naranja y botones para confirmar o cancelar. Sirve para probar con tickets reales; **cada lectura consume una llamada a OpenAI**.
 
+### Prueba manual con tickets simulados (12-nov)
+Se generaron 3 tickets de un estacionamiento **ficticio** ("Parking Demo SPA", con la leyenda "DOCUMENTO DE PRUEBA – SIN VALOR"), en `C:\Users\estef\Documents\tickets_prueba_tagok`, fuera del repositorio. Se cargaron desde la pantalla de prueba y se revisó en Firestore lo guardado:
+
+| Ticket | Qué probaba | Resultado |
+|---|---|---|
+| 1. Completo | Lectura normal | ✅ Entrada 10:30, salida 12:05, 95 min, $3.500, confianza 100 % |
+| 2. Medianoche | Salida 00:25 sin fecha de salida | ✅ Salida marcada para revisar; guardada el 12/11 a las 00:25, 45 min, $1.800, confianza 83 % |
+| 3. Solo entrada | Ticket de ingreso con tarifa y sin total | ✅ Entrada 09:15; salida, duración y costo vacíos (la tarifa no se convirtió en monto) |
+
+- **En los tres:** se guardaron con `origen_registro: 'ia'` y la hora de captura, y la patente del ticket **no apareció en ningún campo**.
+- **El nombre del lugar varía:** a veces la IA lee "Parking Demo SPA" (el membrete) y otras "Estacionamiento Plaza Ficticia" (el subtítulo). Las dos lecturas son válidas, porque ambos textos están en el ticket.
+
+---
+
+## 6. Dirección escrita del auto en el mapa
+
+### Para qué
+En "¿Dónde está mi auto?" se veían el pin y la distancia, pero no una dirección que el usuario pueda leer. Ahora la tarjeta inferior dice, por ejemplo, **"Quedó en Avenida Providencia 1234, Providencia"**.
+
+### Decisión (12-nov, Estephany)
+**Solo se agrega la dirección escrita.** Otros dos ajustes propuestos no se hicieron:
+- guardar la ubicación más rápido en el computador (precisión media en la web);
+- dibujar el punto azul del usuario encima del pin del auto, con "Estás junto a tu auto" a menos de 20 m.
+
+### Funciones
+- **`GeocodingService.direccionDe(latitud, longitud)`** (`lib/data/services/geocoding_service.dart`, línea 67): búsqueda inversa de Mapbox (de coordenadas a dirección), con el mismo servicio y token que ya usaba la búsqueda de lugares. Pide `types=address,poi` y `language=es`. Si no hay conexión o Mapbox no encuentra nada, devuelve `null` y el mapa funciona igual.
+- **`direccionCorta(placeName)`** (línea 92): deja calle, número y comuna, y quita el código postal, la región y el país. Por ejemplo, *"Avenida Providencia 1234, 7500000 Providencia, Región Metropolitana, Chile"* queda como *"Avenida Providencia 1234, Providencia"*.
+- **`MapaAutoScreen`** (`lib/screens/estacionamientos/mapa_auto_screen.dart`):
+  - **`_buscarDireccionAuto`** (línea 84) busca la dirección **una sola vez** al abrir el mapa, porque el auto no se mueve;
+  - la tarjeta muestra *"Buscando la dirección…"* y luego *"Quedó en …"* (líneas 374 y 375); si no se encuentra, no muestra nada;
+  - el parámetro opcional `buscarDireccion` (línea 46) sirve para pruebas.
+
+### Pruebas
+| Pruebas | Resultado |
+|---|---|
+| `test/direccion_corta_test.dart` (nuevo, 4 tests): dirección de calle, **formato real de Mapbox** (código postal al final de la región: *"Plaza de Armas 442, Santiago, Región Metropolitana de Santiago 8320000, Chile"* queda como *"Plaza de Armas 442, Santiago"*), lugar con nombre (POI) y respuesta sin datos útiles | 4 OK |
+
+### Problema encontrado: el token de Mapbox es inválido
+Al probar la búsqueda inversa con una llamada real, Mapbox respondió **"Not Authorized - Invalid Token"** (HTTP 401). Se comprobó que:
+- **también fallan las imágenes del mapa** (las teselas) y **la búsqueda de lugares que ya usaba la app**, así que no es un problema de este cambio;
+- **la web publicada** (`tag-ok-v2.web.app`) tiene el **mismo token**. Se comparó por huella, sin mostrar el token, y también es rechazado.
+
+**Consecuencias:**
+- el mapa de "¿Dónde está mi auto?" se ve sin calles;
+- el **mapa de TAG** tampoco muestra calles;
+- la **búsqueda de lugares** al armar una ruta no funciona;
+- la dirección escrita no aparecerá hasta que se reemplace el token.
+
+**Qué hay que hacer:**
+1. Crear un token público nuevo en account.mapbox.com, con la cuenta del proyecto.
+2. Reemplazar `MAPBOX_ACCESS_TOKEN` en el `.env` de cada integrante.
+3. Recompilar y volver a publicar la web (`flutter build web ... --dart-define-from-file=.env` y `firebase deploy --only hosting`), y generar un APK nuevo si corresponde.
+
+Conviene restringir el token nuevo a las URL de la app (localhost y `tag-ok-v2.web.app`).
+
+**12-nov: token reemplazado en el `.env` de Estephany.** Se comprobó, sin mostrar el token, que responde HTTP 200 en las imágenes del mapa, en la búsqueda de lugares y en la búsqueda inversa. Falta:
+- actualizar el `.env` del resto del equipo;
+- volver a publicar la web;
+- restringir el token por URL (hoy funciona desde cualquier origen).
+
 ---
 
 ## Pendiente
@@ -332,6 +393,7 @@ Foto/PDF → prepararImagenParaIa → Edge Function ia-extraccion → OpenAI
 | **Decidir si estacionamientos se registra en `auditoria`**, como mantenciones y cargas | Equipo |
 | **iOS:** `ios/Runner/Info.plist` no tiene el texto de permiso de ubicación (`NSLocationWhenInUseUsageDescription`). Solo importa si se compila para iPhone | — |
 | **Formulario definitivo de revisión con IA:** el registro manual del front, precargado con `EstacionamientoExtraido` y con los campos dudosos resaltados (cambio 5) | Al integrar |
-| **Probar la IA con tickets reales** (pantalla de prueba local) | Estephany |
+| **Token de Mapbox nuevo** (ya funciona en el `.env` de Estephany): actualizar el `.env` del resto del equipo, volver a publicar la web y restringir el token por URL (cambio 6) | Equipo |
+| **Probar la dirección escrita** cuando el token funcione | Estephany |
 | **Diccionario de datos:** agregar el dueño (`uid`) y cambiar `hora_entrada` y `hora_salida` a fecha y hora | Estephany |
 | **Plantillas de casos de uso:** CU19 dice "Gemini API"; la app usa OpenAI | Documentación |
