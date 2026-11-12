@@ -59,4 +59,46 @@ class GeocodingService {
       return [];
     }
   }
+
+  /// Búsqueda inversa: la dirección escrita (calle, número y comuna) de un
+  /// punto. La usa "¿Dónde está mi auto?" (HU-18) para mostrar dónde quedó el
+  /// vehículo. Devuelve null si no hay conexión o Mapbox no encuentra nada:
+  /// la dirección es un dato de ayuda, el mapa funciona igual sin ella.
+  Future<String?> direccionDe(double latitud, double longitud) async {
+    final url = Uri.parse(
+        '$_baseUrl/$longitud,$latitud.json?access_token=$_accessToken'
+        '&types=address,poi&language=es&limit=1');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode != 200) {
+        debugPrint('Error Geocoding inverso: ${response.statusCode}');
+        return null;
+      }
+      final features = jsonDecode(response.body)['features'];
+      if (features is! List || features.isEmpty) return null;
+      final nombre = features.first['place_name'];
+      return nombre is String ? direccionCorta(nombre) : null;
+    } catch (e) {
+      debugPrint('Excepción Geocoding inverso: $e');
+      return null;
+    }
+  }
+}
+
+/// Acorta el `place_name` de Mapbox a lo útil para encontrar el auto: calle,
+/// número y comuna. Quita el país, la región y el código postal.
+/// "Avenida Providencia 1234, 7500000 Providencia, Región Metropolitana,
+/// Chile" → "Avenida Providencia 1234, Providencia".
+String? direccionCorta(String placeName) {
+  final partes = placeName
+      .split(',')
+      .map((p) => p.trim().replaceFirst(RegExp(r'^\d{7}\s+'), ''))
+      .where((p) =>
+          p.isNotEmpty &&
+          p.toLowerCase() != 'chile' &&
+          !p.toLowerCase().startsWith('región') &&
+          !p.toLowerCase().startsWith('region'))
+      .take(2)
+      .toList();
+  return partes.isEmpty ? null : partes.join(', ');
 }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../data/services/geocoding_service.dart';
 import '../../data/services/ubicacion_service.dart';
 import '../../entorno.dart';
 
@@ -27,6 +28,7 @@ class MapaAutoScreen extends StatefulWidget {
     required this.ubicacionAuto,
     this.lugar,
     this.ubicacionService,
+    this.buscarDireccion,
   });
 
   /// Dónde quedó el vehículo (campo `ubicacion` del estacionamiento).
@@ -37,6 +39,11 @@ class MapaAutoScreen extends StatefulWidget {
 
   /// Para pruebas; por defecto usa el GPS real.
   final UbicacionService? ubicacionService;
+
+  /// Para pruebas; por defecto usa la búsqueda inversa de Mapbox
+  /// ([GeocodingService.direccionDe]).
+  final Future<String?> Function(double latitud, double longitud)?
+      buscarDireccion;
 
   @override
   State<MapaAutoScreen> createState() => _MapaAutoScreenState();
@@ -53,6 +60,11 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
   String? _avisoUbicacion;
   bool _buscandoMiUbicacion = false;
 
+  /// Dirección escrita donde quedó el auto ("Av. Providencia 1234,
+  /// Providencia"). Null mientras se busca o si Mapbox no la encuentra.
+  String? _direccionAuto;
+  bool _buscandoDireccion = true;
+
   /// Seguimiento en vivo de la posición del usuario. Se cancela al cerrar el
   /// mapa, para no seguir usando el GPS (ni la batería).
   StreamSubscription<GeoPoint>? _seguimiento;
@@ -64,6 +76,27 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
   void initState() {
     super.initState();
     _buscarMiUbicacion();
+    _buscarDireccionAuto();
+  }
+
+  /// Se busca una sola vez: el auto no se mueve. Si falla, la tarjeta
+  /// simplemente no muestra la dirección.
+  Future<void> _buscarDireccionAuto() async {
+    final buscar = widget.buscarDireccion ?? GeocodingService().direccionDe;
+    String? direccion;
+    try {
+      direccion = await buscar(
+        widget.ubicacionAuto.latitude,
+        widget.ubicacionAuto.longitude,
+      );
+    } catch (_) {
+      direccion = null;
+    }
+    if (!mounted) return;
+    setState(() {
+      _direccionAuto = direccion;
+      _buscandoDireccion = false;
+    });
   }
 
   @override
@@ -200,6 +233,8 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
             bottom: 16,
             child: _TarjetaResumen(
               lugar: widget.lugar,
+              direccion: _direccionAuto,
+              buscandoDireccion: _buscandoDireccion,
               distancia: mia == null
                   ? null
                   : textoDistancia(distanciaEnMetros(mia, widget.ubicacionAuto)),
@@ -285,6 +320,8 @@ class _PuntoUsuario extends StatelessWidget {
 class _TarjetaResumen extends StatelessWidget {
   const _TarjetaResumen({
     required this.lugar,
+    required this.direccion,
+    required this.buscandoDireccion,
     required this.distancia,
     required this.buscando,
     required this.aviso,
@@ -292,6 +329,8 @@ class _TarjetaResumen extends StatelessWidget {
   });
 
   final String? lugar;
+  final String? direccion;
+  final bool buscandoDireccion;
   final String? distancia;
   final bool buscando;
   final String? aviso;
@@ -322,6 +361,24 @@ class _TarjetaResumen extends StatelessWidget {
                 ),
               ],
             ),
+            if (buscandoDireccion || direccion != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.place_outlined, size: 18, color: Colors.grey.shade700),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      direccion == null
+                          ? 'Buscando la dirección…'
+                          : 'Quedó en $direccion',
+                      style: TextStyle(color: Colors.grey.shade800),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 8),
             if (buscando)
               const Row(
