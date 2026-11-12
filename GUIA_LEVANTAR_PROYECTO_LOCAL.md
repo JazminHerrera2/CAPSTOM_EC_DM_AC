@@ -132,13 +132,16 @@ flutter build web --release
 firebase deploy --only hosting
 flutter build web --release; firebase deploy --only hosting --project tag-ok-v2
 ```
+Luego abre en el navegador: `http://127.0.0.1:8090/`
+
+Actualizar web:
 flutter clean
 flutter pub get
 flutter build web --release --pwa-strategy=none
 firebase deploy --only hosting --project tag-ok-v2
 flutter build web --release; firebase deploy --only hosting 
 
-Luego abre en el navegador: `http://127.0.0.1:8090/`
+
 
 **Publicar en producción (Firebase Hosting):**
 
@@ -172,8 +175,16 @@ flutter run -d windows
 cd Producto/admin
 flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8091
 ```
-
 Luego abre en el navegador: `http://127.0.0.1:8091/`
+
+Actualizar web:
+flutter clean
+flutter pub get
+flutter build web --release --pwa-strategy=none
+firebase deploy --only hosting:admin --project tag-ok-v2
+flutter build web --release; firebase deploy --only hosting 
+
+
 
 **En Windows Desktop:**
 
