@@ -477,3 +477,22 @@ test('11h el dueño lee, lista por uid y borra; B no lee, no edita ni borra', as
   await assertFails(como(UID_B).doc('estacionamientos/eA').delete());
   await assertSucceeds(como(UID_A).doc('estacionamientos/eA').delete());
 });
+test('11i lo que escribe EstacionamientoService: iniciar (opcionales en null), guardar ubicación y finalizar sin costo', async () => {
+  const db = como(UID_A);
+  const inicio = hace(40);
+  // Igual que EstacionamientoModel.toJson() de un estacionamiento iniciado.
+  await assertSucceeds(db.doc('estacionamientos/srv').set({
+    uid: UID_A, vehiculo_id: 'vehA', fecha: inicio, lugar: null,
+    hora_entrada: inicio, hora_salida: null, duracion_min: null, costo: null,
+    ubicacion: null, observacion: null, estado: 'activo', origen_registro: 'manual',
+    fecha_captura: null, confianza_ia: null,
+  }));
+  // guardarUbicacion(): solo el campo ubicacion.
+  await assertSucceeds(db.doc('estacionamientos/srv').update({ ubicacion: new GeoPoint(-33.417, -70.606) }));
+  // finalizar() sin costo.
+  await assertSucceeds(db.doc('estacionamientos/srv').update({
+    estado: 'finalizado', hora_salida: hace(0), duracion_min: 40,
+  }));
+  // Ya finalizado: guardar ubicación de nuevo falla.
+  await assertFails(db.doc('estacionamientos/srv').update({ ubicacion: new GeoPoint(-33.5, -70.7) }));
+});

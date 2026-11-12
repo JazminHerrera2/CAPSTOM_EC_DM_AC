@@ -4,6 +4,7 @@ import '../models/vehiculo_model.dart';
 import 'abastecimiento_service.dart';
 import 'auditoria_service.dart';
 import 'documento_vehicular_service.dart';
+import 'estacionamiento_service.dart';
 import 'mantencion_service.dart';
 import 'storage_service.dart';
 
@@ -188,6 +189,12 @@ class VehiculoService {
       await AbastecimientoService().eliminarDeVehiculo(vehiculoId);
     } catch (e) {
       debugPrint('No se pudieron borrar las cargas de $vehiculoId: $e');
+    }
+    // Igual que las cargas: si falla, no impide borrar el vehículo.
+    try {
+      await EstacionamientoService().eliminarDeVehiculo(vehiculoId);
+    } catch (e) {
+      debugPrint('No se pudieron borrar los estacionamientos de $vehiculoId: $e');
     }
     await _vehiculos.doc(vehiculoId).delete();
 
