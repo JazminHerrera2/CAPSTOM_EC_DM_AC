@@ -38,13 +38,17 @@ class EstacionamientoService {
   }
 
   /// HU-15 (y HU-21 con IA): registra un estacionamiento ya terminado y
-  /// devuelve su id. Si vienen las dos horas, calcula la duración.
+  /// devuelve su id. Si vienen las dos horas, la duración se calcula con
+  /// ellas; si no, se usa [duracionMin] cuando se conoce (por ejemplo, un
+  /// ticket de parquímetro que solo dice "60 min"). Siempre con tope de 30
+  /// días.
   Future<String> registrarManual({
     required String vehiculoId,
     required DateTime fecha,
     String? lugar,
     DateTime? horaEntrada,
     DateTime? horaSalida,
+    int? duracionMin,
     int? costo,
     String? observacion,
     GeoPoint? ubicacion,
@@ -68,7 +72,7 @@ class EstacionamientoService {
       horaSalida: horaSalida,
       duracionMin: horaEntrada != null && horaSalida != null
           ? duracionParaGuardar(horaEntrada, horaSalida)
-          : null,
+          : duracionMin?.clamp(0, duracionMaximaMin),
       costo: costo,
       ubicacion: ubicacion,
       observacion: _limpio(observacion),
