@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:tag_ok/data/models/estacionamiento_model.dart';
 import 'package:tag_ok/data/services/ubicacion_service.dart';
 
@@ -23,6 +26,17 @@ void main() {
 
     test('nunca es negativa', () {
       expect(duracionEnMinutos(entrada, entrada.subtract(const Duration(minutes: 5))), 0);
+    });
+
+    test('duracionParaGuardar: tope de 30 días, el máximo que aceptan las reglas', () {
+      expect(duracionMaximaMin, 43200);
+      // Olvido de finalizar: 34 días se guardan como 30.
+      expect(duracionParaGuardar(entrada, entrada.add(const Duration(days: 34))), duracionMaximaMin);
+      // Justo 30 días y menos se guardan tal cual.
+      expect(duracionParaGuardar(entrada, entrada.add(const Duration(days: 30))), 43200);
+      expect(duracionParaGuardar(entrada, DateTime(2026, 11, 11, 12, 5)), 95);
+      // Para mostrar el tiempo real se sigue usando duracionEnMinutos.
+      expect(duracionEnMinutos(entrada, entrada.add(const Duration(days: 34))), 48960);
     });
   });
 
@@ -128,6 +142,19 @@ void main() {
       expect(mensajeErrorUbicacion(MotivoErrorUbicacion.permisoBloqueado), contains('ajustes'));
       expect(const ErrorUbicacion(MotivoErrorUbicacion.gpsDesactivado).mensaje,
           contains('Activa la ubicación'));
+    });
+
+    test('traducirErrorUbicacion convierte los errores de geolocator', () {
+      expect(traducirErrorUbicacion(const LocationServiceDisabledException()).motivo,
+          MotivoErrorUbicacion.gpsDesactivado);
+      expect(traducirErrorUbicacion(const PermissionDeniedException('no')).motivo,
+          MotivoErrorUbicacion.permisoDenegado);
+      expect(traducirErrorUbicacion(const PositionUpdateException('no disponible')).motivo,
+          MotivoErrorUbicacion.sinSenal);
+      expect(traducirErrorUbicacion(TimeoutException('lento')).motivo,
+          MotivoErrorUbicacion.sinSenal);
+      const yaTraducido = ErrorUbicacion(MotivoErrorUbicacion.permisoBloqueado);
+      expect(traducirErrorUbicacion(yaTraducido), same(yaTraducido));
     });
   });
 }

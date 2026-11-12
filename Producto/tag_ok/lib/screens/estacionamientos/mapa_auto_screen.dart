@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -45,9 +47,15 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
   static const double _zoomCercano = 17;
 
   final MapController _mapController = MapController();
+  late final UbicacionService _ubicacion =
+      widget.ubicacionService ?? UbicacionService();
   GeoPoint? _miUbicacion;
   String? _avisoUbicacion;
   bool _buscandoMiUbicacion = false;
+
+  /// Seguimiento en vivo de la posición del usuario. Se cancela al cerrar el
+  /// mapa, para no seguir usando el GPS (ni la batería).
+  StreamSubscription<GeoPoint>? _seguimiento;
 
   LatLng get _puntoAuto =>
       LatLng(widget.ubicacionAuto.latitude, widget.ubicacionAuto.longitude);
@@ -58,28 +66,51 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
     _buscarMiUbicacion();
   }
 
+  @override
+  void dispose() {
+    _seguimiento?.cancel();
+    super.dispose();
+  }
+
   /// La posición del usuario es opcional: si no hay permiso o señal, el mapa
-  /// igual muestra el auto y se avisa el motivo.
+  /// igual muestra el auto y se avisa el motivo. Si se obtiene, desde ahí se
+  /// sigue en vivo: el punto azul y la distancia se actualizan al caminar. El
+  /// punto del auto no cambia: es la ubicación guardada.
   Future<void> _buscarMiUbicacion() async {
     setState(() {
       _buscandoMiUbicacion = true;
       _avisoUbicacion = null;
     });
     try {
-      final posicion = await (widget.ubicacionService ?? UbicacionService())
-          .obtenerUbicacionActual();
+      final posicion = await _ubicacion.obtenerUbicacionActual();
       if (!mounted) return;
       setState(() => _miUbicacion = posicion);
-    } on ErrorUbicacion catch (e) {
+      _seguirEnVivo();
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _avisoUbicacion = e.mensaje);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _avisoUbicacion =
-          mensajeErrorUbicacion(MotivoErrorUbicacion.sinSenal));
+      setState(() => _avisoUbicacion = traducirErrorUbicacion(e).mensaje);
     } finally {
       if (mounted) setState(() => _buscandoMiUbicacion = false);
     }
+  }
+
+  void _seguirEnVivo() {
+    _seguimiento?.cancel();
+    _seguimiento = _ubicacion.seguirUbicacion().listen(
+      (posicion) {
+        if (!mounted) return;
+        setState(() {
+          _miUbicacion = posicion;
+          _avisoUbicacion = null;
+        });
+      },
+      // Si se pierde la señal se avisa, pero se mantiene el último punto
+      // conocido y el seguimiento sigue intentando.
+      onError: (Object e) {
+        if (!mounted) return;
+        setState(() => _avisoUbicacion = traducirErrorUbicacion(e).mensaje);
+      },
+    );
   }
 
   void _centrarEnAuto() => _mapController.move(_puntoAuto, _zoomCercano);
@@ -304,9 +335,16 @@ class _TarjetaResumen extends StatelessWidget {
                   Text('Buscando tu ubicación…'),
                 ],
               )
-            else if (distancia != null)
-              Text('Tu auto está $distancia en línea recta.')
-            else if (aviso != null) ...[
+            else if (distancia != null) ...[
+              Text('Tu auto está $distancia en línea recta.'),
+              Text(
+                aviso ?? 'Se actualiza mientras caminas.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: aviso != null ? Colors.orange.shade800 : Colors.grey.shade600,
+                ),
+              ),
+            ] else if (aviso != null) ...[
               Text(aviso!, style: TextStyle(color: Colors.orange.shade800)),
               Align(
                 alignment: Alignment.centerRight,

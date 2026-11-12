@@ -98,12 +98,40 @@ class UbicacionService {
         ),
       );
       return GeoPoint(posicion.latitude, posicion.longitude);
-    } on LocationServiceDisabledException {
-      throw const ErrorUbicacion(MotivoErrorUbicacion.gpsDesactivado);
-    } on PermissionDeniedException {
-      throw const ErrorUbicacion(MotivoErrorUbicacion.permisoDenegado);
-    } on TimeoutException {
-      throw const ErrorUbicacion(MotivoErrorUbicacion.sinSenal);
+    } catch (e) {
+      throw traducirErrorUbicacion(e);
     }
   }
+
+  /// Sigue la posición del usuario en vivo: entrega un punto nuevo cada vez
+  /// que se mueve al menos [metrosMinimos]. Se usa en "¿Dónde está mi auto?"
+  /// para que el punto azul y la distancia se actualicen mientras camina.
+  /// Llamar después de [obtenerUbicacionActual], que ya pidió el permiso. El
+  /// seguimiento se detiene al cancelar la suscripción (al cerrar el mapa).
+  Stream<GeoPoint> seguirUbicacion({int metrosMinimos = 3}) {
+    return Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: metrosMinimos,
+      ),
+    ).transform(StreamTransformer<Position, GeoPoint>.fromHandlers(
+      handleData: (p, sink) => sink.add(GeoPoint(p.latitude, p.longitude)),
+      handleError: (e, _, sink) => sink.addError(traducirErrorUbicacion(e)),
+    ));
+  }
+}
+
+/// Convierte los errores de `geolocator` en un [ErrorUbicacion] con mensaje
+/// para el usuario. Lo que no se reconoce se trata como "sin señal".
+ErrorUbicacion traducirErrorUbicacion(Object error) {
+  if (error is ErrorUbicacion) return error;
+  if (error is LocationServiceDisabledException) {
+    return const ErrorUbicacion(MotivoErrorUbicacion.gpsDesactivado);
+  }
+  if (error is PermissionDeniedException) {
+    return const ErrorUbicacion(MotivoErrorUbicacion.permisoDenegado);
+  }
+  // TimeoutException, PositionUpdateException (en el navegador: "posición no
+  // disponible", por ejemplo con la ubicación de Windows apagada) y otros.
+  return const ErrorUbicacion(MotivoErrorUbicacion.sinSenal);
 }

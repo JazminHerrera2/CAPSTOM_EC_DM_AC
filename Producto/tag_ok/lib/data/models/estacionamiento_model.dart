@@ -33,6 +33,19 @@ int duracionEnMinutos(DateTime entrada, DateTime salida) {
   return minutos < 0 ? 0 : minutos;
 }
 
+/// Máximo de `duracion_min` que aceptan las reglas de Firestore: 30 días.
+/// Debe coincidir con `optInt(d, 'duracion_min', 0, 43200)` en firestore.rules.
+const int duracionMaximaMin = 43200;
+
+/// Duración que se guarda en Firestore: la real, con tope de 30 días. Un
+/// estacionamiento de más de un mes es casi seguro un olvido de finalizarlo;
+/// sin el tope, las reglas rechazarían el "Finalizar" y el registro quedaría
+/// activo para siempre (y no se podría iniciar otro en ese vehículo).
+int duracionParaGuardar(DateTime entrada, DateTime salida) {
+  final minutos = duracionEnMinutos(entrada, salida);
+  return minutos > duracionMaximaMin ? duracionMaximaMin : minutos;
+}
+
 /// Entidad ESTACIONAMIENTOS (colección `estacionamientos`), RF-016 a RF-022.
 ///
 /// Se crea de tres formas: a mano (ya terminado), con el cronómetro (queda

@@ -67,7 +67,7 @@ class EstacionamientoService {
       horaEntrada: horaEntrada,
       horaSalida: horaSalida,
       duracionMin: horaEntrada != null && horaSalida != null
-          ? duracionEnMinutos(horaEntrada, horaSalida)
+          ? duracionParaGuardar(horaEntrada, horaSalida)
           : null,
       costo: costo,
       ubicacion: ubicacion,
@@ -136,7 +136,8 @@ class EstacionamientoService {
     await _estacionamientos.doc(id).update({
       'estado': EstadoEstacionamiento.finalizado.valorFirestore,
       'hora_salida': Timestamp.fromDate(salida),
-      'duracion_min': duracionEnMinutos(entrada, salida),
+      // Con tope de 30 días: si no, las reglas rechazarían el finalizar.
+      'duracion_min': duracionParaGuardar(entrada, salida),
       'costo': ?costo,
     });
   }
