@@ -59,4 +59,68 @@ class GeocodingService {
       return [];
     }
   }
+
+
+  /// Obtiene una dirección a partir de coordenadas.
+  /// Se utiliza cuando el usuario selecciona un punto
+  /// en el mapa o utiliza su ubicación GPS.
+  Future<String?> obtenerDireccion({
+    required double latitud,
+    required double longitud,
+  }) async {
+    if (latitud < -90 ||
+        latitud > 90 ||
+        longitud < -180 ||
+        longitud > 180) {
+      return null;
+    }
+
+    if (_accessToken.isEmpty) {
+      debugPrint('Mapbox: falta configurar el token de acceso.');
+      return null;
+    }
+
+    final url = Uri.parse(
+      '$_baseUrl/$longitud,$latitud.json',
+    ).replace(
+      queryParameters: {
+        'access_token': _accessToken,
+        'language': 'es',
+        'limit': '1',
+      },
+    );
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        final List features = data['features'] ?? [];
+
+        if (features.isEmpty) {
+          return null;
+        }
+
+        final direccion =
+            features.first['place_name']?.toString();
+
+        if (direccion == null || direccion.trim().isEmpty) {
+          return null;
+        }
+
+        return direccion.trim();
+      }
+
+      debugPrint(
+        'Error al obtener dirección: ${response.statusCode}',
+      );
+
+      return null;
+    } catch (e) {
+      debugPrint('Error de geocodificación inversa: $e');
+      return null;
+    }
+  }
+
 }

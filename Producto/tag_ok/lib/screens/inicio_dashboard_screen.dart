@@ -14,12 +14,12 @@ import '../data/services/vehiculo_service.dart';
 import 'beneficios/detalle_beneficio_screen.dart';
 import 'beneficios/imagen_beneficio.dart';
 import 'combustible/combustible_screen.dart';
+import 'Estacionamiento/estacionamientos_screen.dart';
 import 'dashboard/dashboard_logica.dart';
 import 'dashboard/encabezado_tag_ok.dart';
 import 'dashboard/estado_vehiculo_chip.dart';
 import 'dashboard/gastos_historial.dart';
 import 'dashboard/historial_gastos_screen.dart';
-import 'herramientas/placeholder_modulo_screen.dart';
 import 'mi_vehiculo/detalle_vehiculo_screen.dart';
 import 'mi_vehiculo/foto_vehiculo.dart';
 
@@ -273,8 +273,8 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
       case CategoriaGasto.combustible:
         _abrirCombustible();
       case CategoriaGasto.estacionamientos:
-        _abrirPlaceholder(
-            'Estacionamiento', Icons.local_parking_outlined, 'Sprint 4');
+        _abrirEstacionamientos();
+        break;
     }
   }
 
@@ -294,15 +294,12 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         MaterialPageRoute(builder: (_) => const CombustibleScreen()),
       );
 
-  void _abrirPlaceholder(String titulo, IconData icono, String sprint) {
+
+  void _abrirEstacionamientos() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => PlaceholderModuloScreen(
-          titulo: titulo,
-          icono: icono,
-          sprintEstimado: sprint,
-        ),
+        builder: (_) => const EstacionamientosScreen(),
       ),
     );
   }
@@ -714,8 +711,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         titulo: 'Estacionamiento',
         icono: Icons.local_parking_outlined,
         color: _moradoAcciones,
-        onTap: () => _abrirPlaceholder(
-            'Estacionamiento', Icons.local_parking_outlined, 'Sprint 4'),
+        onTap: _abrirEstacionamientos,
       ),
     ];
 
