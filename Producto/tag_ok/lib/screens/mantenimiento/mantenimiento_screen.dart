@@ -9,9 +9,9 @@ import '../../data/services/vehiculo_service.dart';
 import '../combustible/combustible_screen.dart';
 import '../dashboard/dashboard_logica.dart';
 import '../dashboard/gastos_historial.dart';
+import '../dashboard/filtro_mes_anio.dart';
 import '../dashboard/historial_gastos_screen.dart';
 import '../herramientas/placeholder_modulo_screen.dart';
-import 'historial_mantenimientos_screen.dart';
 import 'proximas_mantenciones_screen.dart';
 import 'registro_ia_mantenimiento_screen.dart';
 import 'resumen_gastos_mantenciones.dart';
@@ -46,6 +46,23 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
   // Vehículo elegido en el filtro. Siempre hay uno seleccionado (no existe
   // "Todos"); si no se eligió ninguno o ya no existe, se usa el primero.
   String? _vehiculoId;
+
+  // Filtros del historial. null = todos.
+  int? _mes;
+  int? _anio;
+
+  // Un stream por vehículo, para no recrearlo en cada reconstrucción.
+  String? _streamDe;
+  Stream<List<MantencionModel>>? _stream;
+
+  Stream<List<MantencionModel>> _streamPara(String vehiculoId) {
+    if (_streamDe != vehiculoId || _stream == null) {
+      _streamDe = vehiculoId;
+      _stream = MantencionService()
+          .streamPorVehiculo(vehiculoId, estado: EstadoMantencion.realizada);
+    }
+    return _stream!;
+  }
 
   String get _usuarioId =>
       FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
@@ -228,7 +245,11 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
           for (final v in vehiculos) ...[
             InkWell(
               borderRadius: BorderRadius.circular(20),
-              onTap: () => setState(() => _vehiculoId = v.id),
+              onTap: () => setState(() {
+                _vehiculoId = v.id;
+                _mes = null;
+                _anio = null;
+              }),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(
@@ -278,32 +299,6 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               const SizedBox(height: 12),
             ],
 
-            // Anuncio con el nombre de la próxima mantención programada.
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: surfaceColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Próximas mantenciones',
-                    style: TextStyle(
-                      color: textMain,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _ResumenProxima(vehiculoId: vehiculoId),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
             // Programar mantención: abre la lista de las programadas (con su
             // botón para programar una nueva y el de eliminar cada una).
             _MenuCard(
@@ -323,26 +318,164 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               },
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 22),
 
-            _MenuCard(
-              icon: Icons.history_rounded,
-              title: 'Historial de mantenciones',
-              subtitle: 'Revisa los servicios realizados',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HistorialMantenimientosScreen(
-                      patente: patente,
-                      vehiculoId: vehiculoId,
-                    ),
-                  ),
-                );
-              },
-            ),
-
+            // Historial de mantenciones, debajo (igual que en Combustible).
+            if (vehiculoId != null)
+              StreamBuilder<List<MantencionModel>>(
+                stream: _streamPara(vehiculoId),
+                builder: (context, snapshot) =>
+                    _seccionHistorial(snapshot),
+              )
+            else
+              _estadoVacio(
+                detalle: 'Registra un vehículo para ver su historial.',
+              ),
           ],
+    );
+  }
+
+  // ================================================================
+  // HISTORIAL
+  // ================================================================
+
+  List<MantencionModel> _filtrar(List<MantencionModel> todas) {
+    return todas.where((m) {
+      final f = m.fecha;
+      if (_anio != null && (f == null || f.year != _anio)) return false;
+      if (_mes != null && (f == null || f.month != _mes)) return false;
+      return true;
+    }).toList();
+  }
+
+  Widget _seccionHistorial(AsyncSnapshot<List<MantencionModel>> snapshot) {
+    if (snapshot.hasError) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 30),
+        child: Center(
+          child: Text(
+            'No fue posible cargar el historial.',
+            style: TextStyle(color: textMuted),
+          ),
+        ),
+      );
+    }
+    if (!snapshot.hasData) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 30),
+        child: Center(child: CircularProgressIndicator(color: primaryColor)),
+      );
+    }
+
+    final todas = snapshot.data!;
+    final lista = _filtrar(todas);
+    final anios = {
+      for (final m in todas)
+        if (m.fecha != null) m.fecha!.year,
+    }.toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Historial de mantenciones',
+                style: TextStyle(
+                  color: textMain,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                lista.length == 1 ? '1 registro' : '${lista.length} registros',
+                style: const TextStyle(
+                  color: primaryColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (todas.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          FiltroMesAnio(
+            mes: _mes,
+            anio: _anio,
+            anios: anios,
+            alCambiarMes: (v) => setState(() => _mes = v),
+            alCambiarAnio: (v) => setState(() => _anio = v),
+          ),
+        ],
+        const SizedBox(height: 12),
+        if (lista.isEmpty)
+          _estadoVacio(
+            detalle: todas.isEmpty
+                ? null
+                : 'No hay mantenciones que coincidan con el filtro.',
+          )
+        else
+          for (final m in lista)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TarjetaMantencion(mantencion: m),
+            ),
+      ],
+    );
+  }
+
+  Widget _estadoVacio({String? detalle}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 38),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 68,
+            height: 68,
+            decoration: BoxDecoration(
+              color: primaryColor.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.car_repair_outlined,
+              color: primaryColor,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: 17),
+          const Text(
+            'Aún no hay mantenciones registradas',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: textMain,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            detalle ??
+                'Toca el + para registrar una mantención; aparecerá en este historial.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: textMuted, fontSize: 12, height: 1.5),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -435,103 +568,6 @@ class _IconBox extends StatelessWidget {
         color: MantenimientoScreen.primaryColor,
         size: 28,
       ),
-    );
-  }
-}
-
-// ================================================================
-// ANUNCIO DE LA PRÓXIMA MANTENCIÓN
-// ================================================================
-
-/// Nombre de la próxima mantención programada del vehículo (y su fecha o
-/// kilometraje), como un anuncio. Sin ninguna programada, lo avisa.
-class _ResumenProxima extends StatefulWidget {
-  final String? vehiculoId;
-
-  const _ResumenProxima({this.vehiculoId});
-
-  @override
-  State<_ResumenProxima> createState() => _ResumenProximaState();
-}
-
-class _ResumenProximaState extends State<_ResumenProxima> {
-  Stream<List<MantencionModel>>? _stream;
-
-  @override
-  void initState() {
-    super.initState();
-    _stream = _crearStream();
-  }
-
-  @override
-  void didUpdateWidget(_ResumenProxima anterior) {
-    super.didUpdateWidget(anterior);
-    if (anterior.vehiculoId != widget.vehiculoId) {
-      _stream = _crearStream();
-    }
-  }
-
-  Stream<List<MantencionModel>>? _crearStream() {
-    final id = widget.vehiculoId;
-    if (id == null) return null;
-    return MantencionService()
-        .streamPorVehiculo(id, estado: EstadoMantencion.programada);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final stream = _stream;
-    if (stream == null) return _contenido(null);
-    return StreamBuilder<List<MantencionModel>>(
-      stream: stream,
-      builder: (context, snapshot) {
-        final lista = snapshot.data ?? const <MantencionModel>[];
-        return _contenido(lista.isEmpty ? null : lista.first);
-      },
-    );
-  }
-
-  Widget _contenido(MantencionModel? m) {
-    final detalle = m == null
-        ? 'Programa una mantención para recibir recordatorios.'
-        : [
-            if (m.proximaFecha != null) formatoFecha(m.proximaFecha!),
-            if (m.proximoKilometraje != null)
-              '${formatoMiles(m.proximoKilometraje!)} km',
-          ].join(' · ');
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _IconBox(icon: Icons.event_available_outlined),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                m == null ? 'Sin mantenciones programadas' : m.nombreTipo,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: MantenimientoScreen.textMain,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                detalle,
-                style: const TextStyle(
-                  color: MantenimientoScreen.textMuted,
-                  fontSize: 13,
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
