@@ -12,6 +12,7 @@ import 'login_screen.dart';
 import 'admin_firestore_service.dart';
 import 'beneficios_page.dart';
 import 'firebase_options.dart';
+import 'registro_auditoria.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -4987,12 +4988,17 @@ class _AuditLogPageState extends State<AuditLogPage> {
   final TextEditingController _searchCtrl = TextEditingController();
   String _searchQuery = '';
   String _selectedActionFilter = 'Todos';
+  String _selectedFuenteFilter = 'Todas';
   int _currentPage = 0;
   int _rowsPerPage = 10;
+
+  /// uid → correo, para mostrar quién hizo cada acción en la app.
+  Map<String, String> _correosUsuarios = const {};
 
   @override
   void initState() {
     super.initState();
+    _cargarCorreosUsuarios();
     _searchCtrl.addListener(() {
       setState(() {
         _searchQuery = _searchCtrl.text.toLowerCase().trim();
@@ -5007,24 +5013,34 @@ class _AuditLogPageState extends State<AuditLogPage> {
     super.dispose();
   }
 
-  bool _matchesFilters(Map<String, dynamic> data) {
-    final String adminEmail = (data['adminEmail'] ?? '')
-        .toString()
-        .toLowerCase();
-    final String target = (data['target'] ?? '').toString().toLowerCase();
-    final String details = (data['details'] ?? '').toString().toLowerCase();
-    final String action = (data['action'] ?? '').toString();
+  /// Lee una vez los correos de los usuarios. Si falla, la bitácora se
+  /// muestra igual, con el uid en vez del correo.
+  Future<void> _cargarCorreosUsuarios() async {
+    try {
+      final snapshot = await widget.service.streamUsers().first;
+      final correos = <String, String>{
+        for (final doc in snapshot.docs)
+          if ((doc.data()['email'] ?? '').toString().trim().isNotEmpty)
+            doc.id: doc.data()['email'].toString().trim(),
+      };
+      if (mounted) setState(() => _correosUsuarios = correos);
+    } catch (e) {
+      debugPrint('Bitácora: no se pudieron leer los correos: $e');
+    }
+  }
 
-    if (_searchQuery.isNotEmpty &&
-        !adminEmail.contains(_searchQuery) &&
-        !target.contains(_searchQuery) &&
-        !details.contains(_searchQuery)) {
+  bool _matchesFilters(RegistroAuditoria registro) {
+    if (!registro.coincideCon(_searchQuery)) return false;
+
+    if (_selectedActionFilter != 'Todos' &&
+        registro.accion != _selectedActionFilter) {
       return false;
     }
 
-    if (_selectedActionFilter != 'Todos' && action != _selectedActionFilter) {
+    if (_selectedFuenteFilter == 'Panel admin' && registro.esDeLaApp) {
       return false;
     }
+    if (_selectedFuenteFilter == 'App' && !registro.esDeLaApp) return false;
 
     return true;
   }
@@ -5073,6 +5089,17 @@ class _AuditLogPageState extends State<AuditLogPage> {
         textColor = const Color(0xFFEA580C);
         label = 'Eliminar Pórtico';
         break;
+      // Acciones registradas por la app (tag_ok).
+      case 'CREAR':
+        bgColor = const Color(0xFFDCFCE7);
+        textColor = const Color(0xFF15803D);
+        label = 'Crear';
+        break;
+      case 'ELIMINAR':
+        bgColor = const Color(0xFFFEE2E2);
+        textColor = const Color(0xFFDC2626);
+        label = 'Eliminar';
+        break;
       default:
         bgColor = const Color(0xFFF1F5F9);
         textColor = const Color(0xFF475569);
@@ -5102,7 +5129,8 @@ class _AuditLogPageState extends State<AuditLogPage> {
     return _AdminPageScaffold(
       title: 'Bitácora de Auditoría',
       subtitle:
-          'Historial irreversible de cambios y acciones realizadas por administradores.',
+          'Historial irreversible de las acciones de los administradores y de '
+          'los registros que los usuarios hacen en la app.',
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: widget.service.streamAuditLogs(),
         builder: (context, snapshot) {
@@ -5119,9 +5147,14 @@ class _AuditLogPageState extends State<AuditLogPage> {
             );
           }
 
-          final docs = snapshot.data!.docs;
-          final filteredDocs = docs
-              .where((doc) => _matchesFilters(doc.data()))
+          final filteredDocs = snapshot.data!.docs
+              .map(
+                (doc) => RegistroAuditoria.desde(
+                  doc.data(),
+                  correosUsuarios: _correosUsuarios,
+                ),
+              )
+              .where(_matchesFilters)
               .toList();
 
           if (filteredDocs.isEmpty) {
@@ -5175,25 +5208,21 @@ class _AuditLogPageState extends State<AuditLogPage> {
                               child: DataTable(
                                 columns: const [
                                   DataColumn(label: Text('Fecha')),
-                                  DataColumn(label: Text('Administrador')),
+                                  DataColumn(label: Text('Responsable')),
+                                  DataColumn(label: Text('Fuente')),
                                   DataColumn(label: Text('Acción')),
                                   DataColumn(label: Text('Objetivo')),
                                   DataColumn(label: Text('Detalles')),
                                 ],
-                                rows: pageDocs.map((doc) {
-                                  final data = doc.data();
+                                rows: pageDocs.map((registro) {
                                   final String fechaStr = _formatFecha(
-                                    data['fecha'],
+                                    registro.fecha,
                                   );
                                   final String adminEmail =
-                                      (data['adminEmail'] ?? 'Sistema')
-                                          .toString();
-                                  final String action = (data['action'] ?? '')
-                                      .toString();
-                                  final String target = (data['target'] ?? '')
-                                      .toString();
-                                  final String details = (data['details'] ?? '')
-                                      .toString();
+                                      registro.responsable;
+                                  final String action = registro.accion;
+                                  final String target = registro.objetivo;
+                                  final String details = registro.detalle;
 
                                   return DataRow(
                                     cells: [
@@ -5206,6 +5235,7 @@ class _AuditLogPageState extends State<AuditLogPage> {
                                         ),
                                       ),
                                       DataCell(Text(adminEmail)),
+                                      DataCell(Text(registro.fuente)),
                                       DataCell(_getActionBadge(action)),
                                       DataCell(
                                         Text(
@@ -5271,8 +5301,8 @@ class _AuditLogPageState extends State<AuditLogPage> {
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
+        child: _filtrosAdaptables(
+          [
             Expanded(
               flex: 3,
               child: TextField(
@@ -5280,7 +5310,7 @@ class _AuditLogPageState extends State<AuditLogPage> {
                 decoration: InputDecoration(
                   isDense: true,
                   labelText: 'Buscar en bitácora...',
-                  hintText: 'Buscar por admin, objetivo o detalle',
+                  hintText: 'Buscar por responsable, objetivo o detalle',
                   prefixIcon: const Icon(Icons.search, size: 20),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -5325,6 +5355,14 @@ class _AuditLogPageState extends State<AuditLogPage> {
                     value: 'DELETE_PORTICO',
                     child: Text('Eliminar Pórtico'),
                   ),
+                  DropdownMenuItem(
+                    value: 'CREAR',
+                    child: Text('Crear (app)'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'ELIMINAR',
+                    child: Text('Eliminar (app)'),
+                  ),
                 ],
                 onChanged: (val) {
                   if (val != null) {
@@ -5336,9 +5374,60 @@ class _AuditLogPageState extends State<AuditLogPage> {
                 },
               ),
             ),
+            const SizedBox(width: 16),
+            Expanded(
+              flex: 2,
+              child: DropdownButtonFormField<String>(
+                initialValue: _selectedFuenteFilter,
+                decoration: InputDecoration(
+                  isDense: true,
+                  labelText: 'Fuente',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Todas', child: Text('Todas')),
+                  DropdownMenuItem(
+                    value: 'Panel admin',
+                    child: Text('Panel admin'),
+                  ),
+                  DropdownMenuItem(value: 'App', child: Text('App')),
+                ],
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedFuenteFilter = val;
+                      _currentPage = 0;
+                    });
+                  }
+                },
+              ),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Los filtros van en una fila; en pantallas angostas (celular), uno debajo
+  /// del otro para que no queden apretados.
+  Widget _filtrosAdaptables(List<Widget> hijos) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 700) return Row(children: hijos);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final hijo in hijos)
+              if (hijo is Expanded)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: hijo.child,
+                ),
+          ],
+        );
+      },
     );
   }
 }

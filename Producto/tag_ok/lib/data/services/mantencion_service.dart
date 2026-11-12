@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/mantencion_model.dart';
+import 'auditoria_service.dart';
 import 'notificacion_service.dart';
 import 'vehiculo_service.dart';
 
@@ -17,10 +18,11 @@ import 'vehiculo_service.dart';
 /// `notificaciones`: por fecha (7 días antes y el día) y por kilometraje
 /// (cerca y alcanzado, HU-11/HU-48). Este servicio los crea, actualiza y borra
 /// junto con la mantención. Las realizadas con kilometraje actualizan el km
-/// del vehículo.
+/// del vehículo. Crear y eliminar dejan registro en `auditoria` (RF-054).
 class MantencionService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final NotificacionService _notificacionService = NotificacionService();
+  final AuditoriaService _auditoriaService = AuditoriaService();
 
   CollectionReference<Map<String, dynamic>> get _mantenciones =>
       _firestore.collection('mantenciones');
@@ -83,6 +85,18 @@ class MantencionService {
     );
 
     final ref = await _mantenciones.add(mantencion.toJson());
+    // RF-054: queda la traza de quién la registró, cuándo y si vino de la IA.
+    await _auditoriaService.registrarSinInterrumpir(
+      accion: 'CREAR',
+      tipoEntidad: entidadAuditoriaMantencion,
+      entidadId: ref.id,
+      detalle: detalleAuditoriaMantencionCreada(
+        estado: estado,
+        nombre: mantencion.nombreTipo,
+        origen: origenRegistro,
+      ),
+      origen: origenRegistro,
+    );
     if (estado == EstadoMantencion.programada &&
         (proximaFecha != null || proximoKilometraje != null)) {
       await _sincronizarRecordatorios(
@@ -263,10 +277,23 @@ class MantencionService {
     }
   }
 
-  /// Borra la mantención y sus recordatorios.
+  /// Borra la mantención y sus recordatorios, y lo deja en `auditoria`.
   Future<void> eliminar(String id) async {
+    final mantencion = await obtener(id);
     await _notificacionService.eliminarRecordatoriosMantencion(id);
     await _mantenciones.doc(id).delete();
+    await _auditoriaService.registrarSinInterrumpir(
+      accion: 'ELIMINAR',
+      tipoEntidad: entidadAuditoriaMantencion,
+      entidadId: id,
+      detalle: mantencion == null
+          ? 'Mantención eliminada'
+          : detalleAuditoriaMantencionEliminada(
+              estado: mantencion.estado,
+              nombre: mantencion.nombreTipo,
+            ),
+      origen: 'manual',
+    );
   }
 
   /// Borra todas las mantenciones de un vehículo (y los recordatorios de las
