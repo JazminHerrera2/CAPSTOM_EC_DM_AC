@@ -13,7 +13,7 @@ Este archivo reúne los cambios del módulo Estacionamientos. Cada cambio nuevo 
 
 | # | Fecha | Cambio | Requisito | Estado |
 |---|---|---|---|---|
-| 1 | 11-nov | [Reglas de Firestore para `estacionamientos`](#1-reglas-de-firestore-para-estacionamientos) | HU-15 a HU-21 / RF-016 a RF-022 | Tests OK en el emulador, **sin publicar** |
+| 1 | 11-nov | [Reglas de Firestore para `estacionamientos`](#1-reglas-de-firestore-para-estacionamientos) | HU-15 a HU-21 / RF-016 a RF-022 | Tests OK en el emulador. **Publicado el 11-nov** (commit `10cc760`) |
 
 ## Qué piden los requisitos
 
@@ -105,13 +105,21 @@ Los campos no obligatorios pueden faltar o ser `null`, para permitir registros p
 firebase emulators:exec --only firestore --project demo-tag-ok --config firebase.json "node --test --test-concurrency=1 rules.test.js"
 ```
 
+### Publicación (11-nov, 23:34)
+1. **Antes de publicar** se descargaron las reglas publicadas en Firebase y se compararon:
+   - eran idénticas a las del repositorio antes de este cambio, así que nadie había publicado otras;
+   - lo que se iba a publicar solo **agregaba** líneas (77) y no quitaba ninguna.
+2. **Se publicó** con `firebase deploy --only firestore:rules --project tag-ok-v2`.
+3. **Se verificó** que las reglas publicadas son idénticas al archivo del commit `10cc760`.
+
+> **Regla de Danae sin publicar:** `develop` tiene una regla nueva para la colección `concesionarias` (commit `976efb8`, panel admin), que no estaba publicada antes y sigue sin publicar. No se incluyó porque es un cambio de otra rama. Se suma al integrar `develop`; mientras tanto, la página de concesionarias del panel admin no podrá leer ni escribir esa colección.
+
 ---
 
 ## Pendiente
 
 | Pendiente | Quién |
 |---|---|
-| **Publicar las reglas** (`firebase deploy --only firestore:rules --project tag-ok-v2`), avisando antes al equipo | Estephany |
 | **Subir el front** a una rama propia, aunque no esté terminado | Almendra |
 | **Comparar reglas** con las de Almendra y acordar los nombres de campos con su front | Ambas |
 | **Modelo y servicio** de estacionamientos en la app, y conexión con Inicio (HU-46), Gastos y auditoría | Al integrar |

@@ -18,7 +18,7 @@ Este archivo reúne los cambios del Sprint 5. Cada cambio nuevo se agrega como u
 | 4 | 8-nov | [Los formularios de carga y mantención perdían el foco al escribir](#4-los-formularios-de-carga-y-mantención-perdían-el-foco-al-escribir) | Corrección de error | Falta probar |
 | 5 | 8-nov | [Auditoría de mantenciones y cargas, visible en el panel admin](#5-auditoría-de-mantenciones-y-cargas-visible-en-el-panel-admin) | RF-054 / HU-39 | Tests OK, prueba manual postergada (falta acceso al panel), sin commit |
 | 6 | 8-nov | [El dueño de cada registro se llama `usuario_id` en todas las colecciones (etapa 1 de 3)](#6-el-dueño-de-cada-registro-se-llama-usuario_id-en-todas-las-colecciones-etapa-1-de-3) | Diccionario de datos / modelo relacional (decisión 2.1 del 25-oct) | **Revertido el 9-nov** por decisión del equipo. La base, las reglas y el código quedaron como antes (ver [Reversión](#reversión-9-nov)) |
-| 7 | 11-nov | [Reglas de Firestore para Estacionamientos](#7-reglas-de-firestore-para-estacionamientos) (detalle en `CAMBIOS_ESTACIONAMIENTOS.md`) | HU-15 a HU-21 / RF-016 a RF-022 | Tests OK en el emulador, **sin publicar** |
+| 7 | 11-nov | [Reglas de Firestore para Estacionamientos](#7-reglas-de-firestore-para-estacionamientos) (detalle en `CAMBIOS_ESTACIONAMIENTOS.md`) | HU-15 a HU-21 / RF-016 a RF-022 | Tests OK en el emulador. Publicado el 11-nov |
 
 ---
 
@@ -634,7 +634,7 @@ El detalle está en [`CAMBIOS_ESTACIONAMIENTOS.md`](CAMBIOS_ESTACIONAMIENTOS.md)
   - el cronómetro solo se inicia a mano;
   - un estacionamiento finalizado no se modifica.
 - Se agregaron 8 pruebas en `tools/rules_test/rules.test.js` ("Prueba 11"). Todas pasan.
-- **Las reglas todavía no están publicadas.**
+- **Reglas publicadas el 11-nov** y verificadas contra el commit `10cc760`.
 
 ---
 
