@@ -18,6 +18,7 @@ Este archivo reúne los cambios del Sprint 5. Cada cambio nuevo se agrega como u
 | 4 | 8-nov | [Los formularios de carga y mantención perdían el foco al escribir](#4-los-formularios-de-carga-y-mantención-perdían-el-foco-al-escribir) | Corrección de error | Falta probar |
 | 5 | 8-nov | [Auditoría de mantenciones y cargas, visible en el panel admin](#5-auditoría-de-mantenciones-y-cargas-visible-en-el-panel-admin) | RF-054 / HU-39 | Tests OK, prueba manual postergada (falta acceso al panel), sin commit |
 | 6 | 8-nov | [El dueño de cada registro se llama `usuario_id` en todas las colecciones (etapa 1 de 3)](#6-el-dueño-de-cada-registro-se-llama-usuario_id-en-todas-las-colecciones-etapa-1-de-3) | Diccionario de datos / modelo relacional (decisión 2.1 del 25-oct) | **Revertido el 9-nov** por decisión del equipo. La base, las reglas y el código quedaron como antes (ver [Reversión](#reversión-9-nov)) |
+| 7 | 11-nov | [Reglas de Firestore para Estacionamientos](#7-reglas-de-firestore-para-estacionamientos) (detalle en `CAMBIOS_ESTACIONAMIENTOS.md`) | HU-15 a HU-21 / RF-016 a RF-022 | Tests OK en el emulador, **sin publicar** |
 
 ---
 
@@ -622,6 +623,21 @@ Notas para correr los tests de reglas:
 
 ---
 
+## 7. Reglas de Firestore para Estacionamientos
+
+El detalle está en [`CAMBIOS_ESTACIONAMIENTOS.md`](CAMBIOS_ESTACIONAMIENTOS.md), el registro propio del módulo, donde se irán agregando sus próximos cambios.
+
+**Resumen:**
+- Se agregaron las reglas de la colección `estacionamientos` en `firestore.rules`:
+  - el dueño va en `uid`;
+  - las horas se guardan como fecha y hora completas;
+  - el cronómetro solo se inicia a mano;
+  - un estacionamiento finalizado no se modifica.
+- Se agregaron 8 pruebas en `tools/rules_test/rules.test.js` ("Prueba 11"). Todas pasan.
+- **Las reglas todavía no están publicadas.**
+
+---
+
 ## Pruebas manuales (8-nov, web local con `flutter run -d web-server`)
 
 Las pruebas se hicieron con el vehículo de prueba **PRUE01**:
@@ -673,6 +689,8 @@ Pruebas que faltan:
 | `admin/test/registro_auditoria_test.dart` (nuevo, panel admin) | 5 |
 
 > `mantencion_service.dart` y `abastecimiento_service.dart`, que ya están en la tabla, también cambiaron en el cambio 5.
+
+**Cambio 7:** `firestore.rules` y `tools/rules_test/rules.test.js` (modificados).
 
 **Cambio 6** (revertido el 9-nov: todos estos archivos volvieron a su versión del último commit, salvo los dos de `tools/`, que se conservan sin commit):
 
