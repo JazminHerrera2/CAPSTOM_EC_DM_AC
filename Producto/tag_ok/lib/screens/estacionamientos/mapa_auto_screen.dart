@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import '../../data/services/geocoding_service.dart';
 import '../../data/services/ubicacion_service.dart';
 import '../../entorno.dart';
+import 'direccion_de_ubicacion.dart';
 
 /// "¿Dónde está mi auto?" (HU-18, RF-019): muestra dentro de TAG OK el punto
 /// donde quedó estacionado el vehículo, la posición actual del usuario y la
@@ -49,6 +50,8 @@ class MapaAutoScreen extends StatefulWidget {
   State<MapaAutoScreen> createState() => _MapaAutoScreenState();
 }
 
+/// Estado del mapa: tu posición (seguida en vivo), avisos del GPS y la
+/// dirección escrita del auto.
 class _MapaAutoScreenState extends State<MapaAutoScreen> {
   static const Color primaryColor = Color(0xFF1E3A8A);
   static const double _zoomCercano = 17;
@@ -69,6 +72,7 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
   /// mapa, para no seguir usando el GPS (ni la batería).
   StreamSubscription<GeoPoint>? _seguimiento;
 
+  /// Dónde quedó el auto, en el formato que usa el mapa.
   LatLng get _puntoAuto =>
       LatLng(widget.ubicacionAuto.latitude, widget.ubicacionAuto.longitude);
 
@@ -79,19 +83,14 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
     _buscarDireccionAuto();
   }
 
-  /// Se busca una sola vez: el auto no se mueve. Si falla, la tarjeta
-  /// simplemente no muestra la dirección.
+  /// Se busca una sola vez: el auto no se mueve. Usa la misma memoria que el
+  /// historial ([direccionConMemoria]): si ya se buscó, aparece al instante.
+  /// Si falla, la tarjeta simplemente no muestra la dirección.
   Future<void> _buscarDireccionAuto() async {
-    final buscar = widget.buscarDireccion ?? GeocodingService().direccionDe;
-    String? direccion;
-    try {
-      direccion = await buscar(
-        widget.ubicacionAuto.latitude,
-        widget.ubicacionAuto.longitude,
-      );
-    } catch (_) {
-      direccion = null;
-    }
+    final direccion = await direccionConMemoria(
+      widget.ubicacionAuto,
+      buscar: widget.buscarDireccion,
+    );
     if (!mounted) return;
     setState(() {
       _direccionAuto = direccion;
@@ -127,6 +126,8 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
     }
   }
 
+  /// Empieza a seguir tu posición mientras caminas: cada punto nuevo mueve
+  /// el punto azul y recalcula la distancia al auto.
   void _seguirEnVivo() {
     _seguimiento?.cancel();
     _seguimiento = _ubicacion.seguirUbicacion().listen(
@@ -146,8 +147,11 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
     );
   }
 
+  /// Botón 🚗: centra el mapa en el auto.
   void _centrarEnAuto() => _mapController.move(_puntoAuto, _zoomCercano);
 
+  /// Botón de "mi ubicación": centra el mapa en ti. Si todavía no se tiene
+  /// tu posición, la vuelve a pedir.
   void _centrarEnMi() {
     final mia = _miUbicacion;
     if (mia == null) {
@@ -317,6 +321,8 @@ class _PuntoUsuario extends StatelessWidget {
   }
 }
 
+/// Tarjeta inferior del mapa: lugar, dirección escrita, distancia al auto
+/// y avisos del GPS (con "Reintentar").
 class _TarjetaResumen extends StatelessWidget {
   const _TarjetaResumen({
     required this.lugar,
