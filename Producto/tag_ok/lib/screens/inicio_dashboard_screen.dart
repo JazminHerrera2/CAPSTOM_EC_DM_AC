@@ -957,7 +957,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
               },
             ),
             child: SizedBox(
-              height: 250,
+              height: 187, // 140 de ancho en proporción 3:4
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _beneficios.length > 8 ? 8 : _beneficios.length,
@@ -974,52 +974,14 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
     return SizedBox(
       width: 140,
       child: Material(
+        // Mismo alto que el carrusel: la imagen llena la tarjeta (≈ 3:4).
         color: _surfaceColor,
         borderRadius: BorderRadius.circular(16),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => _abrirBeneficio(b),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(aspectRatio: 3 / 4, child: ImagenBeneficio(beneficio: b)),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (b.destacado) ...[
-                          const Icon(Icons.star, color: Color(0xFFF59E0B), size: 13),
-                          const SizedBox(width: 3),
-                        ],
-                        Flexible(
-                          child: Text(
-                            b.etiquetaCategoria,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: _textMuted, fontSize: 10),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      b.titulo,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: _textMain,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          // Solo la imagen (en el inicio no se muestra título ni categoría).
+          child: ImagenBeneficio(beneficio: b),
         ),
       ),
     );

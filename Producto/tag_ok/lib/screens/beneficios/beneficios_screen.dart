@@ -152,21 +152,36 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
           Row(
             children: [
               Expanded(
-                child: TextField(
-                  controller: _ubicacion,
-                  onChanged: (_) => setState(() {}),
-                  style: const TextStyle(color: _textMain),
-                  decoration: InputDecoration(
-                    hintText: 'Ubicación (ciudad o región)',
-                    hintStyle: const TextStyle(color: _textMuted),
-                    prefixIcon:
-                        const Icon(Icons.place_outlined, color: _textMuted, size: 20),
-                    isDense: true,
-                    filled: true,
-                    fillColor: _surfaceColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                child: SizedBox(
+                  height: 38,
+                  child: TextField(
+                    controller: _ubicacion,
+                    onChanged: (_) => setState(() {}),
+                    style: const TextStyle(color: _textMain, fontSize: 13),
+                    textAlignVertical: TextAlignVertical.center,
+                    decoration: InputDecoration(
+                      hintText: 'Ubicación (ciudad o región)',
+                      hintStyle: const TextStyle(color: _textMuted, fontSize: 13),
+                      prefixIcon: const Icon(
+                        Icons.place_outlined,
+                        color: _textMuted,
+                        size: 18,
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 38,
+                        minHeight: 38,
+                      ),
+                      isDense: true,
+                      filled: true,
+                      fillColor: _surfaceColor,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 0,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                 ),
@@ -176,10 +191,14 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                 label: const Text('Por vencer'),
                 selected: _soloPorVencer,
                 onSelected: (v) => setState(() => _soloPorVencer = v),
-                selectedColor: _primaryColor.withValues(alpha: 0.35),
+                selectedColor: _primaryColor,
                 backgroundColor: _surfaceColor,
-                labelStyle: const TextStyle(color: _textMain, fontSize: 12),
-                checkmarkColor: _textMain,
+                labelStyle: TextStyle(
+                  color: _soloPorVencer ? Colors.white : _textMain,
+                  fontSize: 12,
+                  fontWeight: _soloPorVencer ? FontWeight.w700 : FontWeight.normal,
+                ),
+                checkmarkColor: Colors.white,
                 side: BorderSide.none,
               ),
             ],
@@ -200,7 +219,7 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
         selectedColor: _primaryColor,
         backgroundColor: _surfaceColor,
         labelStyle: TextStyle(
-          color: _textMain,
+          color: seleccionada ? Colors.white : _textMain,
           fontSize: 12,
           fontWeight: seleccionada ? FontWeight.w700 : FontWeight.normal,
         ),
