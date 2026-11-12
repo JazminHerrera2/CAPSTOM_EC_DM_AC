@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>TAG OK</title>
+  <link rel="icon" href="/favicon.png" />
+  <style>
+    :root {
+      --azul: #1e3a8a;
+      --azul-claro: #1d4ed8;
+      --fondo: #f1f5f9;
+      --tinta: #0f172a;
+      --gris: #64748b;
+      --borde: #e2e8f0;
+      --rojo: #dc2626;
+      --verde: #16a34a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      background: var(--fondo);
+      color: var(--tinta);
+      font-family: Roboto, "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+    .tarjeta {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px 28px 28px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+    .logo { display: block; width: 150px; margin: 0 auto 8px; }
+    h1 { font-size: 22px; margin: 8px 0 6px; text-align: center; }
+    p.sub { margin: 0 0 22px; text-align: center; color: var(--gris); font-size: 14px; line-height: 1.45; }
+    label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+    .campo { position: relative; }
+    input {
+      width: 100%;
+      height: 46px;
+      padding: 0 44px 0 14px;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      font-size: 15px;
+      color: var(--tinta);
+      background: #f8fafc;
+      outline: none;
+    }
+    input:focus { border-color: var(--azul-claro); background: #fff; box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15); }
+    .ojo {
+      position: absolute; right: 4px; top: 4px; width: 38px; height: 38px;
+      border: 0; background: none; cursor: pointer; color: var(--gris); font-size: 18px; border-radius: 10px;
+    }
+    button.principal {
+      width: 100%; height: 48px; margin-top: 22px; border: 0; border-radius: 12px;
+      background: var(--azul); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+    button.principal:hover { background: var(--azul-claro); }
+    button.principal:disabled { opacity: 0.6; cursor: default; }
+    .error { color: var(--rojo); font-size: 13px; margin-top: 12px; min-height: 18px; text-align: center; }
+    .icono { width: 64px; height: 64px; border-radius: 50%; margin: 6px auto 12px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: #fff; }
+    .ok { background: var(--verde); }
+    .mal { background: var(--rojo); }
+    .cargando { text-align: center; color: var(--gris); padding: 30px 0 10px; }
+    .pie { text-align: center; color: var(--gris); font-size: 12px; margin-top: 22px; }
+    .oculto { display: none !important; }
+  </style>
+</head>
+<body>
+  <main class="tarjeta">
+    <img class="logo" src="logo.png" alt="TAG OK" />
+
+    <section id="cargando" class="cargando">Verificando enlace…</section>
+
+    <!-- Formulario: nueva contraseña -->
+    <section id="formulario" class="oculto">
+      <h1>Crea tu nueva contraseña</h1>
+      <p class="sub" id="cuenta"></p>
+      <form id="form" novalidate>
+        <label for="clave1">Nueva contraseña</label>
+        <div class="campo">
+          <input id="clave1" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" />
+          <button type="button" class="ojo" data-para="clave1" aria-label="Mostrar contraseña">👁</button>
+        </div>
+        <label for="clave2">Repite la contraseña</label>
+        <div class="campo">
+          <input id="clave2" type="password" autocomplete="new-password" placeholder="Repite la contraseña" />
+          <button type="button" class="ojo" data-para="clave2" aria-label="Mostrar contraseña">👁</button>
+        </div>
+        <div class="error" id="error"></div>
+        <button class="principal" id="guardar" type="submit">Guardar contraseña</button>
+      </form>
+    </section>
+
+    <!-- Resultado -->
+    <section id="resultado" class="oculto">
+      <div class="icono" id="icono"></div>
+      <h1 id="res-titulo"></h1>
+      <p class="sub" id="res-texto"></p>
+    </section>
+
+    <div class="pie">TAG OK · Tu peaje, más simple</div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import {
+      getAuth, verifyPasswordResetCode, confirmPasswordReset, applyActionCode,
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    const $ = (id) => document.getElementById(id);
+    const q = new URLSearchParams(location.search);
+    const modo = q.get("mode");
+    const codigo = q.get("oobCode");
+    const apiKey = q.get("apiKey"); // clave web pública que Firebase agrega al enlace
+
+    const MENSAJES = {
+      "auth/expired-action-code": "Este enlace ya venció. Solicita uno nuevo desde la app.",
+      "auth/invalid-action-code": "Este enlace no es válido o ya fue utilizado. Solicita uno nuevo desde la app.",
+      "auth/user-disabled": "Esta cuenta está deshabilitada.",
+      "auth/user-not-found": "No encontramos la cuenta asociada a este enlace.",
+      "auth/weak-password": "La contraseña es muy débil (mínimo 6 caracteres).",
+      "auth/network-request-failed": "Sin conexión. Revisa tu internet e inténtalo de nuevo.",
+    };
+    const msg = (e) => MENSAJES[e && e.code] || "Ocurrió un error. Inténtalo nuevamente.";
+
+    function mostrar(seccion) {
+      for (const id of ["cargando", "formulario", "resultado"]) {
+        $(id).classList.toggle("oculto", id !== seccion);
+      }
+    }
+    function resultado(ok, titulo, texto) {
+      $("icono").className = "icono " + (ok ? "ok" : "mal");
+      $("icono").textContent = ok ? "✓" : "!";
+      $("res-titulo").textContent = titulo;
+      $("res-texto").textContent = texto;
+      mostrar("resultado");
+    }
+
+    document.querySelectorAll(".ojo").forEach((b) =>
+      b.addEventListener("click", () => {
+        const i = $(b.dataset.para);
+        i.type = i.type === "password" ? "text" : "password";
+      }),
+    );
+
+    async function iniciar() {
+      if (!apiKey || !codigo || !modo) {
+        return resultado(false, "Enlace no válido", "Abre el enlace que te enviamos por correo, tal como llegó.");
+      }
+      const auth = getAuth(initializeApp({ apiKey }));
+      auth.languageCode = "es";
+
+      try {
+        if (modo === "resetPassword") {
+          const correo = await verifyPasswordResetCode(auth, codigo);
+          $("cuenta").textContent = "Para la cuenta " + correo;
+          mostrar("formulario");
+          $("form").addEventListener("submit", async (ev) => {
+            ev.preventDefault();
+            const a = $("clave1").value, b = $("clave2").value;
+            $("error").textContent = "";
+            if (a.length < 6) return ($("error").textContent = "La contraseña debe tener al menos 6 caracteres.");
+            if (a !== b) return ($("error").textContent = "Las contraseñas no coinciden.");
+            $("guardar").disabled = true;
+            try {
+              await confirmPasswordReset(auth, codigo, a);
+              resultado(true, "¡Contraseña actualizada!", "Ya puedes volver a la app TAG OK e iniciar sesión con tu nueva contraseña.");
+            } catch (e) {
+              $("guardar").disabled = false;
+              $("error").textContent = msg(e);
+            }
+          });
+        } else if (modo === "verifyEmail") {
+          await applyActionCode(auth, codigo);
+          resultado(true, "¡Correo verificado!", "Tu correo quedó confirmado. Ya puedes volver a la app TAG OK.");
+        } else {
+          resultado(false, "Acción no disponible", "Este enlace no se puede procesar aquí.");
+        }
+      } catch (e) {
+        resultado(false, "No pudimos continuar", msg(e));
+      }
+    }
+    iniciar();
+  </script>
+</body>
+</html>
