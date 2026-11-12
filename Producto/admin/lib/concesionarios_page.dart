@@ -11,6 +11,7 @@ import 'dashboard_page.dart' show GrillaTarjetas, TarjetaDato;
 import 'file_downloader.dart';
 import 'importar_panel.dart';
 import 'mapa_page.dart' show capaBaseMapa;
+import 'porticos_paneles.dart' show CabeceraPanel, CampoEtiquetado, PiePanel;
 
 /// Una autopista concesionada con sus pórticos.
 class Concesionaria {
@@ -712,116 +713,44 @@ class _PanelNuevaConcesionariaState extends State<_PanelNuevaConcesionaria> {
     ));
   }
 
-  InputDecoration _deco(String hint, {String? error}) {
-    OutlineInputBorder borde(Color c, double w) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(10),
-      borderSide: BorderSide(color: c, width: w),
-    );
-    return InputDecoration(
-      isDense: true,
-      hintText: hint,
-      errorText: error,
-      hintStyle: const TextStyle(color: kGris, fontSize: 14),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      enabledBorder: borde(kBorde, 1),
-      focusedBorder: borde(kAzul, 2),
-      errorBorder: borde(kRojo, 1),
-      focusedErrorBorder: borde(kRojo, 2),
-    );
-  }
-
-  Widget _etiqueta(String t) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Text(
-      t,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-        color: kTinta,
-      ),
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 12, 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Nueva concesionaria',
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.w600,
-                        color: kTinta,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Registra la autopista con sus datos básicos. Sus pórticos se agregan después desde la sección Pórticos.',
-                      style: TextStyle(color: kGris, fontSize: 14, height: 1.35),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                tooltip: 'Cerrar',
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close),
-              ),
-            ],
+        const CabeceraPanel(
+          titulo: 'Nueva concesionaria',
+          subtitulo: Text(
+            'Registra la autopista con sus datos básicos. Sus pórticos se agregan después desde la sección Pórticos.',
           ),
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
             children: [
-              _etiqueta('Nombre'),
-              TextField(
+              CampoEtiquetado(
+                etiqueta: 'Nombre',
                 controller: _nombre,
+                hint: 'Ej: Costanera Norte',
                 autofocus: true,
+                error: _errorNombre,
                 onChanged: (_) {
                   if (_errorNombre != null) setState(() => _errorNombre = null);
                 },
-                decoration: _deco('Ej: Costanera Norte', error: _errorNombre),
               ),
               const SizedBox(height: 18),
-              _etiqueta('Código'),
-              TextField(
+              CampoEtiquetado(
+                etiqueta: 'Código',
                 controller: _codigo,
-                textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
-                decoration: _deco('Ej: ACN'),
+                hint: 'Ej: ACN',
+                monoespaciado: true,
               ),
             ],
           ),
         ),
-        const Divider(height: 1, color: kBorde),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              BotonContorno(
-                texto: 'Cancelar',
-                icono: Icons.close,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(width: 10),
-              BotonPrimario(
-                texto: 'Crear concesionaria',
-                icono: Icons.add,
-                onPressed: _crear,
-              ),
-            ],
-          ),
+        PiePanel(
+          textoPrincipal: 'Crear concesionaria',
+          iconoPrincipal: Icons.add,
+          onPrincipal: _crear,
         ),
       ],
     );
