@@ -43,6 +43,7 @@ class ErrorUbicacion implements Exception {
 
   final MotivoErrorUbicacion motivo;
 
+  /// Texto listo para mostrarle al usuario.
   String get mensaje => mensajeErrorUbicacion(motivo);
 
   @override

@@ -19,6 +19,7 @@ const String dudosoEstSalida = 'hora_salida';
 const String dudosoEstDuracion = 'duracion';
 const String dudosoEstCosto = 'costo';
 
+/// Todas las claves anteriores: lo único que se acepta como "dudoso".
 const List<String> _clavesDudosas = [
   dudosoEstLugar,
   dudosoEstFecha,
@@ -98,11 +99,15 @@ class EstacionamientoExtraido {
   }
 }
 
+/// Une una fecha y una hora en una fecha y hora completas. Null si falta
+/// alguna de las dos.
 DateTime? _combinar(DateTime? fecha, HoraDelDia? hora) {
   if (fecha == null || hora == null) return null;
   return DateTime(fecha.year, fecha.month, fecha.day, hora.hora, hora.minuto);
 }
 
+/// Campo del esquema JSON que puede ser texto o null, con su descripción
+/// para la IA.
 Map<String, dynamic> _campoTexto(String descripcion) => {
       'type': ['string', 'null'],
       'description': descripcion,
@@ -144,6 +149,8 @@ Map<String, dynamic> _esquemaEstacionamiento() {
   };
 }
 
+/// Instrucciones que recibe la IA junto con la foto del ticket: qué leer,
+/// en qué formato y qué ignorar (datos personales).
 String _promptEstacionamiento() => '''
 Eres un asistente experto en tickets y boletas de estacionamientos chilenos
 (malls, edificios, clínicas, aeropuertos, operadores como Saba, Central
@@ -178,6 +185,8 @@ Reglas:
 - Privacidad: ignora y no devuelvas datos personales (patente, nombre, RUT,
   correo ni teléfono). Solo se extraen los campos de esta lista.''';
 
+/// Número entero de un texto como "3.500" o "$3.500,00" (el punto separa
+/// miles en Chile). Null si no hay dígitos.
 int? _entero(Object? valor) {
   if (valor == null) return null;
   var texto = valor.toString().trim();
@@ -230,11 +239,14 @@ DateTime? _fechaPlausible(DateTime? fecha, {DateTime? ahora}) {
   return (fecha.year < 1990 || fecha.isAfter(limite)) ? null : fecha;
 }
 
+/// Fecha leída por la IA, solo si es real y plausible; si no, null.
 DateTime? _fecha(Object? valor, {DateTime? ahora}) {
   final t = valor?.toString().trim() ?? '';
   return t.isEmpty ? null : _fechaPlausible(interpretarFecha(t), ahora: ahora);
 }
 
+/// Texto sin espacios sobrantes y recortado a [maximo] caracteres (el
+/// límite de las reglas). Null si está vacío.
 String? _texto(Object? valor, int maximo) {
   final t = valor?.toString().trim() ?? '';
   if (t.isEmpty) return null;

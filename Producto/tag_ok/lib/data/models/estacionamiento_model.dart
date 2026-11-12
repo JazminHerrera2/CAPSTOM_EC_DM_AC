@@ -18,6 +18,8 @@ enum EstadoEstacionamiento {
   /// Texto que ve el usuario.
   final String etiqueta;
 
+  /// Convierte el texto guardado en Firestore al estado. Si no se reconoce,
+  /// devuelve `finalizado`, para que un dato raro nunca deje un registro abierto.
   static EstadoEstacionamiento fromFirestore(String? valor) {
     return EstadoEstacionamiento.values
             .where((e) => e.valorFirestore == valor)
@@ -98,8 +100,10 @@ class EstacionamientoModel {
     this.confianzaIa,
   });
 
+  /// `true` si el cronómetro está corriendo (todavía no se finaliza).
   bool get estaActivo => estado == EstadoEstacionamiento.activo;
 
+  /// `true` si se guardó dónde quedó el auto ("Guardar ubicación").
   bool get tieneUbicacion => ubicacion != null;
 
   /// Título para el historial: el lugar, o "Estacionamiento" si no hay.
@@ -149,6 +153,8 @@ class EstacionamientoModel {
     );
   }
 
+  /// Datos para guardar en Firestore. Escribe exactamente los campos que
+  /// aceptan las reglas (`estacionamientoValido`); los vacíos van como null.
   Map<String, dynamic> toJson() {
     Timestamp? ts(DateTime? fecha) =>
         fecha == null ? null : Timestamp.fromDate(fecha);

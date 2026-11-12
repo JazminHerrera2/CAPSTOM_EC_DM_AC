@@ -21,9 +21,12 @@ class EstacionamientoService {
 
   final FirebaseFirestore _firestore;
 
+  /// La colección `estacionamientos` de Firestore.
   CollectionReference<Map<String, dynamic>> get _estacionamientos =>
       _firestore.collection('estacionamientos');
 
+  /// UID del usuario con sesión iniciada. Sin sesión lanza un error, porque
+  /// las reglas no permiten guardar sin dueño.
   String _uidActual() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null || uid.isEmpty) {
@@ -32,6 +35,7 @@ class EstacionamientoService {
     return uid;
   }
 
+  /// Quita espacios al inicio y al final; un texto vacío se guarda como null.
   static String? _limpio(String? valor) {
     final t = valor?.trim();
     return (t == null || t.isEmpty) ? null : t;
@@ -166,6 +170,8 @@ class EstacionamientoService {
     return _consultaActivo(vehiculoId).snapshots().map(_primeroActivo);
   }
 
+  /// Consulta del estacionamiento activo de un vehículo del usuario. La usan
+  /// [obtenerActivo] y [streamActivo].
   Query<Map<String, dynamic>> _consultaActivo(String vehiculoId) {
     // Solo igualdades: no necesita índice compuesto.
     return _estacionamientos
@@ -199,6 +205,7 @@ class EstacionamientoService {
           ..sort((a, b) => b.fecha.compareTo(a.fecha)));
   }
 
+  /// Borra un estacionamiento. Las reglas solo lo permiten a su dueño.
   Future<void> eliminar(String id) => _estacionamientos.doc(id).delete();
 
   /// Borra todos los estacionamientos de un vehículo. Se usa al eliminar el
