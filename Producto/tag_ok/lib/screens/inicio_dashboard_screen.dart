@@ -20,6 +20,8 @@ import 'dashboard/estado_vehiculo_chip.dart';
 import 'dashboard/gastos_historial.dart';
 import 'dashboard/historial_gastos_screen.dart';
 import 'herramientas/placeholder_modulo_screen.dart';
+// TEMPORAL: quitar junto con la acción rápida "Estacionamiento" (ver más abajo).
+import 'estacionamientos/prueba_estacionamiento_screen.dart';
 import 'mi_vehiculo/detalle_vehiculo_screen.dart';
 import 'mi_vehiculo/foto_vehiculo.dart';
 
@@ -715,8 +717,16 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         titulo: 'Estacionamiento',
         icono: Icons.local_parking_outlined,
         color: _moradoAcciones,
-        onTap: () => _abrirPlaceholder(
-            'Estacionamiento', Icons.local_parking_outlined, 'Sprint 4'),
+        // TEMPORAL (12-nov, Estephany): abre la PANTALLA DE PRUEBA del módulo
+        // Estacionamientos mientras no esté el front real (Almendra).
+        // SE DEBE QUITAR antes de unir esta rama a develop/main o de publicar
+        // la web o el APK, y reemplazar por la pantalla real del módulo (o
+        // volver a: _abrirPlaceholder('Estacionamiento',
+        // Icons.local_parking_outlined, 'Sprint 4')). Quitar también el import
+        // de prueba_estacionamiento_screen.dart. Ver CAMBIOS_ESTACIONAMIENTOS.md,
+        // cambio 9.
+        onTap: () => Navigator.push(context, MaterialPageRoute(
+            builder: (_) => const PruebaEstacionamientoScreen())),
       ),
     ];
 
