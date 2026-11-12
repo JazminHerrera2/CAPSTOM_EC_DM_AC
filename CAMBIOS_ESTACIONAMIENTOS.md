@@ -14,6 +14,7 @@ Este archivo reúne los cambios del módulo Estacionamientos. Cada cambio nuevo 
 | # | Fecha | Cambio | Requisito | Estado |
 |---|---|---|---|---|
 | 1 | 11-nov | [Reglas de Firestore para `estacionamientos`](#1-reglas-de-firestore-para-estacionamientos) | HU-15 a HU-21 / RF-016 a RF-022 | Tests OK en el emulador. **Publicado el 11-nov** (commit `10cc760`) |
+| 2 | 11-nov | [Servicio de estacionamientos y "¿Dónde está mi auto?"](#2-servicio-de-estacionamientos-y-dónde-está-mi-auto) | HU-15 a HU-18 / RF-016 a RF-019 | Tests OK, sin commit. **Falta conectarlo a las pantallas** del módulo |
 
 ## Qué piden los requisitos
 
@@ -116,13 +117,95 @@ firebase emulators:exec --only firestore --project demo-tag-ok --config firebase
 
 ---
 
+## 2. Servicio de estacionamientos y "¿Dónde está mi auto?"
+
+### Para qué
+- **Localizar el vehículo (HU-18, CU18, RF-019):** guardar dónde quedó el auto y poder consultarlo después.
+- **Para eso tiene que existir un estacionamiento.** Por eso se dejó listo el servicio completo del módulo, que es lo que las pantallas le piden a la base de datos. El front de Almendra solo tiene que conectar sus botones a estas funciones, sin escribir código de Firestore, y todo calza con las reglas publicadas (cambio 1).
+
+### Decisiones (11-nov, Estephany)
+- **El mapa se muestra dentro de TAG OK**, no en Google Maps. Se reutiliza el mapa que ya usa la pantalla de TAG (`flutter_map` con mapas de Mapbox y el token `MAPBOX_ACCESS_TOKEN` del `.env`), así que no se agregan dependencias ni costos.
+- **La ubicación se guarda cuando el usuario presiona "Guardar ubicación"**, como dice el CU18. No se guarda automáticamente al iniciar el cronómetro.
+- **La pantalla del mapa la hace Estephany**, como pieza independiente: el front solo agrega el botón que la abre.
+
+### Funciones: modelo (`lib/data/models/estacionamiento_model.dart`, nuevo)
+- **`EstadoEstacionamiento`** (línea 5): `activo` (cronómetro corriendo) o `finalizado`. Un valor desconocido se lee como `finalizado`, para que nunca quede un registro abierto por error.
+- **`duracionEnMinutos(entrada, salida)`** (línea 31): minutos completos entre las dos horas. Nunca es negativa y funciona aunque se cruce la medianoche.
+- **`EstacionamientoModel`** (línea 43): los campos de las reglas publicadas.
+  - **`estaActivo`** (línea 88) y **`tieneUbicacion`**.
+  - **`minutosTranscurridos({ahora})`** (línea 101): si está activo, cuenta hasta ahora (para mostrar el cronómetro); si está finalizado, usa la duración guardada.
+  - **`fromJson`** (línea 116) y **`toJson`** (línea 139): leen y escriben exactamente los campos que aceptan las reglas. La ubicación es un `GeoPoint`.
+
+### Funciones: GPS (`lib/data/services/ubicacion_service.dart`, nuevo)
+- **`MotivoErrorUbicacion`** (línea 8) y **`mensajeErrorUbicacion`** (línea 23): las excepciones del CU18, cada una con un mensaje listo para mostrar.
+
+  | Motivo | Mensaje | CU18 |
+  |---|---|---|
+  | GPS apagado | "Activa la ubicación de tu dispositivo…" | E1 |
+  | Sin señal o demora más de 15 s | "No se pudo obtener tu ubicación…" | E1 |
+  | Permiso denegado | "Sin permiso de ubicación no se puede guardar…" | E2 |
+  | Permiso bloqueado | "…Habilítalo en los ajustes de tu dispositivo o del navegador." | E2 |
+
+- **`ErrorUbicacion`** (línea 41): el error que reciben las pantallas, con `.mensaje`.
+- **`distanciaEnMetros(a, b)`** (línea 53): distancia en línea recta, con el paquete `latlong2`, que ya estaba instalado.
+- **`textoDistancia(metros)`** (línea 62): "a 230 m" o "a 1,4 km".
+- **`UbicacionService.obtenerUbicacionActual()`** (línea 77): revisa que la ubicación esté activa, pide el permiso si hace falta y devuelve la posición. Funciona en web y en Android con `geolocator`, el mismo paquete del mapa de TAG.
+
+### Funciones: servicio (`lib/data/services/estacionamiento_service.dart`, nuevo)
+
+| Función | Línea | Qué hace | Requisito |
+|---|---|---|---|
+| `registrarManual(...)` | 42 | Guarda un estacionamiento terminado y calcula la duración si vienen las dos horas. Rechaza una salida anterior a la entrada. También sirve para guardar lo confirmado con IA (`origenRegistro: 'ia'`) | HU-15, HU-21 |
+| `iniciar(vehiculoId)` | 87 | Inicia el cronómetro: guarda la fecha y hora de entrada y deja el estacionamiento `activo`. **No permite dos activos en el mismo vehículo**, porque las reglas no pueden impedirlo | HU-16 |
+| `finalizar(id, costo)` | 129 | Guarda la hora de salida, calcula la duración y el costo, y lo deja `finalizado`. Si el reloj del dispositivo quedó atrás de la entrada, usa la entrada, para no romper la regla | HU-17 |
+| `guardarUbicacion(id, ubicacion)` | 147 | Asocia el GPS al estacionamiento. Se llama al presionar "Guardar ubicación". Solo funciona mientras está activo | HU-18 |
+| `obtenerActivo` / `streamActivo` | 153 / 160 | El estacionamiento en curso del vehículo; la versión *stream* se actualiza sola, para el cronómetro y el botón del mapa | HU-16, HU-18 |
+| `streamPorVehiculo` | 186 | Historial del vehículo, el más reciente primero | Consulta |
+| `eliminar` / `eliminarDeVehiculo` | 197 / 201 | Borra uno, o todos los de un vehículo | — |
+
+- **`_activoPorId`** (línea 114): antes de modificar, comprueba que el estacionamiento siga activo. Si no, el mensaje es *"El estacionamiento ya fue finalizado y no se puede modificar."*
+- **Consultas sin índices compuestos:** todas usan solo igualdades (`uid`, `vehiculo_id`, `estado`), y el orden se aplica en la app, igual que en cargas.
+- **No registra en `auditoria`.** Mantenciones y cargas sí lo hacen; agregarlo aquí queda como decisión pendiente.
+
+**`lib/data/services/vehiculo_service.dart`** (línea 195): al eliminar un vehículo también se borran sus estacionamientos. Igual que las cargas, si falla no impide borrar el vehículo.
+
+### Pantalla "¿Dónde está mi auto?" (`lib/screens/estacionamientos/mapa_auto_screen.dart`, nueva)
+- **`MapaAutoScreen(ubicacionAuto, lugar)`** (línea 22): recibe la ubicación guardada y el lugar escrito por el usuario.
+- **Mapa** (línea 107): el mismo de la pantalla de TAG, centrado en el auto, con:
+  - **pin del auto** (`_PinAuto`, línea 188);
+  - **tu posición**, el punto azul;
+  - **dos botones** para centrar el mapa en el auto (`_centrarEnAuto`, línea 85) o en ti (`_centrarEnMi`, línea 87).
+- **Tarjeta inferior** (`_TarjetaResumen`, línea 254): el lugar y *"Tu auto está a 230 m en línea recta"*.
+- **`_buscarMiUbicacion`** (línea 63): tu posición es opcional. Si no hay permiso o señal, el mapa igual muestra el auto, avisa el motivo y ofrece "Reintentar".
+- **Cómo se abre** (para el front):
+  ```dart
+  Navigator.push(context, MaterialPageRoute(
+    builder: (_) => MapaAutoScreen(ubicacionAuto: e.ubicacion!, lugar: e.lugar),
+  ));
+  ```
+- **No muestra la ruta caminando paso a paso.** Se podría agregar después con el servicio de rutas de Mapbox.
+
+### Pruebas
+| Pruebas | Resultado |
+|---|---|
+| `test/estacionamiento_test.dart` (nuevo, 11 tests): duración (incluso cruzando la medianoche), campos del `toJson` iguales a los de las reglas, lectura de la ubicación, estado desconocido, cronómetro, distancia, texto de distancia y mensajes de error | 11 OK |
+| App completa (`flutter test`) | 354 OK. `flutter analyze` sin errores |
+| Reglas, emulador: nuevo test `11i` (`rules.test.js`, línea 480) con **exactamente lo que escribe el servicio**: iniciar con los opcionales en `null`, guardar solo la ubicación, finalizar sin costo, y que después de finalizar ya no se pueda guardar la ubicación | OK (50 de 51; `8g` ya fallaba) |
+
+**Lo que no se puede probar sin pantallas:** el GPS real y el mapa. Se prueban en la app cuando el módulo tenga los botones "Iniciar", "Guardar ubicación", "Ver dónde está mi auto" y "Finalizar".
+
+---
+
 ## Pendiente
 
 | Pendiente | Quién |
 |---|---|
 | **Subir el front** a una rama propia, aunque no esté terminado | Almendra |
 | **Comparar reglas** con las de Almendra y acordar los nombres de campos con su front | Ambas |
-| **Modelo y servicio** de estacionamientos en la app, y conexión con Inicio (HU-46), Gastos y auditoría | Al integrar |
+| **Conectar las pantallas** del módulo al servicio (cambio 2) y la acción rápida del Inicio (HU-46) | Al integrar |
+| **Probar en la app** el GPS y el mapa "¿Dónde está mi auto?" | Al integrar |
+| **Decidir si estacionamientos se registra en `auditoria`**, como mantenciones y cargas | Equipo |
+| **iOS:** `ios/Runner/Info.plist` no tiene el texto de permiso de ubicación (`NSLocationWhenInUseUsageDescription`). Solo importa si se compila para iPhone | — |
 | **IA del ticket** (HU-19 a HU-21): agregar el tipo "ticket de estacionamiento" al componente de IA | Estephany |
 | **Diccionario de datos:** agregar el dueño (`uid`) y cambiar `hora_entrada` y `hora_salida` a fecha y hora | Estephany |
 | **Plantillas de casos de uso:** CU19 dice "Gemini API"; la app usa OpenAI | Documentación |
