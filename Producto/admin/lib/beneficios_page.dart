@@ -5,7 +5,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'admin_firestore_service.dart';
+import 'admin_ui.dart' hide fechaCorta;
 import 'beneficio_imagen_service.dart';
+import 'dashboard_page.dart' show GrillaTarjetas, TarjetaDato;
+import 'porticos_paneles.dart' show CabeceraPanel, PiePanel;
 
 /// Categorías de beneficio (RF-034). Mismo texto que valida firestore.rules y
 /// que muestra la app del conductor.
@@ -51,6 +54,21 @@ String _fecha(DateTime f) =>
 
 DateTime _soloFecha(DateTime f) => DateTime(f.year, f.month, f.day);
 
+/// Separa los campos del formulario con 18 px de aire; no agrega espacio
+/// junto a los separadores que ya existen.
+List<Widget> _conEspacio(List<Widget> campos) {
+  final r = <Widget>[];
+  for (var i = 0; i < campos.length; i++) {
+    r.add(campos[i]);
+    final esSeparador = campos[i] is SizedBox;
+    final siguienteEsSeparador = i + 1 < campos.length && campos[i + 1] is SizedBox;
+    if (i + 1 < campos.length && !esSeparador && !siguienteEsSeparador) {
+      r.add(const SizedBox(height: 18));
+    }
+  }
+  return r;
+}
+
 /// Administración del catálogo de beneficios (RF-031, RF-032, RF-034):
 /// crear, editar, activar/desactivar, destacar y eliminar. Cada cambio queda
 /// en la auditoría del panel.
@@ -71,7 +89,7 @@ class _BeneficiosPageState extends State<BeneficiosPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensaje),
-        backgroundColor: error ? Colors.red.shade700 : null,
+        backgroundColor: error ? kRojo : null,
       ),
     );
   }
@@ -112,9 +130,9 @@ class _BeneficiosPageState extends State<BeneficiosPage> {
   }
 
   Future<void> _abrirFormulario({QueryDocumentSnapshot<Map<String, dynamic>>? doc}) async {
-    final resultado = await showDialog<_ResultadoFormulario>(
-      context: context,
-      barrierDismissible: false,
+    final resultado = await mostrarPanelLateral<_ResultadoFormulario>(
+      context,
+      ancho: 560,
       builder: (_) => _FormularioBeneficio(inicial: doc?.data()),
     );
     if (resultado == null) return;
@@ -173,7 +191,7 @@ class _BeneficiosPageState extends State<BeneficiosPage> {
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: FilledButton.styleFrom(backgroundColor: kRojo),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Eliminar'),
           ),
@@ -212,120 +230,138 @@ class _BeneficiosPageState extends State<BeneficiosPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Expanded(
+    final compact = MediaQuery.sizeOf(context).width < 820;
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: widget.service.streamBeneficios(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _Mensaje(
+            icono: Icons.lock_outline,
+            texto: 'No se pudo leer el catálogo: ${snapshot.error}\n'
+                'Verifica que las reglas de Firestore de "beneficios" '
+                'estén publicadas.',
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final todos = snapshot.data!.docs;
+        final hoy = _soloFecha(DateTime.now());
+        final activos = todos.where((d) => d.data()['activo'] != false).length;
+        final destacados = todos.where((d) => d.data()['destacado'] == true).length;
+        final vencidos = todos.where((d) {
+          final fin = (d.data()['fecha_fin'] as Timestamp?)?.toDate();
+          return fin != null && _soloFecha(fin).isBefore(hoy);
+        }).length;
+
+        final docs = todos.where((d) {
+          return _filtroCategoria == null ||
+              d.data()['categoria'] == _filtroCategoria;
+        }).toList()
+          ..sort((a, b) {
+            final da = a.data()['destacado'] == true;
+            final db = b.data()['destacado'] == true;
+            if (da != db) return da ? -1 : 1;
+            return (a.data()['titulo'] ?? '')
+                .toString()
+                .toLowerCase()
+                .compareTo((b.data()['titulo'] ?? '').toString().toLowerCase());
+          });
+
+        return SafeArea(
+          child: PaginaConEncabezado(
+            compact: compact,
+            encabezado: EncabezadoPagina(
+                  titulo: 'Beneficios',
+                  subtitulo:
+                      'Catálogo de beneficios que ven los conductores en la app. '
+                      'Los activos y vigentes aparecen en su pantalla de inicio.',
+                  acciones: [
+                    BotonPrimario(
+                      texto: 'Nuevo beneficio',
+                      icono: Icons.add,
+                      onPressed: () => _abrirFormulario(),
+                    ),
+                  ],
+                ),
+            children: [
+
+                GrillaTarjetas(
+                  tarjetas: [
+                    TarjetaDato(
+                      etiqueta: 'Total',
+                      valor: '${todos.length}',
+                      icono: Icons.card_giftcard_outlined,
+                    ),
+                    TarjetaDato(
+                      etiqueta: 'Activos',
+                      valor: '$activos',
+                      icono: Icons.power_settings_new,
+                      valorColor: kVerde,
+                    ),
+                    TarjetaDato(
+                      etiqueta: 'Destacados',
+                      valor: '$destacados',
+                      icono: Icons.star_border,
+                    ),
+                    TarjetaDato(
+                      etiqueta: 'Vencidos',
+                      valor: '$vencidos',
+                      icono: Icons.event_busy_outlined,
+                      valorColor: vencidos > 0 ? kRojo : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                TarjetaBlanca(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Beneficios',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.8,
-                        ),
+                      CabeceraListado(
+                        titulo: 'Listado',
+                        subtitulo: '${docs.length} de ${todos.length} beneficios',
+                        controles: [
+                          DesplegableFiltro(
+                            valor: _filtroCategoria ?? 'Todas',
+                            opciones: ['Todas', ...categoriasBeneficio],
+                            etiquetas: const {'Todas': 'Todas las categorías'},
+                            ancho: 220,
+                            onChanged: (v) => setState(
+                              () => _filtroCategoria = v == 'Todas' ? null : v,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Catálogo de beneficios que ven los conductores en la app. '
-                        'Los activos y vigentes aparecen en su pantalla de inicio.',
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
-                      ),
+                      const SizedBox(height: 8),
+                      if (docs.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 32),
+                          child: _Mensaje(
+                            icono: Icons.card_giftcard_outlined,
+                            texto: 'Aún no hay beneficios. Crea el primero con '
+                                '"Nuevo beneficio".',
+                          ),
+                        )
+                      else
+                        for (int i = 0; i < docs.length; i++) ...[
+                          if (i > 0) const Divider(height: 1, color: kBorde),
+                          _FilaBeneficio(
+                            doc: docs[i],
+                            onEditar: () => _abrirFormulario(doc: docs[i]),
+                            onEliminar: () => _eliminar(docs[i]),
+                            onCambiar: (campo, valor) =>
+                                _cambiar(docs[i], campo, valor),
+                          ),
+                        ],
                     ],
                   ),
                 ),
-                const SizedBox(width: 16),
-                FilledButton.icon(
-                  onPressed: () => _abrirFormulario(),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Nuevo beneficio'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: 260,
-              child: DropdownButtonFormField<String?>(
-                initialValue: _filtroCategoria,
-                decoration: const InputDecoration(
-                  labelText: 'Filtrar por categoría',
-                  border: OutlineInputBorder(),
-                  isDense: true,
-                ),
-                items: [
-                  const DropdownMenuItem<String?>(
-                    value: null,
-                    child: Text('Todas las categorías'),
-                  ),
-                  for (final c in categoriasBeneficio)
-                    DropdownMenuItem<String?>(value: c, child: Text(c)),
-                ],
-                onChanged: (v) => setState(() => _filtroCategoria = v),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: widget.service.streamBeneficios(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return _Mensaje(
-                      icono: Icons.lock_outline,
-                      texto: 'No se pudo leer el catálogo: ${snapshot.error}\n'
-                          'Verifica que las reglas de Firestore de "beneficios" '
-                          'estén publicadas.',
-                    );
-                  }
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final docs = snapshot.data!.docs.where((d) {
-                    return _filtroCategoria == null ||
-                        d.data()['categoria'] == _filtroCategoria;
-                  }).toList()
-                    ..sort((a, b) {
-                      final da = a.data()['destacado'] == true;
-                      final db = b.data()['destacado'] == true;
-                      if (da != db) return da ? -1 : 1;
-                      return (a.data()['titulo'] ?? '')
-                          .toString()
-                          .toLowerCase()
-                          .compareTo((b.data()['titulo'] ?? '').toString().toLowerCase());
-                    });
-
-                  if (docs.isEmpty) {
-                    return const _Mensaje(
-                      icono: Icons.card_giftcard_outlined,
-                      texto: 'Aún no hay beneficios. Crea el primero con '
-                          '"Nuevo beneficio".',
-                    );
-                  }
-
-                  return ListView.separated(
-                    itemCount: docs.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, i) => _FilaBeneficio(
-                      doc: docs[i],
-                      onEditar: () => _abrirFormulario(doc: docs[i]),
-                      onEliminar: () => _eliminar(docs[i]),
-                      onCambiar: (campo, valor) => _cambiar(docs[i], campo, valor),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+              
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -374,12 +410,12 @@ class _FilaBeneficio extends StatelessWidget {
     final inicio = (d['fecha_inicio'] as Timestamp?)?.toDate();
     final fin = (d['fecha_fin'] as Timestamp?)?.toDate();
     if (fin != null && _soloFecha(fin).isBefore(hoy)) {
-      return ('Vencido', Colors.red.shade700);
+      return ('Vencido', kRojo);
     }
     if (inicio != null && _soloFecha(inicio).isAfter(hoy)) {
-      return ('Programado', Colors.orange.shade800);
+      return ('Programado', const Color(0xFFD97706));
     }
-    return ('Vigente', Colors.green.shade700);
+    return ('Vigente', kVerde);
   }
 
   @override
@@ -398,9 +434,10 @@ class _FilaBeneficio extends StatelessWidget {
       if (fin != null) 'hasta ${_fecha(fin)}',
     ].join(' ');
 
-    return Card(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.zero,
         child: Row(
           children: [
             ClipRRect(
@@ -497,7 +534,7 @@ class _FilaBeneficio extends StatelessWidget {
                     IconButton(
                       tooltip: 'Eliminar',
                       onPressed: onEliminar,
-                      icon: Icon(Icons.delete_outline, color: Colors.red.shade700),
+                      icon: Icon(Icons.delete_outline, color: kRojo),
                     ),
                   ],
                 ),
@@ -803,7 +840,7 @@ class _FormularioBeneficioState extends State<_FormularioBeneficio> {
             style: TextStyle(
               fontSize: 12,
               color: (_errorImagen != null || !BeneficioImagenService.configurado)
-                  ? Colors.red.shade700
+                  ? kRojo
                   : const Color(0xFF64748B),
             ),
           ),
@@ -877,25 +914,46 @@ class _FormularioBeneficioState extends State<_FormularioBeneficio> {
   @override
   Widget build(BuildContext context) {
     final editando = widget.inicial != null;
-    return AlertDialog(
-      title: Text(editando ? 'Editar beneficio' : 'Nuevo beneficio'),
-      content: SizedBox(
-        width: 560,
-        child: Form(
-          key: _form,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
+    return Column(
+      children: [
+        CabeceraPanel(
+          titulo: editando ? 'Editar beneficio' : 'Nuevo beneficio',
+          subtitulo: const Text('Completa los datos del beneficio que verán los conductores en la app.'),
+        ),
+        Expanded(
+          child: Form(
+            key: _form,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _conEspacio([
+                FormField<String>(
                   initialValue: _categoria,
-                  decoration: const InputDecoration(labelText: 'Categoría *'),
-                  items: [
-                    for (final c in categoriasBeneficio)
-                      DropdownMenuItem(value: c, child: Text(c)),
-                  ],
-                  validator: (v) => v == null ? 'Elige una categoría' : null,
-                  onChanged: (v) => setState(() => _categoria = v),
+                  validator: (v) => _categoria == null ? 'Elige una categoría' : null,
+                  builder: (campo) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SelectorAcordeon(
+                        etiqueta: 'Categoría *',
+                        hint: 'Seleccionar categoría',
+                        valor: _categoria,
+                        opciones: categoriasBeneficio,
+                        onChanged: (v) {
+                          campo.didChange(v);
+                          setState(() => _categoria = v);
+                        },
+                      ),
+                      if (campo.hasError)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6, left: 4),
+                          child: Text(
+                            campo.errorText!,
+                            style: const TextStyle(color: kRojo, fontSize: 12),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
                 if (_categoria == 'Otros')
                   TextFormField(
@@ -978,7 +1036,7 @@ class _FormularioBeneficioState extends State<_FormularioBeneficio> {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         _errorFechas!,
-                        style: TextStyle(color: Colors.red.shade700, fontSize: 12),
+                        style: TextStyle(color: kRojo, fontSize: 12),
                       ),
                     ),
                   ),
@@ -1002,19 +1060,15 @@ class _FormularioBeneficioState extends State<_FormularioBeneficio> {
                   value: _activo,
                   onChanged: (v) => setState(() => _activo = v),
                 ),
-              ],
+                ]),
+              ),
             ),
           ),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: _guardar,
-          child: Text(editando ? 'Guardar cambios' : 'Crear beneficio'),
+        PiePanel(
+          textoPrincipal: editando ? 'Guardar cambios' : 'Crear beneficio',
+          iconoPrincipal: Icons.save_outlined,
+          onPrincipal: _guardar,
         ),
       ],
     );

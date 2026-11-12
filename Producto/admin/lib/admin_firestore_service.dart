@@ -185,6 +185,16 @@ class AdminFirestoreService {
     return _firestore.collection('usuarios').snapshots();
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>> streamVehicles() {
+    return _firestore.collection('vehiculos').snapshots();
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> streamConcesionarias() {
+    return _firestore.collection('concesionarias').snapshots();
+  }
+
+  FirebaseFirestore get firestore => _firestore;
+
   Stream<QuerySnapshot<Map<String, dynamic>>> streamPorticos() {
     return _firestore.collection('porticos').snapshots();
   }

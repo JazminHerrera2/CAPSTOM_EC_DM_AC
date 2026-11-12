@@ -44,6 +44,10 @@ dependencies:
   http: ^1.6.0
   http_parser: ^4.1.2
   file_picker: ^8.1.2
+  # Mapa de pórticos (mismas librerías que la app del conductor).
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.0
+  desktop_drop: ^0.8.4
 
 dev_dependencies:
   flutter_test:

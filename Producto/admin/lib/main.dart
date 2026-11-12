@@ -6,11 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'file_downloader.dart';
 
 import 'login_screen.dart';
 import 'admin_firestore_service.dart';
 import 'beneficios_page.dart';
+import 'admin_ui.dart';
+import 'auditoria_page.dart';
+import 'carga_masiva_page.dart';
+import 'admin_paneles.dart';
+import 'concesionarios_page.dart';
+import 'dashboard_page.dart';
+import 'mapa_page.dart';
+import 'porticos_page.dart';
+import 'reportes_page.dart';
+import 'tarifas_page.dart';
+import 'usuario_panel.dart';
+import 'usuarios_tabla.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -47,13 +58,64 @@ class TagOkAdminApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0EA5E9),
+          seedColor: kAzul,
           brightness: Brightness.light,
         ),
         scaffoldBackgroundColor: const Color(0xFFF8FAFC),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kBorde),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kBorde),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kAzul, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kRojo),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kRojo, width: 2),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: kAzul,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: kTinta,
+            side: const BorderSide(color: kBorde),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            textStyle: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(foregroundColor: kAzul),
+        ),
+        switchTheme: SwitchThemeData(
+          thumbColor: WidgetStateProperty.resolveWith(
+            (st) => st.contains(WidgetState.selected) ? Colors.white : null,
+          ),
+          trackColor: WidgetStateProperty.resolveWith(
+            (st) => st.contains(WidgetState.selected) ? kAzul : null,
+          ),
         ),
         cardTheme: CardThemeData(
           color: Colors.white,
@@ -79,11 +141,15 @@ bool isCompactLayout(BuildContext context) =>
 class SidebarItem {
   final String title;
   final IconData icon;
+
+  /// Encabezado del grupo del menú ("General", "Administración").
+  final String section;
   final Widget Function(AdminFirestoreService service) pageBuilder;
 
   const SidebarItem({
     required this.title,
     required this.icon,
+    required this.section,
     required this.pageBuilder,
   });
 }
@@ -114,6 +180,22 @@ class _AdminShellState extends State<AdminShell> {
     super.dispose();
   }
 
+  /// Navega a otra sección por su título (si el rol no la ve, avisa).
+  void _irA(String titulo) {
+    final i = _sidebarItems.indexWhere((e) => e.title == titulo);
+    if (i < 0) {
+      avisar(context, 'Tu rol no tiene acceso a "$titulo".', error: true);
+      return;
+    }
+    setState(() => _selectedIndex = i);
+  }
+
+  VoidCallback? get _irAAuditoria {
+    final i = _sidebarItems.indexWhere((e) => e.title == 'Auditoría');
+    if (i < 0) return null;
+    return () => setState(() => _selectedIndex = i);
+  }
+
   List<SidebarItem> _getSidebarItems(String role) {
     final String r = role.toLowerCase().trim();
     final bool isSuper =
@@ -125,41 +207,71 @@ class _AdminShellState extends State<AdminShell> {
     final List<SidebarItem> all = [
       SidebarItem(
         title: 'Dashboard',
+        section: 'General',
         icon: Icons.dashboard_outlined,
-        pageBuilder: (s) => DashboardPage(service: s),
+        pageBuilder: (s) => DashboardPage(
+          service: s,
+          // "Ver todo" de Actividad reciente: solo si el rol ve Auditoría.
+          onVerActividad: _irAAuditoria,
+        ),
+      ),
+      SidebarItem(
+        title: 'Mapa',
+        section: 'General',
+        icon: Icons.map_outlined,
+        pageBuilder: (s) => MapaPage(service: s),
       ),
       SidebarItem(
         title: 'Usuarios',
+        section: 'Administración',
         icon: Icons.people_alt_outlined,
         pageBuilder: (s) => UsersPage(service: s),
       ),
       SidebarItem(
+        title: 'Concesionarios',
+        section: 'Administración',
+        icon: Icons.apartment_outlined,
+        pageBuilder: (s) => ConcesionariosPage(service: s, onIrA: _irA),
+      ),
+      SidebarItem(
         title: 'Pórticos',
-        icon: Icons.toll_outlined,
-        pageBuilder: (s) => PorticosPage(service: s),
+        section: 'Administración',
+        icon: Icons.location_on_outlined,
+        pageBuilder: (s) => PorticosPage(service: s, onIrA: _irA),
       ),
       SidebarItem(
         title: 'Tarifas',
+        section: 'Administración',
         icon: Icons.payments_outlined,
-        pageBuilder: (s) => TariffsPage(service: s),
+        pageBuilder: (s) => TarifasPage(service: s),
       ),
       SidebarItem(
         title: 'Reportes',
+        section: 'Administración',
         icon: Icons.bar_chart_outlined,
-        pageBuilder: (s) => ReportsPage(service: s),
+        pageBuilder: (s) => ReportesPage(service: s),
+      ),
+      SidebarItem(
+        title: 'Auditoría',
+        section: 'Administración',
+        icon: Icons.receipt_long_outlined,
+        pageBuilder: (s) => AuditoriaPage(service: s),
+      ),
+      SidebarItem(
+        title: 'Carga masiva',
+        section: 'Administración',
+        icon: Icons.upload_file_outlined,
+        pageBuilder: (s) => CargaMasivaPage(service: s),
       ),
       SidebarItem(
         title: 'Beneficios',
+        section: 'Administración',
         icon: Icons.card_giftcard_outlined,
         pageBuilder: (s) => BeneficiosPage(service: s),
       ),
       SidebarItem(
-        title: 'Auditoría',
-        icon: Icons.receipt_long_outlined,
-        pageBuilder: (s) => AuditLogPage(service: s),
-      ),
-      SidebarItem(
         title: 'Admins',
+        section: 'Administración',
         icon: Icons.admin_panel_settings_outlined,
         pageBuilder: (s) => AdminsManagementPage(service: s),
       ),
@@ -168,11 +280,12 @@ class _AdminShellState extends State<AdminShell> {
     if (isSuper) {
       return all;
     } else {
-      // Operator gets Dashboard, Pórticos, Tarifas, Reportes
+      // Operador: Dashboard, Mapa, Pórticos, Tarifas, Reportes
       return all
           .where(
             (item) =>
                 item.title == 'Dashboard' ||
+                item.title == 'Mapa' ||
                 item.title == 'Pórticos' ||
                 item.title == 'Tarifas' ||
                 item.title == 'Reportes',
@@ -192,26 +305,108 @@ class _AdminShellState extends State<AdminShell> {
 
     final bool compact = isCompactLayout(context);
 
-    final Widget sidebar = Container(
-      width: compact ? null : 280,
-      decoration: const BoxDecoration(color: Color(0xFFE2E8F0)),
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(padding: EdgeInsets.all(24), child: _BrandBlock()),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                'Backoffice',
-                style: TextStyle(
-                  color: Color(0xFF64748B),
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
+    // Menú agrupado por secciones, con el ítem activo en azul claro.
+    final List<Widget> entradas = [];
+    String? seccionActual;
+    for (int index = 0; index < _sidebarItems.length; index++) {
+      final sidebarItem = _sidebarItems[index];
+      if (sidebarItem.section != seccionActual) {
+        seccionActual = sidebarItem.section;
+        entradas.add(
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              12,
+              entradas.isEmpty ? 4 : 22,
+              12,
+              8,
+            ),
+            child: Text(
+              seccionActual,
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      }
+      final bool selected = _selectedIndex == index;
+      entradas.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Material(
+            color: selected ? const Color(0xFFDBEAFE) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                setState(() => _selectedIndex = index);
+                // En móvil el menú es un cajón: se cierra al elegir.
+                if (compact) Navigator.of(context).pop();
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      sidebarItem.icon,
+                      size: 20,
+                      color: selected
+                          ? const Color(0xFF1D4ED8)
+                          : const Color(0xFF0F172A),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        sidebarItem.title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                          color: selected
+                              ? const Color(0xFF1D4ED8)
+                              : const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+          ),
+        ),
+      );
+    }
+
+    final Widget sidebar = Container(
+      width: compact ? null : 260,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Center(child: _BrandBlock()),
+            ),
+            const Text(
+              'Panel Administrador',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 22),
             Expanded(
               // Barra de desplazamiento siempre visible: indica que hay más
               // opciones abajo cuando el menú no cabe en pantalla.
@@ -219,60 +414,19 @@ class _AdminShellState extends State<AdminShell> {
                 controller: _menuScroll,
                 thumbVisibility: true,
                 trackVisibility: true,
-                child: ListView.builder(
-                controller: _menuScroll,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemCount: _sidebarItems.length,
-                itemBuilder: (context, index) {
-                  final bool selected = _selectedIndex == index;
-                  final sidebarItem = _sidebarItems[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: ListTile(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      selected: selected,
-                      selectedTileColor: const Color(0xFFCBD5E1),
-                      iconColor: selected
-                          ? const Color(0xFF0369A1)
-                          : const Color(0xFF475569),
-                      textColor: selected
-                          ? const Color(0xFF0F172A)
-                          : const Color(0xFF475569),
-                      leading: Icon(sidebarItem.icon),
-                      title: Text(sidebarItem.title),
-                      onTap: () {
-                        setState(() => _selectedIndex = index);
-                        // En móvil el menú es un cajón: se cierra al elegir.
-                        if (compact) Navigator.of(context).pop();
-                      },
-                    ),
-                  );
-                },
+                child: ListView(
+                  controller: _menuScroll,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: entradas,
                 ),
               ),
             ),
-            const Divider(color: Color(0xFFCBD5E1)),
+            const Divider(color: Color(0xFFE2E8F0)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: _UserProfileCard(role: widget.role),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                iconColor: const Color(0xFFEF4444),
-                textColor: const Color(0xFFEF4444),
-                leading: const Icon(Icons.logout),
-                title: const Text('Cerrar sesión'),
-                onTap: () async {
-                  await FirebaseAuth.instance.signOut();
-                },
-              ),
-            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -281,20 +435,16 @@ class _AdminShellState extends State<AdminShell> {
     if (compact) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: const Color(0xFFE2E8F0),
+          backgroundColor: Colors.white,
           surfaceTintColor: Colors.transparent,
           iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
           toolbarHeight: 64,
-          title: Image.asset(
-            'assets/logo_tagok.png',
-            height: 48,
-            fit: BoxFit.contain,
-          ),
+          title: const _LogoMark(ancho: 150),
           centerTitle: false,
         ),
         drawer: Drawer(
           width: 280,
-          backgroundColor: const Color(0xFFE2E8F0),
+          backgroundColor: Colors.white,
           child: sidebar,
         ),
         body: content,
@@ -322,15 +472,27 @@ class _BrandBlock extends StatelessWidget {
 }
 
 class _LogoMark extends StatelessWidget {
-  const _LogoMark();
+  const _LogoMark({this.ancho = 230});
+
+  /// Ancho de la imagen completa (el PNG es 3:2 con mucho margen vacío).
+  final double ancho;
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/logo_tagok.png',
-      height: 110,
-      fit: BoxFit.contain,
-      alignment: Alignment.centerLeft,
+    // El logo ocupa solo la franja central del PNG: se recorta el margen para
+    // que el tamaño visible sea grande y no quede aire arriba ni abajo.
+    return ClipRect(
+      child: Align(
+        alignment: const Alignment(0, -0.04),
+        heightFactor: 0.5,
+        widthFactor: 0.86,
+        child: Image.asset(
+          'assets/logo_tagok.png',
+          width: ancho,
+          height: ancho / 1.5,
+          fit: BoxFit.contain,
+        ),
+      ),
     );
   }
 }
@@ -360,7 +522,91 @@ class _UserProfileCard extends StatelessWidget {
         ? const Color(0xFF0369A1)
         : const Color(0xFFB45309);
 
-    return Container(
+    // Al tocar la tarjeta del usuario se despliega "Cerrar sesión".
+    // El menú se abre al costado de la tarjeta (a su derecha), con el correo,
+    // el rol y la opción de cerrar sesión; su borde inferior queda alineado
+    // con el de la tarjeta.
+    return LayoutBuilder(
+      builder: (context, constraints) => PopupMenuButton<String>(
+      tooltip: 'Opciones de la cuenta',
+      position: PopupMenuPosition.over,
+      offset: Offset(constraints.maxWidth + 8, -96),
+      color: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      onSelected: (valor) async {
+        if (valor == 'cerrar_sesion') {
+          await FirebaseAuth.instance.signOut();
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem<String>(
+          enabled: false,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                email,
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isSuper
+                          ? Icons.verified_user_outlined
+                          : Icons.person_outline,
+                      size: 14,
+                      color: const Color(0xFF0F172A),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      roleLabel,
+                      style: const TextStyle(
+                        color: Color(0xFF0F172A),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(height: 1),
+        const PopupMenuItem<String>(
+          value: 'cerrar_sesion',
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Color(0xFF0F172A), size: 20),
+              SizedBox(width: 12),
+              Text(
+                'Cerrar sesión',
+                style: TextStyle(color: Color(0xFF0F172A), fontSize: 15),
+              ),
+            ],
+          ),
+        ),
+      ],
+      child: Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),
@@ -406,768 +652,11 @@ class _UserProfileCard extends StatelessWidget {
               ],
             ),
           ),
+          const Icon(Icons.unfold_more, color: Color(0xFF64748B), size: 18),
         ],
       ),
-    );
-  }
-}
-
-class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key, required this.service});
-
-  final AdminFirestoreService service;
-
-  @override
-  State<DashboardPage> createState() => _DashboardPageState();
-}
-
-class _DashboardPageState extends State<DashboardPage> {
-  int _activeTabIndex = 0;
-  final List<String> _tabs = ['Resumen', 'Analíticas', 'Historial'];
-
-  String _formatFecha(dynamic dateVal) {
-    if (dateVal == null) return '-';
-    if (dateVal is Timestamp) {
-      final date = dateVal.toDate();
-      final y = date.year;
-      final m = date.month.toString().padLeft(2, '0');
-      final d = date.day.toString().padLeft(2, '0');
-      final h = date.hour.toString().padLeft(2, '0');
-      final min = date.minute.toString().padLeft(2, '0');
-      return '$y-$m-$d $h:$min';
-    }
-    if (dateVal is String) {
-      return dateVal.length >= 16 ? dateVal.substring(0, 16) : dateVal;
-    }
-    return dateVal.toString();
-  }
-
-  DateTime? parseTripDate(dynamic dateVal) {
-    if (dateVal == null) return null;
-    if (dateVal is Timestamp) {
-      return dateVal.toDate();
-    }
-    if (dateVal is String) {
-      return DateTime.tryParse(dateVal);
-    }
-    return null;
-  }
-
-  String _classifyHighway(String tollName) {
-    final name = tollName.toLowerCase();
-    if (name.contains('autopista de conexión') || name.contains('conexión')) {
-      return 'Conexión / Otras';
-    }
-    if (name.startsWith('pa') ||
-        name.contains('autopista central') ||
-        name.contains('ruta 5')) {
-      return 'Autopista Central';
-    }
-    if (name.contains('costanera') ||
-        name.contains('vivaceta') ||
-        name.contains('lo saldes') ||
-        name.contains('la dehesa') ||
-        name.contains('estoril') ||
-        name.contains('padre arteaga') ||
-        name.contains('tranqueras') ||
-        name.contains('carrascal') ||
-        name.contains('padre hurtado') ||
-        name.startsWith('ev ') ||
-        name.startsWith('sv ')) {
-      return 'Costanera Norte';
-    }
-    if (name.contains('avo') ||
-        name.contains('kennedy') ||
-        name.contains('p101') ||
-        name.contains('p102') ||
-        name.contains('vespucio oriente')) {
-      return 'Vespucio Oriente (AVO)';
-    }
-    if (name.contains('vespucio norte') ||
-        name.contains('guanaco') ||
-        name.contains('el salto') ||
-        name.contains('lo boza') ||
-        name.contains('recabal') ||
-        name.contains('enea') ||
-        name.contains('p14') ||
-        name.contains('p13') ||
-        name.contains('p12') ||
-        name.contains('p15')) {
-      return 'Vespucio Norte';
-    }
-    if (name.contains('vespucio sur') ||
-        name.contains('pvs') ||
-        name.contains('velásquez') ||
-        name.contains('velasquez') ||
-        name.contains('gran avenida') ||
-        name.contains('santa rosa') ||
-        name.contains('vicuña mackenna') ||
-        name.contains('alderete') ||
-        name.contains('2a transversal') ||
-        name.contains('los mares') ||
-        name.contains('coronel') ||
-        name.contains('camino a melipilla')) {
-      return 'Vespucio Sur';
-    }
-    if (name.contains('ruta 68')) {
-      return 'Conexión / Otras';
-    }
-    if (name.contains('ruta 78') || name.contains('autopista del sol')) {
-      return 'Conexión / Otras';
-    }
-    return 'Conexión / Otras';
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
-      stream: widget.service.streamUserTrips(),
-      builder: (context, tripsSnapshot) {
-        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: widget.service.streamUsers(),
-          builder: (context, usersSnapshot) {
-            if (tripsSnapshot.hasError) {
-              return Scaffold(
-                body: Center(child: Text('Error en viajes: ${tripsSnapshot.error}')),
-              );
-            }
-            if (usersSnapshot.hasError) {
-              return Scaffold(
-                body: Center(child: Text('Error en usuarios: ${usersSnapshot.error}')),
-              );
-            }
-
-            if (tripsSnapshot.connectionState == ConnectionState.waiting ||
-                usersSnapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            }
-
-            final trips = tripsSnapshot.data ?? [];
-            final usersDocs = usersSnapshot.data?.docs ?? [];
-
-            double totalTollCost = 0.0;
-            final Map<String, double> costByHighway = {
-              'Autopista Central': 0.0,
-              'Costanera Norte': 0.0,
-              'Vespucio Norte': 0.0,
-              'Vespucio Sur': 0.0,
-              'Vespucio Oriente (AVO)': 0.0,
-              'Conexión / Otras': 0.0,
-            };
-
-            for (var doc in trips) {
-              final data = doc.data();
-              final double tripCost = double.tryParse(data['totalCost']?.toString() ?? '0') ?? 0.0;
-              totalTollCost += tripCost;
-
-              final List<dynamic> tollsList = data['tolls'] as List<dynamic>? ?? [];
-              for (var tollRaw in tollsList) {
-                if (tollRaw is Map) {
-                  final String tollName = (tollRaw['name'] ?? '').toString();
-                  final double tollCost = double.tryParse(tollRaw['cost']?.toString() ?? '0') ?? 0.0;
-                  final String highway = _classifyHighway(tollName);
-
-                  if (costByHighway.containsKey(highway)) {
-                    costByHighway[highway] = costByHighway[highway]! + tollCost;
-                  } else {
-                    costByHighway['Conexión / Otras'] = costByHighway['Conexión / Otras']! + tollCost;
-                  }
-                }
-              }
-            }
-
-            final Map<String, int> dailyCounts = {};
-            final List<DateTime> last7Days = List.generate(7, (i) => DateTime.now().subtract(Duration(days: 6 - i)));
-            for (var day in last7Days) {
-              final key = "${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}";
-              dailyCounts[key] = 0;
-            }
-            for (var doc in trips) {
-              final date = parseTripDate(doc.data()['date']);
-              if (date != null) {
-                final key = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-                if (dailyCounts.containsKey(key)) {
-                  dailyCounts[key] = dailyCounts[key]! + 1;
-                }
-              }
-            }
-
-            final String adminEmail = FirebaseAuth.instance.currentUser?.email ?? 'admin@tagok.cl';
-
-            Widget contentWidget;
-            if (_activeTabIndex == 1) {
-              contentWidget = FutureBuilder<AdminOverview>(
-                future: widget.service.fetchOverview(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final overview = snapshot.data;
-                  return SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Wrap(
-                        spacing: 24,
-                        runSpacing: 24,
-                        children: [
-                          _StatCard(
-                            label: 'Usuarios Registrados',
-                            value: overview?.users ?? 0,
-                            icon: Icons.people_alt_outlined,
-                          ),
-                          _StatCard(
-                            label: 'Vehículos Asociados',
-                            value: overview?.vehicles ?? 0,
-                            icon: Icons.directions_car_outlined,
-                          ),
-                          _StatCard(
-                            label: 'Pórticos Activos',
-                            value: overview?.porticos ?? 0,
-                            icon: Icons.toll_outlined,
-                          ),
-                          _StatCard(
-                            label: 'Tarifas Vigentes',
-                            value: overview?.tariffs ?? 0,
-                            icon: Icons.payments_outlined,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            } else if (_activeTabIndex == 2) {
-              contentWidget = Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Historial de Peajes Cobrados (Tiempo Real)',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: trips.length,
-                                itemBuilder: (context, index) {
-                                  final tripDoc = trips[index];
-                                  final data = tripDoc.data();
-                                  final String vehiculo = (data['vehicleName'] ?? 'Desconocido').toString();
-                                  final String fecha = _formatFecha(data['date']);
-                                  final int totalCost = int.tryParse(data['totalCost']?.toString() ?? '0') ?? 0;
-
-                                  final List<dynamic> tollsList = data['tolls'] as List<dynamic>? ?? [];
-                                  String highway = 'Otras';
-                                  if (tollsList.isNotEmpty && tollsList[0] is Map) {
-                                    highway = _classifyHighway((tollsList[0]['name'] ?? '').toString());
-                                  }
-
-                                  return Card(
-                                    margin: const EdgeInsets.symmetric(vertical: 6),
-                                    color: const Color(0xFFF8FAFC),
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                      side: const BorderSide(color: Color(0xFFE2E8F0)),
-                                    ),
-                                    child: ListTile(
-                                      leading: const CircleAvatar(
-                                        backgroundColor: Color(0xFFE0F2FE),
-                                        child: Icon(Icons.directions_car_outlined, color: Color(0xFF0284C7)),
-                                      ),
-                                      title: Text(vehiculo, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                      subtitle: Text('$highway • $fecha'),
-                                      trailing: Text(
-                                        '\$$totalCost',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF065F46),
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            } else {
-              final Widget card1 = Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Viajes Recientes por Día',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF475569),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: BarChart(
-                          dailyCounts: dailyCounts,
-                          last7Days: last7Days,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-
-              final Widget card2 = Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Distribución de Costos por Autopista',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF475569),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: DonutChart(
-                          costByHighway: costByHighway,
-                          totalCost: totalTollCost,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-
-              final Widget card3 = Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Uso y Distribución de Cobros',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF475569),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Expanded(
-                        child: HighwayProgressBars(
-                          costByHighway: costByHighway,
-                          totalCost: totalTollCost,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-
-              contentWidget = Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          if (constraints.maxWidth < 900) {
-                            return Column(
-                              children: [
-                                SizedBox(height: 230, child: card1),
-                                const SizedBox(height: 16),
-                                SizedBox(height: 230, child: card2),
-                                const SizedBox(height: 16),
-                                SizedBox(height: 230, child: card3),
-                              ],
-                            );
-                          }
-                          return Row(
-                            children: [
-                              Expanded(child: SizedBox(height: 230, child: card1)),
-                              const SizedBox(width: 16),
-                              Expanded(child: SizedBox(height: 230, child: card2)),
-                              const SizedBox(width: 16),
-                              Expanded(child: SizedBox(height: 230, child: card3)),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final Widget left = Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Tránsitos Recientes',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: trips.length > 5 ? 5 : trips.length,
-                                    itemBuilder: (context, index) {
-                                      final tripDoc = trips[index];
-                                      final data = tripDoc.data();
-                                      final String vehiculo = (data['vehicleName'] ?? 'Desconocido').toString();
-                                      final String fecha = _formatFecha(data['date']);
-                                      final int totalCost = int.tryParse(data['totalCost']?.toString() ?? '0') ?? 0;
-
-                                      final List<dynamic> tollsList = data['tolls'] as List<dynamic>? ?? [];
-                                      String highway = 'Otras';
-                                      if (tollsList.isNotEmpty && tollsList[0] is Map) {
-                                        highway = _classifyHighway((tollsList[0]['name'] ?? '').toString());
-                                      }
-
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 8),
-                                        child: Row(
-                                          children: [
-                                            const CircleAvatar(
-                                              radius: 16,
-                                              backgroundColor: Color(0xFFE0F2FE),
-                                              child: Icon(Icons.directions_car_outlined, size: 16, color: Color(0xFF0284C7)),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              flex: 2,
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    vehiculo,
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 13,
-                                                      color: Color(0xFF334155),
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    fecha,
-                                                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 2,
-                                              child: Text(
-                                                highway,
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: Color(0xFF475569),
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFECFDF5),
-                                                borderRadius: BorderRadius.circular(12),
-                                                border: Border.all(color: const Color(0xFFA7F3D0)),
-                                              ),
-                                              child: Text(
-                                                '\$$totalCost',
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF065F46),
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFEFF6FF),
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: const Text(
-                                                'Procesado',
-                                                style: TextStyle(
-                                                  color: Color(0xFF2563EB),
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-
-                          final Widget right = Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Usuarios Recientes',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: usersDocs.length > 5 ? 5 : usersDocs.length,
-                                    itemBuilder: (context, index) {
-                                      final userDoc = usersDocs[index];
-                                      final data = userDoc.data();
-                                      final String email = (data['email'] ?? 'Usuario sin correo').toString();
-                                      final String nombre = (data['nombre'] ?? data['name'] ?? 'Usuario de TAG OK').toString();
-                                      final String initial = email.isNotEmpty ? email[0].toUpperCase() : 'U';
-
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 8),
-                                        child: Row(
-                                          children: [
-                                            CircleAvatar(
-                                              radius: 16,
-                                              backgroundColor: const Color(0xFFF1F5F9),
-                                              child: Text(
-                                                initial,
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Color(0xFF475569),
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    nombre,
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 13,
-                                                      color: Color(0xFF334155),
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                  Text(
-                                                    email,
-                                                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const Icon(Icons.chevron_right, size: 16, color: Color(0xFF94A3B8)),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-
-                          if (constraints.maxWidth < 1000) {
-                            return Column(
-                              children: [left, const SizedBox(height: 16), right],
-                            );
-                          }
-
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(flex: 3, child: left),
-                              const SizedBox(width: 16),
-                              Expanded(flex: 2, child: right),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            final bool compact = isCompactLayout(context);
-            return SafeArea(
-              child: Padding(
-                padding: EdgeInsets.all(compact ? 16 : 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Dashboard',
-                                style: TextStyle(
-                                  fontSize: compact ? 24 : 30,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.8,
-                                  color: Color(0xFF0F172A),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: List.generate(_tabs.length, (
-                                    index,
-                                  ) {
-                                    final isSelected = _activeTabIndex == index;
-                                    return Padding(
-                                      padding: const EdgeInsets.only(right: 24),
-                                      child: InkWell(
-                                        onTap: () => setState(
-                                          () => _activeTabIndex = index,
-                                        ),
-                                        hoverColor: Colors.transparent,
-                                        splashColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              _tabs[index],
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: isSelected
-                                                    ? FontWeight.bold
-                                                    : FontWeight.w600,
-                                                color: isSelected
-                                                    ? const Color(0xFF0F172A)
-                                                    : const Color(0xFF64748B),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Container(
-                                              width: 24,
-                                              height: 2,
-                                              color: isSelected
-                                                  ? const Color(0xFF2563EB)
-                                                  : Colors.transparent,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // En celular el correo ya aparece en el menú lateral.
-                        if (!compact)
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: const Color(0xFFE2E8F0),
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.shield_outlined,
-                                      size: 14,
-                                      color: Color(0xFF64748B),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      adminEmail,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF475569),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              const CircleAvatar(
-                                backgroundColor: Color(0xFFF1F5F9),
-                                child: Icon(
-                                  Icons.person_outline_rounded,
-                                  color: Color(0xFF475569),
-                                ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (_activeTabIndex == 2)
-                      Expanded(child: contentWidget)
-                    else
-                      contentWidget,
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+      ),
+      ),
     );
   }
 }
@@ -1491,13 +980,30 @@ class UsersPage extends StatefulWidget {
 class _UsersPageState extends State<UsersPage> {
   final TextEditingController _searchCtrl = TextEditingController();
   String _searchQuery = '';
-  String _selectedBudgetFilter = 'Todos'; // 'Todos', '> 50.000', '< = 50.000'
+  String _estadoFiltro = 'Todos'; // Todos | Activos | Inactivos
+  String _vehiculoFiltro = 'Todos'; // Todos | Con vehículo | Sin vehículo
   int _currentPage = 0;
   int _rowsPerPage = 10;
+
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _usersStream;
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _adminsStream;
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _vehiclesStream;
+  late Stream<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _tripsStream;
+
+  /// Un usuario cuenta como activo si tuvo algún viaje en los últimos 30 días.
+  static const Duration _ventanaActividad = Duration(days: 30);
+
+  void _crearStreams() {
+    _usersStream = widget.service.streamUsers();
+    _adminsStream = widget.service.streamAdministradores();
+    _vehiclesStream = widget.service.streamVehicles();
+    _tripsStream = widget.service.streamUserTrips();
+  }
 
   @override
   void initState() {
     super.initState();
+    _crearStreams();
     _searchCtrl.addListener(() {
       setState(() {
         _searchQuery = _searchCtrl.text.toLowerCase().trim();
@@ -1512,436 +1018,277 @@ class _UsersPageState extends State<UsersPage> {
     super.dispose();
   }
 
-  bool _matchesFilters(Map<String, dynamic> data) {
-    final nombre = (data['nombre_mostrar'] ?? '').toString().toLowerCase();
-    final correo = (data['email'] ?? '').toString().toLowerCase();
-    if (_searchQuery.isNotEmpty &&
-        !nombre.contains(_searchQuery) &&
-        !correo.contains(_searchQuery)) {
-      return false;
-    }
-
-    final int presupuesto =
-        int.tryParse(data['limite_presupuesto_mensual']?.toString() ?? '0') ??
-        0;
-    if (_selectedBudgetFilter == '> 50.000' && presupuesto <= 50000) {
-      return false;
-    }
-    if (_selectedBudgetFilter == '< = 50.000' && presupuesto > 50000) {
-      return false;
-    }
-
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return _AdminPageScaffold(
-      title: 'Usuarios',
-      subtitle:
-          'Gestión de cuentas. (Por seguridad de Firebase, las contraseñas están encriptadas. Usa las acciones para resetearlas).',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: TextField(
-                      controller: _searchCtrl,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        labelText: 'Buscar usuario...',
-                        hintText: 'Buscar por nombre o correo',
-                        prefixIcon: const Icon(Icons.search, size: 20),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: DropdownButtonFormField<String>(
-                      initialValue: _selectedBudgetFilter,
-                      decoration: InputDecoration(
-                        isDense: true,
-                        labelText: 'Presupuesto Mensual',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'Todos',
-                          child: Text('Todos los presupuestos'),
-                        ),
-                        DropdownMenuItem(
-                          value: '> 50.000',
-                          child: Text('> \$50.000'),
-                        ),
-                        DropdownMenuItem(
-                          value: '< = 50.000',
-                          child: Text('≤ \$50.000'),
-                        ),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() {
-                            _selectedBudgetFilter = val;
-                            _currentPage = 0;
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _usersStream,
+      builder: (context, usersSnap) => StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: _adminsStream,
+        builder: (context, adminsSnap) => StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: _vehiclesStream,
+          builder: (context, vehSnap) => StreamBuilder<List<QueryDocumentSnapshot<Map<String, dynamic>>>>(
+            stream: _tripsStream,
+            builder: (context, tripsSnap) {
+              final error =
+                  usersSnap.error ??
+                  adminsSnap.error ??
+                  vehSnap.error ??
+                  tripsSnap.error;
+              if (error != null) {
+                return Center(child: Text('Error al leer Firestore: $error'));
+              }
+              if (!usersSnap.hasData ||
+                  !adminsSnap.hasData ||
+                  !vehSnap.hasData ||
+                  !tripsSnap.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return _construir(
+                context,
+                usersSnap.data!.docs,
+                adminsSnap.data!.docs,
+                vehSnap.data!.docs,
+                tripsSnap.data!,
+              );
+            },
           ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: widget.service.streamUsers(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return Text('Error al leer Firestore: ${snapshot.error}');
-                }
+        ),
+      ),
+    );
+  }
 
-                if (!snapshot.hasData) {
-                  return const Center(
-                    child: Padding(
+  Widget _construir(
+    BuildContext context,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> userDocs,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> adminDocs,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> vehDocs,
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> tripDocs,
+  ) {
+    final ahora = DateTime.now();
+
+    // Rol de administrador por correo.
+    String rolDe(QueryDocumentSnapshot<Map<String, dynamic>> a) =>
+        (a.data()['rol'] ?? a.data()['role'] ?? 'operador').toString();
+    final Map<String, String> rolPorCorreo = {
+      for (final a in adminDocs)
+        (a.data()['email'] ?? '').toString().toLowerCase().trim(): rolDe(a),
+    };
+    final Map<String, String> rolPorUid = {
+      for (final a in adminDocs) a.id: rolDe(a),
+    };
+
+    // Patentes por usuario.
+    final Map<String, List<String>> patentes = {};
+    final Map<String, List<Map<String, dynamic>>> vehiculosDe = {};
+    for (final v in vehDocs) {
+      final d = v.data();
+      final ref = d['id_usuario'];
+      final String? uid = ref is DocumentReference
+          ? ref.id
+          : ref?.toString().split('/').last;
+      if (uid == null || uid.isEmpty) continue;
+      patentes.putIfAbsent(uid, () => []).add((d['patente'] ?? '').toString());
+      vehiculosDe.putIfAbsent(uid, () => []).add(d);
+    }
+
+    // Última actividad (último viaje) por usuario.
+    final Map<String, DateTime> ultimaActividad = {};
+    for (final t in tripDocs) {
+      final uid = t.reference.parent.parent?.id;
+      if (uid == null) continue;
+      final raw = t.data()['date'];
+      final f = raw is Timestamp ? raw.toDate() : DateTime.tryParse('$raw');
+      if (f == null) continue;
+      final previo = ultimaActividad[uid];
+      if (previo == null || f.isAfter(previo)) ultimaActividad[uid] = f;
+    }
+
+    final filas = userDocs.map((doc) {
+      final d = doc.data();
+      final correo = (d['email'] ?? 'Sin correo').toString();
+      final f = d['fecha_creacion'];
+      final actividad = ultimaActividad[doc.id];
+      return FilaUsuario(
+        docId: doc.id,
+        nombre: (d['nombre_mostrar'] ?? 'Sin nombre').toString(),
+        correo: correo,
+        presupuesto:
+            int.tryParse(d['limite_presupuesto_mensual']?.toString() ?? '0') ??
+            0,
+        rol: rolPorUid[doc.id] ?? rolPorCorreo[correo.toLowerCase().trim()],
+        patentes: patentes[doc.id] ?? const [],
+        registrado: f is Timestamp ? f.toDate() : null,
+        ultimaActividad: actividad,
+        // El interruptor "Cuenta activa" del panel manda; si nunca se usó,
+        // se infiere de la actividad reciente.
+        activo: d['activo'] is bool
+            ? d['activo'] as bool
+            : (actividad != null &&
+                  ahora.difference(actividad) <= _ventanaActividad),
+        vehiculos: vehiculosDe[doc.id] ?? const [],
+      );
+    }).toList();
+
+    final total = filas.length;
+    final activos = filas.where((f) => f.activo).length;
+    final conVehiculo = filas.where((f) => f.patentes.isNotEmpty).length;
+
+    final filtradas = filas.where((f) {
+      if (_searchQuery.isNotEmpty) {
+        final enPatente = f.patentes.any(
+          (p) => p.toLowerCase().contains(_searchQuery),
+        );
+        if (!f.correo.toLowerCase().contains(_searchQuery) &&
+            !f.nombre.toLowerCase().contains(_searchQuery) &&
+            !enPatente) {
+          return false;
+        }
+      }
+      if (_estadoFiltro == 'Activos' && !f.activo) return false;
+      if (_estadoFiltro == 'Inactivos' && f.activo) return false;
+      if (_vehiculoFiltro == 'Con vehículo' && f.patentes.isEmpty) return false;
+      if (_vehiculoFiltro == 'Sin vehículo' && f.patentes.isNotEmpty) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    final int totalPages = (filtradas.length / _rowsPerPage).ceil();
+    if (_currentPage >= totalPages && totalPages > 0) {
+      _currentPage = totalPages - 1;
+    }
+    final int startIndex = _currentPage * _rowsPerPage;
+    final int endIndex = (startIndex + _rowsPerPage) > filtradas.length
+        ? filtradas.length
+        : (startIndex + _rowsPerPage);
+    final pagina = filtradas.sublist(startIndex, endIndex);
+
+    final bool compact = isCompactLayout(context);
+
+    return SafeArea(
+      child: PaginaConEncabezado(
+            compact: compact,
+            encabezado: EncabezadoPagina(
+              titulo: 'Usuarios',
+              subtitulo:
+                  'Administra los usuarios registrados en la plataforma TAG OK.',
+              acciones: [
+                BotonContorno(
+                  texto: 'Actualizar',
+                  icono: Icons.refresh,
+                  onPressed: () => setState(_crearStreams),
+                ),
+              ],
+            ),
+            children: [
+
+            GrillaTarjetas(
+              tarjetas: [
+                TarjetaDato(
+                  etiqueta: 'Total',
+                  valor: '$total',
+                  icono: Icons.people_outline,
+                ),
+                TarjetaDato(
+                  etiqueta: 'Activos',
+                  valor: '$activos',
+                  icono: Icons.how_to_reg_outlined,
+                  valorColor: const Color(0xFF059669),
+                ),
+                TarjetaDato(
+                  etiqueta: 'Inactivos',
+                  valor: '${total - activos}',
+                  icono: Icons.person_off_outlined,
+                  valorColor: const Color(0xFFE11D48),
+                ),
+                TarjetaDato(
+                  etiqueta: 'Con vehículo',
+                  valor: '$conVehiculo',
+                  icono: Icons.directions_car_outlined,
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CabeceraListado(
+                    titulo: 'Listado',
+                    subtitulo: '${filtradas.length} de $total usuarios',
+                    controles: [
+                      CampoBusqueda(
+                        controller: _searchCtrl,
+                        hint: 'Buscar email o patente…',
+                      ),
+                      DesplegableFiltro(
+                        valor: _estadoFiltro,
+                        opciones: const ['Todos', 'Activos', 'Inactivos'],
+                        ancho: 140,
+                        onChanged: (v) => setState(() {
+                          _estadoFiltro = v;
+                          _currentPage = 0;
+                        }),
+                      ),
+                      DesplegableFiltro(
+                        valor: _vehiculoFiltro,
+                        opciones: const ['Todos', 'Con vehículo', 'Sin vehículo'],
+                        etiquetas: const {'Todos': 'Todos los vehículos'},
+                        ancho: 200,
+                        onChanged: (v) => setState(() {
+                          _vehiculoFiltro = v;
+                          _currentPage = 0;
+                        }),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (filtradas.isEmpty)
+                    const Padding(
                       padding: EdgeInsets.all(32),
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-
-                final docs = snapshot.data!.docs;
-                final filteredDocs = docs
-                    .where((doc) => _matchesFilters(doc.data()))
-                    .toList();
-
-                if (filteredDocs.isEmpty) {
-                  return const Card(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
+                      child: Center(
                         child: Text(
                           'No se encontraron usuarios con los filtros aplicados.',
                         ),
                       ),
+                    )
+                  else
+                    TablaUsuarios(
+                      filas: pagina,
+                      ahora: ahora,
+                      onAbrir: (f) => mostrarPanelUsuario(
+                        context,
+                        usuario: f,
+                        ahora: ahora,
+                      ),
+                      onReset: (f) => _enviarResetPassword(context, f.correo),
+                      onEliminar: (f) =>
+                          _mostrarDialogoEliminar(context, f.docId, f.nombre),
                     ),
-                  );
-                }
-
-                final int totalPages = (filteredDocs.length / _rowsPerPage)
-                    .ceil();
-                if (_currentPage >= totalPages && totalPages > 0) {
-                  _currentPage = totalPages - 1;
-                }
-
-                final int startIndex = _currentPage * _rowsPerPage;
-                final int endIndex =
-                    (startIndex + _rowsPerPage) > filteredDocs.length
-                    ? filteredDocs.length
-                    : (startIndex + _rowsPerPage);
-                final pageDocs = filteredDocs.sublist(startIndex, endIndex);
-
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                columns: const [
-                                  DataColumn(label: Text('Usuario')),
-                                  DataColumn(label: Text('Presupuesto')),
-                                  DataColumn(label: Text('Vehículo Principal')),
-                                  DataColumn(label: Text('Acciones')),
-                                ],
-                                rows: pageDocs.map((doc) {
-                                  final Map<String, dynamic> data = doc.data();
-                                  final String docId = doc.id;
-                                  final String nombre =
-                                      (data['nombre_mostrar'] ?? 'Sin nombre')
-                                          .toString();
-                                  final String correo =
-                                      (data['email'] ?? 'Sin correo')
-                                          .toString();
-                                  final int presupuesto =
-                                      int.tryParse(
-                                        data['limite_presupuesto_mensual']
-                                                ?.toString() ??
-                                            '0',
-                                      ) ??
-                                      0;
-                                  final String vehiculoPrincipal =
-                                      (data['vehiculo_principal_id'] ??
-                                              'Ninguno')
-                                          .toString();
-
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            CircleAvatar(
-                                              radius: 18,
-                                              backgroundColor:
-                                                  _getColorFromName(nombre),
-                                              child: Text(
-                                                nombre.isNotEmpty
-                                                    ? nombre[0].toUpperCase()
-                                                    : 'U',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  nombre,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Color(0xFF0F172A),
-                                                  ),
-                                                ),
-                                                Text(
-                                                  correo,
-                                                  style: const TextStyle(
-                                                    color: Color(0xFF64748B),
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: presupuesto > 50000
-                                                ? const Color(0xFFEFF6FF)
-                                                : const Color(0xFFF1F5F9),
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                            border: Border.all(
-                                              color: presupuesto > 50000
-                                                  ? const Color(0xFFBFDBFE)
-                                                  : const Color(0xFFE2E8F0),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            '\$${_formatNumber(presupuesto)}',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: presupuesto > 50000
-                                                  ? const Color(0xFF1E3A8A)
-                                                  : const Color(0xFF475569),
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons
-                                                  .directions_car_filled_outlined,
-                                              size: 16,
-                                              color: Color(0xFF64748B),
-                                            ),
-                                            const SizedBox(width: 6),
-                                            Text(
-                                              vehiculoPrincipal,
-                                              style: const TextStyle(
-                                                color: Color(0xFF334155),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.edit_outlined,
-                                                color: Colors.blue,
-                                                size: 20,
-                                              ),
-                                              tooltip: 'Editar Presupuesto',
-                                              onPressed: () {
-                                                _mostrarDialogoEdicion(
-                                                  context,
-                                                  docId,
-                                                  nombre,
-                                                  presupuesto,
-                                                );
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.lock_reset_outlined,
-                                                color: Colors.orange,
-                                                size: 20,
-                                              ),
-                                              tooltip: 'Restablecer Contraseña',
-                                              onPressed: () {
-                                                _enviarResetPassword(
-                                                  context,
-                                                  correo,
-                                                );
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.delete_outline,
-                                                color: Colors.red,
-                                                size: 20,
-                                              ),
-                                              tooltip: 'Eliminar Usuario',
-                                              onPressed: () {
-                                                _mostrarDialogoEliminar(
-                                                  context,
-                                                  docId,
-                                                  nombre,
-                                                );
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const Divider(),
-                        _TablePaginationControls(
-                          currentPage: _currentPage,
-                          rowsPerPage: _rowsPerPage,
-                          totalItems: filteredDocs.length,
-                          totalPages: totalPages,
-                          startIndex: startIndex,
-                          endIndex: endIndex,
-                          onPageChanged: (page) =>
-                              setState(() => _currentPage = page),
-                          onRowsPerPageChanged: (rows) => setState(() {
-                            _rowsPerPage = rows;
-                            _currentPage = 0;
-                          }),
-                          itemLabel: 'usuarios',
-                        ),
-                      ],
-                    ),
+                  const Divider(),
+                  Paginador(
+                    pagina: _currentPage,
+                    porPagina: _rowsPerPage,
+                    total: filtradas.length,
+                    etiqueta: 'usuarios',
+                    onPagina: (n) => setState(() => _currentPage = n),
+                    onPorPagina: (n) => setState(() {
+                      _rowsPerPage = n;
+                      _currentPage = 0;
+                    }),
                   ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _mostrarDialogoEdicion(
-    BuildContext context,
-    String docId,
-    String nombreActual,
-    int limiteActual,
-  ) {
-    final TextEditingController nombreCtrl = TextEditingController(
-      text: nombreActual,
-    );
-    final TextEditingController limiteCtrl = TextEditingController(
-      text: limiteActual.toString(),
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text('Editar Usuario'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nombreCtrl,
-              decoration: const InputDecoration(labelText: 'Nombre a mostrar'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: limiteCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Límite Mensual (\$)',
+                ],
               ),
-              keyboardType: TextInputType.number,
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+          
+            ],
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0EA5E9),
-            ),
-            onPressed: () {
-              final nuevoLimite = int.tryParse(limiteCtrl.text) ?? limiteActual;
-              FirebaseFirestore.instance
-                  .collection('usuarios')
-                  .doc(docId)
-                  .update({
-                    'nombre_mostrar': nombreCtrl.text,
-                    'limite_presupuesto_mensual': nuevoLimite,
-                  });
-              widget.service.logAction(
-                action: 'EDIT_USER',
-                target: nombreActual,
-                details:
-                    'Presupuesto: \$${_formatNumber(limiteActual)} -> \$${_formatNumber(nuevoLimite)}. Nombre: $nombreActual -> ${nombreCtrl.text}.',
-              );
-              Navigator.pop(context);
-            },
-            child: const Text('Guardar', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
     );
   }
 
@@ -2019,2240 +1366,6 @@ class _UsersPageState extends State<UsersPage> {
   }
 }
 
-class PorticosPage extends StatefulWidget {
-  const PorticosPage({super.key, required this.service});
-
-  final AdminFirestoreService service;
-
-  @override
-  State<PorticosPage> createState() => _PorticosPageState();
-}
-
-class _PorticosPageState extends State<PorticosPage> {
-  final TextEditingController _searchCtrl = TextEditingController();
-  String _searchQuery = '';
-  String _selectedHighwayFilter = 'Todas';
-  String _selectedDirectionFilter = 'Todos';
-  int _currentPage = 0;
-  int _rowsPerPage = 10;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchCtrl.addListener(() {
-      setState(() {
-        _searchQuery = _searchCtrl.text.toLowerCase().trim();
-        _currentPage = 0;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    super.dispose();
-  }
-
-  bool _matchesFilters(Map<String, dynamic> rawData) {
-    final Map<String, dynamic> data =
-        (rawData.containsKey('datos') && rawData['datos'] is Map)
-        ? Map<String, dynamic>.from(rawData['datos'])
-        : rawData;
-
-    final nombre = (data['nombre'] ?? data['autopista'] ?? '')
-        .toString()
-        .toLowerCase();
-    if (_searchQuery.isNotEmpty && !nombre.contains(_searchQuery)) {
-      return false;
-    }
-
-    final autopista = (data['autopista'] ?? '').toString();
-    if (_selectedHighwayFilter != 'Todas' &&
-        autopista != _selectedHighwayFilter) {
-      return false;
-    }
-
-    final sentido = (data['sentido'] ?? '').toString();
-    if (_selectedDirectionFilter != 'Todos' &&
-        sentido != _selectedDirectionFilter) {
-      return false;
-    }
-
-    return true;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _AdminPageScaffold(
-      title: 'Pórticos',
-      subtitle:
-          'Catálogo operativo compartido con la app final. Administra las tarifas aquí.',
-      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: widget.service.streamPorticos(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Text('Error al leer Firestore: ${snapshot.error}');
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-
-          final docs = snapshot.data!.docs;
-
-          final Set<String> highwaysSet = {};
-          for (var doc in docs) {
-            final rawData = doc.data();
-            final data =
-                (rawData.containsKey('datos') && rawData['datos'] is Map)
-                ? Map<String, dynamic>.from(rawData['datos'])
-                : rawData;
-            final String h = (data['autopista'] ?? '').toString();
-            if (h.isNotEmpty) {
-              highwaysSet.add(h);
-            }
-          }
-          final List<String> uniqueHighways = highwaysSet.toList()..sort();
-
-          if (_selectedHighwayFilter != 'Todas' &&
-              !highwaysSet.contains(_selectedHighwayFilter)) {
-            _selectedHighwayFilter = 'Todas';
-          }
-
-          final filteredDocs = docs
-              .where((doc) => _matchesFilters(doc.data()))
-              .toList();
-
-          final int totalPages = (filteredDocs.length / _rowsPerPage).ceil();
-          if (_currentPage >= totalPages && totalPages > 0) {
-            _currentPage = totalPages - 1;
-          }
-
-          final int startIndex = _currentPage * _rowsPerPage;
-          final int endIndex = (startIndex + _rowsPerPage) > filteredDocs.length
-              ? filteredDocs.length
-              : (startIndex + _rowsPerPage);
-          final pageDocs = filteredDocs.sublist(startIndex, endIndex);
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Card(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: TextField(
-                          controller: _searchCtrl,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            labelText: 'Buscar pórtico...',
-                            hintText: 'Buscar por nombre',
-                            prefixIcon: const Icon(Icons.search, size: 20),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 2,
-                        child: DropdownButtonFormField<String>(
-                          initialValue: _selectedHighwayFilter,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            labelText: 'Autopista',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          items: [
-                            const DropdownMenuItem(
-                              value: 'Todas',
-                              child: Text('Todas las autopistas'),
-                            ),
-                            ...uniqueHighways.map(
-                              (h) => DropdownMenuItem(value: h, child: Text(h)),
-                            ),
-                          ],
-                          onChanged: (val) {
-                            if (val != null) {
-                              setState(() {
-                                _selectedHighwayFilter = val;
-                                _currentPage = 0;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 1,
-                        child: DropdownButtonFormField<String>(
-                          initialValue: _selectedDirectionFilter,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            labelText: 'Sentido',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'Todos',
-                              child: Text('Todos'),
-                            ),
-                            DropdownMenuItem(value: 'N-S', child: Text('N-S')),
-                            DropdownMenuItem(value: 'S-N', child: Text('S-N')),
-                            DropdownMenuItem(value: 'O-P', child: Text('O-P')),
-                            DropdownMenuItem(value: 'P-O', child: Text('P-O')),
-                          ],
-                          onChanged: (val) {
-                            if (val != null) {
-                              setState(() {
-                                _selectedDirectionFilter = val;
-                                _currentPage = 0;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0EA5E9),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        icon: const Icon(Icons.flash_on, size: 18),
-                        label: const Text('Reajuste Masivo IPC'),
-                        onPressed: () {
-                          _mostrarDialogoReajusteMasivo(context, filteredDocs);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: filteredDocs.isEmpty
-                    ? const Card(
-                        child: Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Text(
-                              'No se encontraron pórticos con los filtros aplicados.',
-                            ),
-                          ),
-                        ),
-                      )
-                    : Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.vertical,
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: DataTable(
-                                      dataRowMinHeight: 60,
-                                      dataRowMaxHeight: 85,
-                                      columns: const [
-                                        DataColumn(label: Text('Pórtico')),
-                                        DataColumn(label: Text('Sentido')),
-                                        DataColumn(label: Text('Tarifa Base')),
-                                        DataColumn(label: Text('Tarifa Punta')),
-                                        DataColumn(
-                                          label: Text('Tarifa Saturación'),
-                                        ),
-                                        DataColumn(label: Text('Acciones')),
-                                      ],
-                                      rows: pageDocs.map((doc) {
-                                        final Map<String, dynamic> rawData = doc
-                                            .data();
-                                        final String docId = doc.id;
-
-                                        final bool isNested =
-                                            rawData.containsKey('datos') &&
-                                            rawData['datos'] is Map;
-                                        final Map<String, dynamic> data =
-                                            isNested
-                                            ? Map<String, dynamic>.from(
-                                                rawData['datos'],
-                                              )
-                                            : rawData;
-
-                                        final String nombre =
-                                            (data['nombre'] ??
-                                                    data['autopista'] ??
-                                                    'Sin nombre')
-                                                .toString();
-                                        final String autopista =
-                                            (data['autopista'] ?? '')
-                                                .toString();
-                                        final String sentido =
-                                            (data['sentido'] ?? '-').toString();
-                                        final String base =
-                                            (data['tarifa_base'] ??
-                                                    data['costo'] ??
-                                                    data['Tarifa_Base'] ??
-                                                    data['Tarifa Base'] ??
-                                                    '0')
-                                                .toString();
-                                        final String punta =
-                                            (data['tarifa_punta'] ??
-                                                    data['costoPunta'] ??
-                                                    data['Tarifa_Punta'] ??
-                                                    data['Tarifa Punta'] ??
-                                                    '0')
-                                                .toString();
-                                        final String saturacion =
-                                            (data['tarifa_saturacion'] ??
-                                                    data['costoSaturacion'] ??
-                                                    data['Tarifa_Saturacion'] ??
-                                                    data['Tarifa Saturacion'] ??
-                                                    '0')
-                                                .toString();
-
-                                        final String lat =
-                                            (data['lat'] ??
-                                                    (data['location'] is Map
-                                                        ? data['location']['lat']
-                                                        : '') ??
-                                                    (data['ubicacion']
-                                                            is GeoPoint
-                                                        ? (data['ubicacion']
-                                                                  as GeoPoint)
-                                                              .latitude
-                                                        : '') ??
-                                                    '')
-                                                .toString();
-                                        final String lng =
-                                            (data['lng'] ??
-                                                    (data['location'] is Map
-                                                        ? data['location']['lng']
-                                                        : '') ??
-                                                    (data['ubicacion']
-                                                            is GeoPoint
-                                                        ? (data['ubicacion']
-                                                                  as GeoPoint)
-                                                              .longitude
-                                                        : '') ??
-                                                    '')
-                                                .toString();
-                                        final String grupo =
-                                            (data['grupo'] ??
-                                                    data['group'] ??
-                                                    '')
-                                                .toString();
-                                        final String secuencia =
-                                            (data['secuencia'] ??
-                                                    data['sequence'] ??
-                                                    '')
-                                                .toString();
-
-                                        return DataRow(
-                                          cells: [
-                                            DataCell(
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      vertical: 6,
-                                                    ),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      nombre,
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Color(
-                                                          0xFF0F172A,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Wrap(
-                                                      spacing: 4,
-                                                      runSpacing: 4,
-                                                      crossAxisAlignment:
-                                                          WrapCrossAlignment
-                                                              .center,
-                                                      children: [
-                                                        _getHighwayBadge(
-                                                          autopista,
-                                                        ),
-                                                        if (grupo.isNotEmpty)
-                                                          Container(
-                                                            padding:
-                                                                const EdgeInsets.symmetric(
-                                                                  horizontal: 6,
-                                                                  vertical: 2,
-                                                                ),
-                                                            decoration: BoxDecoration(
-                                                              color:
-                                                                  const Color(
-                                                                    0xFFF1F5F9,
-                                                                  ),
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    6,
-                                                                  ),
-                                                            ),
-                                                            child: Text(
-                                                              grupo,
-                                                              style: const TextStyle(
-                                                                fontSize: 10,
-                                                                color: Color(
-                                                                  0xFF64748B,
-                                                                ),
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        if (secuencia
-                                                            .isNotEmpty)
-                                                          Container(
-                                                            padding:
-                                                                const EdgeInsets.symmetric(
-                                                                  horizontal: 6,
-                                                                  vertical: 2,
-                                                                ),
-                                                            decoration: BoxDecoration(
-                                                              color:
-                                                                  const Color(
-                                                                    0xFFF8FAFC,
-                                                                  ),
-                                                              border: Border.all(
-                                                                color:
-                                                                    const Color(
-                                                                      0xFFE2E8F0,
-                                                                    ),
-                                                              ),
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    6,
-                                                                  ),
-                                                            ),
-                                                            child: Text(
-                                                              'Seq: $secuencia',
-                                                              style: const TextStyle(
-                                                                fontSize: 10,
-                                                                color: Color(
-                                                                  0xFF64748B,
-                                                                ),
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                      ],
-                                                    ),
-                                                    if (lat.isNotEmpty &&
-                                                        lng.isNotEmpty) ...[
-                                                      const SizedBox(height: 4),
-                                                      Text(
-                                                        '$lat, $lng',
-                                                        style: const TextStyle(
-                                                          fontSize: 10,
-                                                          color: Color(
-                                                            0xFF94A3B8,
-                                                          ),
-                                                          fontFamily:
-                                                              'monospace',
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            DataCell(
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 4,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: const Color(
-                                                    0xFFF1F5F9,
-                                                  ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: Text(
-                                                  sentido,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Color(0xFF475569),
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            DataCell(
-                                              _buildTariffBadge(
-                                                'Base',
-                                                _formatNumber(
-                                                  double.tryParse(
-                                                        base,
-                                                      )?.round() ??
-                                                      0,
-                                                ),
-                                                const Color(0xFFEFF6FF),
-                                                const Color(0xFF1D4ED8),
-                                              ),
-                                            ),
-                                            DataCell(
-                                              _buildTariffBadge(
-                                                'Punta',
-                                                _formatNumber(
-                                                  double.tryParse(
-                                                        punta,
-                                                      )?.round() ??
-                                                      0,
-                                                ),
-                                                const Color(0xFFFFF7ED),
-                                                const Color(0xFFC2410C),
-                                              ),
-                                            ),
-                                            DataCell(
-                                              _buildTariffBadge(
-                                                'Sat.',
-                                                _formatNumber(
-                                                  double.tryParse(
-                                                        saturacion,
-                                                      )?.round() ??
-                                                      0,
-                                                ),
-                                                const Color(0xFFFFF1F2),
-                                                const Color(0xFFBE123C),
-                                              ),
-                                            ),
-                                            DataCell(
-                                              Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.edit_outlined,
-                                                      color: Colors.blue,
-                                                      size: 20,
-                                                    ),
-                                                    tooltip: 'Editar Pórtico',
-                                                    onPressed: () {
-                                                      _mostrarDialogoEdicion(
-                                                        context,
-                                                        docId,
-                                                        rawData,
-                                                        isNested,
-                                                      );
-                                                    },
-                                                  ),
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.delete_outline,
-                                                      color: Colors.red,
-                                                      size: 20,
-                                                    ),
-                                                    tooltip: 'Eliminar Pórtico',
-                                                    onPressed: () {
-                                                      _mostrarDialogoEliminar(
-                                                        context,
-                                                        docId,
-                                                        nombre,
-                                                      );
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Divider(),
-                              _TablePaginationControls(
-                                currentPage: _currentPage,
-                                rowsPerPage: _rowsPerPage,
-                                totalItems: filteredDocs.length,
-                                totalPages: totalPages,
-                                startIndex: startIndex,
-                                endIndex: endIndex,
-                                onPageChanged: (page) =>
-                                    setState(() => _currentPage = page),
-                                onRowsPerPageChanged: (rows) => setState(() {
-                                  _rowsPerPage = rows;
-                                  _currentPage = 0;
-                                }),
-                                itemLabel: 'pórticos',
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _mostrarDialogoReajusteMasivo(
-    BuildContext context,
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
-  ) {
-    final TextEditingController pctCtrl = TextEditingController(text: '4.5');
-    bool isSubmitting = false;
-
-    showDialog(
-      context: context,
-      builder: (dialogCtx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Row(
-                children: const [
-                  Icon(Icons.auto_awesome, color: Color(0xFF0EA5E9)),
-                  SizedBox(width: 8),
-                  Text('Reajuste Masivo por IPC (%)'),
-                ],
-              ),
-              content: SizedBox(
-                width: 440,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Esta acción recalculará y actualizará en tiempo real las tarifas de todos los pórticos filtrados en tu base de datos de Firebase.',
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: pctCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        labelText: 'Porcentaje de Reajuste (ej: 4.5 para 4.5%)',
-                        suffixText: '%',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Se aplicará a: ${_selectedHighwayFilter == "Todas" ? "TODAS las autopistas" : _selectedHighwayFilter} (${docs.length} pórticos)',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0F172A)),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isSubmitting ? null : () => Navigator.pop(dialogCtx),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0EA5E9),
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: isSubmitting
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.flash_on, size: 18),
-                  label: Text(isSubmitting ? 'Procesando...' : 'Aplicar Reajuste Masivo'),
-                  onPressed: isSubmitting ? null : () async {
-                    final double? pct = double.tryParse(pctCtrl.text.trim());
-                    if (pct == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Ingresa un porcentaje válido.')),
-                      );
-                      return;
-                    }
-
-                    setDialogState(() => isSubmitting = true);
-
-                    try {
-                      final batch = FirebaseFirestore.instance.batch();
-                      final factor = 1.0 + (pct / 100.0);
-
-                      for (var doc in docs) {
-                        final rawData = doc.data();
-                        final isNested = rawData.containsKey('datos') && rawData['datos'] is Map;
-                        final data = isNested ? Map<String, dynamic>.from(rawData['datos']) : rawData;
-
-                        final double cBase = double.tryParse((data['tarifa_base'] ?? data['costo'] ?? '0').toString()) ?? 0.0;
-                        final double cPunta = double.tryParse((data['tarifa_punta'] ?? data['costoPunta'] ?? '0').toString()) ?? 0.0;
-                        final double cSat = double.tryParse((data['tarifa_saturacion'] ?? data['costoSaturacion'] ?? '0').toString()) ?? 0.0;
-
-                        final newBase = (cBase * factor * 100).roundToDouble() / 100.0;
-                        final newPunta = (cPunta * factor * 100).roundToDouble() / 100.0;
-                        final newSat = (cSat * factor * 100).roundToDouble() / 100.0;
-
-                        if (isNested) {
-                          batch.update(doc.reference, {
-                            'datos.costo': newBase,
-                            'datos.tarifa_base': newBase,
-                            'datos.costoPunta': newPunta,
-                            'datos.tarifa_punta': newPunta,
-                            'datos.costoSaturacion': newSat,
-                            'datos.tarifa_saturacion': newSat,
-                            'datos.fecha_actualizacion': FieldValue.serverTimestamp(),
-                          });
-                        } else {
-                          batch.update(doc.reference, {
-                            'costo': newBase,
-                            'tarifa_base': newBase,
-                            'costoPunta': newPunta,
-                            'tarifa_punta': newPunta,
-                            'costoSaturacion': newSat,
-                            'tarifa_saturacion': newSat,
-                            'fecha_actualizacion': FieldValue.serverTimestamp(),
-                          });
-                        }
-                      }
-
-                      await batch.commit();
-
-                      await widget.service.logAction(
-                        action: 'REAJUSTE_MASIVO_IPC',
-                        target: _selectedHighwayFilter,
-                        details: 'Reajuste del $pct% aplicado a ${docs.length} pórticos.',
-                      );
-
-                      Navigator.pop(dialogCtx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('¡Reajuste masivo del $pct% aplicado con éxito a ${docs.length} pórticos!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } catch (e) {
-                      setDialogState(() => isSubmitting = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error al reajustar: $e'), backgroundColor: Colors.red),
-                      );
-                    }
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _mostrarDialogoEdicion(
-    BuildContext context,
-    String docId,
-    Map<String, dynamic> rawData,
-    bool isNested,
-  ) {
-    final Map<String, dynamic> data = isNested
-        ? Map<String, dynamic>.from(rawData['datos'] ?? {})
-        : rawData;
-
-    final String nombreActual =
-        (data['nombre'] ?? data['autopista'] ?? 'Sin nombre').toString();
-    final String autopistaActual = (data['autopista'] ?? '').toString();
-    final String sentidoActual = (data['sentido'] ?? '').toString();
-    final String baseActual =
-        (data['tarifa_base'] ??
-                data['costo'] ??
-                data['cost'] ??
-                data['Tarifa_Base'] ??
-                data['Tarifa Base'] ??
-                '0')
-            .toString();
-    final String puntaActual =
-        (data['tarifa_punta'] ??
-                data['costoPunta'] ??
-                data['Tarifa_Punta'] ??
-                data['Tarifa Punta'] ??
-                '0')
-            .toString();
-    final String saturacionActual =
-        (data['tarifa_saturacion'] ??
-                data['costoSaturacion'] ??
-                data['Tarifa_Saturacion'] ??
-                data['Tarifa Saturacion'] ??
-                '0')
-            .toString();
-
-    final String latActual =
-        (data['lat'] ??
-                (data['location'] is Map ? data['location']['lat'] : '') ??
-                (data['ubicacion'] is GeoPoint
-                    ? (data['ubicacion'] as GeoPoint).latitude
-                    : '') ??
-                '')
-            .toString();
-    final String lngActual =
-        (data['lng'] ??
-                (data['location'] is Map ? data['location']['lng'] : '') ??
-                (data['ubicacion'] is GeoPoint
-                    ? (data['ubicacion'] as GeoPoint).longitude
-                    : '') ??
-                '')
-            .toString();
-    final String grupoActual = (data['grupo'] ?? data['group'] ?? '')
-        .toString();
-    final String secuenciaActual = (data['secuencia'] ?? data['sequence'] ?? '')
-        .toString();
-
-    final TextEditingController nombreCtrl = TextEditingController(
-      text: nombreActual,
-    );
-    final TextEditingController autopistaCtrl = TextEditingController(
-      text: autopistaActual,
-    );
-    final TextEditingController baseCtrl = TextEditingController(
-      text: baseActual,
-    );
-    final TextEditingController puntaCtrl = TextEditingController(
-      text: puntaActual,
-    );
-    final TextEditingController saturacionCtrl = TextEditingController(
-      text: saturacionActual,
-    );
-    final TextEditingController latCtrl = TextEditingController(
-      text: latActual,
-    );
-    final TextEditingController lngCtrl = TextEditingController(
-      text: lngActual,
-    );
-    final TextEditingController grupoCtrl = TextEditingController(
-      text: grupoActual,
-    );
-    final TextEditingController secuenciaCtrl = TextEditingController(
-      text: secuenciaActual,
-    );
-    String selectedSentido = sentidoActual;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text('Editar Pórtico'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Identificación',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: nombreCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del Pórtico',
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: autopistaCtrl,
-                decoration: const InputDecoration(labelText: 'Autopista'),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue:
-                    ['N-S', 'S-N', 'O-P', 'P-O'].contains(selectedSentido)
-                    ? selectedSentido
-                    : null,
-                decoration: const InputDecoration(
-                  labelText: 'Sentido de Circulación',
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'N-S', child: Text('N-S')),
-                  DropdownMenuItem(value: 'S-N', child: Text('S-N')),
-                  DropdownMenuItem(value: 'O-P', child: Text('O-P')),
-                  DropdownMenuItem(value: 'P-O', child: Text('P-O')),
-                ],
-                onChanged: (val) {
-                  if (val != null) {
-                    selectedSentido = val;
-                  }
-                },
-              ),
-              const Divider(height: 32),
-              const Text(
-                'Ubicación Geográfica',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: latCtrl,
-                decoration: const InputDecoration(labelText: 'Latitud'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: lngCtrl,
-                decoration: const InputDecoration(labelText: 'Longitud'),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const Divider(height: 32),
-              const Text(
-                'Clasificación Operativa',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: grupoCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Grupo / Concesión',
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: secuenciaCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Secuencia (Orden)',
-                ),
-                keyboardType: TextInputType.number,
-              ),
-              const Divider(height: 32),
-              const Text(
-                'Tarifas Especiales',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: baseCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Tarifa Base (\$)',
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: puntaCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Tarifa Punta (\$)',
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: saturacionCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Tarifa Saturación (\$)',
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0EA5E9),
-            ),
-            onPressed: () {
-              final double? nBase = double.tryParse(
-                baseCtrl.text.replaceAll(',', '.'),
-              );
-              final double? nPunta = double.tryParse(
-                puntaCtrl.text.replaceAll(',', '.'),
-              );
-              final double? nSaturacion = double.tryParse(
-                saturacionCtrl.text.replaceAll(',', '.'),
-              );
-
-              final double? nLat = double.tryParse(
-                latCtrl.text.replaceAll(',', '.'),
-              );
-              final double? nLng = double.tryParse(
-                lngCtrl.text.replaceAll(',', '.'),
-              );
-
-              final String newNombre = nombreCtrl.text.trim();
-              final String newAutopista = autopistaCtrl.text.trim();
-              final String newSentido = selectedSentido;
-              final String newGrupo = grupoCtrl.text.trim();
-              final int? newSecuencia = int.tryParse(secuenciaCtrl.text.trim());
-
-              final Map<String, dynamic> updates = {};
-
-              // 1. Coordinates update strategy
-              if (nLat != null && nLng != null) {
-                if (data.containsKey('ubicacion') ||
-                    data['ubicacion'] is GeoPoint) {
-                  updates[isNested ? 'datos.ubicacion' : 'ubicacion'] =
-                      GeoPoint(nLat, nLng);
-                } else if (data.containsKey('location') ||
-                    data['location'] is Map) {
-                  updates[isNested ? 'datos.location.lat' : 'location.lat'] =
-                      nLat;
-                  updates[isNested ? 'datos.location.lng' : 'location.lng'] =
-                      nLng;
-                } else {
-                  updates[isNested ? 'datos.lat' : 'lat'] = nLat;
-                  updates[isNested ? 'datos.lng' : 'lng'] = nLng;
-                }
-              }
-
-              // 2. Fares update strategy
-              final String baseKey = isNested
-                  ? (Map<String, dynamic>.from(
-                          rawData['datos'] ?? {},
-                        ).containsKey('costo')
-                        ? 'datos.costo'
-                        : (Map<String, dynamic>.from(
-                                rawData['datos'] ?? {},
-                              ).containsKey('cost')
-                              ? 'datos.cost'
-                              : 'datos.tarifa_base'))
-                  : (rawData.containsKey('costo')
-                        ? 'costo'
-                        : (rawData.containsKey('cost')
-                              ? 'cost'
-                              : 'tarifa_base'));
-
-              final String puntaKey = isNested
-                  ? (Map<String, dynamic>.from(
-                          rawData['datos'] ?? {},
-                        ).containsKey('costoPunta')
-                        ? 'datos.costoPunta'
-                        : 'datos.tarifa_punta')
-                  : (rawData.containsKey('costoPunta')
-                        ? 'costoPunta'
-                        : 'tarifa_punta');
-
-              final String satKey = isNested
-                  ? (Map<String, dynamic>.from(
-                          rawData['datos'] ?? {},
-                        ).containsKey('costoSaturacion')
-                        ? 'datos.costoSaturacion'
-                        : 'datos.tarifa_saturacion')
-                  : (rawData.containsKey('costoSaturacion')
-                        ? 'costoSaturacion'
-                        : 'tarifa_saturacion');
-
-              if (nBase != null) updates[baseKey] = nBase;
-              if (nPunta != null) updates[puntaKey] = nPunta;
-              if (nSaturacion != null) updates[satKey] = nSaturacion;
-
-              // 3. Identification and classification keys
-              final String nombreKey = isNested ? 'datos.nombre' : 'nombre';
-              final String autopistaKey = isNested
-                  ? (Map<String, dynamic>.from(
-                          rawData['datos'] ?? {},
-                        ).containsKey('highway')
-                        ? 'datos.highway'
-                        : 'datos.autopista')
-                  : (rawData.containsKey('highway') ? 'highway' : 'autopista');
-
-              final String sentidoKey = isNested
-                  ? (Map<String, dynamic>.from(
-                          rawData['datos'] ?? {},
-                        ).containsKey('direction')
-                        ? 'datos.direction'
-                        : 'datos.sentido')
-                  : (rawData.containsKey('direction')
-                        ? 'direction'
-                        : 'sentido');
-
-              final String grupoKey = isNested
-                  ? (Map<String, dynamic>.from(
-                          rawData['datos'] ?? {},
-                        ).containsKey('group')
-                        ? 'datos.group'
-                        : 'datos.grupo')
-                  : (rawData.containsKey('group') ? 'group' : 'grupo');
-
-              final String secuenciaKey = isNested
-                  ? (Map<String, dynamic>.from(
-                          rawData['datos'] ?? {},
-                        ).containsKey('sequence')
-                        ? 'datos.sequence'
-                        : 'datos.secuencia')
-                  : (rawData.containsKey('sequence')
-                        ? 'sequence'
-                        : 'secuencia');
-
-              updates[nombreKey] = newNombre;
-              updates[autopistaKey] = newAutopista;
-              updates[sentidoKey] = newSentido;
-              updates[grupoKey] = newGrupo;
-              updates[secuenciaKey] = newSecuencia;
-
-              final StringBuffer logDetails = StringBuffer();
-              logDetails.write('Edición de pórtico.');
-              if (nombreActual != newNombre)
-                logDetails.write(' Nombre: $nombreActual -> $newNombre.');
-              if (autopistaActual != newAutopista)
-                logDetails.write(
-                  ' Autopista: $autopistaActual -> $newAutopista.',
-                );
-              if (sentidoActual != newSentido)
-                logDetails.write(' Sentido: $sentidoActual -> $newSentido.');
-              if (latActual != latCtrl.text || lngActual != lngCtrl.text) {
-                logDetails.write(
-                  ' Ubicación: $latActual, $lngActual -> ${latCtrl.text}, ${lngCtrl.text}.',
-                );
-              }
-              if (grupoActual != newGrupo)
-                logDetails.write(' Grupo: $grupoActual -> $newGrupo.');
-              if (secuenciaActual != secuenciaCtrl.text)
-                logDetails.write(
-                  ' Secuencia: $secuenciaActual -> ${secuenciaCtrl.text}.',
-                );
-
-              logDetails.write(
-                ' Tarifa Base: \$$baseActual -> \$${baseCtrl.text}.',
-              );
-              logDetails.write(
-                ' Tarifa Punta: \$$puntaActual -> \$${puntaCtrl.text}.',
-              );
-              logDetails.write(
-                ' Tarifa Sat.: \$$saturacionActual -> \$${saturacionCtrl.text}.',
-              );
-
-              FirebaseFirestore.instance
-                  .collection('porticos')
-                  .doc(docId)
-                  .update(updates);
-
-              widget.service.logAction(
-                action: 'EDIT_TARIFF',
-                target: newNombre,
-                details: logDetails.toString(),
-              );
-
-              Navigator.pop(context);
-            },
-            child: const Text('Guardar', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _mostrarDialogoEliminar(
-    BuildContext context,
-    String docId,
-    String nombre,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text('Eliminar Pórtico'),
-        content: Text(
-          '¿Estás seguro que deseas eliminar el pórtico "$nombre"? Esta acción es irreversible.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              FirebaseFirestore.instance
-                  .collection('porticos')
-                  .doc(docId)
-                  .delete();
-              widget.service.logAction(
-                action: 'DELETE_PORTICO',
-                target: nombre,
-                details: 'Se eliminó el pórtico master de la base de datos.',
-              );
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Sí, Eliminar',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class TariffsPage extends StatelessWidget {
-  const TariffsPage({super.key, required this.service});
-
-  final AdminFirestoreService service;
-
-  String _formatFecha(dynamic dateVal) {
-    if (dateVal == null) return '-';
-    if (dateVal is Timestamp) {
-      final date = dateVal.toDate();
-      final y = date.year;
-      final m = date.month.toString().padLeft(2, '0');
-      final d = date.day.toString().padLeft(2, '0');
-      final h = date.hour.toString().padLeft(2, '0');
-      final min = date.minute.toString().padLeft(2, '0');
-      return '$y-$m-$d $h:$min';
-    }
-    final String str = dateVal.toString();
-    if (str.length >= 16) {
-      return str.substring(0, 16).replaceAll('T', ' ');
-    }
-    return str;
-  }
-
-  void _mostrarDetalleViaje(
-    BuildContext context,
-    Map<String, dynamic> tripData,
-  ) {
-    final List<dynamic> tollsList = tripData['tolls'] as List<dynamic>? ?? [];
-    final String vehiculo = (tripData['vehicleName'] ?? 'Desconocido')
-        .toString();
-    final String fecha = _formatFecha(tripData['date']);
-    final int totalCost =
-        int.tryParse(tripData['totalCost']?.toString() ?? '0') ?? 0;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            const Icon(
-              Icons.route_outlined,
-              color: Color(0xFF0EA5E9),
-              size: 24,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Detalle de Peajes - $vehiculo',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: 500,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Fecha: $fecha',
-                style: const TextStyle(
-                  color: Color(0xFF64748B),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Costo Total: \$${_formatNumber(totalCost)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F172A),
-                  fontSize: 16,
-                ),
-              ),
-              const Divider(height: 24),
-              const Text(
-                'Pórticos Cruzados:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF475569),
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (tollsList.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text(
-                    'No hay pórticos registrados en este viaje.',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Color(0xFF94A3B8),
-                    ),
-                  ),
-                )
-              else
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: tollsList.length,
-                    itemBuilder: (context, index) {
-                      final toll = tollsList[index];
-                      if (toll is! Map) return const SizedBox();
-                      final String name = (toll['name'] ?? 'Pórtico')
-                          .toString();
-                      final int cost =
-                          int.tryParse(toll['cost']?.toString() ?? '0') ?? 0;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                name,
-                                style: const TextStyle(
-                                  color: Color(0xFF334155),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                '\$${_formatNumber(cost)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0F172A),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cerrar',
-              style: TextStyle(
-                color: Color(0xFF0EA5E9),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _AdminPageScaffold(
-      title: 'Tarifas y Viajes de Usuarios',
-      subtitle:
-          'Historial de cobros y viajes de los usuarios registrado por GPS.',
-      child: _FirestoreListTable(
-        stream: service.streamUserTrips(),
-        emptyMessage: 'No hay viajes registrados aún.',
-        itemLabel: 'viajes',
-        columns: const [
-          'Vehículo',
-          'Fecha',
-          'Distancia',
-          'Duración',
-          'Cobro Total',
-          'Acciones',
-        ],
-        rowBuilder: (doc) {
-          final Map<String, dynamic> data = doc.data();
-          final String vehiculo = (data['vehicleName'] ?? 'Desconocido')
-              .toString();
-          final String fecha = _formatFecha(data['date']);
-          final double distance =
-              double.tryParse(data['distanceKm']?.toString() ?? '0') ?? 0.0;
-          final String duracion = (data['duration'] ?? '-').toString();
-          final int totalCost =
-              int.tryParse(data['totalCost']?.toString() ?? '0') ?? 0;
-
-          return [
-            DataCell(
-              Row(
-                children: [
-                  const Icon(
-                    Icons.directions_car_filled_outlined,
-                    size: 18,
-                    color: Color(0xFF0EA5E9),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    vehiculo,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            DataCell(
-              Text(
-                fecha,
-                style: const TextStyle(
-                  color: Color(0xFF475569),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            DataCell(
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.linear_scale_rounded,
-                      size: 14,
-                      color: Color(0xFF64748B),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${distance.toStringAsFixed(1)} km',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF475569),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            DataCell(
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.access_time_rounded,
-                    size: 14,
-                    color: Color(0xFF64748B),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    duracion,
-                    style: const TextStyle(color: Color(0xFF334155)),
-                  ),
-                ],
-              ),
-            ),
-            DataCell(
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFA7F3D0)),
-                ),
-                child: Text(
-                  '\$${_formatNumber(totalCost)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF065F46),
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ),
-            DataCell(
-              Builder(
-                builder: (context) {
-                  return IconButton(
-                    icon: const Icon(
-                      Icons.info_outline_rounded,
-                      color: Color(0xFF0EA5E9),
-                    ),
-                    tooltip: 'Ver Detalle de Peajes',
-                    onPressed: () {
-                      _mostrarDetalleViaje(context, data);
-                    },
-                  );
-                },
-              ),
-            ),
-          ];
-        },
-      ),
-    );
-  }
-}
-
-class ReportsPage extends StatefulWidget {
-  const ReportsPage({super.key, required this.service});
-
-  final AdminFirestoreService service;
-
-  @override
-  State<ReportsPage> createState() => _ReportsPageState();
-}
-
-class _ReportsPageState extends State<ReportsPage> {
-  late Future<ReportMetrics> _metricsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _metricsFuture = widget.service.fetchReportMetrics();
-  }
-
-  void _refresh() {
-    setState(() {
-      _metricsFuture = widget.service.fetchReportMetrics();
-    });
-  }
-
-  String _formatCurrency(double val) {
-    final int value = val.round();
-    final String str = value.toString();
-    final StringBuffer buffer = StringBuffer();
-    int count = 0;
-    for (int i = str.length - 1; i >= 0; i--) {
-      buffer.write(str[i]);
-      count++;
-      if (count % 3 == 0 && i != 0) {
-        buffer.write('.');
-      }
-    }
-    return '\$${buffer.toString().split('').reversed.join('')}';
-  }
-
-  Future<void> _exportToCSV(BuildContext context, ReportMetrics metrics) async {
-    try {
-      final StringBuffer csvBuffer = StringBuffer();
-      csvBuffer.write('\uFEFF');
-
-      csvBuffer.writeln('REPORTE GENERAL DE MÉTRICAS Y ESTADÍSTICAS - TAG OK');
-      csvBuffer.writeln('Fecha de Generación: ${DateTime.now().toLocal()}');
-      csvBuffer.writeln();
-
-      csvBuffer.writeln('MÉTRICA,VALOR');
-      csvBuffer.writeln('Total Usuarios,${metrics.totalUsers}');
-      csvBuffer.writeln('Total Vehículos,${metrics.totalVehicles}');
-      csvBuffer.writeln('Total Viajes,${metrics.totalTrips}');
-      csvBuffer.writeln(
-        'Costo Total Peajes (\$),${metrics.totalTollCost.toStringAsFixed(0)}',
-      );
-      csvBuffer.writeln(
-        'Costo Promedio por Viaje (\$),${metrics.averageCostPerTrip.toStringAsFixed(0)}',
-      );
-      csvBuffer.writeln();
-
-      csvBuffer.writeln('DISTRIBUCIÓN POR AUTOPISTA');
-      csvBuffer.writeln('Autopista,Costo Total (\$),Porcentaje (%)');
-
-      final double total = metrics.totalTollCost;
-      metrics.costByHighway.forEach((highway, cost) {
-        final double pct = total > 0 ? (cost / total) * 100 : 0.0;
-        csvBuffer.writeln(
-          '$highway,${cost.toStringAsFixed(0)},${pct.toStringAsFixed(2)}%',
-        );
-      });
-
-      saveFile(csvBuffer.toString(), 'reporte_tag_ok.csv');
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              kIsWeb
-                  ? 'Reporte descargado exitosamente'
-                  : 'Reporte exportado exitosamente a: C:/Users/igna_/Downloads/reporte_tag_ok.csv',
-            ),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'CERRAR',
-              textColor: Colors.white,
-              onPressed: () {},
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al exportar CSV: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  List<Color> _getGradientForHighway(String highway) {
-    switch (highway) {
-      case 'Autopista Central':
-        return [const Color(0xFF0EA5E9), const Color(0xFF2563EB)];
-      case 'Costanera Norte':
-        return [const Color(0xFF10B981), const Color(0xFF059669)];
-      case 'Vespucio Norte':
-        return [const Color(0xFFF59E0B), const Color(0xFFD97706)];
-      case 'Vespucio Sur':
-        return [const Color(0xFFEC4899), const Color(0xFFD946EF)];
-      case 'Vespucio Oriente (AVO)':
-        return [const Color(0xFF1E3A8A), const Color(0xFF1E3A8A)];
-      default:
-        return [const Color(0xFF64748B), const Color(0xFF475569)];
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _AdminPageScaffold(
-      title: 'Reportes y Estadísticas',
-      subtitle:
-          'Monitoreo consolidado de ingresos por peaje, uso de vías y descargas de informes.',
-      child: FutureBuilder<ReportMetrics>(
-        future: _metricsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.error_outline, color: Colors.red, size: 24),
-                        SizedBox(width: 8),
-                        Text(
-                          'Error al cargar reportes',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      '${snapshot.error}',
-                      style: const TextStyle(color: Color(0xFF64748B)),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: _refresh,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Reintentar'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text(
-                    'Cargando y consolidando métricas desde Firestore...',
-                    style: TextStyle(color: Color(0xFF64748B)),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final metrics = snapshot.data;
-          if (metrics == null) {
-            return const Card(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Text('No hay datos disponibles.'),
-                ),
-              ),
-            );
-          }
-
-          final sortedHighways = metrics.costByHighway.entries.toList()
-            ..sort((a, b) => b.value.compareTo(a.value));
-
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0EA5E9),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 1,
-                      ),
-                      onPressed: () => _exportToCSV(context, metrics),
-                      icon: const Icon(Icons.download_rounded, size: 20),
-                      label: const Text(
-                        'Exportar Resumen a CSV',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    IconButton.filledTonal(
-                      onPressed: _refresh,
-                      icon: const Icon(Icons.refresh),
-                      tooltip: 'Actualizar Datos',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: [
-                    _ReportStatCard(
-                      title: 'Usuarios',
-                      value: metrics.totalUsers.toString(),
-                      icon: Icons.people_outline_rounded,
-                      iconColor: const Color(0xFF0EA5E9),
-                      gradientColors: const [
-                        Color(0xFF0EA5E9),
-                        Color(0xFF38BDF8),
-                      ],
-                    ),
-                    _ReportStatCard(
-                      title: 'Vehículos',
-                      value: metrics.totalVehicles.toString(),
-                      icon: Icons.directions_car_outlined,
-                      iconColor: const Color(0xFF10B981),
-                      gradientColors: const [
-                        Color(0xFF10B981),
-                        Color(0xFF34D399),
-                      ],
-                    ),
-                    _ReportStatCard(
-                      title: 'Total Viajes',
-                      value: metrics.totalTrips.toString(),
-                      icon: Icons.route_outlined,
-                      iconColor: const Color(0xFFF59E0B),
-                      gradientColors: const [
-                        Color(0xFFF59E0B),
-                        Color(0xFFFBBF24),
-                      ],
-                    ),
-                    _ReportStatCard(
-                      title: 'Total Peajes',
-                      value: _formatCurrency(metrics.totalTollCost),
-                      icon: Icons.monetization_on_outlined,
-                      iconColor: const Color(0xFF1E3A8A),
-                      gradientColors: const [
-                        Color(0xFF1E3A8A),
-                        Color(0xFF1E3A8A),
-                      ],
-                    ),
-                    _ReportStatCard(
-                      title: 'Promedio por Viaje',
-                      value: _formatCurrency(metrics.averageCostPerTrip),
-                      icon: Icons.analytics_outlined,
-                      iconColor: const Color(0xFFEC4899),
-                      gradientColors: const [
-                        Color(0xFFEC4899),
-                        Color(0xFFF472B6),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final bool isNarrow = constraints.maxWidth < 900;
-
-                    final Widget chartWidget = Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Distribución de Costos por Autopista',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            ...sortedHighways.map((entry) {
-                              final double pct = metrics.totalTollCost > 0
-                                  ? (entry.value / metrics.totalTollCost)
-                                  : 0.0;
-                              final List<Color> colors = _getGradientForHighway(
-                                entry.key,
-                              );
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          entry.key,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF334155),
-                                          ),
-                                        ),
-                                        Text(
-                                          '${_formatCurrency(entry.value)} (${(pct * 100).toStringAsFixed(1)}%)',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF0F172A),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Container(
-                                      height: 12,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFF1F5F9),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      alignment: Alignment.centerLeft,
-                                      child: FractionallySizedBox(
-                                        widthFactor: pct,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: colors,
-                                              begin: Alignment.centerLeft,
-                                              end: Alignment.centerRight,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: colors[0].withValues(
-                                                  alpha: 0.2,
-                                                ),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    );
-
-                    final Widget tableWidget = Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Resumen Tabular de Ingresos',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Table(
-                              columnWidths: const {
-                                0: FlexColumnWidth(2),
-                                1: FlexColumnWidth(1),
-                                2: FlexColumnWidth(1),
-                              },
-                              border: const TableBorder(
-                                horizontalInside: BorderSide(
-                                  color: Color(0xFFE2E8F0),
-                                  width: 1,
-                                ),
-                              ),
-                              children: [
-                                const TableRow(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      child: Text(
-                                        'Autopista',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      child: Text(
-                                        'Gasto',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      child: Text(
-                                        'Porcentaje',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                ...sortedHighways.map((entry) {
-                                  final double pct = metrics.totalTollCost > 0
-                                      ? (entry.value / metrics.totalTollCost) *
-                                            100
-                                      : 0.0;
-                                  return TableRow(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
-                                        ),
-                                        child: Text(
-                                          entry.key,
-                                          style: const TextStyle(
-                                            color: Color(0xFF334155),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
-                                        ),
-                                        child: Text(
-                                          _formatCurrency(entry.value),
-                                          style: const TextStyle(
-                                            color: Color(0xFF0F172A),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 12,
-                                        ),
-                                        child: Text(
-                                          '${pct.toStringAsFixed(1)}%',
-                                          style: const TextStyle(
-                                            color: Color(0xFF64748B),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-
-                    if (isNarrow) {
-                      return Column(
-                        children: [
-                          chartWidget,
-                          const SizedBox(height: 24),
-                          tableWidget,
-                        ],
-                      );
-                    }
-
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 3, child: chartWidget),
-                        const SizedBox(width: 24),
-                        Expanded(flex: 2, child: tableWidget),
-                      ],
-                    );
-                  },
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _ReportStatCard extends StatelessWidget {
-  const _ReportStatCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.iconColor,
-    required this.gradientColors,
-  });
-
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color iconColor;
-  final List<Color> gradientColors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 215,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF000000).withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      gradientColors[0].withValues(alpha: 0.15),
-                      gradientColors[1].withValues(alpha: 0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: iconColor, size: 20),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF0F172A),
-              letterSpacing: -0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AdminPageScaffold extends StatelessWidget {
-  const _AdminPageScaffold({
-    required this.title,
-    required this.subtitle,
-    required this.child,
-  });
-
-  final String title;
-  final String subtitle;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool compact = isCompactLayout(context);
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.all(compact ? 16 : 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: compact ? 24 : 30,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.8,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
-            ),
-            const SizedBox(height: 24),
-            Expanded(child: child),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  final String label;
-  final int value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 220,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: const Color(0xFF0EA5E9)),
-              const SizedBox(height: 18),
-              Text(
-                value.toString(),
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(label, style: const TextStyle(color: Color(0xFF64748B))),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class AdminsManagementPage extends StatefulWidget {
   const AdminsManagementPage({super.key, required this.service});
 
@@ -4311,40 +1424,6 @@ class _AdminsManagementPageState extends State<AdminsManagementPage> {
     }
 
     return true;
-  }
-
-  Widget _getRoleBadge(String role) {
-    final String r = role.toLowerCase().trim();
-    final bool isSuper =
-        r == 'super_admin' ||
-        r == 'super_administrador' ||
-        r == 'superadmin' ||
-        r == 'super administrador';
-
-    final Color bgColor = isSuper
-        ? const Color(0xFFE0F2FE)
-        : const Color(0xFFFEF3C7);
-    final Color textColor = isSuper
-        ? const Color(0xFF0369A1)
-        : const Color(0xFFD97706);
-    final String label = isSuper ? 'Super Administrador' : 'Administrador Operacional';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withValues(alpha: 0.15)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: textColor,
-          fontSize: 12,
-        ),
-      ),
-    );
   }
 
   Future<void> _createAdminAccount(String email, String password, String role) async {
@@ -4484,213 +1563,25 @@ class _AdminsManagementPageState extends State<AdminsManagementPage> {
     }
   }
 
-  void _showAddAdminDialog() {
-    final formKey = GlobalKey<FormState>();
-    final emailCtrl = TextEditingController();
-    final passCtrl = TextEditingController();
-    String selectedRole = 'operador';
-    bool isSaving = false;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Agregar Nuevo Administrador'),
-              content: SizedBox(
-                width: 400,
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: emailCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Correo Electrónico',
-                          prefixIcon: Icon(Icons.email_outlined),
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                        enabled: !isSaving,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'El correo es requerido';
-                          }
-                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value.trim())) {
-                            return 'Ingrese un correo electrónico válido';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: passCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Contraseña',
-                          prefixIcon: Icon(Icons.lock_outline),
-                        ),
-                        obscureText: true,
-                        enabled: !isSaving,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'La contraseña es requerida';
-                          }
-                          if (value.length < 6) {
-                            return 'Mínimo 6 caracteres';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedRole,
-                        decoration: const InputDecoration(
-                          labelText: 'Rol del Administrador',
-                          prefixIcon: Icon(Icons.admin_panel_settings_outlined),
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'super_admin',
-                            child: Text('Super Administrador'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'operador',
-                            child: Text('Administrador Operacional (Operador)'),
-                          ),
-                        ],
-                        onChanged: isSaving
-                            ? null
-                            : (val) {
-                                if (val != null) {
-                                  setDialogState(() {
-                                    selectedRole = val;
-                                  });
-                                }
-                              },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isSaving ? null : () => Navigator.of(ctx).pop(),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0EA5E9),
-                  ),
-                  onPressed: isSaving
-                      ? null
-                      : () async {
-                          if (formKey.currentState!.validate()) {
-                            setDialogState(() {
-                              isSaving = true;
-                            });
-                            await _createAdminAccount(
-                              emailCtrl.text.trim(),
-                              passCtrl.text,
-                              selectedRole,
-                            );
-                            if (context.mounted) {
-                              Navigator.of(ctx).pop();
-                            }
-                          }
-                        },
-                  child: isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text('Crear', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+  Future<void> _showAddAdminDialog() async {
+    final r = await mostrarPanelNuevoAdmin(context);
+    if (r == null) return;
+    await _createAdminAccount(r.email, r.password, r.rol);
   }
 
-  void _showEditRoleDialog(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+  Future<void> _showEditRoleDialog(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
     final data = doc.data();
     final String email = (data['email'] ?? '').toString();
     final String currentRole = (data['rol'] ?? data['role'] ?? 'operador').toString();
-    String selectedRole = currentRole == 'super_admin' ? 'super_admin' : 'operador';
-    bool isSaving = false;
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text('Editar Rol de $email'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedRole,
-                    decoration: const InputDecoration(
-                      labelText: 'Rol',
-                    ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'super_admin',
-                        child: Text('Super Administrador'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'operador',
-                        child: Text('Administrador Operacional (Operador)'),
-                      ),
-                    ],
-                    onChanged: isSaving
-                        ? null
-                        : (val) {
-                            if (val != null) {
-                              setDialogState(() {
-                                selectedRole = val;
-                              });
-                            }
-                          },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isSaving ? null : () => Navigator.of(ctx).pop(),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0EA5E9),
-                  ),
-                  onPressed: isSaving
-                      ? null
-                      : () async {
-                          setDialogState(() {
-                            isSaving = true;
-                          });
-                          await _changeAdminRole(doc.id, email, selectedRole);
-                          if (context.mounted) {
-                            Navigator.of(ctx).pop();
-                          }
-                        },
-                  child: const Text('Guardar', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            );
-          },
-        );
-      },
+    final nuevo = await mostrarPanelRolAdmin(
+      context,
+      email: email,
+      rolActual: currentRole == 'super_admin' ? 'super_admin' : 'operador',
     );
+    if (nuevo == null) return;
+    await _changeAdminRole(doc.id, email, nuevo);
   }
 
   void _showDeleteConfirmDialog(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
@@ -4742,607 +1633,240 @@ class _AdminsManagementPageState extends State<AdminsManagementPage> {
   @override
   Widget build(BuildContext context) {
     final String currentAdminEmail = FirebaseAuth.instance.currentUser?.email ?? '';
+    final bool compact = isCompactLayout(context);
 
-    return _AdminPageScaffold(
-      title: 'Gestión de Administradores',
-      subtitle: 'Administra los roles y accesos al panel backoffice de TAG OK.',
-      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: widget.service.streamAdministradores(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Text('Error al leer Firestore: ${snapshot.error}');
-          }
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: widget.service.streamAdministradores(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(child: Text('Error al leer Firestore: ${snapshot.error}'));
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (!snapshot.hasData) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
+        bool esSuper(String r) {
+          final x = r.toLowerCase().trim();
+          return x == 'super_admin' ||
+              x == 'super_administrador' ||
+              x == 'superadmin' ||
+              x == 'super administrador';
+        }
 
-          final docs = snapshot.data!.docs;
-          final filteredDocs = docs
-              .where((doc) => _matchesFilters(doc.data()))
+        final docs = snapshot.data!.docs;
+        String rolDe(QueryDocumentSnapshot<Map<String, dynamic>> d) =>
+            (d.data()['rol'] ?? d.data()['role'] ?? 'operador').toString();
+        final supers = docs.where((d) => esSuper(rolDe(d))).length;
+        final filteredDocs = docs
+            .where((doc) => _matchesFilters(doc.data()))
+            .toList();
+
+        final int totalPages = (filteredDocs.length / _rowsPerPage).ceil();
+        if (_currentPage >= totalPages && totalPages > 0) {
+          _currentPage = totalPages - 1;
+        }
+        final int startIndex = _currentPage * _rowsPerPage;
+        final int endIndex = (startIndex + _rowsPerPage) > filteredDocs.length
+            ? filteredDocs.length
+            : (startIndex + _rowsPerPage);
+        final pageDocs = filteredDocs.sublist(startIndex, endIndex);
+
+        String iniciales(String email) {
+          final partes = email
+              .split('@')
+              .first
+              .split(RegExp(r'[._\-]+'))
+              .where((p) => p.isNotEmpty)
               .toList();
+          if (partes.length >= 2) return '${partes[0][0]}${partes[1][0]}'.toUpperCase();
+          return email.length >= 2 ? email.substring(0, 2).toUpperCase() : 'AD';
+        }
 
-          if (filteredDocs.isEmpty) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildFiltersCard(),
-                const Expanded(
-                  child: Card(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Text(
-                          'No hay administradores registrados que coincidan con los filtros.',
-                        ),
-                      ),
+        return SafeArea(
+          child: PaginaConEncabezado(
+            compact: compact,
+            encabezado: EncabezadoPagina(
+                  titulo: 'Administradores',
+                  subtitulo:
+                      'Administra los roles y accesos al panel backoffice de TAG OK.',
+                  acciones: [
+                    BotonContorno(
+                      texto: 'Actualizar',
+                      icono: Icons.refresh,
+                      onPressed: () => setState(() {}),
                     ),
-                  ),
+                    BotonPrimario(
+                      texto: 'Agregar admin',
+                      icono: Icons.add,
+                      onPressed: _showAddAdminDialog,
+                    ),
+                  ],
                 ),
-              ],
-            );
-          }
-
-          final int totalPages = (filteredDocs.length / _rowsPerPage).ceil();
-          if (_currentPage >= totalPages && totalPages > 0) {
-            _currentPage = totalPages - 1;
-          }
-
-          final int startIndex = _currentPage * _rowsPerPage;
-          final int endIndex = (startIndex + _rowsPerPage) > filteredDocs.length
-              ? filteredDocs.length
-              : (startIndex + _rowsPerPage);
-          final pageDocs = filteredDocs.sublist(startIndex, endIndex);
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildFiltersCard(),
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                columns: const [
-                                  DataColumn(label: Text('Email')),
-                                  DataColumn(label: Text('Rol')),
-                                  DataColumn(label: Text('Acciones')),
-                                ],
-                                rows: pageDocs.map((doc) {
-                                  final data = doc.data();
-                                  final String email = (data['email'] ?? '').toString();
-                                  final String role = (data['rol'] ?? data['role'] ?? 'operador').toString();
-                                  final bool isCurrentUser = email.toLowerCase() == currentAdminEmail.toLowerCase();
 
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Text(
+                GrillaTarjetas(
+                  tarjetas: [
+                    TarjetaDato(
+                      etiqueta: 'Total',
+                      valor: '${docs.length}',
+                      icono: Icons.admin_panel_settings_outlined,
+                    ),
+                    TarjetaDato(
+                      etiqueta: 'Super administradores',
+                      valor: '$supers',
+                      icono: Icons.verified_user_outlined,
+                    ),
+                    TarjetaDato(
+                      etiqueta: 'Operacionales',
+                      valor: '${docs.length - supers}',
+                      icono: Icons.person_outline,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                TarjetaBlanca(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CabeceraListado(
+                        titulo: 'Listado',
+                        subtitulo:
+                            '${filteredDocs.length} de ${docs.length} administradores',
+                        controles: [
+                          CampoBusqueda(
+                            controller: _searchCtrl,
+                            hint: 'Buscar por correo…',
+                          ),
+                          DesplegableFiltro(
+                            valor: _selectedRoleFilter,
+                            opciones: const ['Todos', 'super_admin', 'operador'],
+                            etiquetas: const {
+                              'Todos': 'Todos los roles',
+                              'super_admin': 'Super Administrador',
+                              'operador': 'Administrador Operacional',
+                            },
+                            ancho: 230,
+                            onChanged: (v) => setState(() {
+                              _selectedRoleFilter = v;
+                              _currentPage = 0;
+                            }),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (filteredDocs.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Center(
+                            child: Text(
+                              'No hay administradores que coincidan con los filtros.',
+                            ),
+                          ),
+                        )
+                      else
+                        TablaSimple(
+                          encabezados: const ['Administrador', 'Rol', 'Acciones'],
+                          anchos: const [240, 150],
+                          filas: [
+                            for (final doc in pageDocs)
+                              () {
+                                final String email = (doc.data()['email'] ?? '').toString();
+                                final String role = rolDe(doc);
+                                final bool isCurrentUser =
+                                    email.toLowerCase() == currentAdminEmail.toLowerCase();
+                                return <Widget>[
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 17,
+                                        backgroundColor: const Color(0xFFF1F5F9),
+                                        child: Text(
+                                          iniciales(email),
+                                          style: const TextStyle(
+                                            color: kGris,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 14),
+                                      Flexible(
+                                        child: Text(
                                           email,
+                                          overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
+                                            fontSize: 15,
                                             fontWeight: FontWeight.w500,
+                                            color: kTinta,
                                           ),
                                         ),
                                       ),
-                                      DataCell(_getRoleBadge(role)),
-                                      DataCell(
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: const Icon(Icons.edit_outlined, color: Colors.blue),
-                                              tooltip: isCurrentUser ? 'No puedes cambiar tu propio rol' : 'Cambiar Rol',
-                                              onPressed: isCurrentUser ? null : () => _showEditRoleDialog(doc),
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.lock_reset, color: Colors.amber),
-                                              tooltip: 'Restablecer Contraseña',
-                                              onPressed: () => _resetAdminPassword(email),
-                                            ),
-                                            IconButton(
-                                              icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                              tooltip: isCurrentUser ? 'No puedes revocar tu propio acceso' : 'Revocar Acceso',
-                                              onPressed: isCurrentUser ? null : () => _showDeleteConfirmDialog(doc),
-                                            ),
-                                          ],
+                                      if (isCurrentUser) ...[
+                                        const SizedBox(width: 8),
+                                        const Pildora('Tú'),
+                                      ],
+                                    ],
+                                  ),
+                                  esSuper(role)
+                                      ? const Pildora(
+                                          'Super Administrador',
+                                          fondo: kAzul,
+                                          colorTexto: Colors.white,
+                                          icono: Icons.verified_user_outlined,
+                                        )
+                                      : const Pildora(
+                                          'Administrador Operacional',
+                                          fondo: Color(0xFF475569),
+                                          colorTexto: Colors.white,
+                                          icono: Icons.verified_user_outlined,
                                         ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit_outlined, color: Colors.blue, size: 20),
+                                        tooltip: isCurrentUser ? 'No puedes cambiar tu propio rol' : 'Cambiar Rol',
+                                        onPressed: isCurrentUser ? null : () => _showEditRoleDialog(doc),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.lock_reset, color: Colors.orange, size: 20),
+                                        tooltip: 'Restablecer Contraseña',
+                                        onPressed: () => _resetAdminPassword(email),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                        tooltip: isCurrentUser ? 'No puedes revocar tu propio acceso' : 'Revocar Acceso',
+                                        onPressed: isCurrentUser ? null : () => _showDeleteConfirmDialog(doc),
                                       ),
                                     ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          ),
+                                  ),
+                                ];
+                              }(),
+                          ],
                         ),
-                        const Divider(),
-                        _TablePaginationControls(
-                          currentPage: _currentPage,
-                          rowsPerPage: _rowsPerPage,
-                          totalItems: filteredDocs.length,
-                          totalPages: totalPages,
-                          startIndex: startIndex,
-                          endIndex: endIndex,
-                          onPageChanged: (page) =>
-                              setState(() => _currentPage = page),
-                          onRowsPerPageChanged: (rows) => setState(() {
-                            _rowsPerPage = rows;
-                            _currentPage = 0;
-                          }),
-                          itemLabel: 'administradores',
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFiltersCard() {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: TextField(
-                controller: _searchCtrl,
-                decoration: InputDecoration(
-                  isDense: true,
-                  labelText: 'Buscar Administrador...',
-                  hintText: 'Buscar por correo electrónico',
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 2,
-              child: DropdownButtonFormField<String>(
-                initialValue: _selectedRoleFilter,
-                decoration: InputDecoration(
-                  isDense: true,
-                  labelText: 'Filtrar por Rol',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Todos',
-                    child: Text('Todos los roles'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'super_admin',
-                    child: Text('Super Administrador'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'operador',
-                    child: Text('Administrador Operacional'),
-                  ),
-                ],
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedRoleFilter = val;
-                      _currentPage = 0;
-                    });
-                  }
-                },
-              ),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0EA5E9),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: _showAddAdminDialog,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Agregar Admin', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class AuditLogPage extends StatefulWidget {
-  const AuditLogPage({super.key, required this.service});
-
-  final AdminFirestoreService service;
-
-  @override
-  State<AuditLogPage> createState() => _AuditLogPageState();
-}
-
-class _AuditLogPageState extends State<AuditLogPage> {
-  final TextEditingController _searchCtrl = TextEditingController();
-  String _searchQuery = '';
-  String _selectedActionFilter = 'Todos';
-  int _currentPage = 0;
-  int _rowsPerPage = 10;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchCtrl.addListener(() {
-      setState(() {
-        _searchQuery = _searchCtrl.text.toLowerCase().trim();
-        _currentPage = 0;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    super.dispose();
-  }
-
-  bool _matchesFilters(Map<String, dynamic> data) {
-    final String adminEmail = (data['adminEmail'] ?? '')
-        .toString()
-        .toLowerCase();
-    final String target = (data['target'] ?? '').toString().toLowerCase();
-    final String details = (data['details'] ?? '').toString().toLowerCase();
-    final String action = (data['action'] ?? '').toString();
-
-    if (_searchQuery.isNotEmpty &&
-        !adminEmail.contains(_searchQuery) &&
-        !target.contains(_searchQuery) &&
-        !details.contains(_searchQuery)) {
-      return false;
-    }
-
-    if (_selectedActionFilter != 'Todos' && action != _selectedActionFilter) {
-      return false;
-    }
-
-    return true;
-  }
-
-  String _formatFecha(dynamic dateVal) {
-    if (dateVal == null) return '-';
-    if (dateVal is Timestamp) {
-      final date = dateVal.toDate();
-      final y = date.year;
-      final m = date.month.toString().padLeft(2, '0');
-      final d = date.day.toString().padLeft(2, '0');
-      final h = date.hour.toString().padLeft(2, '0');
-      final min = date.minute.toString().padLeft(2, '0');
-      return '$y-$m-$d $h:$min';
-    }
-    return dateVal.toString();
-  }
-
-  Widget _getActionBadge(String action) {
-    Color bgColor;
-    Color textColor;
-    String label;
-    switch (action) {
-      case 'EDIT_USER':
-        bgColor = const Color(0xFFDBEAFE);
-        textColor = const Color(0xFF1E3A8A);
-        label = 'Editar Usuario';
-        break;
-      case 'RESET_PASSWORD':
-        bgColor = const Color(0xFFFEF3C7);
-        textColor = const Color(0xFFD97706);
-        label = 'Resetear Clave';
-        break;
-      case 'DELETE_USER':
-        bgColor = const Color(0xFFFEE2E2);
-        textColor = const Color(0xFFDC2626);
-        label = 'Eliminar Usuario';
-        break;
-      case 'EDIT_TARIFF':
-        bgColor = const Color(0xFFDBEAFE);
-        textColor = const Color(0xFF1D4ED8);
-        label = 'Editar Tarifas';
-        break;
-      case 'DELETE_PORTICO':
-        bgColor = const Color(0xFFFFEDD5);
-        textColor = const Color(0xFFEA580C);
-        label = 'Eliminar Pórtico';
-        break;
-      default:
-        bgColor = const Color(0xFFF1F5F9);
-        textColor = const Color(0xFF475569);
-        label = action;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withValues(alpha: 0.15)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: textColor,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _AdminPageScaffold(
-      title: 'Bitácora de Auditoría',
-      subtitle:
-          'Historial irreversible de cambios y acciones realizadas por administradores.',
-      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: widget.service.streamAuditLogs(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Text('Error al leer Firestore: ${snapshot.error}');
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-
-          final docs = snapshot.data!.docs;
-          final filteredDocs = docs
-              .where((doc) => _matchesFilters(doc.data()))
-              .toList();
-
-          if (filteredDocs.isEmpty) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildFiltersCard(),
-                const Expanded(
-                  child: Card(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Text(
-                          'No hay registros de auditoría que coincidan con los filtros.',
-                        ),
+                      const Divider(),
+                      Paginador(
+                        pagina: _currentPage,
+                        porPagina: _rowsPerPage,
+                        total: filteredDocs.length,
+                        etiqueta: 'administradores',
+                        onPagina: (n) => setState(() => _currentPage = n),
+                        onPorPagina: (n) => setState(() {
+                          _rowsPerPage = n;
+                          _currentPage = 0;
+                        }),
                       ),
-                    ),
+                    ],
                   ),
                 ),
-              ],
-            );
-          }
-
-          final int totalPages = (filteredDocs.length / _rowsPerPage).ceil();
-          if (_currentPage >= totalPages && totalPages > 0) {
-            _currentPage = totalPages - 1;
-          }
-
-          final int startIndex = _currentPage * _rowsPerPage;
-          final int endIndex = (startIndex + _rowsPerPage) > filteredDocs.length
-              ? filteredDocs.length
-              : (startIndex + _rowsPerPage);
-          final pageDocs = filteredDocs.sublist(startIndex, endIndex);
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildFiltersCard(),
-              Expanded(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                columns: const [
-                                  DataColumn(label: Text('Fecha')),
-                                  DataColumn(label: Text('Administrador')),
-                                  DataColumn(label: Text('Acción')),
-                                  DataColumn(label: Text('Objetivo')),
-                                  DataColumn(label: Text('Detalles')),
-                                ],
-                                rows: pageDocs.map((doc) {
-                                  final data = doc.data();
-                                  final String fechaStr = _formatFecha(
-                                    data['fecha'],
-                                  );
-                                  final String adminEmail =
-                                      (data['adminEmail'] ?? 'Sistema')
-                                          .toString();
-                                  final String action = (data['action'] ?? '')
-                                      .toString();
-                                  final String target = (data['target'] ?? '')
-                                      .toString();
-                                  final String details = (data['details'] ?? '')
-                                      .toString();
-
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(
-                                        Text(
-                                          fechaStr,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(Text(adminEmail)),
-                                      DataCell(_getActionBadge(action)),
-                                      DataCell(
-                                        Text(
-                                          target,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        Container(
-                                          constraints: const BoxConstraints(
-                                            maxWidth: 350,
-                                          ),
-                                          child: Text(
-                                            details,
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 2,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF475569),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const Divider(),
-                        _TablePaginationControls(
-                          currentPage: _currentPage,
-                          rowsPerPage: _rowsPerPage,
-                          totalItems: filteredDocs.length,
-                          totalPages: totalPages,
-                          startIndex: startIndex,
-                          endIndex: endIndex,
-                          onPageChanged: (page) =>
-                              setState(() => _currentPage = page),
-                          onRowsPerPageChanged: (rows) => setState(() {
-                            _rowsPerPage = rows;
-                            _currentPage = 0;
-                          }),
-                          itemLabel: 'registros',
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              
             ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFiltersCard() {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: TextField(
-                controller: _searchCtrl,
-                decoration: InputDecoration(
-                  isDense: true,
-                  labelText: 'Buscar en bitácora...',
-                  hintText: 'Buscar por admin, objetivo o detalle',
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 2,
-              child: DropdownButtonFormField<String>(
-                initialValue: _selectedActionFilter,
-                decoration: InputDecoration(
-                  isDense: true,
-                  labelText: 'Tipo de Acción',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Todos',
-                    child: Text('Todas las acciones'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'EDIT_USER',
-                    child: Text('Editar Usuario'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'RESET_PASSWORD',
-                    child: Text('Restablecer Clave'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'DELETE_USER',
-                    child: Text('Eliminar Usuario'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'EDIT_TARIFF',
-                    child: Text('Editar Tarifas'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'DELETE_PORTICO',
-                    child: Text('Eliminar Pórtico'),
-                  ),
-                ],
-                onChanged: (val) {
-                  if (val != null) {
-                    setState(() {
-                      _selectedActionFilter = val;
-                      _currentPage = 0;
-                    });
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
-
 
 class _TablePaginationControls extends StatelessWidget {
   const _TablePaginationControls({
@@ -5562,100 +2086,3 @@ class _FirestoreListTableState extends State<_FirestoreListTable> {
   }
 }
 
-String _formatNumber(int val) {
-  final String str = val.toString();
-  final StringBuffer buffer = StringBuffer();
-  int count = 0;
-  for (int i = str.length - 1; i >= 0; i--) {
-    buffer.write(str[i]);
-    count++;
-    if (count % 3 == 0 && i != 0) {
-      buffer.write('.');
-    }
-  }
-  return buffer.toString().split('').reversed.join('');
-}
-
-Color _getColorFromName(String name) {
-  final int hash = name.hashCode;
-  final List<Color> colors = [
-    const Color(0xFF0EA5E9),
-    const Color(0xFF10B981),
-    const Color(0xFF1E3A8A),
-    const Color(0xFF1E3A8A),
-    const Color(0xFFEC4899),
-    const Color(0xFFF59E0B),
-  ];
-  return colors[hash.abs() % colors.length];
-}
-
-Widget _getHighwayBadge(String highway) {
-  Color bgColor;
-  Color textColor;
-  switch (highway) {
-    case 'Autopista Central':
-      bgColor = const Color(0xFFEFF6FF);
-      textColor = const Color(0xFF1D4ED8);
-      break;
-    case 'Costanera Norte':
-      bgColor = const Color(0xFFECFDF5);
-      textColor = const Color(0xFF047857);
-      break;
-    case 'Vespucio Norte':
-      bgColor = const Color(0xFFFFFBEB);
-      textColor = const Color(0xFFB45309);
-      break;
-    case 'Vespucio Sur':
-      bgColor = const Color(0xFFFDF2F8);
-      textColor = const Color(0xFFBE185D);
-      break;
-    case 'Vespucio Oriente (AVO)':
-      bgColor = const Color(0xFFF5F3FF);
-      textColor = const Color(0xFF1E3A8A);
-      break;
-    default:
-      bgColor = const Color(0xFFF8FAFC);
-      textColor = const Color(0xFF475569);
-  }
-
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    decoration: BoxDecoration(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: textColor.withValues(alpha: 0.15)),
-    ),
-    child: Text(
-      highway,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: textColor,
-        fontSize: 11,
-      ),
-    ),
-  );
-}
-
-Widget _buildTariffBadge(
-  String label,
-  String value,
-  Color bgColor,
-  Color textColor,
-) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    decoration: BoxDecoration(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: textColor.withValues(alpha: 0.15)),
-    ),
-    child: Text(
-      '$label: \$$value',
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: textColor,
-        fontSize: 11,
-      ),
-    ),
-  );
-}

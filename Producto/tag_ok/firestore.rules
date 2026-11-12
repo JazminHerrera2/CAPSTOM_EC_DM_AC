@@ -534,6 +534,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Concesionarias (autopistas): catalogo que administra el panel admin.
+    match /concesionarias/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     match /tarifas/{id} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
