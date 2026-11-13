@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/mantencion_model.dart';
 import 'detalle_mantenimiento_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Formatea un entero con separador de miles (72450 -> 72.450).
 String formatoMiles(int valor) {
@@ -61,85 +62,91 @@ class TarjetaMantencion extends StatelessWidget {
       ],
     ].where((l) => l.isNotEmpty).toList();
 
-    return Material(
-      color: AppColors.superficie,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        // Solo las realizadas (historial) tienen detalle.
-        onTap: programada
-            ? null
-            : () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DetalleMantenimientoScreen(mantencion: m),
-                  ),
-                ),
-        child: Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.transparent),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Solo el ícono, en azul y sin recuadro de color de fondo.
-          SizedBox(
-            width: 42,
-            height: 42,
-            child: Icon(
-              programada
-                  ? Icons.event_available_outlined
-                  : Icons.build_circle_outlined,
-              color: AppColors.primario,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  m.nombreTipo,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.texto,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+      child: Material(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          // Solo las realizadas (historial) tienen detalle.
+          onTap: programada
+              ? null
+              : () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DetalleMantenimientoScreen(mantencion: m),
+                    ),
                   ),
-                ),
-                for (final linea in lineas) ...[
-                  const SizedBox(height: 4),
+          child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          border: Border.all(color: Colors.transparent),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Solo el ícono, en azul y sin recuadro de color de fondo.
+            SizedBox(
+              width: 42,
+              height: 42,
+              child: Icon(
+                programada
+                    ? Icons.event_available_outlined
+                    : Icons.build_circle_outlined,
+                color: AppColors.primario,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    linea,
+                    m.nombreTipo,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: AppColors.textoSecundario,
-                      fontSize: 12,
-                      height: 1.35,
+                      color: AppColors.texto,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  for (final linea in lineas) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      linea,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textoSecundario,
+                        fontSize: 12,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          if (onEliminar != null)
-            IconButton(
-              tooltip: 'Eliminar programación',
-              visualDensity: VisualDensity.compact,
-              onPressed: onEliminar,
-              icon: const Icon(Icons.delete_outline, color: AppColors.error),
-            )
-          else if (!programada)
-            const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
-        ],
+            if (onEliminar != null)
+              IconButton(
+                tooltip: 'Eliminar programación',
+                visualDensity: VisualDensity.compact,
+                onPressed: onEliminar,
+                icon: const Icon(Icons.delete_outline, color: AppColors.error),
+              )
+            else if (!programada)
+              const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
+          ],
+        ),
       ),
-    ),
+        ),
       ),
     );
   }

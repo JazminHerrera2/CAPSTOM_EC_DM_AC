@@ -13,6 +13,7 @@ import '../../features/registro_inteligente/consejos_captura.dart';
 import '../../features/registro_inteligente/vehiculo_extraction.dart';
 import 'foto_vehiculo.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class RegistrarEditarVehiculoScreen extends StatefulWidget {
   final VehiculoModel? vehiculo;
@@ -263,8 +264,8 @@ class _RegistrarEditarVehiculoScreenState
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: AppColors.superficie,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.transparent),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: _fotoBytes != null
               ? Padding(
@@ -311,7 +312,7 @@ class _RegistrarEditarVehiculoScreenState
                     foregroundColor: AppColors.texto,
                     side: const BorderSide(color: Colors.transparent),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadios.control),
                     ),
                   ),
                 ),
@@ -587,20 +588,20 @@ class _RegistrarEditarVehiculoScreenState
         vertical: 18,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
           color: AppColors.borde,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
           color: AppColors.primario,
           width: 1.5,
         ),
       ),
       disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
           color: AppColors.borde,
         ),
@@ -682,7 +683,7 @@ class _RegistrarEditarVehiculoScreenState
               backgroundColor: AppColors.primario.withOpacity(0.10),
               side: BorderSide(color: AppColors.primario.withOpacity(0.6)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
               ),
             ),
           ),
@@ -864,7 +865,7 @@ class _RegistrarEditarVehiculoScreenState
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.primario.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(color: AppColors.primario.withOpacity(0.25)),
       ),
       child: const Row(
@@ -942,7 +943,7 @@ class _RegistrarEditarVehiculoScreenState
                   color: seleccionado
                       ? AppColors.primario.withOpacity(0.14)
                       : AppColors.superficie,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   border: Border.all(
                     color: seleccionado
                         ? AppColors.primario
@@ -1271,7 +1272,7 @@ class _RegistrarEditarVehiculoScreenState
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: Colors.redAccent.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                   border: Border.all(
                     color:
                         Colors.redAccent.withOpacity(0.35),
@@ -1315,7 +1316,7 @@ class _RegistrarEditarVehiculoScreenState
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius.circular(16),
+                        BorderRadius.circular(AppRadios.control),
                   ),
                 ),
                 child: _guardando

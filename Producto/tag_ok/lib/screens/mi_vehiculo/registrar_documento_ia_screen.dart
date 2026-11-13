@@ -17,6 +17,7 @@ import '../../features/registro_inteligente/smart_capture_controller.dart';
 import '../../features/registro_inteligente/smart_capture_result.dart';
 import '../../features/registro_inteligente/smart_capture_review_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class RegistrarDocumentoIaScreen extends StatefulWidget {
   final String vehiculoId;
@@ -215,7 +216,7 @@ class _RegistrarDocumentoIaScreenState
             backgroundColor: AppColors.superficie,
             shape: RoundedRectangleBorder(
               borderRadius:
-                  BorderRadius.circular(18),
+                  BorderRadius.circular(AppRadios.tarjeta),
             ),
             title: const Row(
               children: [
@@ -528,7 +529,7 @@ class _RegistrarDocumentoIaScreenState
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(18),
@@ -537,7 +538,7 @@ class _RegistrarDocumentoIaScreenState
               ? AppColors.primario.withOpacity(0.12)
               : AppColors.superficie,
           borderRadius:
-              BorderRadius.circular(18),
+              BorderRadius.circular(AppRadios.tarjeta),
           border: Border.all(
             color: principal
                 ? AppColors.primario.withOpacity(0.65)
@@ -554,7 +555,7 @@ class _RegistrarDocumentoIaScreenState
                     ? AppColors.primario
                     : AppColors.contenedorSuave,
                 borderRadius:
-                    BorderRadius.circular(15),
+                    BorderRadius.circular(AppRadios.control),
               ),
               child: Icon(
                 icono,
@@ -613,7 +614,7 @@ class _RegistrarDocumentoIaScreenState
       decoration: BoxDecoration(
         color: AppColors.contenedorSuave,
         borderRadius:
-            BorderRadius.circular(20),
+            BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(
           color: Colors.transparent,
         ),
@@ -682,10 +683,8 @@ class _RegistrarDocumentoIaScreenState
           decoration: BoxDecoration(
             color: AppColors.superficie,
             borderRadius:
-                BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.transparent,
-            ),
+                BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: Column(
             children: [
@@ -696,7 +695,7 @@ class _RegistrarDocumentoIaScreenState
                   color:
                       AppColors.primario.withOpacity(0.12),
                   borderRadius:
-                      BorderRadius.circular(20),
+                      BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: const Icon(
                   Icons.document_scanner_outlined,
@@ -867,7 +866,7 @@ class _RegistrarDocumentoIaScreenState
               decoration: BoxDecoration(
                 color: AppColors.superficie,
                 borderRadius:
-                    BorderRadius.circular(14),
+                    BorderRadius.circular(AppRadios.control),
                 border: Border.all(
                   color:
                       Colors.transparent,

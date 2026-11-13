@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/services/storage_service.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Muestra el archivo asociado a un documento vehicular.
 ///
@@ -94,8 +95,8 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
       height: height,
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.transparent),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       clipBehavior: Clip.antiAlias,
       child: child,

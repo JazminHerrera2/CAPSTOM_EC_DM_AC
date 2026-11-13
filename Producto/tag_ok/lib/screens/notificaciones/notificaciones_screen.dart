@@ -7,6 +7,7 @@ import '../../data/services/aviso_navegador_service.dart';
 import '../../data/services/notificacion_service.dart';
 import '../../utils/notificacion_navegador.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Un aviso "ya toca" cuando su fecha programada es hoy o anterior.
 bool avisoYaCorresponde(NotificacionConfigModel n, DateTime ahora) {
@@ -236,7 +237,7 @@ class _TarjetaAviso extends StatelessWidget {
       color: AppColors.superficie,
       margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         side: BorderSide(
           color: noLeida
               ? AppColors.primario

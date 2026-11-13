@@ -9,6 +9,7 @@ import 'documentos_vehiculo_seccion.dart';
 import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Detalle de un vehículo. Escucha el documento en Firestore para reflejar al
 /// instante los cambios (por ejemplo, el kilometraje tras editarlo); mientras
@@ -230,10 +231,8 @@ class _DetalleVehiculoVista extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: AppColors.superficie,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: Colors.transparent,
-                  ),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+                  boxShadow: AppSombras.tarjeta,
                 ),
                 child: Column(
                   children: [
@@ -312,7 +311,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                               color: _colorEstado(estado)
                                   .withOpacity(0.10),
                               borderRadius:
-                                  BorderRadius.circular(14),
+                                  BorderRadius.circular(AppRadios.control),
                               border: Border.all(
                                 color: _colorEstado(estado)
                                     .withOpacity(0.45),
@@ -397,7 +396,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                       color: Colors.redAccent.withOpacity(0.6),
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadios.control),
                     ),
                   ),
                 ),
@@ -426,7 +425,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
         return AlertDialog(
           backgroundColor: AppColors.superficie,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
           title: const Row(
             children: [
@@ -567,7 +566,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
           backgroundColor: AppColors.superficie,
           insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
@@ -623,7 +622,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.contenedorSuave,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: Row(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Color asociado al estado general de un vehículo ("Todo al día", etc.).
 /// Mismos colores que Mi Vehículo; vive acá para no tocar esas pantallas.
@@ -43,20 +44,41 @@ IconData iconoEstadoVehiculo(String estado) {
   }
 }
 
+/// Versión corta del estado, para chips compactos ("Al día", "Por vencer"…).
+String etiquetaCortaEstadoVehiculo(String estado) {
+  switch (estado) {
+    case 'Atención requerida':
+      return 'Atención';
+    case 'Próximo vencimiento':
+      return 'Por vencer';
+    case 'Todo al día':
+      return 'Al día';
+    default:
+      return estado;
+  }
+}
+
 /// Chip con el estado de un vehículo, reutilizado en el carrusel del dashboard.
+/// Con [compacto] muestra la etiqueta corta ("Al día").
 class EstadoVehiculoChip extends StatelessWidget {
   final String estado;
+  final bool compacto;
 
-  const EstadoVehiculoChip({super.key, required this.estado});
+  const EstadoVehiculoChip({
+    super.key,
+    required this.estado,
+    this.compacto = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final color = colorEstadoVehiculo(estado);
+    final texto = compacto ? etiquetaCortaEstadoVehiculo(estado) : estado;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: fondoEstadoVehiculo(estado),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.chip),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -65,7 +87,7 @@ class EstadoVehiculoChip extends StatelessWidget {
           const SizedBox(width: 6),
           Flexible(
             child: Text(
-              estado,
+              texto,
               style: TextStyle(
                 color: color,
                 fontSize: 12,

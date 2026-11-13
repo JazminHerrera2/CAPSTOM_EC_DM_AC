@@ -6,6 +6,7 @@ import '../data/services/simulated_toll_service.dart';
 import '../data/services/geocoding_service.dart';
 import '../data/services/history_service.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class RouteSetupScreen extends StatefulWidget {
   final LatLng? initialOrigin;
@@ -188,8 +189,8 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: AppColors.superficie,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.transparent),
+                    borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+                    boxShadow: AppSombras.tarjeta,
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   child: Row(
@@ -221,7 +222,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 margin: const EdgeInsets.only(bottom: 24),
                 height: 56,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   gradient: const LinearGradient(
                     colors: [AppColors.primario, AppColors.primario],
                     begin: Alignment.topLeft,
@@ -241,7 +242,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppRadios.control),
                     ),
                     disabledBackgroundColor: Colors.transparent,
                   ),
@@ -351,8 +352,8 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
         return Container(
           decoration: BoxDecoration(
             color: AppColors.superficie,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.transparent),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: TextField(
             controller: textEditingController,
@@ -385,7 +386,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
           child: Material(
             elevation: 4.0,
             color: AppColors.superficie, // Color oscuro para el desplegable
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadios.icono),
             child: SizedBox(
               width: MediaQuery.of(context).size.width - 48, // Ajustar al padding
               height: 200,

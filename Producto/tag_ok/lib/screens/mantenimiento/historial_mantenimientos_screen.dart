@@ -9,6 +9,7 @@ import 'gasto_periodo.dart';
 import 'selector_tipo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class HistorialMantenimientosScreen extends StatefulWidget {
   /// Patente del vehículo elegido en Mantenciones.
@@ -202,7 +203,7 @@ class _HistorialMantenimientosScreenState
           height: 52,
           decoration: BoxDecoration(
             color: activo ? AppColors.primario : AppColors.superficie,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadios.control),
           ),
           child: Stack(
             alignment: Alignment.center,
@@ -287,7 +288,7 @@ class _HistorialMantenimientosScreenState
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
             color: AppColors.primario.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
           child: Text(
             cantidad == 1 ? '1 registro' : '$cantidad registros',
@@ -367,7 +368,7 @@ class _HistorialMantenimientosScreenState
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: Row(
@@ -429,11 +430,11 @@ class _HistorialMantenimientosScreenState
         filled: true,
         fillColor: AppColors.superficie,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           borderSide: const BorderSide(color: AppColors.borde),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
         ),
       ),
@@ -453,10 +454,8 @@ class _HistorialMantenimientosScreenState
       ),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.transparent,
-        ),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         children: [

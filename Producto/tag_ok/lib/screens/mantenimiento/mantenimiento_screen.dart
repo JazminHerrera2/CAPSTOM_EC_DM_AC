@@ -17,6 +17,7 @@ import 'registro_ia_mantenimiento_screen.dart';
 import 'resumen_gastos_mantenciones.dart';
 import 'tarjeta_mantencion.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 
 class MantenimientoScreen extends StatefulWidget {
@@ -218,7 +219,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
         children: [
           for (final v in vehiculos) ...[
             InkWell(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               onTap: () => setState(() => _vehiculoId = v.id),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -228,7 +229,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: activo == v.id ? AppColors.primario : AppColors.superficie,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   border: Border.all(
                     color: activo == v.id
                         ? AppColors.primario
@@ -274,7 +275,8 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: AppColors.superficie,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+                boxShadow: AppSombras.tarjeta,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,48 +359,54 @@ class _MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.superficie,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Row(
-            children: [
-              _IconBox(icon: icon),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: AppColors.texto,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 3),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
+      ),
+      child: Material(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              children: [
+                _IconBox(icon: icon),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        subtitle!,
+                        title,
                         style: const TextStyle(
-                          color: AppColors.textoSecundario,
-                          fontSize: 11,
+                          color: AppColors.texto,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          subtitle!,
+                          style: const TextStyle(
+                            color: AppColors.textoSecundario,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textoSecundario,
-              ),
-            ],
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textoSecundario,
+                ),
+              ],
+            ),
           ),
         ),
       ),

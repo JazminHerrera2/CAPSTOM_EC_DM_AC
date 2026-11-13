@@ -9,6 +9,7 @@ import 'detalle_vehiculo_screen.dart';
 import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class MiVehiculoScreen extends StatefulWidget {
   const MiVehiculoScreen({super.key});
@@ -257,7 +258,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
               ),
               decoration: BoxDecoration(
                 color: AppColors.primario.withOpacity(0.10),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
                 border: Border.all(
                   color: AppColors.primario.withOpacity(0.25),
                 ),
@@ -298,7 +299,8 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: AppColors.superficie,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          boxShadow: AppSombras.tarjeta,
         ),
         child: Image.asset(
           asset,
@@ -542,10 +544,8 @@ class _VehiculoCard extends StatelessWidget {
           child: Container(
               decoration: BoxDecoration(
                 color: AppColors.superficie,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                  color: Colors.transparent,
-                ),
+                borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+                boxShadow: AppSombras.tarjeta,
               ),
               clipBehavior: Clip.antiAlias,
               child: Column(
@@ -705,7 +705,7 @@ class _VehiculoCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: colorEstado.withOpacity(0.10),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppRadios.icono),
                             ),
                             child: Row(
                               children: [
@@ -792,7 +792,7 @@ class _InfoChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: color.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadios.icono),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

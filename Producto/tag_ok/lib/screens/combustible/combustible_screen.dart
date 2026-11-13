@@ -15,6 +15,7 @@ import '../mantenimiento/widgets_gasto.dart' show clp;
 import 'gasto_combustible.dart';
 import 'registro_ia_combustible_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// "Combustible y carga": gasto del mes e historial de cargas del vehículo
 /// elegido, con el + para registrar una carga (con IA o a mano). Se abre como
@@ -65,7 +66,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.superficie,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: const Text('Eliminar carga', style: TextStyle(color: AppColors.texto)),
         content: Text(
           '¿Eliminar la carga del ${formatoFecha(carga.fecha)}? '
@@ -200,7 +201,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
         children: [
           for (final v in vehiculos) ...[
             InkWell(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               onTap: () => _elegirVehiculo(v.id),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -210,7 +211,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: activo == v.id ? AppColors.primario : AppColors.superficie,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: Text(
                   v.patente,
@@ -283,7 +284,8 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.superficie,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: SizedBox(
             height: altoContenidoTarjetaGastos,
@@ -389,7 +391,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: AppColors.primario.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               ),
               child: Text(
                 lista.length == 1 ? '1 registro' : '${lista.length} registros',
@@ -450,7 +452,8 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       padding: const EdgeInsets.fromLTRB(16, 14, 6, 14),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,7 +534,8 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 38),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         children: [

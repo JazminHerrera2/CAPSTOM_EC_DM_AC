@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'gasto_periodo.dart';
 import 'tarjeta_mantencion.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Monto en pesos chilenos con separador de miles por punto: $87.000.
 String clp(int monto) =>
@@ -33,7 +34,7 @@ class SegmentosPeriodo extends StatelessWidget {
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: AppColors.contenedorSuave,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadios.icono),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -45,7 +46,7 @@ class SegmentosPeriodo extends StatelessWidget {
               label: 'Ver gasto por ${_etiquetas[tipo]!.toLowerCase()}',
               excludeSemantics: true,
               child: InkWell(
-                borderRadius: BorderRadius.circular(9),
+                borderRadius: BorderRadius.circular(AppRadios.icono),
                 onTap: () => onChanged(tipo),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
@@ -56,7 +57,7 @@ class SegmentosPeriodo extends StatelessWidget {
                     color: tipo == seleccionado
                         ? AppColors.primario
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(9),
+                    borderRadius: BorderRadius.circular(AppRadios.icono),
                   ),
                   child: Text(
                     _etiquetas[tipo]!,
@@ -97,14 +98,14 @@ class PildoraPeriodo extends StatelessWidget {
       label: 'Elegir $unidad, ${periodo.etiqueta.toLowerCase()}',
       excludeSemantics: true,
       child: InkWell(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadios.pildora),
         onTap: onElegir,
         child: Container(
           constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: AppColors.contenedorSuave,
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(AppRadios.pildora),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

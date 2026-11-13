@@ -18,6 +18,7 @@ import '../data/demo_data.dart';
 import '../features/registro_inteligente/openai_extraction_service.dart';
 import 'package:tag_ok/utils/file_saver.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class AuditScreen extends StatefulWidget {
   const AuditScreen({super.key});
@@ -1431,7 +1432,7 @@ Instrucciones para redactar el "aiReport":
           builder: (context) => AlertDialog(
             backgroundColor: AppColors.superficie,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             ),
             title: const Row(
               children: [
@@ -1830,7 +1831,7 @@ Instrucciones para redactar el "aiReport":
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.superficie.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: Row(
@@ -1862,7 +1863,7 @@ Instrucciones para redactar el "aiReport":
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primario : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppRadios.icono),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -2082,7 +2083,7 @@ Instrucciones para redactar el "aiReport":
         height: 130,
         decoration: BoxDecoration(
           color: AppColors.superficie.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           border: Border.all(
             color: _useAI
                 ? AppColors.primario.withValues(alpha: 0.4)
@@ -2131,7 +2132,7 @@ Instrucciones para redactar el "aiReport":
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: AppColors.superficie.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(color: Colors.transparent),
       ),
       child: Column(
@@ -2192,8 +2193,8 @@ Instrucciones para redactar el "aiReport":
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.transparent),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -2354,7 +2355,7 @@ Instrucciones para redactar el "aiReport":
                             AppColors.primario.withValues(alpha: 0.05),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                         border: Border.all(
                           color: AppColors.primario.withValues(alpha: 0.2),
                         ),
@@ -2427,7 +2428,7 @@ Instrucciones para redactar el "aiReport":
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
                           color: AppColors.contenedorSuave,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadios.icono),
                           border: Border.all(
                             color: Colors.transparent,
                           ),
@@ -2586,7 +2587,7 @@ Instrucciones para redactar el "aiReport":
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.superficie.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(color: Colors.transparent),
       ),
       child: Column(
@@ -2678,7 +2679,7 @@ Instrucciones para redactar el "aiReport":
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? AppColors.primario : AppColors.contenedorSuave,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadios.icono),
           border: Border.all(
             color: isActive ? Colors.transparent : Colors.transparent,
           ),
@@ -2789,7 +2790,7 @@ Instrucciones para redactar el "aiReport":
                         ),
                         child: Center(
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                             child: Container(
                               constraints: const BoxConstraints(
                                 maxWidth: 420,
@@ -2980,8 +2981,8 @@ Instrucciones para redactar el "aiReport":
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.transparent),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3104,7 +3105,7 @@ Instrucciones para redactar el "aiReport":
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(color: Colors.transparent),
       ),
       child: Column(
@@ -3146,7 +3147,7 @@ Instrucciones para redactar el "aiReport":
           ),
           const SizedBox(height: 20),
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppRadios.icono),
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: AppColors.contenedorSuave,
@@ -3194,8 +3195,8 @@ Instrucciones para redactar el "aiReport":
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.transparent),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -3239,8 +3240,8 @@ Instrucciones para redactar el "aiReport":
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.transparent),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),

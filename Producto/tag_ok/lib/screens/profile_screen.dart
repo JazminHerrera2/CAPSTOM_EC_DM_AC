@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dialogo_cerrar_sesion.dart';
 import 'login_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -287,7 +288,7 @@ class ProfileScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.error,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppRadios.control),
                     ),
                     elevation: 0,
                   ),
@@ -355,7 +356,7 @@ class ProfileScreen extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primario,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () => Navigator.pop(context),
@@ -391,7 +392,7 @@ class ProfileScreen extends StatelessWidget {
         return AlertDialog(
           backgroundColor: AppColors.superficie,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
           title: Text(
             'Editar Perfil',
@@ -445,7 +446,7 @@ class ProfileScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primario,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                 ),
               ),
               onPressed: () async {
@@ -600,7 +601,7 @@ class ProfileScreen extends StatelessWidget {
 
             return AlertDialog(
               backgroundColor: AppColors.superficie,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
               title: Text(
                 'Cambiar contraseña',
                 style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold),
@@ -665,7 +666,7 @@ class ProfileScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primario,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadios.control),
                     ),
                   ),
                   onPressed: guardando ? null : guardar,
@@ -706,8 +707,8 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.transparent),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -747,13 +748,13 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           color: AppColors.superficie,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.transparent),
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          boxShadow: AppSombras.tarjeta,
         ),
         child: Row(
           children: [
@@ -761,7 +762,7 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: AppColors.fondo,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadios.icono),
               ),
               child: Icon(icon, color: AppColors.primario, size: 24),
             ),

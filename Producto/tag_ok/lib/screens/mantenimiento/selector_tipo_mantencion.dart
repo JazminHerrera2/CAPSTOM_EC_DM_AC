@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Selector (tipo de mantención, vehículo) en forma de acordeón: al tocar la cabecera
 /// se despliega la lista de opciones. Si se elige [opcionOtra], aparece debajo
@@ -66,7 +67,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
       margin: EdgeInsets.only(top: widget.flotante ? 0 : 6),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
         boxShadow: widget.flotante
             ? [
@@ -210,9 +211,9 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
           child: Material(
             key: _botonKey,
             color: AppColors.superficie,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadios.control),
             child: InkWell(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadios.control),
               onTap: _alternar,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -221,7 +222,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                   border: Border.all(
                     color: _abierto ? AppColors.primario : Colors.transparent,
                     width: _abierto ? 1.5 : 1,
@@ -305,11 +306,11 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
               filled: true,
               fillColor: AppColors.fondo,
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
                 borderSide: const BorderSide(color: AppColors.borde),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
                 borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
               ),
             ),

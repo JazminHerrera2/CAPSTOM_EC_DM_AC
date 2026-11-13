@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class VehiculosScreen extends StatefulWidget {
   const VehiculosScreen({super.key});
@@ -160,7 +161,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.superficie,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
           title: Text('Información del Vehículo', style: TextStyle(color: AppColors.texto)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -206,7 +207,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
           builder: (context, setModalState) {
             return AlertDialog(
               backgroundColor: AppColors.superficie,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
               title: Text('Editar Vehículo', style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold)),
               content: SingleChildScrollView(
                 child: Column(
@@ -279,7 +280,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primario,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
                   ),
                   onPressed: () async {
                     final p = patenteCtrl.text.trim().toUpperCase();
@@ -316,7 +317,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.superficie,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
           title: Text('Seleccionar Vehículo Principal', style: TextStyle(color: AppColors.texto)),
           content: SizedBox(
             width: double.maxFinite,
@@ -357,7 +358,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
           builder: (context, setModalState) {
             return AlertDialog(
               backgroundColor: AppColors.superficie,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
               title: Text('Agregar Nuevo Vehículo', style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold)),
               content: SingleChildScrollView(
                 child: Column(
@@ -430,7 +431,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primario,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
                   ),
                   onPressed: () async {
                     bool success = await _agregarVehiculo();
@@ -554,13 +555,13 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
         if (patentes.isNotEmpty)
           InkWell(
             onTap: () => _mostrarSelectorVehiculoPrincipal(patentes),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadios.icono),
             child: Container(
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 color: AppColors.primario.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadios.icono),
                 border: Border.all(color: AppColors.primario),
               ),
               child: Row(
@@ -596,7 +597,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
               return Card(
                 color: AppColors.superficie,
                 margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
                 child: ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),

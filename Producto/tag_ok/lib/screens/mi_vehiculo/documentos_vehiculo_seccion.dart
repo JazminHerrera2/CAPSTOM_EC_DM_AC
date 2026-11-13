@@ -7,6 +7,7 @@ import '../../utils/orden_documentos.dart';
 import 'detalle_documento_screen.dart';
 import 'registrar_documento_ia_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Documentos de UN vehículo: tarjeta con la patente, y las
 /// tarjetas de sus documentos con estado y vencimiento (o el estado vacío con
@@ -189,7 +190,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
     final color = _colorEstado(estado);
 
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       onTap: () {
         Navigator.push(
           context,
@@ -206,10 +207,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.superficie,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: Colors.transparent,
-          ),
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          boxShadow: AppSombras.tarjeta,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +251,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: color.withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                           border: Border.all(
                             color: color.withOpacity(0.35),
                           ),
@@ -361,7 +360,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   backgroundColor: AppColors.primario.withOpacity(0.10),
                   side: BorderSide(color: AppColors.primario.withOpacity(0.6)),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadios.control),
                   ),
                 ),
               ),
@@ -385,10 +384,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.transparent,
-        ),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         children: [
@@ -397,7 +394,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
             height: 70,
             decoration: BoxDecoration(
               color: AppColors.primario.withOpacity(0.10),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             ),
             child: const Icon(
               Icons.description_outlined,
@@ -447,7 +444,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 vertical: 14,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
               ),
             ),
           ),
@@ -476,7 +473,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
             // Más claro y con acento (violeta) para distinguir al vehículo de
             // las tarjetas de documentos, que son oscuras.
             color: AppColors.sobreLavanda,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             border: Border.all(
               color: AppColors.primario.withOpacity(0.55),
             ),
@@ -488,7 +485,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 height: 44,
                 decoration: BoxDecoration(
                   color: AppColors.primario.withOpacity(0.28),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadios.icono),
                 ),
                 child: const Icon(
                   Icons.directions_car_outlined,
@@ -544,7 +541,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                 ),
               ),
             ),

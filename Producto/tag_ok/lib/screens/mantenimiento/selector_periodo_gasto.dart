@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'gasto_periodo.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 const List<String> _mesesAbreviados = [
   'Ene',
@@ -64,7 +65,7 @@ class _DialogoPeriodo extends StatelessWidget {
       label: semantica,
       excludeSemantics: true,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadios.icono),
         onTap: () => Navigator.pop(context, periodo),
         child: Container(
           width: 84,
@@ -72,7 +73,7 @@ class _DialogoPeriodo extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 44),
           decoration: BoxDecoration(
             color: seleccionada ? AppColors.primario : AppColors.contenedorSuave,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadios.icono),
           ),
           child: Text(
             texto,
@@ -156,7 +157,7 @@ class _DialogoPeriodo extends StatelessWidget {
     return Dialog(
       backgroundColor: AppColors.superficie,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         side: const BorderSide(color: Colors.transparent),
       ),
       child: Padding(

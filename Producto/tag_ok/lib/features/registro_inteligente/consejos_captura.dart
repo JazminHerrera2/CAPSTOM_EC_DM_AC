@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Aviso previo a abrir la cámara: una foto nítida y bien iluminada mejora
 /// bastante la lectura de la IA. Devuelve `true` si el usuario quiere seguir
@@ -27,7 +28,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
     context: context,
     builder: (dialogContext) => AlertDialog(
       backgroundColor: AppColors.superficie,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
       title: const Row(
         children: [
           Icon(Icons.light_mode_outlined, color: Colors.amber),
@@ -67,7 +68,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primario,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppRadios.control),
             ),
           ),
           onPressed: () => Navigator.pop(dialogContext, true),

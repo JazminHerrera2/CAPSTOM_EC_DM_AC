@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/auth_provider.dart';
 import 'home_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -167,7 +168,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Container(
                   height: 56,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadios.control),
                     gradient: const LinearGradient(
                       colors: [AppColors.primario, AppColors.primario],
                       begin: Alignment.topLeft,
@@ -187,7 +188,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(AppRadios.control),
                       ),
                       disabledBackgroundColor: Colors.transparent,
                     ),
@@ -264,7 +265,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: TextField(
@@ -290,7 +291,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.superficie,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: const Text('Recuperar contraseña', style: TextStyle(color: AppColors.texto)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -308,7 +309,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 hintStyle: const TextStyle(color: AppColors.textoSecundario),
                 filled: true,
                 fillColor: AppColors.fondo,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadios.control), borderSide: BorderSide.none),
               ),
             ),
           ],
@@ -321,7 +322,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primario,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
             ),
             onPressed: () async {
               final email = resetEmailController.text.trim();

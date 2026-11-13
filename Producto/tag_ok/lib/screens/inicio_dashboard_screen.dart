@@ -23,6 +23,7 @@ import 'herramientas/placeholder_modulo_screen.dart';
 import 'mi_vehiculo/detalle_vehiculo_screen.dart';
 import 'mi_vehiculo/foto_vehiculo.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// "Inicio" — dashboard "Mi Auto" (Sprint 5, RF-044 a RF-049).
 ///
@@ -64,15 +65,12 @@ class InicioDashboardScreen extends StatefulWidget {
 class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   static const double _anchoMaximo = 480;
 
-  // Radio de esquina de todas las tarjetas del Inicio.
-  static const double _radioTarjeta = 20;
-
   final String? _uid = FirebaseAuth.instance.currentUser?.uid;
   // Ancho de la tarjeta del vehículo cuando hay varios, como fracción del ancho
   // de la columna: queda alineada a la izquierda y la siguiente se asoma a la
   // derecha. Con un solo vehículo la tarjeta ocupa todo el ancho.
   static const double _anchoTarjetaVehiculo = 0.8;
-  static const double _altoTarjetaVehiculo = 112;
+  static const double _altoTarjetaVehiculo = 96;
   final PageController _paginas =
       PageController(viewportFraction: _anchoTarjetaVehiculo);
   final List<StreamSubscription<dynamic>> _subs = [];
@@ -324,7 +322,6 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final seleccionado = _seleccionado;
-    final estadoGlobal = peorEstado(_vehiculos.map(_estadoDe));
     final primerNombre = _nombre.isEmpty ? 'Conductor' : _nombre.split(' ').first;
 
     return Scaffold(
@@ -339,34 +336,29 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: _anchoMaximo),
                   child: ListView(
-              // El botón del mapa sobresale un poco de la barra inferior.
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
-              children: [
-                Text(
-                  '¡Hola, $primerNombre!',
-                  style: const TextStyle(
-                    color: AppColors.texto,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
+                    // El botón del mapa sobresale un poco de la barra inferior.
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
+                    children: [
+                      Text(
+                        '¡Hola, $primerNombre!',
+                        style: const TextStyle(
+                          color: AppColors.texto,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _carrusel(),
+                      const SizedBox(height: 14),
+                      _gastos(seleccionado),
+                      const SizedBox(height: 20),
+                      _accionesRapidas(),
+                      const SizedBox(height: 24),
+                      _seccionProximos(seleccionado),
+                      const SizedBox(height: 24),
+                      _seccionBeneficios(),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtituloGlobal(estadoGlobal, hayVehiculos: _vehiculos.isNotEmpty),
-                  style: const TextStyle(color: AppColors.textoSecundario, fontSize: 14),
-                ),
-                const SizedBox(height: 18),
-                _carrusel(),
-                const SizedBox(height: 24),
-                _gastos(seleccionado),
-                const SizedBox(height: 12),
-                _seccionAtencion(seleccionado),
-                const SizedBox(height: 26),
-                _accionesRapidas(),
-                const SizedBox(height: 26),
-                _seccionBeneficios(),
-              ],
-            ),
                 ),
               ),
             ),
@@ -376,23 +368,8 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
     );
   }
 
-  Widget _tarjeta({required Widget child, EdgeInsets? padding, VoidCallback? onTap}) {
-    return Material(
-      color: AppColors.superficie,
-      borderRadius: BorderRadius.circular(_radioTarjeta),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(_radioTarjeta),
-        onTap: onTap,
-        child: Padding(
-          padding: padding ?? const EdgeInsets.all(14),
-          child: child,
-        ),
-      ),
-    );
-  }
-
-  /// Título de sección ("Gastos del mes", "Beneficios"…) con un enlace
-  /// opcional "Ver todo" a la derecha.
+  /// Título de sección ("Próximos", "Beneficios"…) con un enlace opcional
+  /// "Ver todo" a la derecha.
   Widget _tituloSeccion(String titulo, {VoidCallback? verTodo}) {
     return Row(
       children: [
@@ -422,18 +399,26 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
     );
   }
 
-  /// Ícono de la marca dentro de un contenedor suave (cuadrado redondeado o
-  /// círculo), como en las filas de atención y las acciones rápidas.
-  Widget _iconoMarca(IconData icono, {bool circular = false, double tamano = 44}) {
+  /// Ícono de la marca dentro de un cuadrado redondeado suave.
+  Widget _iconoMarca(IconData icono, {double tamano = 44}) {
     return Container(
       width: tamano,
       height: tamano,
       decoration: BoxDecoration(
         color: AppColors.contenedorSuave,
-        shape: circular ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: circular ? null : BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadios.icono),
       ),
       child: Icon(icono, color: AppColors.primario, size: tamano * 0.52),
+    );
+  }
+
+  /// Botón circular pequeño con una flecha ">" (tarjetas presionables).
+  Widget _botonFlecha({Color fondo = AppColors.fondo, Color color = AppColors.textoSecundario}) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: fondo),
+      child: Icon(Icons.chevron_right, color: color, size: 20),
     );
   }
 
@@ -442,18 +427,19 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   Widget _carrusel() {
     final lista = _ordenados;
     if (lista.isEmpty) {
-      return _tarjeta(
+      return TarjetaApp(
         onTap: widget.onIrAVehiculos,
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.directions_car_outlined, color: AppColors.primario, size: 40),
-            SizedBox(width: 14),
-            Expanded(
+            _iconoMarca(Icons.directions_car_outlined, tamano: 56),
+            const SizedBox(width: 14),
+            const Expanded(
               child: Text(
                 'Aún no tienes vehículos. Toca para registrar el primero.',
                 style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w600),
               ),
             ),
+            _botonFlecha(),
           ],
         ),
       );
@@ -486,12 +472,12 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                   child: _tarjetaVehiculo(lista[i]),
                 ),
               ),
-              if (varios && _indice > 0)
+              if (_indice > 0)
                 Align(
                   alignment: Alignment.centerLeft,
                   child: _flecha(Icons.chevron_left, () => _irA(_indice - 1)),
                 ),
-              if (varios && _indice < lista.length - 1)
+              if (_indice < lista.length - 1)
                 Align(
                   alignment: Alignment.centerRight,
                   child: _flecha(Icons.chevron_right, () => _irA(_indice + 1)),
@@ -543,6 +529,9 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
     );
   }
 
+  /// Foto en un cuadrado redondeado; a la derecha "Mi vehículo", el nombre y
+  /// la patente con el año; en el extremo derecho, el chip de estado arriba y
+  /// la flecha abajo.
   Widget _tarjetaVehiculo(VehiculoModel v) {
     final alias = (v.alias ?? '').trim();
     final marcaModelo = [v.marca, v.modelo]
@@ -553,23 +542,18 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         : (marcaModelo.isNotEmpty ? marcaModelo : 'Mi vehículo');
     final detalle = [v.patente, if (v.anio != null) '${v.anio}'].join(' · ');
 
-    return _tarjeta(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return TarjetaApp(
+      padding: const EdgeInsets.all(14),
       onTap: () => _abrirDetalleVehiculo(v),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Foto circular con un anillo lavanda: la imagen (foto o dibujo del
-          // auto) llena todo el círculo, sin márgenes, y se recorta lo que sobre.
-          Container(
-            padding: const EdgeInsets.all(3),
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.barraInactiva,
-            ),
-            child: ClipOval(
+          Center(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadios.control),
               child: Container(
-                width: 68,
-                height: 68,
+                width: 72,
+                height: 64,
                 color: AppColors.contenedorSuave,
                 child: FotoVehiculo(
                   fotoPath: v.fotoPath,
@@ -580,160 +564,230 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           // Si el texto no cabe en el ancho, se achica en vez de cortarse o
           // desbordar.
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
+          Expanded(
+            child: Align(
               alignment: Alignment.centerLeft,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    titulo,
-                    maxLines: 1,
-                    style: const TextStyle(
-                      color: AppColors.texto,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      height: 1.15,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Mi vehículo',
+                      style: TextStyle(
+                        color: AppColors.textoSecundario,
+                        fontSize: 12.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    detalle,
-                    maxLines: 1,
-                    style: const TextStyle(
-                      color: AppColors.textoSecundario,
-                      fontSize: 13.5,
+                    const SizedBox(height: 2),
+                    Text(
+                      titulo,
+                      maxLines: 1,
+                      style: const TextStyle(
+                        color: AppColors.texto,
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                        height: 1.15,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  EstadoVehiculoChip(estado: _estadoDe(v)),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      detalle,
+                      maxLines: 1,
+                      style: const TextStyle(
+                        color: AppColors.textoSecundario,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              EstadoVehiculoChip(estado: _estadoDe(v), compacto: true),
+              _botonFlecha(),
+            ],
           ),
         ],
       ),
     );
   }
 
-  // --- Atención: próxima mantención y próximo vencimiento ----------------------
+  // --- Gastos del mes ----------------------------------------------------
 
-  /// Dos filas alargadas, una debajo de la otra, justo bajo Gastos del mes:
-  /// primero el próximo vencimiento y luego la próxima mantención. la próxima
-  /// mantención según el kilometraje del vehículo (el que se pidió al
-  /// registrarlo, más 10.000 km) y la fecha del documento que vence primero.
-  /// Ambas abren el detalle del vehículo.
-  Widget _seccionAtencion(VehiculoModel? v) {
-    final kmMantencion = kilometrajeProximaMantencion(v?.kilometrajeActual);
+  // Alto máximo de las barras del gráfico y alto mínimo (mes sin gastos).
+  static const double _altoBarras = 30;
+  static const double _altoMinBarra = 6;
 
-    final proximo = v == null
-        ? null
-        : calcularProximoVencimiento(_documentosDe(v));
-    final fecha = proximo?.documento.fechaVencimiento;
+  /// Tarjeta morada: "Gastos de (mes)", el total del mes en grande y, a la
+  /// derecha, las barras de los últimos meses. Toda la tarjeta abre el
+  /// historial de gastos.
+  Widget _gastos(VehiculoModel? v) {
+    final r = _resumenGastos(v);
+    final mes = nombreDelMes(r.meses.last.month).toLowerCase();
+    final variacion = r.variacionPct;
+    final String subtitulo;
+    if (r.totalMes == 0) {
+      subtitulo = 'Sin gastos registrados este mes';
+    } else if (variacion == null) {
+      subtitulo = 'Total pagado este mes';
+    } else {
+      final anterior =
+          nombreDelMes(r.meses[r.meses.length - 2].month).toLowerCase();
+      subtitulo =
+          '${variacion >= 0 ? '+' : ''}${variacion.round()}% vs. $anterior';
+    }
+    const blanco = AppColors.sobrePrimario;
 
-    final detalleVencimiento = proximo == null
-        ? 'Sin documentos'
-        : (proximo.dias < 0
-            ? '${proximo.documento.tipoDocumento.etiqueta} · Vencido'
-            : proximo.documento.tipoDocumento.etiqueta);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Arriba el próximo vencimiento (abre el detalle del vehículo, donde
-        // están sus documentos) y debajo la próxima mantención (abre la página
-        // de Mantenciones).
-        _filaAtencion(
-          icono: Icons.calendar_today_outlined,
-          titulo: 'Próximo vencimiento',
-          valor: fecha == null ? '--' : formatearFecha(fecha),
-          detalle: detalleVencimiento,
-          onTap: () => _abrirDetalleVehiculo(v),
-        ),
-        const SizedBox(height: 10),
-        _filaAtencion(
-          icono: Icons.build_outlined,
-          titulo: 'Próxima mantención',
-          valor: kmMantencion == null ? '--' : '${formatearMiles(kmMantencion)} km',
-          detalle: kmMantencion == null
-              ? 'Sin kilometraje registrado'
-              : 'A tus',
-          onTap: () => widget.onAbrirMantenciones?.call(),
-        ),
-      ],
+    return TarjetaApp(
+      color: AppColors.primario,
+      sombra: AppSombras.primaria,
+      padding: const EdgeInsets.fromLTRB(20, 16, 16, 18),
+      onTap: () => _abrirHistorialGastos(v),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.credit_card_outlined,
+                color: blanco.withValues(alpha: 0.85),
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Gastos de $mes',
+                  style: const TextStyle(
+                    color: blanco,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              _botonFlecha(
+                fondo: blanco.withValues(alpha: 0.18),
+                color: blanco,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Una sola línea: si el monto es largo, se achica.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        formatearPesos(r.totalMes),
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: blanco,
+                          fontSize: 38,
+                          height: 1.1,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Una sola línea: se achica si no cabe.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        subtitulo,
+                        maxLines: 1,
+                        style: TextStyle(
+                          color: blanco.withValues(alpha: 0.8),
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(width: 124, child: _barras(r)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  /// Fila baja: ícono, título (con su detalle debajo, si lo hay) y, a la
-  /// derecha, el valor. Si el ancho no alcanza, el valor baja a la línea de
-  /// abajo y la tarjeta se alarga para contenerlo (no tiene alto fijo, así que
-  /// nunca desborda).
-  Widget _filaAtencion({
-    required IconData icono,
-    required String titulo,
-    required String valor,
-    required String detalle,
-    required VoidCallback onTap,
-  }) {
-    return _tarjeta(
-      onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 44),
-        child: Row(
-          children: [
-            _iconoMarca(icono),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                runSpacing: 2,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        titulo,
-                        style: const TextStyle(
-                          color: AppColors.texto,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
+  /// Una barra por mes (los últimos 5). La altura NO es proporcional al monto:
+  /// depende de la posición del mes entre los de mayor a menor gasto. El que más
+  /// gastó llega al tope y los demás bajan un escalón por puesto; un mes sin
+  /// gastos queda en el alto mínimo. El mes actual va en blanco y los demás en
+  /// blanco translúcido.
+  Widget _barras(ResumenGastos r) {
+    final alturas = alturasPorPosicion(r.totales);
+    final ultimo = r.totales.length - 1;
+    const blanco = AppColors.sobrePrimario;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: _altoBarras,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              for (var i = 0; i < alturas.length; i++)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        height: _altoMinBarra +
+                            (_altoBarras - _altoMinBarra) * alturas[i],
+                        decoration: BoxDecoration(
+                          color: i == ultimo
+                              ? blanco
+                              : blanco.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      if (detalle.isNotEmpty)
-                        Text(
-                          detalle,
-                          style: const TextStyle(
-                            color: AppColors.textoSecundario,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                    ],
-                  ),
-                  Text(
-                    valor,
-                    style: const TextStyle(
-                      color: AppColors.texto,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ],
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            for (var i = 0; i < r.meses.length; i++)
+              Expanded(
+                child: Text(
+                  mesCorto(r.meses[i]),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: i == ultimo ? blanco : blanco.withValues(alpha: 0.75),
+                    fontSize: 11,
+                    fontWeight: i == ultimo ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 6),
-            const Icon(Icons.chevron_right, color: AppColors.textoSecundario, size: 22),
           ],
         ),
-      ),
+      ],
     );
   }
 
@@ -759,187 +813,204 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
       ),
     ];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    // Siempre las tres una al lado de la otra: se reparten el ancho.
+    return Row(
       children: [
-        _tituloSeccion('Acciones rápidas'),
-        const SizedBox(height: 12),
-        // Siempre las tres una al lado de la otra y del mismo tamaño: se reparten
-        // el ancho disponible, así que en pantallas más anchas se alargan.
-        SizedBox(
-          height: 104,
-          child: Row(
-            children: [
-              for (var i = 0; i < acciones.length; i++) ...[
-                if (i > 0) const SizedBox(width: 10),
-                Expanded(
-                  child: _accion(
-                    acciones[i].titulo,
-                    acciones[i].icono,
-                    acciones[i].onTap,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+        for (final a in acciones)
+          Expanded(child: _accion(a.titulo, a.icono, a.onTap)),
       ],
     );
   }
 
-  /// Ícono en un círculo suave y su nombre debajo.
+  /// Círculo blanco con el ícono y el nombre debajo, sin tarjeta.
   Widget _accion(String titulo, IconData icono, VoidCallback? onTap) {
-    return _tarjeta(
-        onTap: onTap,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _iconoMarca(icono, circular: true),
-            const SizedBox(height: 10),
-            // Una sola línea: si el nombre no cabe, se achica un poco en vez de
-            // bajar de línea y desbordar la tarjeta.
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                titulo,
-                maxLines: 1,
-                style: const TextStyle(
-                  color: AppColors.texto,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.superficie,
+              boxShadow: AppSombras.tarjeta,
+            ),
+            child: Icon(icono, color: AppColors.primario, size: 28),
+          ),
+          const SizedBox(height: 8),
+          // Una sola línea: si el nombre no cabe, se achica un poco.
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              titulo,
+              maxLines: 1,
+              style: const TextStyle(
+                color: AppColors.texto,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 
-  // --- Gastos del mes ----------------------------------------------------
+  // --- Próximos: vencimiento y mantención --------------------------------
 
-  // Alto de la línea del precio (28 px con interlineado 1.2). El tope del
-  // gráfico es ese mismo alto: la barra más alta llega a la altura del precio.
-  // Contenido de la tarjeta de gastos (precio/gráfico + meses) y su alto total
-  // (con 16 px de margen arriba y abajo): la tarjeta del vehículo usa el mismo.
-  static const double _altoContenidoGastos = altoContenidoTarjetaGastos;
-  static const double _altoPrecio = 34;
-  static const double _altoMinBarra = 6;
+  /// "En 3 meses", "En 12 días", "Vencido"… a partir de los días que faltan.
+  static String _tiempoRestante(int dias) {
+    if (dias < 0) return 'Vencido';
+    if (dias == 0) return 'Hoy';
+    if (dias == 1) return 'Mañana';
+    if (dias < 30) return 'En $dias días';
+    if (dias < 365) {
+      final m = dias ~/ 30;
+      return 'En $m ${m == 1 ? 'mes' : 'meses'}';
+    }
+    final a = dias ~/ 365;
+    return 'En $a ${a == 1 ? 'año' : 'años'}';
+  }
 
-  Widget _gastos(VehiculoModel? v) {
-    final r = _resumenGastos(v);
+  /// Una tarjeta con dos filas: el documento que vence primero (abre el
+  /// detalle del vehículo, donde están sus documentos) y la próxima mantención
+  /// según el kilometraje (abre Mantenciones).
+  Widget _seccionProximos(VehiculoModel? v) {
+    final kmMantencion = kilometrajeProximaMantencion(v?.kilometrajeActual);
+    final proximo = v == null ? null : calcularProximoVencimiento(_documentosDe(v));
+
+    final String tituloDoc;
+    final String detalleDoc;
+    String? etiquetaDoc;
+    var vencido = false;
+    if (proximo == null) {
+      tituloDoc = 'Documentos';
+      detalleDoc = 'Sin vencimientos registrados';
+    } else {
+      final vence = proximo.documento.fechaVencimiento;
+      final fecha = vence == null ? '--' : formatearFecha(vence);
+      vencido = proximo.dias < 0;
+      tituloDoc = proximo.documento.tipoDocumento.etiqueta;
+      detalleDoc = vencido ? 'Venció el $fecha' : 'Vence el $fecha';
+      etiquetaDoc = _tiempoRestante(proximo.dias);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _tituloSeccion('Gastos del mes', verTodo: () => _abrirHistorialGastos(v)),
+        _tituloSeccion('Próximos'),
         const SizedBox(height: 12),
-        _tarjeta(
-          padding: const EdgeInsets.all(18),
-          child: SizedBox(
-            height: _altoContenidoGastos,
-            child: Row(
-            // El monto queda centrado respecto del gráfico (barras + meses).
-            crossAxisAlignment: CrossAxisAlignment.center,
+        TarjetaApp(
+          padding: EdgeInsets.zero,
+          child: Column(
             children: [
-              Expanded(
-                // Una sola línea: si el monto es largo, se achica en vez de
-                // partirse, para no mover el tope del gráfico.
-                child: SizedBox(
-                  height: _altoPrecio,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      formatearPesos(r.totalMes),
-                      maxLines: 1,
-                      style: const TextStyle(
-                        color: AppColors.texto,
-                        fontSize: 28,
-                        height: 1.2,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
+              _filaProximo(
+                icono: Icons.calendar_today_outlined,
+                titulo: tituloDoc,
+                detalle: detalleDoc,
+                etiqueta: etiquetaDoc,
+                urgente: vencido,
+                onTap: () => _abrirDetalleVehiculo(v),
               ),
-              const SizedBox(width: 12),
-              Expanded(child: _barras(r)),
+              const Divider(
+                height: 1,
+                thickness: 1,
+                indent: 16,
+                endIndent: 16,
+                color: AppColors.borde,
+              ),
+              _filaProximo(
+                icono: Icons.build_outlined,
+                titulo: 'Mantención',
+                detalle: kmMantencion == null
+                    ? 'Sin kilometraje registrado'
+                    : 'A los ${formatearMiles(kmMantencion)} km',
+                onTap: () => widget.onAbrirMantenciones?.call(),
+              ),
             ],
-          ),
           ),
         ),
       ],
     );
   }
 
-  /// Una barra por mes (los últimos 5). La altura NO es proporcional al monto:
-  /// depende de la posición del mes entre los de mayor a menor gasto. El que más
-  /// gastó llega al tope (el alto del precio) y los demás bajan un escalón por
-  /// puesto; un mes sin gastos queda en el alto mínimo. El mes actual va en el
-  /// color primario y los demás en lavanda claro.
-  Widget _barras(ResumenGastos r) {
-    final alturas = alturasPorPosicion(r.totales);
-    final ultimo = r.totales.length - 1;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          height: _altoPrecio,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              for (var i = 0; i < alturas.length; i++)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        height: _altoMinBarra +
-                            (_altoPrecio - _altoMinBarra) * alturas[i],
-                        decoration: BoxDecoration(
-                          color: i == ultimo
-                              ? AppColors.primario
-                              : AppColors.barraInactiva,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
+  /// Fila: ícono, título con su detalle debajo, una etiqueta opcional tipo
+  /// píldora ("En 3 meses") y la flecha.
+  Widget _filaProximo({
+    required IconData icono,
+    required String titulo,
+    required String detalle,
+    String? etiqueta,
+    bool urgente = false,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            _iconoMarca(icono),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titulo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.texto,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  const SizedBox(height: 2),
+                  Text(
+                    detalle,
+                    style: const TextStyle(
+                      color: AppColors.textoSecundario,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (etiqueta != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: urgente ? AppColors.errorFondo : AppColors.contenedorSuave,
+                  borderRadius: BorderRadius.circular(AppRadios.chip),
                 ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            for (var i = 0; i < r.meses.length; i++)
-              Expanded(
                 child: Text(
-                  mesCorto(r.meses[i]),
-                  textAlign: TextAlign.center,
+                  etiqueta,
                   style: TextStyle(
-                    color: i == r.meses.length - 1
-                        ? AppColors.primario
-                        : AppColors.textoSecundario,
-                    fontSize: 10,
-                    fontWeight: i == r.meses.length - 1
-                        ? FontWeight.w700
-                        : FontWeight.w400,
+                    color: urgente ? AppColors.error : AppColors.primario,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
+            ],
+            const SizedBox(width: 6),
+            const Icon(Icons.chevron_right, color: AppColors.textoSecundario, size: 22),
           ],
         ),
-      ],
+      ),
     );
   }
 
   // --- Beneficios --------------------------------------------------------
 
-  /// Título "Beneficios" y, debajo, solo los beneficios (con su imagen): los
-  /// destacados primero. Sin ninguno, un aviso corto.
+  /// Título "Beneficios" y, debajo, un carrusel de banners (solo la imagen):
+  /// los destacados primero. Sin ninguno, un aviso corto.
   Widget _seccionBeneficios() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -947,8 +1018,8 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         _tituloSeccion('Beneficios', verTodo: widget.onIrABeneficios),
         const SizedBox(height: 12),
         if (_beneficios.isEmpty)
-          _tarjeta(
-            child: const Row(
+          const TarjetaApp(
+            child: Row(
               children: [
                 Icon(Icons.card_giftcard_outlined, color: AppColors.textoSecundario),
                 SizedBox(width: 12),
@@ -974,14 +1045,12 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
               },
             ),
             child: SizedBox(
-              // Imagen 3:4 de 140 px de ancho (~187 px) + categoría + título en
-              // dos líneas, con margen para que no desborde.
-              height: 262,
+              height: _altoBanner,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _beneficios.length > 8 ? 8 : _beneficios.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 10),
-                itemBuilder: (_, i) => _miniaturaBeneficio(_beneficios[i]),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                itemBuilder: (_, i) => _bannerBeneficio(_beneficios[i]),
               ),
             ),
           ),
@@ -989,55 +1058,20 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
     );
   }
 
-  Widget _miniaturaBeneficio(BeneficioModel b) {
-    return SizedBox(
-      width: 140,
-      child: Material(
-        color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(16),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => _abrirBeneficio(b),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(aspectRatio: 3 / 4, child: ImagenBeneficio(beneficio: b)),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (b.destacado) ...[
-                          const Icon(Icons.star, color: AppColors.advertencia, size: 13),
-                          const SizedBox(width: 3),
-                        ],
-                        Flexible(
-                          child: Text(
-                            b.etiquetaCategoria,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: AppColors.textoSecundario, fontSize: 10),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      b.titulo,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.texto,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+  static const double _altoBanner = 120;
+
+  Widget _bannerBeneficio(BeneficioModel b) {
+    return Semantics(
+      label: b.titulo,
+      button: true,
+      child: GestureDetector(
+        onTap: () => _abrirBeneficio(b),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          child: SizedBox(
+            width: 230,
+            height: _altoBanner,
+            child: ImagenBeneficio(beneficio: b),
           ),
         ),
       ),

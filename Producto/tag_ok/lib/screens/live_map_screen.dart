@@ -21,6 +21,7 @@ import '../data/models/route_model.dart';
 import '../data/models/trip_history.dart';
 import '../data/services/history_service.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Mapa en tiempo real con seguimiento de pórticos, tracking GPS y cobro de
 /// peajes. Antes vivía en la pestaña "Inicio" de `home_screen.dart`; se
@@ -839,7 +840,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
                 color: AppColors.superficie.withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 border: Border.all(color: Colors.transparent),
                 boxShadow: [
                   BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5)),
@@ -904,7 +905,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                         height: 48,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(colors: [AppColors.primario, AppColors.primario]),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadios.icono),
                           boxShadow: [
                             BoxShadow(color: AppColors.primario.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
                           ],
@@ -943,7 +944,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                               height: 48,
                               decoration: BoxDecoration(
                                 color: AppColors.primario.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(AppRadios.icono),
                                 border: Border.all(color: AppColors.primario.withValues(alpha: 0.3)),
                               ),
                               child: Icon(
@@ -1015,7 +1016,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                               height: 48,
                               decoration: BoxDecoration(
                                 color: AppColors.error,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(AppRadios.icono),
                                 boxShadow: [
                                   BoxShadow(color: Colors.redAccent.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
                                 ],
@@ -1067,7 +1068,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade800.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                       boxShadow: [
                         BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2)),
                       ],
@@ -1160,7 +1161,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.superficie,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
             Icon(Icons.directions_car, color: AppColors.primario),
@@ -1178,7 +1179,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: AppColors.contenedorSuave,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadios.icono),
               ),
               child: Row(
                 children: [
@@ -1204,7 +1205,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primario,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -1234,7 +1235,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.superficie,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: const Text("Seleccionar Vehículo", style: TextStyle(color: AppColors.texto)),
         content: SizedBox(
           width: double.maxFinite,
@@ -1276,7 +1277,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
         barrierDismissible: false, // Obligatorio para que no se lo salten
         builder: (context) => AlertDialog(
           backgroundColor: AppColors.superficie,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
           title: Row(
             children: [
               const Icon(Icons.info_outline, color: Colors.amber),
@@ -1292,7 +1293,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primario,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
               ),
               onPressed: () {
                 Navigator.pop(context);
@@ -1349,7 +1350,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: AppColors.superficie,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
             title: Row(
               children: [
                 Icon(Icons.warning_amber_rounded, color: alertColor),
@@ -1409,14 +1410,14 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
       left: 16,
       right: 16,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: BoxDecoration(
               color: AppColors.superficie.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               border: Border.all(color: Colors.transparent),
             ),
             child: Row(
@@ -1458,14 +1459,14 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
       left: 16,
       right: 16,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.superficie.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               border: Border.all(color: Colors.transparent),
             ),
             child: Row(
@@ -1474,7 +1475,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: AppColors.primario.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadios.icono),
                   ),
                   child: const Icon(Icons.directions_car, color: AppColors.primario, size: 20),
                 ),

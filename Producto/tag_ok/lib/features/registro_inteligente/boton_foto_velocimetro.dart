@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'odometro_extraction.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Botón "Fotografiar velocímetro con IA": abre la cámara, la IA lee el
 /// kilometraje total del odómetro y se lo entrega a [onKilometraje] para que
@@ -99,7 +100,7 @@ class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
               backgroundColor: AppColors.primario.withOpacity(0.10),
               side: BorderSide(color: AppColors.primario.withOpacity(0.6)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
               ),
             ),
           ),

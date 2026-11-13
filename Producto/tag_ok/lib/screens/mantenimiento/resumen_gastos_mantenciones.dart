@@ -7,6 +7,7 @@ import '../dashboard/gastos_historial.dart';
 import 'gasto_periodo.dart';
 import 'widgets_gasto.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Tarjeta "Gastado en <mes>" del vehículo elegido: monto del mes actual y
 /// cantidad de mantenciones, con un enlace "Ver todo" al historial de gastos.
@@ -101,7 +102,8 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.superficie,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+                boxShadow: AppSombras.tarjeta,
               ),
               child: SizedBox(
                 height: altoContenidoTarjetaGastos,

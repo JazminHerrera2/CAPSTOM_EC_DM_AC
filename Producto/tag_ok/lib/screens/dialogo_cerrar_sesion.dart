@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Pregunta al usuario si realmente quiere cerrar sesión. Devuelve `true` solo
 /// si confirma; al cancelar o cerrar el diálogo devuelve `false`.
@@ -10,7 +11,7 @@ Future<bool> confirmarCerrarSesion(BuildContext context) async {
       return AlertDialog(
         backgroundColor: AppColors.superficie,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         ),
         title: const Row(
           children: [

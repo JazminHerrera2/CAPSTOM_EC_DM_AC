@@ -7,6 +7,7 @@ import '../dashboard/encabezado_tag_ok.dart';
 import 'detalle_beneficio_screen.dart';
 import 'imagen_beneficio.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Catálogo de beneficios (RF-030, RF-033, RF-034): solo activos y vigentes,
 /// destacados primero, con filtros por categoría, ubicación y vigencia.
@@ -161,7 +162,7 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                     filled: true,
                     fillColor: AppColors.superficie,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadios.control),
                       borderSide: BorderSide.none,
                     ),
                   ),
@@ -243,84 +244,90 @@ class TarjetaBeneficio extends StatelessWidget {
   Widget build(BuildContext context) {
     final b = beneficio;
     final fin = b.fechaFin;
-    return Material(
-      color: AppColors.superficie,
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.transparent),
-          ),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: 84,
-                  height: 112,
-                  child: ImagenBeneficio(beneficio: b),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
+      ),
+      child: Material(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+              border: Border.all(color: Colors.transparent),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadios.icono),
+                  child: SizedBox(
+                    width: 84,
+                    height: 112,
+                    child: ImagenBeneficio(beneficio: b),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (b.destacado) ...[
-                          const Icon(Icons.star, color: AppColors.advertencia, size: 16),
-                          const SizedBox(width: 4),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          if (b.destacado) ...[
+                            const Icon(Icons.star, color: AppColors.advertencia, size: 16),
+                            const SizedBox(width: 4),
+                          ],
+                          Flexible(
+                            child: Text(
+                              b.etiquetaCategoria,
+                              style: const TextStyle(
+                                color: AppColors.textoSecundario,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
                         ],
-                        Flexible(
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        b.titulo,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.texto,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (b.empresa != null)
+                        Text(
+                          b.empresa!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12),
+                        ),
+                      if (fin != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            b.etiquetaCategoria,
+                            'Hasta ${formatearFecha(fin)}',
                             style: const TextStyle(
                               color: AppColors.textoSecundario,
                               fontSize: 11,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      b.titulo,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.texto,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (b.empresa != null)
-                      Text(
-                        b.empresa!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12),
-                      ),
-                    if (fin != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          'Hasta ${formatearFecha(fin)}',
-                          style: const TextStyle(
-                            color: AppColors.textoSecundario,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
-            ],
+                const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
+              ],
+            ),
           ),
         ),
       ),

@@ -5,6 +5,7 @@ import '../../data/models/documento_vehicular_model.dart';
 import '../../data/services/documento_vehicular_service.dart';
 import 'archivo_documento_view.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class DetalleDocumentoScreen extends StatelessWidget {
   final DocumentoVehicularModel documento;
@@ -153,7 +154,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               color: AppColors.primario.withOpacity(0.10),
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(AppRadios.icono),
             ),
             child: Icon(
               icono,
@@ -237,10 +238,8 @@ class DetalleDocumentoScreen extends StatelessWidget {
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
               color: AppColors.superficie,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.transparent,
-              ),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+              boxShadow: AppSombras.tarjeta,
             ),
             child: Column(
               children: [
@@ -249,7 +248,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   height: 68,
                   decoration: BoxDecoration(
                     color: AppColors.primario.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   ),
                   child: const Icon(
                     Icons.description_outlined,
@@ -290,7 +289,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: colorEstado.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                     border: Border.all(
                       color: colorEstado.withOpacity(0.45),
                     ),
@@ -343,10 +342,8 @@ class DetalleDocumentoScreen extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: AppColors.superficie,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.transparent,
-              ),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+              boxShadow: AppSombras.tarjeta,
             ),
             child: Column(
               children: [
@@ -444,10 +441,8 @@ class DetalleDocumentoScreen extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: AppColors.superficie,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.transparent,
-              ),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+              boxShadow: AppSombras.tarjeta,
             ),
             child: Column(
               children: [
@@ -521,7 +516,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   color: Colors.redAccent.withOpacity(0.6),
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                 ),
               ),
             ),
@@ -546,7 +541,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
         return AlertDialog(
           backgroundColor: AppColors.superficie,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
           title: const Row(
             children: [

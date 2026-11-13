@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dashboard_logica.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Filtro por mes y por año: dos desplegables lado a lado. "Todos" no filtra por
 /// ese criterio (`null`). La lista se abre justo debajo del campo, del mismo
@@ -96,7 +97,7 @@ class FiltroMesAnio extends StatelessWidget {
         labelStyle: const TextStyle(color: AppColors.textoSecundario),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           borderSide: BorderSide.none,
         ),
       ),
@@ -105,7 +106,7 @@ class FiltroMesAnio extends StatelessWidget {
         surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
         elevation: const WidgetStatePropertyAll(6),
         shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
         ),
       ),
       dropdownMenuEntries: entradas,

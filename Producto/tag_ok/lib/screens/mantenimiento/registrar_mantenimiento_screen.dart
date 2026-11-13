@@ -14,6 +14,7 @@ import '../../utils/validaciones_mantencion.dart';
 import 'selector_tipo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class RegistrarMantenimientoScreen extends StatefulWidget {
   /// Vehículo preseleccionado (el elegido en Mantenciones).
@@ -200,7 +201,7 @@ class _RegistrarMantenimientoScreenState
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.superficie,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
             const Icon(Icons.warning_amber_rounded, color: AppColors.advertencia),
@@ -646,7 +647,7 @@ class _RegistrarMantenimientoScreenState
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primario,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(AppRadios.control),
                       ),
                     ),
                   ),
@@ -664,7 +665,7 @@ class _RegistrarMantenimientoScreenState
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: AppColors.primario.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(
           color: AppColors.primario.withOpacity(0.25),
         ),
@@ -745,7 +746,7 @@ class _RegistrarMantenimientoScreenState
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: Row(
@@ -936,7 +937,7 @@ class _RegistrarMantenimientoScreenState
     final fecha = _proximaFecha;
     return InkWell(
       onTap: _seleccionarProximaFecha,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadios.control),
       child: InputDecorator(
         decoration: _decoracionCampo(
           label: 'Próxima fecha',
@@ -995,7 +996,7 @@ class _RegistrarMantenimientoScreenState
 
     return InkWell(
       onTap: _seleccionarFecha,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadios.control),
       child: InputDecorator(
         decoration: decoracion,
         child: Row(
@@ -1092,26 +1093,26 @@ class _RegistrarMantenimientoScreenState
         vertical: 17,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
           color: AppColors.borde,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
           color: AppColors.primario,
           width: 1.5,
         ),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
           color: AppColors.error,
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
           color: AppColors.error,
         ),

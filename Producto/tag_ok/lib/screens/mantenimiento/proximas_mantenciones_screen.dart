@@ -5,6 +5,7 @@ import '../../data/services/mantencion_service.dart';
 import '../../utils/titulo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class ProximasMantenimientosScreen extends StatelessWidget {
   /// Patente del vehículo elegido en Mantenciones.
@@ -92,10 +93,8 @@ class ProximasMantenimientosScreen extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.transparent,
-        ),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         children: [
@@ -164,7 +163,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
                   horizontal: 18,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(13),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                 ),
               ),
             ),
@@ -468,7 +467,7 @@ class _ProgramarMantencionSheetState
                 height: 4,
                 decoration: BoxDecoration(
                   color: AppColors.borde,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
               ),
             ),
@@ -550,7 +549,7 @@ class _ProgramarMantencionSheetState
                   backgroundColor: AppColors.primario,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(AppRadios.control),
                   ),
                 ),
               ),
@@ -579,7 +578,7 @@ class _ProgramarMantencionSheetState
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 decoration: BoxDecoration(
                   color: _modo == modo ? AppColors.primario : AppColors.fondo,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadios.icono),
                 ),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
@@ -608,7 +607,7 @@ class _ProgramarMantencionSheetState
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.fondo,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,13 +642,13 @@ class _ProgramarMantencionSheetState
   Widget _campoFecha() {
     return InkWell(
       onTap: _elegirFecha,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadios.control),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         decoration: BoxDecoration(
           color: AppColors.fondo,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           border: Border.all(color: Colors.transparent),
         ),
         child: Row(
@@ -704,11 +703,11 @@ class _ProgramarMantencionSheetState
         filled: true,
         fillColor: AppColors.fondo,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           borderSide: const BorderSide(color: AppColors.borde),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
         ),
       ),
@@ -730,11 +729,11 @@ class _ProgramarMantencionSheetState
         filled: true,
         fillColor: AppColors.fondo,
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           borderSide: const BorderSide(color: AppColors.borde),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
         ),
       ),

@@ -14,6 +14,7 @@ import '../mantenimiento/selector_tipo_mantencion.dart';
 import '../mantenimiento/tarjeta_mantencion.dart';
 import 'gasto_combustible.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Formulario de una carga de combustible (o de energía eléctrica). Solo la
 /// fecha es obligatoria: el usuario no tiene que completar lo que no necesita.
@@ -199,7 +200,7 @@ class _RegistrarCombustibleScreenState
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.superficie,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
             const Icon(Icons.warning_amber_rounded, color: AppColors.advertencia),
@@ -552,7 +553,7 @@ class _RegistrarCombustibleScreenState
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primario,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(AppRadios.control),
                       ),
                     ),
                   ),
@@ -570,7 +571,7 @@ class _RegistrarCombustibleScreenState
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: AppColors.primario.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(color: AppColors.primario.withValues(alpha: 0.25)),
       ),
       child: Row(
@@ -654,7 +655,7 @@ class _RegistrarCombustibleScreenState
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
       ),
       child: Row(
         children: [
@@ -720,13 +721,13 @@ class _RegistrarCombustibleScreenState
           if (t != TipoAbastecimiento.values.first) const SizedBox(width: 10),
           Expanded(
             child: InkWell(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadios.control),
               onTap: () => setState(() => _tipo = t),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
                   color: _tipo == t ? AppColors.primario : AppColors.superficie,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -808,7 +809,7 @@ class _RegistrarCombustibleScreenState
 
     return InkWell(
       onTap: _seleccionarFecha,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadios.control),
       child: InputDecorator(
         decoration: decoracion,
         child: Row(
@@ -888,19 +889,19 @@ class _RegistrarCombustibleScreenState
       fillColor: AppColors.superficie,
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(color: AppColors.borde),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(color: AppColors.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(color: AppColors.error),
       ),
     );

@@ -4,6 +4,7 @@ import '../../data/models/componente_mantencion_model.dart';
 import '../../data/models/mantencion_model.dart';
 import 'tarjeta_mantencion.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Detalle de una mantención: todos los datos que se guardaron al registrarla
 /// o programarla. Se abre al tocar una tarjeta del historial o de las próximas.
@@ -183,7 +184,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       ),
       child: Text(
         texto,
@@ -209,7 +210,8 @@ class DetalleMantenimientoScreen extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: hijo,
     );
@@ -250,7 +252,8 @@ class DetalleMantenimientoScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Text(
         texto,

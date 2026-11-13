@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dashboard_logica.dart';
 import 'filtro_mes_anio.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Historial de gastos de un vehículo, filtrable por mes y año. Muestra el
 /// total pagado y, debajo, un apartado por tipo de gasto con su total para el
@@ -137,7 +138,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
       ),
       child: Row(
         children: [
@@ -180,7 +181,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: _azulBarras,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       ),
       child: Row(
         children: [
@@ -210,45 +211,51 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
   /// Un tipo de gasto con su total del período; al tocarlo se abre su página.
   Widget _apartado(CategoriaGasto c, int total) {
     final color = _color(c);
-    return Material(
-      color: AppColors.superficie,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => widget.alAbrirCategoria(c),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              // Solo el ícono, en azul y sin recuadro de color detrás.
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(_icono(c), color: color, size: 28),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _etiqueta(c),
-                      style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatearPesos(total),
-                      style: const TextStyle(
-                        color: AppColors.texto,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
+      ),
+      child: Material(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          onTap: () => widget.alAbrirCategoria(c),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                // Solo el ícono, en azul y sin recuadro de color detrás.
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(_icono(c), color: color, size: 28),
                 ),
-              ),
-              const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _etiqueta(c),
+                        style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        formatearPesos(total),
+                        style: const TextStyle(
+                          color: AppColors.texto,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
+              ],
+            ),
           ),
         ),
       ),

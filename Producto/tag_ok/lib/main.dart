@@ -8,6 +8,7 @@ import 'screens/login_screen.dart'; // Importa tu nueva pantalla
 import 'screens/home_screen.dart'; // Importa la pantalla principal
 import 'utils/app_reloader.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Importa Riverpod
 
@@ -122,9 +123,23 @@ class MyApp extends StatelessWidget {
           error: AppColors.error,
         ),
         scaffoldBackgroundColor: AppColors.fondo,
-        dialogTheme: const DialogThemeData(
+        dialogTheme: DialogThemeData(
           backgroundColor: AppColors.superficie,
           surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          ),
+        ),
+        // Tarjetas (Card) iguales a TarjetaApp: blancas, esquinas estándar y
+        // sombra suave.
+        cardTheme: CardThemeData(
+          color: AppColors.superficie,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: AppColors.sobreLavanda.withValues(alpha: 0.25),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          ),
         ),
         bottomSheetTheme: const BottomSheetThemeData(
           backgroundColor: AppColors.superficie,
@@ -149,7 +164,7 @@ class MyApp extends StatelessWidget {
         snackBarTheme: SnackBarThemeData(
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadios.control),
           ),
         ),
       ),

@@ -9,6 +9,7 @@ import '../../features/registro_inteligente/consejos_captura.dart';
 import '../../features/registro_inteligente/preparar_imagen.dart';
 import 'registrar_combustible_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// "Registrar carga": el usuario sube o fotografía la boleta o factura de la
 /// bencinera, la IA la lee en cuanto el archivo está cargado y se abre el
@@ -151,7 +152,7 @@ class _RegistroIaCombustibleScreenState
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.superficie,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
             const Icon(Icons.error_outline, color: Colors.orangeAccent),
@@ -225,8 +226,8 @@ class _RegistroIaCombustibleScreenState
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             color: AppColors.superficie,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.transparent),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: Column(
             children: [
@@ -235,7 +236,7 @@ class _RegistroIaCombustibleScreenState
                 height: 70,
                 decoration: BoxDecoration(
                   color: AppColors.primario.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: const Icon(
                   Icons.document_scanner_outlined,
@@ -325,7 +326,7 @@ class _RegistroIaCombustibleScreenState
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(18),
@@ -333,7 +334,7 @@ class _RegistroIaCombustibleScreenState
           color: principal
               ? AppColors.primario.withValues(alpha: 0.12)
               : AppColors.superficie,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           border: Border.all(
             color: principal
                 ? AppColors.primario.withValues(alpha: 0.65)
@@ -347,7 +348,7 @@ class _RegistroIaCombustibleScreenState
               height: 54,
               decoration: BoxDecoration(
                 color: principal ? AppColors.primario : AppColors.contenedorSuave,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(AppRadios.control),
               ),
               child: Icon(
                 icono,
@@ -393,7 +394,7 @@ class _RegistroIaCombustibleScreenState
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
         color: AppColors.contenedorSuave,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(color: Colors.transparent),
       ),
       child: Text(
@@ -456,7 +457,7 @@ class _RegistroIaCombustibleScreenState
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.superficie,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
                 border: Border.all(color: Colors.transparent),
               ),
               child: const Row(

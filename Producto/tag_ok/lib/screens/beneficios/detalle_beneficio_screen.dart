@@ -5,6 +5,7 @@ import '../../data/models/beneficio_model.dart';
 import '../dashboard/dashboard_logica.dart';
 import 'imagen_beneficio.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Detalle de un beneficio: imagen, descripción, vigencia, condiciones y
 /// enlace externo.
@@ -61,7 +62,7 @@ class DetalleBeneficioScreen extends StatelessWidget {
                 // Horizontal a propósito: en el catálogo y el inicio la imagen
                 // es vertical, y al abrir el beneficio se ve apaisada.
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   child: SizedBox(height: 190, child: ImagenBeneficio(beneficio: b)),
                 ),
                 const SizedBox(height: 16),
@@ -112,7 +113,7 @@ class DetalleBeneficioScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primario,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(AppRadios.control),
                         ),
                       ),
                     ),
@@ -130,7 +131,7 @@ class DetalleBeneficioScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadios.icono),
       ),
       child: Text(
         texto,
@@ -145,7 +146,7 @@ class DetalleBeneficioScreen extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.superficie,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: Row(

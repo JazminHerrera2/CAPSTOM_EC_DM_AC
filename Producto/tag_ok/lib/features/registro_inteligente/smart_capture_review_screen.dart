@@ -7,6 +7,7 @@ import 'extraction_schema_registry.dart';
 import 'smart_capture_result.dart';
 import 'validacion_campos.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class SmartCaptureReviewScreen extends StatefulWidget {
   final SmartCaptureResult? resultado;
@@ -421,7 +422,7 @@ class _SmartCaptureReviewScreenState
               enabledBorder:
                   OutlineInputBorder(
                 borderRadius:
-                    BorderRadius.circular(14),
+                    BorderRadius.circular(AppRadios.control),
                 borderSide: BorderSide(
                   color: dudoso
                       ? AppColors.advertencia
@@ -435,7 +436,7 @@ class _SmartCaptureReviewScreenState
               focusedBorder:
                   OutlineInputBorder(
                 borderRadius:
-                    BorderRadius.circular(14),
+                    BorderRadius.circular(AppRadios.control),
                 borderSide: BorderSide(
                   color: dudoso
                       ? AppColors.advertencia
@@ -517,7 +518,7 @@ class _SmartCaptureReviewScreenState
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.primario.withOpacity(0.14),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: AppColors.primario.withOpacity(0.5)),
       ),
       child: const Row(
@@ -593,7 +594,7 @@ class _SmartCaptureReviewScreenState
             children: [
               for (final forma in FormaPagoPermiso.values)
                 InkWell(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   onTap: () => setState(() {
                     _formaPago = forma;
                     _recalcularVencimiento();
@@ -606,7 +607,7 @@ class _SmartCaptureReviewScreenState
                     ),
                     decoration: BoxDecoration(
                       color: _formaPago == forma ? AppColors.primario : AppColors.superficie,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                       border: Border.all(
                         color: _formaPago == forma
                             ? AppColors.primario
@@ -697,7 +698,7 @@ class _SmartCaptureReviewScreenState
                     : AppColors.primario
                         .withOpacity(0.10),
                 borderRadius:
-                    BorderRadius.circular(18),
+                    BorderRadius.circular(AppRadios.tarjeta),
                 border: Border.all(
                   color: esManual
                       ? Colors.transparent
@@ -718,7 +719,7 @@ class _SmartCaptureReviewScreenState
                           : AppColors.primario
                               .withOpacity(0.18),
                       borderRadius:
-                          BorderRadius.circular(14),
+                          BorderRadius.circular(AppRadios.control),
                     ),
                     child: Icon(
                       esManual
@@ -787,7 +788,7 @@ class _SmartCaptureReviewScreenState
                   color: AppColors.advertencia
                       .withOpacity(0.10),
                   borderRadius:
-                      BorderRadius.circular(14),
+                      BorderRadius.circular(AppRadios.control),
                   border: Border.all(
                     color: AppColors.advertencia
                         .withOpacity(0.55),
@@ -870,7 +871,7 @@ class _SmartCaptureReviewScreenState
                 enabledBorder:
                     OutlineInputBorder(
                   borderRadius:
-                      BorderRadius.circular(14),
+                      BorderRadius.circular(AppRadios.control),
                   borderSide:
                       const BorderSide(
                     color:
@@ -881,7 +882,7 @@ class _SmartCaptureReviewScreenState
                 focusedBorder:
                     OutlineInputBorder(
                   borderRadius:
-                      BorderRadius.circular(14),
+                      BorderRadius.circular(AppRadios.control),
                   borderSide:
                       const BorderSide(
                     color: AppColors.primario,
@@ -989,7 +990,7 @@ class _SmartCaptureReviewScreenState
                   color: AppColors.error
                       .withOpacity(0.10),
                   borderRadius:
-                      BorderRadius.circular(12),
+                      BorderRadius.circular(AppRadios.icono),
                   border: Border.all(
                     color: AppColors.error
                         .withOpacity(0.40),

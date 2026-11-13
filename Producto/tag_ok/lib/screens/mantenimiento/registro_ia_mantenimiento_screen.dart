@@ -10,6 +10,7 @@ import '../../features/registro_inteligente/preparar_imagen.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
 import 'registrar_mantenimiento_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// "Registrar mantención": el usuario sube o fotografía su boleta o factura,
 /// la IA la lee en cuanto el archivo está cargado y se abre el formulario
@@ -154,7 +155,7 @@ class _RegistrarMantenimientoIaScreenState
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.superficie,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
             const Icon(Icons.error_outline, color: Colors.orangeAccent),
@@ -228,8 +229,8 @@ class _RegistrarMantenimientoIaScreenState
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             color: AppColors.superficie,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.transparent),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: Column(
             children: [
@@ -238,7 +239,7 @@ class _RegistrarMantenimientoIaScreenState
                 height: 70,
                 decoration: BoxDecoration(
                   color: AppColors.primario.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: const Icon(
                   Icons.document_scanner_outlined,
@@ -332,13 +333,13 @@ class _RegistrarMantenimientoIaScreenState
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: principal ? AppColors.primario.withOpacity(0.12) : AppColors.superficie,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           border: Border.all(
             color: principal ? AppColors.primario.withOpacity(0.65) : Colors.transparent,
           ),
@@ -350,7 +351,7 @@ class _RegistrarMantenimientoIaScreenState
               height: 54,
               decoration: BoxDecoration(
                 color: principal ? AppColors.primario : AppColors.contenedorSuave,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(AppRadios.control),
               ),
               child: Icon(
                 icono,
@@ -396,7 +397,7 @@ class _RegistrarMantenimientoIaScreenState
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
         color: AppColors.contenedorSuave,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(color: Colors.transparent),
       ),
       child: Text(
@@ -459,7 +460,7 @@ class _RegistrarMantenimientoIaScreenState
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.superficie,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
                 border: Border.all(color: Colors.transparent),
               ),
               child: const Row(
