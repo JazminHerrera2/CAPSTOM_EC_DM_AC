@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/beneficio_model.dart';
 import '../dashboard/dashboard_logica.dart';
 import 'imagen_beneficio.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Detalle de un beneficio: imagen, descripción, vigencia, condiciones y
 /// enlace externo.
@@ -12,11 +13,6 @@ class DetalleBeneficioScreen extends StatelessWidget {
 
   const DetalleBeneficioScreen({super.key, required this.beneficio});
 
-  static const Color _bgColor = Color(0xFFF1F5F9);
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _textMain = Color(0xFF0F172A);
-  static const Color _textMuted = Color(0xFF64748B);
-  static const Color _primaryColor = Color(0xFF1E3A8A);
 
   Future<void> _abrirEnlace(BuildContext context) async {
     final uri = Uri.tryParse(beneficio.urlExterna ?? '');
@@ -48,12 +44,12 @@ class DetalleBeneficioScreen extends StatelessWidget {
     final vigencia = _vigencia;
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: _bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
-        iconTheme: const IconThemeData(color: _textMain),
-        title: const Text('Beneficio', style: TextStyle(color: _textMain)),
+        iconTheme: const IconThemeData(color: AppColors.texto),
+        title: const Text('Beneficio', style: TextStyle(color: AppColors.texto)),
       ),
       body: SafeArea(
         child: Center(
@@ -72,28 +68,28 @@ class DetalleBeneficioScreen extends StatelessWidget {
                 Wrap(
                   spacing: 8,
                   children: [
-                    if (b.categoria != null) _chip(b.etiquetaCategoria, _primaryColor),
-                    if (b.destacado) _chip('Destacado', const Color(0xFFF59E0B)),
+                    if (b.categoria != null) _chip(b.etiquetaCategoria, AppColors.primario),
+                    if (b.destacado) _chip('Destacado', AppColors.advertencia),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Text(
                   b.titulo,
                   style: const TextStyle(
-                    color: _textMain,
+                    color: AppColors.texto,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 if (b.empresa != null) ...[
                   const SizedBox(height: 4),
-                  Text(b.empresa!, style: const TextStyle(color: _textMuted, fontSize: 15)),
+                  Text(b.empresa!, style: const TextStyle(color: AppColors.textoSecundario, fontSize: 15)),
                 ],
                 if (b.descripcion != null) ...[
                   const SizedBox(height: 16),
                   Text(
                     b.descripcion!,
-                    style: const TextStyle(color: _textMain, fontSize: 14, height: 1.5),
+                    style: const TextStyle(color: AppColors.texto, fontSize: 14, height: 1.5),
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -114,7 +110,7 @@ class DetalleBeneficioScreen extends StatelessWidget {
                         style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _primaryColor,
+                        backgroundColor: AppColors.primario,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -148,22 +144,22 @@ class DetalleBeneficioScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: _surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.transparent),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icono, color: _primaryColor, size: 20),
+          Icon(icono, color: AppColors.primario, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(titulo, style: const TextStyle(color: _textMuted, fontSize: 12)),
+                Text(titulo, style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
                 const SizedBox(height: 2),
-                Text(valor, style: const TextStyle(color: _textMain, fontSize: 14, height: 1.4)),
+                Text(valor, style: const TextStyle(color: AppColors.texto, fontSize: 14, height: 1.4)),
               ],
             ),
           ),

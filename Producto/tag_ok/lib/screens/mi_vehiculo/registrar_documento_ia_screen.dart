@@ -16,6 +16,7 @@ import '../../features/registro_inteligente/extraction_schema_registry.dart';
 import '../../features/registro_inteligente/smart_capture_controller.dart';
 import '../../features/registro_inteligente/smart_capture_result.dart';
 import '../../features/registro_inteligente/smart_capture_review_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class RegistrarDocumentoIaScreen extends StatefulWidget {
   final String vehiculoId;
@@ -80,12 +81,6 @@ TipoDocumentoVehicular _aTipoDocumentoVehicular(
 
 class _RegistrarDocumentoIaScreenState
     extends State<RegistrarDocumentoIaScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color surfaceLight = Color(0xFFE2E8F0);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final SmartCaptureController _controller =
       SmartCaptureController();
@@ -217,7 +212,7 @@ class _RegistrarDocumentoIaScreenState
         context: context,
         builder: (context) {
           return AlertDialog(
-            backgroundColor: surfaceColor,
+            backgroundColor: AppColors.superficie,
             shape: RoundedRectangleBorder(
               borderRadius:
                   BorderRadius.circular(18),
@@ -233,7 +228,7 @@ class _RegistrarDocumentoIaScreenState
                   child: Text(
                     'No se pudo analizar',
                     style: TextStyle(
-                      color: textMain,
+                      color: AppColors.texto,
                     ),
                   ),
                 ),
@@ -244,7 +239,7 @@ class _RegistrarDocumentoIaScreenState
               'los datos del documento. Puedes '
               'continuar ingresándolos manualmente.',
               style: TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 height: 1.4,
               ),
             ),
@@ -509,8 +504,8 @@ class _RegistrarDocumentoIaScreenState
                 : 'Documento agregado exitosamente.',
           ),
           backgroundColor: archivoNoSubido
-              ? const Color(0xFFF97316)
-              : const Color(0xFF10B981),
+              ? AppColors.alerta
+              : AppColors.exito,
         ),
       );
     }
@@ -539,13 +534,13 @@ class _RegistrarDocumentoIaScreenState
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: principal
-              ? primaryColor.withOpacity(0.12)
-              : surfaceColor,
+              ? AppColors.primario.withOpacity(0.12)
+              : AppColors.superficie,
           borderRadius:
               BorderRadius.circular(18),
           border: Border.all(
             color: principal
-                ? primaryColor.withOpacity(0.65)
+                ? AppColors.primario.withOpacity(0.65)
                 : Colors.transparent,
           ),
         ),
@@ -556,8 +551,8 @@ class _RegistrarDocumentoIaScreenState
               height: 54,
               decoration: BoxDecoration(
                 color: principal
-                    ? primaryColor
-                    : surfaceLight,
+                    ? AppColors.primario
+                    : AppColors.contenedorSuave,
                 borderRadius:
                     BorderRadius.circular(15),
               ),
@@ -565,7 +560,7 @@ class _RegistrarDocumentoIaScreenState
                 icono,
                 color: principal
                     ? Colors.white
-                    : primaryColor,
+                    : AppColors.primario,
                 size: 26,
               ),
             ),
@@ -578,7 +573,7 @@ class _RegistrarDocumentoIaScreenState
                   Text(
                     titulo,
                     style: const TextStyle(
-                      color: textMain,
+                      color: AppColors.texto,
                       fontSize: 15,
                       fontWeight:
                           FontWeight.w700,
@@ -588,7 +583,7 @@ class _RegistrarDocumentoIaScreenState
                   Text(
                     descripcion,
                     style: const TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -599,7 +594,7 @@ class _RegistrarDocumentoIaScreenState
             const SizedBox(width: 8),
             const Icon(
               Icons.chevron_right,
-              color: textMuted,
+              color: AppColors.textoSecundario,
             ),
           ],
         ),
@@ -616,7 +611,7 @@ class _RegistrarDocumentoIaScreenState
         vertical: 7,
       ),
       decoration: BoxDecoration(
-        color: surfaceLight,
+        color: AppColors.contenedorSuave,
         borderRadius:
             BorderRadius.circular(20),
         border: Border.all(
@@ -626,7 +621,7 @@ class _RegistrarDocumentoIaScreenState
       child: Text(
         texto,
         style: const TextStyle(
-          color: textMuted,
+          color: AppColors.textoSecundario,
           fontSize: 11,
           fontWeight: FontWeight.w600,
         ),
@@ -641,20 +636,20 @@ class _RegistrarDocumentoIaScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(
-          color: textMain,
+          color: AppColors.texto,
         ),
         title: Text(
           _procesando
               ? 'Procesando documento'
               : 'Agregar documento',
           style: const TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -685,7 +680,7 @@ class _RegistrarDocumentoIaScreenState
           width: double.infinity,
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: surfaceColor,
+            color: AppColors.superficie,
             borderRadius:
                 BorderRadius.circular(20),
             border: Border.all(
@@ -699,13 +694,13 @@ class _RegistrarDocumentoIaScreenState
                 height: 70,
                 decoration: BoxDecoration(
                   color:
-                      primaryColor.withOpacity(0.12),
+                      AppColors.primario.withOpacity(0.12),
                   borderRadius:
                       BorderRadius.circular(20),
                 ),
                 child: const Icon(
                   Icons.document_scanner_outlined,
-                  color: primaryColor,
+                  color: AppColors.primario,
                   size: 34,
                 ),
               ),
@@ -714,7 +709,7 @@ class _RegistrarDocumentoIaScreenState
                 'Escanea o sube un documento',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 19,
                   fontWeight: FontWeight.w700,
                 ),
@@ -726,7 +721,7 @@ class _RegistrarDocumentoIaScreenState
                 'puedas revisarlos antes de guardar.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                   fontSize: 13,
                   height: 1.5,
                 ),
@@ -775,7 +770,7 @@ class _RegistrarDocumentoIaScreenState
         const Text(
           'Documentos compatibles',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -819,7 +814,7 @@ class _RegistrarDocumentoIaScreenState
               height: 110,
               decoration: BoxDecoration(
                 color:
-                    primaryColor.withOpacity(0.10),
+                    AppColors.primario.withOpacity(0.10),
                 shape: BoxShape.circle,
               ),
               child: const Center(
@@ -828,7 +823,7 @@ class _RegistrarDocumentoIaScreenState
                   height: 52,
                   child:
                       CircularProgressIndicator(
-                    color: primaryColor,
+                    color: AppColors.primario,
                     strokeWidth: 4,
                   ),
                 ),
@@ -843,7 +838,7 @@ class _RegistrarDocumentoIaScreenState
                   : 'Analizando documento...',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
               ),
@@ -856,7 +851,7 @@ class _RegistrarDocumentoIaScreenState
               'documento y extrayendo la información.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 fontSize: 13,
                 height: 1.5,
               ),
@@ -870,7 +865,7 @@ class _RegistrarDocumentoIaScreenState
                 vertical: 12,
               ),
               decoration: BoxDecoration(
-                color: surfaceColor,
+                color: AppColors.superficie,
                 borderRadius:
                     BorderRadius.circular(14),
                 border: Border.all(
@@ -883,14 +878,14 @@ class _RegistrarDocumentoIaScreenState
                 children: [
                   Icon(
                     Icons.auto_awesome_outlined,
-                    color: primaryColor,
+                    color: AppColors.primario,
                     size: 18,
                   ),
                   SizedBox(width: 8),
                   Text(
                     'Procesamiento con IA',
                     style: TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 12,
                       fontWeight:
                           FontWeight.w600,

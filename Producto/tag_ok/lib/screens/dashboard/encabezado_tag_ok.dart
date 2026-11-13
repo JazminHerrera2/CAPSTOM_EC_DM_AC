@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../notificaciones/notificaciones_screen.dart';
 import '../profile_screen.dart';
 import 'logo_tag_ok.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Encabezado común de las pestañas principales (Inicio, Auditoría, Vehículos
 /// y Herramientas): logo TAG OK a la izquierda; campana de notificaciones y
@@ -33,9 +34,13 @@ class EncabezadoTagOk extends StatelessWidget {
               MaterialPageRoute(builder: (_) => const ProfileScreen()),
             ),
             child: const CircleAvatar(
-              radius: 20,
-              backgroundColor: Color(0xFFFFFFFF),
-              child: Icon(Icons.person, color: Color(0xFF64748B)),
+              radius: 22,
+              backgroundColor: AppColors.contenedorSuave,
+              child: Icon(
+                Icons.person_outline,
+                color: AppColors.primario,
+                size: 24,
+              ),
             ),
           ),
         ],

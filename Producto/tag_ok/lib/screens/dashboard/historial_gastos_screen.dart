@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'dashboard_logica.dart';
 import 'filtro_mes_anio.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Historial de gastos de un vehículo, filtrable por mes y año. Muestra el
 /// total pagado y, debajo, un apartado por tipo de gasto con su total para el
@@ -28,10 +29,6 @@ class HistorialGastosScreen extends StatefulWidget {
 }
 
 class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
-  static const Color _bgColor = Color(0xFFF1F5F9);
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _textMain = Color(0xFF0F172A);
-  static const Color _textMuted = Color(0xFF64748B);
 
   // Filtro: mes (1 a 12) y año. `null` = todos.
   int? _mes;
@@ -71,10 +68,8 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
     }
   }
 
-  // Todos los íconos del historial son del azul marino del botón del mapa.
-  static const Color _colorIconos = Color(0xFF1E3A8A);
 
-  static Color _color(CategoriaGasto c) => _colorIconos;
+  static Color _color(CategoriaGasto c) => AppColors.primario;
 
   @override
   Widget build(BuildContext context) {
@@ -87,15 +82,15 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
     final totales = totalesPorCategoria(filtrados);
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: _bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: _textMain),
+        iconTheme: const IconThemeData(color: AppColors.texto),
         title: const Text(
           'Historial de gastos',
-          style: TextStyle(color: _textMain, fontWeight: FontWeight.w700),
+          style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
@@ -118,7 +113,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
                 ),
                 // Línea que separa los filtros del resto de la página.
                 const SizedBox(height: 16),
-                const Divider(color: Color(0xFFCBD5E1), height: 1, thickness: 1),
+                const Divider(color: AppColors.borde, height: 1, thickness: 1),
                 const SizedBox(height: 16),
                 _totalPagado(sumarMovimientos(filtrados)),
                 const SizedBox(height: 14),
@@ -141,12 +136,12 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: _surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          const Icon(Icons.directions_car_outlined, color: _textMuted, size: 21),
+          const Icon(Icons.directions_car_outlined, color: AppColors.textoSecundario, size: 21),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -154,7 +149,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
               children: [
                 const Text(
                   'Vehículo',
-                  style: TextStyle(color: _textMuted, fontSize: 10),
+                  style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -162,7 +157,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: _textMain,
+                    color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -177,7 +172,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
 
   /// Fondo del total pagado: el azul claro de las barras de los meses que no
   /// son el de mayor gasto en "Gastos del mes" del Inicio.
-  static final Color _azulBarras = const Color(0xFF1E3A8A).withValues(alpha: 0.35);
+  static final Color _azulBarras = AppColors.primario.withValues(alpha: 0.35);
 
   Widget _totalPagado(int total) {
     return Container(
@@ -193,7 +188,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
             child: Text(
               'Total pagado',
               style: TextStyle(
-                color: _textMain,
+                color: AppColors.texto,
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -202,7 +197,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
           Text(
             formatearPesos(total),
             style: const TextStyle(
-              color: _textMain,
+              color: AppColors.texto,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
@@ -216,7 +211,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
   Widget _apartado(CategoriaGasto c, int total) {
     final color = _color(c);
     return Material(
-      color: _surfaceColor,
+      color: AppColors.superficie,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -238,13 +233,13 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
                   children: [
                     Text(
                       _etiqueta(c),
-                      style: const TextStyle(color: _textMuted, fontSize: 12),
+                      style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       formatearPesos(total),
                       style: const TextStyle(
-                        color: _textMain,
+                        color: AppColors.texto,
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
                       ),
@@ -252,7 +247,7 @@ class _HistorialGastosScreenState extends State<HistorialGastosScreen> {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: _textMuted),
+              const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
             ],
           ),
         ),

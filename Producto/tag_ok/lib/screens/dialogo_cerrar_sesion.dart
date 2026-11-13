@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Pregunta al usuario si realmente quiere cerrar sesión. Devuelve `true` solo
 /// si confirma; al cancelar o cerrar el diálogo devuelve `false`.
@@ -7,25 +8,25 @@ Future<bool> confirmarCerrarSesion(BuildContext context) async {
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        backgroundColor: const Color(0xFFFFFFFF),
+        backgroundColor: AppColors.superficie,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
         ),
         title: const Row(
           children: [
-            Icon(Icons.logout, color: Color(0xFFE11D48)),
+            Icon(Icons.logout, color: AppColors.error),
             SizedBox(width: 10),
             Expanded(
               child: Text(
                 '¿Cerrar sesión?',
-                style: TextStyle(color: Color(0xFF0F172A)),
+                style: TextStyle(color: AppColors.texto),
               ),
             ),
           ],
         ),
         content: const Text(
           'Tendrás que volver a iniciar sesión para usar la aplicación.',
-          style: TextStyle(color: Color(0xFF64748B), height: 1.4),
+          style: TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -35,7 +36,7 @@ Future<bool> confirmarCerrarSesion(BuildContext context) async {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFE11D48),
+              foregroundColor: AppColors.error,
             ),
             child: const Text('Cerrar sesión'),
           ),

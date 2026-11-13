@@ -6,6 +6,7 @@ import '../dashboard/dashboard_logica.dart';
 import '../dashboard/gastos_historial.dart';
 import 'gasto_periodo.dart';
 import 'widgets_gasto.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Tarjeta "Gastado en <mes>" del vehículo elegido: monto del mes actual y
 /// cantidad de mantenciones, con un enlace "Ver todo" al historial de gastos.
@@ -74,7 +75,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                   child: Text(
                     'Gastado en $mes',
                     style: const TextStyle(
-                      color: TokensGasto.textoPrincipal,
+                      color: AppColors.texto,
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
@@ -86,7 +87,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                     child: const Text(
                       'Ver todo',
                       style: TextStyle(
-                        color: Color(0xFF1E3A8A),
+                        color: AppColors.primario,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -99,7 +100,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: TokensGasto.fondoCard,
+                color: AppColors.superficie,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: SizedBox(
@@ -110,7 +111,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                         child: Text(
                           'No fue posible cargar los gastos.',
                           style: TextStyle(
-                            color: TokensGasto.textoSecundario,
+                            color: AppColors.textoSecundario,
                             fontSize: 14,
                           ),
                         ),
@@ -127,7 +128,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                               formatearPesos(resumen.total),
                               maxLines: 1,
                               style: const TextStyle(
-                                color: TokensGasto.textoPrincipal,
+                                color: AppColors.texto,
                                 fontSize: 28,
                                 height: 1.2,
                                 fontWeight: FontWeight.bold,
@@ -139,7 +140,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                                 ? 'Sin mantenciones este mes'
                                 : textoCantidad(resumen.cantidad),
                             style: const TextStyle(
-                              color: TokensGasto.textoSecundario,
+                              color: AppColors.textoSecundario,
                               fontSize: 12,
                             ),
                           ),

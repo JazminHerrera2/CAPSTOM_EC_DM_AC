@@ -16,6 +16,7 @@ import 'proximas_mantenciones_screen.dart';
 import 'registro_ia_mantenimiento_screen.dart';
 import 'resumen_gastos_mantenciones.dart';
 import 'tarjeta_mantencion.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 
 class MantenimientoScreen extends StatefulWidget {
@@ -24,22 +25,12 @@ class MantenimientoScreen extends StatefulWidget {
 
   const MantenimientoScreen({super.key, this.onIrAAuditoria});
 
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
 
   @override
   State<MantenimientoScreen> createState() => _MantenimientoScreenState();
 }
 
 class _MantenimientoScreenState extends State<MantenimientoScreen> {
-  static const Color bgColor = MantenimientoScreen.bgColor;
-  static const Color surfaceColor = MantenimientoScreen.surfaceColor;
-  static const Color primaryColor = MantenimientoScreen.primaryColor;
-  static const Color textMain = MantenimientoScreen.textMain;
-  static const Color textMuted = MantenimientoScreen.textMuted;
 
   final VehiculoService _vehiculoService = VehiculoService();
 
@@ -127,18 +118,18 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         title: const Text(
           'Mantenciones',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontWeight: FontWeight.w700,
           ),
         ),
-        iconTheme: const IconThemeData(color: textMain),
+        iconTheme: const IconThemeData(color: AppColors.texto),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
@@ -187,7 +178,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                       bottom: 16,
                       child: FloatingActionButton(
                         heroTag: 'registrarMantencion',
-                        backgroundColor: primaryColor,
+                        backgroundColor: AppColors.primario,
                         tooltip: 'Registrar mantención',
                         onPressed: () {
                           Navigator.push(
@@ -236,11 +227,11 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: activo == v.id ? primaryColor : surfaceColor,
+                  color: activo == v.id ? AppColors.primario : AppColors.superficie,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: activo == v.id
-                        ? primaryColor
+                        ? AppColors.primario
                         : Colors.transparent,
                   ),
                 ),
@@ -249,7 +240,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
-                    color: activo == v.id ? Colors.white : textMuted,
+                    color: activo == v.id ? Colors.white : AppColors.textoSecundario,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -282,7 +273,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: surfaceColor,
+                color: AppColors.superficie,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
@@ -291,7 +282,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                   const Text(
                     'Próximas mantenciones',
                     style: TextStyle(
-                      color: textMain,
+                      color: AppColors.texto,
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -367,7 +358,7 @@ class _MenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: MantenimientoScreen.surfaceColor,
+      color: AppColors.superficie,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -385,7 +376,7 @@ class _MenuCard extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        color: MantenimientoScreen.textMain,
+                        color: AppColors.texto,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                       ),
@@ -395,7 +386,7 @@ class _MenuCard extends StatelessWidget {
                       Text(
                         subtitle!,
                         style: const TextStyle(
-                          color: MantenimientoScreen.textMuted,
+                          color: AppColors.textoSecundario,
                           fontSize: 11,
                         ),
                       ),
@@ -405,7 +396,7 @@ class _MenuCard extends StatelessWidget {
               ),
               const Icon(
                 Icons.chevron_right_rounded,
-                color: MantenimientoScreen.textMuted,
+                color: AppColors.textoSecundario,
               ),
             ],
           ),
@@ -432,7 +423,7 @@ class _IconBox extends StatelessWidget {
       height: 42,
       child: Icon(
         icon,
-        color: MantenimientoScreen.primaryColor,
+        color: AppColors.primario,
         size: 28,
       ),
     );
@@ -514,7 +505,7 @@ class _ResumenProximaState extends State<_ResumenProxima> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: MantenimientoScreen.textMain,
+                  color: AppColors.texto,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -523,7 +514,7 @@ class _ResumenProximaState extends State<_ResumenProxima> {
               Text(
                 detalle,
                 style: const TextStyle(
-                  color: MantenimientoScreen.textMuted,
+                  color: AppColors.textoSecundario,
                   fontSize: 13,
                   height: 1.4,
                 ),

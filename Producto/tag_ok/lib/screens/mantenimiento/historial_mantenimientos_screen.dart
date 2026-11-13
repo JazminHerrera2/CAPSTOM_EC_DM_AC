@@ -8,6 +8,7 @@ import '../dashboard/filtro_mes_anio.dart';
 import 'gasto_periodo.dart';
 import 'selector_tipo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class HistorialMantenimientosScreen extends StatefulWidget {
   /// Patente del vehículo elegido en Mantenciones.
@@ -34,12 +35,6 @@ class HistorialMantenimientosScreen extends StatefulWidget {
 
 class _HistorialMantenimientosScreenState
     extends State<HistorialMantenimientosScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color borderColor = Color(0xFFCBD5E1);
 
   late final String _vehiculoSeleccionado =
       widget.patente ?? 'Todos los vehículos';
@@ -127,17 +122,17 @@ class _HistorialMantenimientosScreenState
   Widget build(BuildContext context) {
     final stream = _stream;
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         iconTheme: const IconThemeData(
-          color: textMain,
+          color: AppColors.texto,
         ),
         title: const Text(
           'Historial de mantenciones',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -206,7 +201,7 @@ class _HistorialMantenimientosScreenState
           width: 52,
           height: 52,
           decoration: BoxDecoration(
-            color: activo ? primaryColor : surfaceColor,
+            color: activo ? AppColors.primario : AppColors.superficie,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Stack(
@@ -214,7 +209,7 @@ class _HistorialMantenimientosScreenState
             children: [
               Icon(
                 Icons.tune_rounded,
-                color: activo ? Colors.white : primaryColor,
+                color: activo ? Colors.white : AppColors.primario,
                 size: 22,
               ),
               if (_hayFiltros && !_mostrarFiltros)
@@ -282,7 +277,7 @@ class _HistorialMantenimientosScreenState
           child: Text(
             'Mantenciones realizadas',
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -291,13 +286,13 @@ class _HistorialMantenimientosScreenState
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: primaryColor.withOpacity(0.12),
+            color: AppColors.primario.withOpacity(0.12),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
             cantidad == 1 ? '1 registro' : '$cantidad registros',
             style: const TextStyle(
-              color: primaryColor,
+              color: AppColors.primario,
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),
@@ -323,7 +318,7 @@ class _HistorialMantenimientosScreenState
         child: Center(
           child: Text(
             'No fue posible cargar las mantenciones.',
-            style: TextStyle(color: textMuted),
+            style: TextStyle(color: AppColors.textoSecundario),
           ),
         ),
       );
@@ -332,7 +327,7 @@ class _HistorialMantenimientosScreenState
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(
-          child: CircularProgressIndicator(color: primaryColor),
+          child: CircularProgressIndicator(color: AppColors.primario),
         ),
       );
     }
@@ -371,7 +366,7 @@ class _HistorialMantenimientosScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.transparent),
       ),
@@ -379,7 +374,7 @@ class _HistorialMantenimientosScreenState
         children: [
           const Icon(
             Icons.directions_car_outlined,
-            color: primaryColor,
+            color: AppColors.primario,
             size: 21,
           ),
           const SizedBox(width: 12),
@@ -389,7 +384,7 @@ class _HistorialMantenimientosScreenState
               children: [
                 const Text(
                   'Vehículo',
-                  style: TextStyle(color: textMuted, fontSize: 10),
+                  style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -397,7 +392,7 @@ class _HistorialMantenimientosScreenState
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -418,28 +413,28 @@ class _HistorialMantenimientosScreenState
     return TextField(
       controller: _busquedaController,
       textInputAction: TextInputAction.search,
-      style: const TextStyle(color: textMain, fontSize: 14),
+      style: const TextStyle(color: AppColors.texto, fontSize: 14),
       decoration: InputDecoration(
         hintText: 'Buscar por tipo, taller, descripción...',
-        hintStyle: const TextStyle(color: textMuted),
-        prefixIcon: const Icon(Icons.search_rounded, color: primaryColor, size: 21),
+        hintStyle: const TextStyle(color: AppColors.textoSecundario),
+        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primario, size: 21),
         suffixIcon: _busquedaController.text.isEmpty
             ? null
             : IconButton(
                 tooltip: 'Borrar búsqueda',
                 icon: const Icon(Icons.close_rounded, size: 18),
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 onPressed: _busquedaController.clear,
               ),
         filled: true,
-        fillColor: surfaceColor,
+        fillColor: AppColors.superficie,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: borderColor),
+          borderSide: const BorderSide(color: AppColors.borde),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: primaryColor, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
         ),
       ),
     );
@@ -457,7 +452,7 @@ class _HistorialMantenimientosScreenState
         vertical: 38,
       ),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.transparent,
@@ -469,12 +464,12 @@ class _HistorialMantenimientosScreenState
             width: 68,
             height: 68,
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.10),
+              color: AppColors.primario.withOpacity(0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.car_repair_outlined,
-              color: primaryColor,
+              color: AppColors.primario,
               size: 32,
             ),
           ),
@@ -485,7 +480,7 @@ class _HistorialMantenimientosScreenState
             'Aún no hay mantenciones registradas',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -498,7 +493,7 @@ class _HistorialMantenimientosScreenState
                 'Cuando registres una mantención, podrás encontrarla en este historial.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: textMuted,
+              color: AppColors.textoSecundario,
               fontSize: 12,
               height: 1.5,
             ),

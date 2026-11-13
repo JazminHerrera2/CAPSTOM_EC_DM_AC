@@ -12,6 +12,7 @@ import '../../features/registro_inteligente/boton_foto_velocimetro.dart';
 import '../../features/registro_inteligente/consejos_captura.dart';
 import '../../features/registro_inteligente/vehiculo_extraction.dart';
 import 'foto_vehiculo.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class RegistrarEditarVehiculoScreen extends StatefulWidget {
   final VehiculoModel? vehiculo;
@@ -28,13 +29,6 @@ class RegistrarEditarVehiculoScreen extends StatefulWidget {
 
 class _RegistrarEditarVehiculoScreenState
     extends State<RegistrarEditarVehiculoScreen> {
-  // COLORES
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color surfaceLight = Color(0xFFE2E8F0);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final VehiculoService _vehiculoService = VehiculoService();
 
@@ -174,7 +168,7 @@ class _RegistrarEditarVehiculoScreenState
   Future<void> _elegirFoto() async {
     final origen = await showModalBottomSheet<ImageSource>(
       context: context,
-      backgroundColor: surfaceColor,
+      backgroundColor: AppColors.superficie,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -185,20 +179,20 @@ class _RegistrarEditarVehiculoScreenState
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined,
-                    color: textMain),
+                    color: AppColors.texto),
                 title: const Text(
                   'Tomar foto',
-                  style: TextStyle(color: textMain),
+                  style: TextStyle(color: AppColors.texto),
                 ),
                 onTap: () =>
                     Navigator.pop(sheetContext, ImageSource.camera),
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined,
-                    color: textMain),
+                    color: AppColors.texto),
                 title: const Text(
                   'Elegir de la galería',
-                  style: TextStyle(color: textMain),
+                  style: TextStyle(color: AppColors.texto),
                 ),
                 onTap: () =>
                     Navigator.pop(sheetContext, ImageSource.gallery),
@@ -268,7 +262,7 @@ class _RegistrarEditarVehiculoScreenState
           height: 190,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: surfaceColor,
+            color: AppColors.superficie,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: Colors.transparent),
           ),
@@ -292,7 +286,7 @@ class _RegistrarEditarVehiculoScreenState
           const SizedBox(height: 8),
           const Text(
             'Se quitará tu imagen y se usará la predeterminada al guardar.',
-            style: TextStyle(color: textMuted, fontSize: 12),
+            style: TextStyle(color: AppColors.textoSecundario, fontSize: 12),
           ),
         ],
         const SizedBox(height: 12),
@@ -314,7 +308,7 @@ class _RegistrarEditarVehiculoScreenState
                         : 'Agregar imagen del vehículo',
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: textMain,
+                    foregroundColor: AppColors.texto,
                     side: const BorderSide(color: Colors.transparent),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -332,7 +326,7 @@ class _RegistrarEditarVehiculoScreenState
                     : () => setState(() => _fotoBytes = null),
                 icon: const Icon(
                   Icons.close,
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                 ),
               ),
             ] else if (tieneFotoGuardada) ...[
@@ -344,7 +338,7 @@ class _RegistrarEditarVehiculoScreenState
                     : () => setState(() => _quitarFoto = true),
                 icon: const Icon(
                   Icons.delete_outline,
-                  color: Colors.redAccent,
+                  color: AppColors.error,
                 ),
               ),
             ] else if (_quitarFoto) ...[
@@ -356,7 +350,7 @@ class _RegistrarEditarVehiculoScreenState
                     : () => setState(() => _quitarFoto = false),
                 icon: const Icon(
                   Icons.undo,
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                 ),
               ),
             ],
@@ -392,7 +386,7 @@ class _RegistrarEditarVehiculoScreenState
       ..showSnackBar(
         SnackBar(
           content: Text(mensaje),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
         ),
       );
   }
@@ -534,7 +528,7 @@ class _RegistrarEditarVehiculoScreenState
                   ? 'Vehículo actualizado exitosamente.'
                   : 'Vehículo agregado exitosamente.',
             ),
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: AppColors.exito,
           ),
         );
       }
@@ -574,20 +568,20 @@ class _RegistrarEditarVehiculoScreenState
       labelText: label,
       hintText: hint,
       labelStyle: const TextStyle(
-        color: textMuted,
+        color: AppColors.textoSecundario,
       ),
       hintStyle: TextStyle(
-        color: textMuted.withOpacity(0.55),
+        color: AppColors.textoSecundario.withOpacity(0.55),
       ),
       prefixIcon: icon != null
           ? Icon(
               icon,
-              color: textMuted,
+              color: AppColors.textoSecundario,
               size: 21,
             )
           : null,
       filled: true,
-      fillColor: surfaceColor,
+      fillColor: AppColors.superficie,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 18,
         vertical: 18,
@@ -595,20 +589,20 @@ class _RegistrarEditarVehiculoScreenState
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(
-          color: Color(0xFFCBD5E1),
+          color: AppColors.borde,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(
-          color: primaryColor,
+          color: AppColors.primario,
           width: 1.5,
         ),
       ),
       disabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: const BorderSide(
-          color: Color(0xFFCBD5E1),
+          color: AppColors.borde,
         ),
       ),
     );
@@ -628,7 +622,7 @@ class _RegistrarEditarVehiculoScreenState
           Text(
             titulo,
             style: const TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -637,7 +631,7 @@ class _RegistrarEditarVehiculoScreenState
           Text(
             descripcion,
             style: const TextStyle(
-              color: textMuted,
+              color: AppColors.textoSecundario,
               fontSize: 13,
               height: 1.4,
             ),
@@ -666,12 +660,12 @@ class _RegistrarEditarVehiculoScreenState
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: primaryColor,
+                      color: AppColors.primario,
                     ),
                   )
                 : const Icon(
                     Icons.document_scanner_outlined,
-                    color: primaryColor,
+                    color: AppColors.primario,
                     size: 22,
                   ),
             label: Text(
@@ -679,14 +673,14 @@ class _RegistrarEditarVehiculoScreenState
                   ? 'Leyendo el padrón...'
                   : 'Escanear padrón con IA',
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
               ),
             ),
             style: OutlinedButton.styleFrom(
-              backgroundColor: primaryColor.withOpacity(0.10),
-              side: BorderSide(color: primaryColor.withOpacity(0.6)),
+              backgroundColor: AppColors.primario.withOpacity(0.10),
+              side: BorderSide(color: AppColors.primario.withOpacity(0.6)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -697,7 +691,7 @@ class _RegistrarEditarVehiculoScreenState
         const Text(
           'La IA leerá tu padrón y completará los datos del vehículo. '
           'Podrás revisarlos antes de guardar.',
-          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
+          style: TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.4),
         ),
       ],
     );
@@ -707,7 +701,7 @@ class _RegistrarEditarVehiculoScreenState
   Future<void> _elegirOrigenPadron() async {
     final origen = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: surfaceColor,
+      backgroundColor: AppColors.superficie,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -721,33 +715,33 @@ class _RegistrarEditarVehiculoScreenState
               child: Text(
                 'Escanear padrón',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt_outlined, color: textMain),
+              leading: const Icon(Icons.camera_alt_outlined, color: AppColors.texto),
               title: const Text(
                 'Escanear con cámara',
-                style: TextStyle(color: textMain),
+                style: TextStyle(color: AppColors.texto),
               ),
               subtitle: const Text(
                 'Toma una fotografía clara de tu padrón.',
-                style: TextStyle(color: textMuted),
+                style: TextStyle(color: AppColors.textoSecundario),
               ),
               onTap: () => Navigator.pop(context, 'camara'),
             ),
             ListTile(
-              leading: const Icon(Icons.upload_file_outlined, color: textMain),
+              leading: const Icon(Icons.upload_file_outlined, color: AppColors.texto),
               title: const Text(
                 'Subir documento',
-                style: TextStyle(color: textMain),
+                style: TextStyle(color: AppColors.texto),
               ),
               subtitle: const Text(
                 'Selecciona un archivo PDF, JPG o PNG.',
-                style: TextStyle(color: textMuted),
+                style: TextStyle(color: AppColors.textoSecundario),
               ),
               onTap: () => Navigator.pop(context, 'documento'),
             ),
@@ -869,14 +863,14 @@ class _RegistrarEditarVehiculoScreenState
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.10),
+        color: AppColors.primario.withOpacity(0.10),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: primaryColor.withOpacity(0.25)),
+        border: Border.all(color: AppColors.primario.withOpacity(0.25)),
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.auto_awesome_outlined, color: primaryColor, size: 24),
+          Icon(Icons.auto_awesome_outlined, color: AppColors.primario, size: 24),
           SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -885,7 +879,7 @@ class _RegistrarEditarVehiculoScreenState
                 Text(
                   'Revisa los datos detectados',
                   style: TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -894,7 +888,7 @@ class _RegistrarEditarVehiculoScreenState
                 Text(
                   'La IA leyó tu documento. Corrige lo que haga falta y completa los campos que no pudo leer antes de guardar.',
                   style: TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -917,7 +911,7 @@ class _RegistrarEditarVehiculoScreenState
     return base.copyWith(
       helperText: 'No se pudo leer: complétalo.',
       helperStyle: const TextStyle(
-        color: Color(0xFFF59E0B),
+        color: AppColors.advertencia,
         fontSize: 12,
       ),
     );
@@ -946,12 +940,12 @@ class _RegistrarEditarVehiculoScreenState
                 height: 135,
                 decoration: BoxDecoration(
                   color: seleccionado
-                      ? primaryColor.withOpacity(0.14)
-                      : surfaceColor,
+                      ? AppColors.primario.withOpacity(0.14)
+                      : AppColors.superficie,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: seleccionado
-                        ? primaryColor
+                        ? AppColors.primario
                         : Colors.transparent,
                     width: seleccionado ? 2 : 1,
                   ),
@@ -977,7 +971,7 @@ class _RegistrarEditarVehiculoScreenState
                           ) {
                             return const Icon(
                               Icons.directions_car_outlined,
-                              color: textMuted,
+                              color: AppColors.textoSecundario,
                               size: 42,
                             );
                           },
@@ -992,7 +986,7 @@ class _RegistrarEditarVehiculoScreenState
                           const Icon(
                             Icons.check_circle,
                             size: 16,
-                            color: primaryColor,
+                            color: AppColors.primario,
                           ),
                           const SizedBox(width: 5),
                         ],
@@ -1000,8 +994,8 @@ class _RegistrarEditarVehiculoScreenState
                           _nombreTipo(tipo),
                           style: TextStyle(
                             color: seleccionado
-                                ? textMain
-                                : textMuted,
+                                ? AppColors.texto
+                                : AppColors.textoSecundario,
                             fontWeight: seleccionado
                                 ? FontWeight.w700
                                 : FontWeight.w500,
@@ -1024,9 +1018,9 @@ class _RegistrarEditarVehiculoScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -1035,7 +1029,7 @@ class _RegistrarEditarVehiculoScreenState
           },
           icon: const Icon(
             Icons.arrow_back,
-            color: textMain,
+            color: AppColors.texto,
           ),
         ),
         title: Text(
@@ -1043,7 +1037,7 @@ class _RegistrarEditarVehiculoScreenState
               ? 'Editar vehículo'
               : 'Agregar vehículo',
           style: const TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontWeight: FontWeight.w700,
             fontSize: 22,
           ),
@@ -1096,7 +1090,7 @@ class _RegistrarEditarVehiculoScreenState
               textCapitalization:
                   TextCapitalization.characters,
               style: TextStyle(
-                color: _esEdicion ? textMuted : textMain,
+                color: _esEdicion ? AppColors.textoSecundario : AppColors.texto,
               ),
               decoration: _esEdicion
                   // Al editar la patente no se puede cambiar: se ve en gris,
@@ -1105,15 +1099,15 @@ class _RegistrarEditarVehiculoScreenState
                       'Patente',
                       icon: Icons.badge_outlined,
                     ).copyWith(
-                      fillColor: const Color(0xFFCBD5E1).withOpacity(0.55),
+                      fillColor: AppColors.borde.withOpacity(0.55),
                       suffixIcon: const Icon(
                         Icons.lock_outline,
-                        color: textMuted,
+                        color: AppColors.textoSecundario,
                         size: 20,
                       ),
                       helperText: 'La patente no se puede modificar.',
                       helperStyle: const TextStyle(
-                        color: textMuted,
+                        color: AppColors.textoSecundario,
                         fontSize: 12,
                       ),
                     )
@@ -1132,7 +1126,7 @@ class _RegistrarEditarVehiculoScreenState
             TextField(
               controller: _marcaCtrl,
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
               ),
               decoration: _conAvisoIa(
                 _decoracion(
@@ -1149,7 +1143,7 @@ class _RegistrarEditarVehiculoScreenState
             TextField(
               controller: _modeloCtrl,
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
               ),
               decoration: _conAvisoIa(
                 _decoracion(
@@ -1167,7 +1161,7 @@ class _RegistrarEditarVehiculoScreenState
               controller: _anioCtrl,
               keyboardType: TextInputType.number,
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
               ),
               decoration: _conAvisoIa(
                 _decoracion(
@@ -1184,7 +1178,7 @@ class _RegistrarEditarVehiculoScreenState
             TextField(
               controller: _tipoCombustibleCtrl,
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
               ),
               decoration: _conAvisoIa(
                 _decoracion(
@@ -1205,7 +1199,7 @@ class _RegistrarEditarVehiculoScreenState
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
               ),
               decoration: _decoracion(
                 'Kilometraje actual *',
@@ -1231,7 +1225,7 @@ class _RegistrarEditarVehiculoScreenState
             TextField(
               controller: _aliasCtrl,
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
               ),
               decoration: _decoracion(
                 'Alias (opcional)',
@@ -1247,7 +1241,7 @@ class _RegistrarEditarVehiculoScreenState
               const Text(
                 'Imagen del vehículo (opcional)',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1259,7 +1253,7 @@ class _RegistrarEditarVehiculoScreenState
                 'Sube una foto de tu vehículo. Si no, verás la imagen '
                 'predeterminada según su tipo.',
                 style: TextStyle(
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                   fontSize: 13,
                   height: 1.4,
                 ),
@@ -1289,7 +1283,7 @@ class _RegistrarEditarVehiculoScreenState
                   children: [
                     const Icon(
                       Icons.error_outline,
-                      color: Colors.redAccent,
+                      color: AppColors.error,
                       size: 20,
                     ),
                     const SizedBox(width: 10),
@@ -1297,7 +1291,7 @@ class _RegistrarEditarVehiculoScreenState
                       child: Text(
                         _error!,
                         style: const TextStyle(
-                          color: Colors.redAccent,
+                          color: AppColors.error,
                         ),
                       ),
                     ),
@@ -1314,9 +1308,9 @@ class _RegistrarEditarVehiculoScreenState
                 onPressed:
                     _guardando ? null : _guardar,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
+                  backgroundColor: AppColors.primario,
                   disabledBackgroundColor:
-                      primaryColor.withOpacity(0.45),
+                      AppColors.primario.withOpacity(0.45),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -1368,7 +1362,7 @@ class _RegistrarEditarVehiculoScreenState
                 children: [
                   Icon(
                     Icons.lock_outline,
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     size: 15,
                   ),
                   SizedBox(width: 6),
@@ -1377,7 +1371,7 @@ class _RegistrarEditarVehiculoScreenState
                       'Podrás agregar documentos después de registrar el vehículo.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: textMuted,
+                        color: AppColors.textoSecundario,
                         fontSize: 12,
                       ),
                     ),

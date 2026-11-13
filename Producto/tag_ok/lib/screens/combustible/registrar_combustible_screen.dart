@@ -13,6 +13,7 @@ import '../../utils/validaciones_mantencion.dart';
 import '../mantenimiento/selector_tipo_mantencion.dart';
 import '../mantenimiento/tarjeta_mantencion.dart';
 import 'gasto_combustible.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Formulario de una carga de combustible (o de energía eléctrica). Solo la
 /// fecha es obligatoria: el usuario no tiene que completar lo que no necesita.
@@ -44,13 +45,6 @@ class RegistrarCombustibleScreen extends StatefulWidget {
 
 class _RegistrarCombustibleScreenState
     extends State<RegistrarCombustibleScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color borderColor = Color(0xFFCBD5E1);
-  static const Color _ambar = Color(0xFFF59E0B);
 
   final _formKey = GlobalKey<FormState>();
 
@@ -204,20 +198,20 @@ class _RegistrarCombustibleScreenState
     final seguir = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: surfaceColor,
+        backgroundColor: AppColors.superficie,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: _ambar),
+            const Icon(Icons.warning_amber_rounded, color: AppColors.advertencia),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(titulo, style: const TextStyle(color: textMain)),
+              child: Text(titulo, style: const TextStyle(color: AppColors.texto)),
             ),
           ],
         ),
         content: Text(
           mensaje,
-          style: const TextStyle(color: textMuted, height: 1.4),
+          style: const TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -377,22 +371,22 @@ class _RegistrarCombustibleScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         title: const Text(
           'Registrar carga',
-          style: TextStyle(color: textMain, fontWeight: FontWeight.w700),
+          style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w700),
         ),
-        iconTheme: const IconThemeData(color: textMain),
+        iconTheme: const IconThemeData(color: AppColors.texto),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(color: primaryColor),
+              child: CircularProgressIndicator(color: AppColors.primario),
             );
           }
 
@@ -400,7 +394,7 @@ class _RegistrarCombustibleScreenState
             return const Center(
               child: Text(
                 'No fue posible cargar tus vehículos.',
-                style: TextStyle(color: textMuted),
+                style: TextStyle(color: AppColors.textoSecundario),
               ),
             );
           }
@@ -427,7 +421,7 @@ class _RegistrarCombustibleScreenState
                 const SizedBox(height: 4),
                 const Text(
                   'Solo la fecha es obligatoria. Completa lo que tengas a mano.',
-                  style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
+                  style: TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.4),
                 ),
                 const SizedBox(height: 10),
                 _selectorFecha(),
@@ -510,7 +504,7 @@ class _RegistrarCombustibleScreenState
                     'Si dejas vacío uno de litros, precio o total y completas '
                     'los otros dos, se calcula solo.',
                     style: TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 11,
                       height: 1.4,
                     ),
@@ -556,7 +550,7 @@ class _RegistrarCombustibleScreenState
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
+                      backgroundColor: AppColors.primario,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -575,9 +569,9 @@ class _RegistrarCombustibleScreenState
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: primaryColor.withValues(alpha: 0.10),
+        color: AppColors.primario.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: primaryColor.withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.primario.withValues(alpha: 0.25)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -586,7 +580,7 @@ class _RegistrarCombustibleScreenState
             _desdeIa
                 ? Icons.auto_awesome_outlined
                 : Icons.local_gas_station_outlined,
-            color: primaryColor,
+            color: AppColors.primario,
             size: 26,
           ),
           const SizedBox(width: 13),
@@ -597,7 +591,7 @@ class _RegistrarCombustibleScreenState
                 Text(
                   _desdeIa ? 'Revisa los datos detectados' : 'Nueva carga',
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -610,7 +604,7 @@ class _RegistrarCombustibleScreenState
                       : 'Registra una carga de combustible o de energía de '
                             'uno de tus vehículos.',
                   style: const TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -627,7 +621,7 @@ class _RegistrarCombustibleScreenState
     return Text(
       titulo,
       style: const TextStyle(
-        color: textMain,
+        color: AppColors.texto,
         fontSize: 15,
         fontWeight: FontWeight.w700,
       ),
@@ -659,12 +653,12 @@ class _RegistrarCombustibleScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          const Icon(Icons.directions_car_outlined, color: textMuted, size: 21),
+          const Icon(Icons.directions_car_outlined, color: AppColors.textoSecundario, size: 21),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -672,7 +666,7 @@ class _RegistrarCombustibleScreenState
               children: [
                 const Text(
                   'Vehículo',
-                  style: TextStyle(color: textMuted, fontSize: 10),
+                  style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -680,7 +674,7 @@ class _RegistrarCombustibleScreenState
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -731,7 +725,7 @@ class _RegistrarCombustibleScreenState
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: _tipo == t ? primaryColor : surfaceColor,
+                  color: _tipo == t ? AppColors.primario : AppColors.superficie,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
@@ -742,13 +736,13 @@ class _RegistrarCombustibleScreenState
                           ? Icons.local_gas_station_outlined
                           : Icons.ev_station_outlined,
                       size: 20,
-                      color: _tipo == t ? Colors.white : textMuted,
+                      color: _tipo == t ? Colors.white : AppColors.textoSecundario,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       t.etiqueta,
                       style: TextStyle(
-                        color: _tipo == t ? Colors.white : textMuted,
+                        color: _tipo == t ? Colors.white : AppColors.textoSecundario,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -783,13 +777,13 @@ class _RegistrarCombustibleScreenState
     if (!dudoso) return base;
     const borde = OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(14)),
-      borderSide: BorderSide(color: _ambar),
+      borderSide: BorderSide(color: AppColors.advertencia),
     );
     return base.copyWith(
       enabledBorder: borde,
       focusedBorder: borde,
       helperText: 'Revisa este dato antes de guardar.',
-      helperStyle: const TextStyle(color: _ambar, fontSize: 11),
+      helperStyle: const TextStyle(color: AppColors.advertencia, fontSize: 11),
     );
   }
 
@@ -805,7 +799,7 @@ class _RegistrarCombustibleScreenState
         errorText: 'Selecciona la fecha de la carga.',
         errorBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(14)),
-          borderSide: BorderSide(color: Colors.redAccent),
+          borderSide: BorderSide(color: AppColors.error),
         ),
       );
     } else {
@@ -825,14 +819,14 @@ class _RegistrarCombustibleScreenState
                     ? 'Seleccionar fecha'
                     : DateFormat('dd/MM/yyyy').format(fecha),
                 style: TextStyle(
-                  color: fecha == null ? textMuted : textMain,
+                  color: fecha == null ? AppColors.textoSecundario : AppColors.texto,
                   fontSize: 14,
                 ),
               ),
             ),
             const Icon(
               Icons.calendar_month_outlined,
-              color: textMuted,
+              color: AppColors.textoSecundario,
               size: 20,
             ),
           ],
@@ -868,7 +862,7 @@ class _RegistrarCombustibleScreenState
       onChanged: (_) => setState(() {
         if (claveDudosa != null) _dudosos.remove(claveDudosa);
       }),
-      style: const TextStyle(color: textMain, fontSize: 14),
+      style: const TextStyle(color: AppColors.texto, fontSize: 14),
       decoration: _conDudoso(
         _decoracionCampo(label: label, hint: hint, icon: icon, suffix: suffix),
         dudoso,
@@ -886,28 +880,28 @@ class _RegistrarCombustibleScreenState
       labelText: label,
       hintText: hint,
       suffixText: suffix,
-      labelStyle: const TextStyle(color: textMuted),
-      hintStyle: TextStyle(color: textMuted.withValues(alpha: 0.65)),
-      suffixStyle: const TextStyle(color: textMuted),
-      prefixIcon: Icon(icon, color: textMuted, size: 21),
+      labelStyle: const TextStyle(color: AppColors.textoSecundario),
+      hintStyle: TextStyle(color: AppColors.textoSecundario.withValues(alpha: 0.65)),
+      suffixStyle: const TextStyle(color: AppColors.textoSecundario),
+      prefixIcon: Icon(icon, color: AppColors.textoSecundario, size: 21),
       filled: true,
-      fillColor: surfaceColor,
+      fillColor: AppColors.superficie,
       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 17),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: borderColor),
+        borderSide: const BorderSide(color: AppColors.borde),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: primaryColor, width: 1.5),
+        borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.redAccent),
+        borderSide: const BorderSide(color: AppColors.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.redAccent),
+        borderSide: const BorderSide(color: AppColors.error),
       ),
     );
   }
@@ -921,14 +915,14 @@ class _RegistrarCombustibleScreenState
           children: [
             const Icon(
               Icons.directions_car_outlined,
-              color: textMuted,
+              color: AppColors.textoSecundario,
               size: 55,
             ),
             const SizedBox(height: 16),
             const Text(
               'No tienes vehículos registrados',
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -938,7 +932,7 @@ class _RegistrarCombustibleScreenState
               'Primero registra un vehículo desde Mi Vehículo para poder '
               'asociarle una carga.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: textMuted, height: 1.5),
+              style: TextStyle(color: AppColors.textoSecundario, height: 1.5),
             ),
             const SizedBox(height: 18),
             OutlinedButton(

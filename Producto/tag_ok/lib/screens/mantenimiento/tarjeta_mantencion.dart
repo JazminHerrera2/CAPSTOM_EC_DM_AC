@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/mantencion_model.dart';
 import 'detalle_mantenimiento_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Formatea un entero con separador de miles (72450 -> 72.450).
 String formatoMiles(int valor) {
@@ -36,10 +37,6 @@ class TarjetaMantencion extends StatelessWidget {
     this.onEliminar,
   });
 
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _textMain = Color(0xFF0F172A);
-  static const Color _textMuted = Color(0xFF64748B);
-  static const Color _iconoColor = Color(0xFF1E3A8A);
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +62,7 @@ class TarjetaMantencion extends StatelessWidget {
     ].where((l) => l.isNotEmpty).toList();
 
     return Material(
-      color: _surfaceColor,
+      color: AppColors.superficie,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -96,7 +93,7 @@ class TarjetaMantencion extends StatelessWidget {
               programada
                   ? Icons.event_available_outlined
                   : Icons.build_circle_outlined,
-              color: _iconoColor,
+              color: AppColors.primario,
               size: 28,
             ),
           ),
@@ -110,7 +107,7 @@ class TarjetaMantencion extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: _textMain,
+                    color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -122,7 +119,7 @@ class TarjetaMantencion extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: _textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -136,10 +133,10 @@ class TarjetaMantencion extends StatelessWidget {
               tooltip: 'Eliminar programación',
               visualDensity: VisualDensity.compact,
               onPressed: onEliminar,
-              icon: const Icon(Icons.delete_outline, color: Color(0xFFE11D48)),
+              icon: const Icon(Icons.delete_outline, color: AppColors.error),
             )
           else if (!programada)
-            const Icon(Icons.chevron_right, color: _textMuted),
+            const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
         ],
       ),
     ),

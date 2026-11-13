@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Color asociado al estado general de un vehículo ("Todo al día", etc.).
 /// Mismos colores que Mi Vehículo; vive acá para no tocar esas pantallas.
 Color colorEstadoVehiculo(String estado) {
   switch (estado) {
     case 'Atención requerida':
-      return Colors.redAccent;
+      return AppColors.error;
     case 'Próximo vencimiento':
-      return const Color(0xFFF97316);
+      return AppColors.alerta;
     case 'Todo al día':
-      return const Color(0xFF10B981);
+      return AppColors.exito;
     default:
-      return const Color(0xFF64748B);
+      return AppColors.textoSecundario;
+  }
+}
+
+/// Fondo del chip de estado: el tono suave que acompaña a [colorEstadoVehiculo].
+Color fondoEstadoVehiculo(String estado) {
+  switch (estado) {
+    case 'Atención requerida':
+      return AppColors.errorFondo;
+    case 'Próximo vencimiento':
+      return AppColors.advertenciaFondo;
+    case 'Todo al día':
+      return AppColors.exitoFondo;
+    default:
+      return AppColors.contenedorSuave;
   }
 }
 
@@ -38,10 +53,10 @@ class EstadoVehiculoChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = colorEstadoVehiculo(estado);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(10),
+        color: fondoEstadoVehiculo(estado),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

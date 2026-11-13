@@ -6,6 +6,7 @@ import '../../data/models/notificacion_config_model.dart';
 import '../../data/services/aviso_navegador_service.dart';
 import '../../data/services/notificacion_service.dart';
 import '../../utils/notificacion_navegador.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Un aviso "ya toca" cuando su fecha programada es hoy o anterior.
 bool avisoYaCorresponde(NotificacionConfigModel n, DateTime ahora) {
@@ -42,7 +43,7 @@ class CampanaNotificaciones extends StatelessWidget {
             label: Text(sinLeer > 9 ? '9+' : '$sinLeer'),
             child: const Icon(
               Icons.notifications_outlined,
-              color: Color(0xFF0F172A),
+              color: AppColors.texto,
               size: 28,
             ),
           ),
@@ -57,11 +58,6 @@ class CampanaNotificaciones extends StatelessWidget {
 class NotificacionesScreen extends StatelessWidget {
   const NotificacionesScreen({super.key});
 
-  static const Color _bgColor = Color(0xFFF1F5F9);
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _textMain = Color(0xFF0F172A);
-  static const Color _textMuted = Color(0xFF64748B);
-  static const Color _primaryColor = Color(0xFF1E3A8A);
 
   @override
   Widget build(BuildContext context) {
@@ -69,10 +65,10 @@ class NotificacionesScreen extends StatelessWidget {
     final servicio = NotificacionService();
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: _bgColor,
-        foregroundColor: _textMain,
+        backgroundColor: AppColors.fondo,
+        foregroundColor: AppColors.texto,
         elevation: 0,
         title: const Text('Notificaciones'),
       ),
@@ -80,7 +76,7 @@ class NotificacionesScreen extends StatelessWidget {
           ? const Center(
               child: Text(
                 'Inicia sesión para ver tus notificaciones.',
-                style: TextStyle(color: _textMuted),
+                style: TextStyle(color: AppColors.textoSecundario),
               ),
             )
           : StreamBuilder<List<NotificacionConfigModel>>(
@@ -90,7 +86,7 @@ class NotificacionesScreen extends StatelessWidget {
                   return const Center(
                     child: Text(
                       'No se pudieron cargar las notificaciones.',
-                      style: TextStyle(color: _textMuted),
+                      style: TextStyle(color: AppColors.textoSecundario),
                     ),
                   );
                 }
@@ -115,7 +111,7 @@ class NotificacionesScreen extends StatelessWidget {
                         'del vencimiento de tus documentos, y 7 días antes y '
                         'el mismo día de tus mantenciones programadas.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: _textMuted),
+                        style: TextStyle(color: AppColors.textoSecundario),
                       ),
                     ),
                   );
@@ -179,19 +175,19 @@ class _BannerPermisoNavegadorState extends State<_BannerPermisoNavegador> {
     if (_permiso != 'default') return const SizedBox.shrink();
 
     return Card(
-      color: NotificacionesScreen._surfaceColor,
+      color: AppColors.superficie,
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: const Icon(Icons.notifications_active_outlined,
-            color: Color(0xFFF59E0B)),
+            color: AppColors.advertencia),
         title: const Text(
           'Activa los avisos del navegador',
-          style: TextStyle(color: NotificacionesScreen._textMain),
+          style: TextStyle(color: AppColors.texto),
         ),
         subtitle: const Text(
           'Te avisaremos de documentos por vencer y mantenciones programadas '
           'mientras tengas la app abierta.',
-          style: TextStyle(color: NotificacionesScreen._textMuted),
+          style: TextStyle(color: AppColors.textoSecundario),
         ),
         trailing: TextButton(onPressed: _activar, child: const Text('Activar')),
       ),
@@ -210,7 +206,7 @@ class _Titulo extends StatelessWidget {
       child: Text(
         texto,
         style: const TextStyle(
-          color: NotificacionesScreen._textMuted,
+          color: AppColors.textoSecundario,
           fontSize: 13,
           fontWeight: FontWeight.w600,
         ),
@@ -237,13 +233,13 @@ class _TarjetaAviso extends StatelessWidget {
         : DateFormat('dd/MM/yyyy').format(fecha);
 
     return Card(
-      color: NotificacionesScreen._surfaceColor,
+      color: AppColors.superficie,
       margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: noLeida
-              ? NotificacionesScreen._primaryColor
+              ? AppColors.primario
               : Colors.transparent,
         ),
       ),
@@ -254,22 +250,22 @@ class _TarjetaAviso extends StatelessWidget {
               ? Icons.build_circle_outlined
               : Icons.event_busy_outlined,
           color: noLeida
-              ? const Color(0xFFF59E0B)
-              : NotificacionesScreen._textMuted,
+              ? AppColors.advertencia
+              : AppColors.textoSecundario,
         ),
         title: Text(
           aviso.mensaje,
           style: TextStyle(
-            color: NotificacionesScreen._textMain,
+            color: AppColors.texto,
             fontWeight: noLeida ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
         subtitle: Text(
           cuando,
-          style: const TextStyle(color: NotificacionesScreen._textMuted),
+          style: const TextStyle(color: AppColors.textoSecundario),
         ),
         trailing: noLeida
-            ? const Icon(Icons.circle, size: 10, color: Color(0xFF1E3A8A))
+            ? const Icon(Icons.circle, size: 10, color: AppColors.primario)
             : null,
       ),
     );

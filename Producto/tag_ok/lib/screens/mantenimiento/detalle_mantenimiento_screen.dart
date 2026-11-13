@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/componente_mantencion_model.dart';
 import '../../data/models/mantencion_model.dart';
 import 'tarjeta_mantencion.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Detalle de una mantención: todos los datos que se guardaron al registrarla
 /// o programarla. Se abre al tocar una tarjeta del historial o de las próximas.
@@ -11,11 +12,6 @@ class DetalleMantenimientoScreen extends StatelessWidget {
 
   const DetalleMantenimientoScreen({super.key, required this.mantencion});
 
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
 
   bool get _programada => mantencion.estado == EstadoMantencion.programada;
 
@@ -51,14 +47,14 @@ class DetalleMantenimientoScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
-        iconTheme: const IconThemeData(color: textMain),
+        iconTheme: const IconThemeData(color: AppColors.texto),
         title: const Text(
           'Detalle de mantención',
-          style: TextStyle(color: textMain, fontWeight: FontWeight.w700),
+          style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w700),
         ),
       ),
       body: SafeArea(
@@ -78,7 +74,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
                     Column(
                       children: [
                         for (var i = 0; i < filas.length; i++) ...[
-                          if (i > 0) const Divider(height: 18, color: bgColor),
+                          if (i > 0) const Divider(height: 18, color: AppColors.fondo),
                           _fila(filas[i].$1, filas[i].$2, filas[i].$3),
                         ],
                       ],
@@ -135,7 +131,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
 
   Widget _cabecera() {
     final m = mantencion;
-    final color = _programada ? const Color(0xFFF59E0B) : primaryColor;
+    final color = _programada ? AppColors.advertencia : AppColors.primario;
     return _tarjeta(
       Row(
         children: [
@@ -147,7 +143,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
               _programada
                   ? Icons.event_available_outlined
                   : Icons.build_circle_outlined,
-              color: primaryColor,
+              color: AppColors.primario,
               size: 32,
             ),
           ),
@@ -159,7 +155,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
                 Text(
                   m.nombreTipo,
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -171,7 +167,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
                   children: [
                     _etiqueta(_programada ? 'Programada' : 'Realizada', color),
                     if (m.origenRegistro == 'ia')
-                      _etiqueta('Registrada con IA', textMuted),
+                      _etiqueta('Registrada con IA', AppColors.textoSecundario),
                   ],
                 ),
               ],
@@ -200,7 +196,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
     return Text(
       texto,
       style: const TextStyle(
-        color: textMain,
+        color: AppColors.texto,
         fontSize: 15,
         fontWeight: FontWeight.w700,
       ),
@@ -212,7 +208,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(16),
       ),
       child: hijo,
@@ -223,16 +219,16 @@ class DetalleMantenimientoScreen extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icono, color: primaryColor, size: 19),
+        Icon(icono, color: AppColors.primario, size: 19),
         const SizedBox(width: 10),
-        Text(etiqueta, style: const TextStyle(color: textMuted, fontSize: 13)),
+        Text(etiqueta, style: const TextStyle(color: AppColors.textoSecundario, fontSize: 13)),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             valor,
             textAlign: TextAlign.end,
             style: const TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -245,7 +241,7 @@ class DetalleMantenimientoScreen extends StatelessWidget {
   Widget _texto(String texto) {
     return Text(
       texto,
-      style: const TextStyle(color: textMain, fontSize: 14, height: 1.5),
+      style: const TextStyle(color: AppColors.texto, fontSize: 14, height: 1.5),
     );
   }
 
@@ -253,13 +249,13 @@ class DetalleMantenimientoScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         texto,
         style: const TextStyle(
-          color: textMain,
+          color: AppColors.texto,
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),

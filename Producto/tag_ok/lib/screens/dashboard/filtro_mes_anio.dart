@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
 import 'dashboard_logica.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Filtro por mes y por año: dos desplegables lado a lado. "Todos" no filtra por
 /// ese criterio (`null`). La lista se abre justo debajo del campo, del mismo
 /// ancho. Lo usan el historial de gastos y el historial de mantenciones.
 class FiltroMesAnio extends StatelessWidget {
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _textMain = Color(0xFF0F172A);
-  static const Color _textMuted = Color(0xFF64748B);
 
   /// Mes elegido (1 a 12) o `null` = todos.
   final int? mes;
@@ -88,14 +86,14 @@ class FiltroMesAnio extends StatelessWidget {
       enableFilter: false,
       enableSearch: false,
       menuHeight: 300,
-      textStyle: const TextStyle(color: _textMain, fontSize: 14),
-      trailingIcon: const Icon(Icons.keyboard_arrow_down, color: _textMuted),
-      selectedTrailingIcon: const Icon(Icons.keyboard_arrow_up, color: _textMuted),
+      textStyle: const TextStyle(color: AppColors.texto, fontSize: 14),
+      trailingIcon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textoSecundario),
+      selectedTrailingIcon: const Icon(Icons.keyboard_arrow_up, color: AppColors.textoSecundario),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: _surfaceColor,
+        fillColor: AppColors.superficie,
         isDense: true,
-        labelStyle: const TextStyle(color: _textMuted),
+        labelStyle: const TextStyle(color: AppColors.textoSecundario),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -103,7 +101,7 @@ class FiltroMesAnio extends StatelessWidget {
         ),
       ),
       menuStyle: MenuStyle(
-        backgroundColor: const WidgetStatePropertyAll(_surfaceColor),
+        backgroundColor: const WidgetStatePropertyAll(AppColors.superficie),
         surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
         elevation: const WidgetStatePropertyAll(6),
         shape: WidgetStatePropertyAll(

@@ -8,6 +8,7 @@ import '../../features/registro_inteligente/combustible_extraction.dart';
 import '../../features/registro_inteligente/consejos_captura.dart';
 import '../../features/registro_inteligente/preparar_imagen.dart';
 import 'registrar_combustible_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// "Registrar carga": el usuario sube o fotografía la boleta o factura de la
 /// bencinera, la IA la lee en cuanto el archivo está cargado y se abre el
@@ -26,12 +27,6 @@ class RegistroIaCombustibleScreen extends StatefulWidget {
 
 class _RegistroIaCombustibleScreenState
     extends State<RegistroIaCombustibleScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color surfaceLight = Color(0xFFE2E8F0);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
 
   bool _procesando = false;
 
@@ -155,20 +150,20 @@ class _RegistroIaCombustibleScreenState
     final continuar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: surfaceColor,
+        backgroundColor: AppColors.superficie,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
             const Icon(Icons.error_outline, color: Colors.orangeAccent),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(titulo, style: const TextStyle(color: textMain)),
+              child: Text(titulo, style: const TextStyle(color: AppColors.texto)),
             ),
           ],
         ),
         content: Text(
           mensaje,
-          style: const TextStyle(color: textMuted, height: 1.4),
+          style: const TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -199,17 +194,17 @@ class _RegistroIaCombustibleScreenState
       // sobre una pantalla que ya se cerró.
       canPop: !_procesando,
       child: Scaffold(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         appBar: AppBar(
-          backgroundColor: bgColor,
+          backgroundColor: AppColors.fondo,
           elevation: 0,
           scrolledUnderElevation: 0,
           automaticallyImplyLeading: !_procesando,
-          iconTheme: const IconThemeData(color: textMain),
+          iconTheme: const IconThemeData(color: AppColors.texto),
           title: Text(
             _procesando ? 'Analizando boleta' : 'Registrar carga',
             style: const TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -229,7 +224,7 @@ class _RegistroIaCombustibleScreenState
           width: double.infinity,
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: surfaceColor,
+            color: AppColors.superficie,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.transparent),
           ),
@@ -239,12 +234,12 @@ class _RegistroIaCombustibleScreenState
                 width: 70,
                 height: 70,
                 decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.12),
+                  color: AppColors.primario.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Icon(
                   Icons.document_scanner_outlined,
-                  color: primaryColor,
+                  color: AppColors.primario,
                   size: 34,
                 ),
               ),
@@ -253,7 +248,7 @@ class _RegistroIaCombustibleScreenState
                 'Escanea o sube tu boleta',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 19,
                   fontWeight: FontWeight.w700,
                 ),
@@ -264,7 +259,7 @@ class _RegistroIaCombustibleScreenState
                 'los datos de la carga para que puedas revisarlos antes de '
                 'guardar.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: textMuted, fontSize: 13, height: 1.5),
+                style: TextStyle(color: AppColors.textoSecundario, fontSize: 13, height: 1.5),
               ),
             ],
           ),
@@ -296,7 +291,7 @@ class _RegistroIaCombustibleScreenState
         const Text(
           '¿Qué información se detectará?',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -336,12 +331,12 @@ class _RegistroIaCombustibleScreenState
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: principal
-              ? primaryColor.withValues(alpha: 0.12)
-              : surfaceColor,
+              ? AppColors.primario.withValues(alpha: 0.12)
+              : AppColors.superficie,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: principal
-                ? primaryColor.withValues(alpha: 0.65)
+                ? AppColors.primario.withValues(alpha: 0.65)
                 : Colors.transparent,
           ),
         ),
@@ -351,12 +346,12 @@ class _RegistroIaCombustibleScreenState
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                color: principal ? primaryColor : surfaceLight,
+                color: principal ? AppColors.primario : AppColors.contenedorSuave,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Icon(
                 icono,
-                color: principal ? Colors.white : primaryColor,
+                color: principal ? Colors.white : AppColors.primario,
                 size: 26,
               ),
             ),
@@ -368,7 +363,7 @@ class _RegistroIaCombustibleScreenState
                   Text(
                     titulo,
                     style: const TextStyle(
-                      color: textMain,
+                      color: AppColors.texto,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -377,7 +372,7 @@ class _RegistroIaCombustibleScreenState
                   Text(
                     descripcion,
                     style: const TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -386,7 +381,7 @@ class _RegistroIaCombustibleScreenState
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: textMuted),
+            const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
           ],
         ),
       ),
@@ -397,14 +392,14 @@ class _RegistroIaCombustibleScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: surfaceLight,
+        color: AppColors.contenedorSuave,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.transparent),
       ),
       child: Text(
         texto,
         style: const TextStyle(
-          color: textMuted,
+          color: AppColors.textoSecundario,
           fontSize: 11,
           fontWeight: FontWeight.w600,
         ),
@@ -423,7 +418,7 @@ class _RegistroIaCombustibleScreenState
               width: 110,
               height: 110,
               decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.10),
+                color: AppColors.primario.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
               child: const Center(
@@ -431,7 +426,7 @@ class _RegistroIaCombustibleScreenState
                   width: 52,
                   height: 52,
                   child: CircularProgressIndicator(
-                    color: primaryColor,
+                    color: AppColors.primario,
                     strokeWidth: 4,
                   ),
                 ),
@@ -444,7 +439,7 @@ class _RegistroIaCombustibleScreenState
                   : 'Analizando boleta...',
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
               ),
@@ -454,13 +449,13 @@ class _RegistroIaCombustibleScreenState
               'Estamos leyendo la boleta o factura y extrayendo los datos de '
               'la carga.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: textMuted, fontSize: 13, height: 1.5),
+              style: TextStyle(color: AppColors.textoSecundario, fontSize: 13, height: 1.5),
             ),
             const SizedBox(height: 28),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: surfaceColor,
+                color: AppColors.superficie,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: Colors.transparent),
               ),
@@ -469,14 +464,14 @@ class _RegistroIaCombustibleScreenState
                 children: [
                   Icon(
                     Icons.auto_awesome_outlined,
-                    color: primaryColor,
+                    color: AppColors.primario,
                     size: 18,
                   ),
                   SizedBox(width: 8),
                   Text(
                     'Procesamiento con IA',
                     style: TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),

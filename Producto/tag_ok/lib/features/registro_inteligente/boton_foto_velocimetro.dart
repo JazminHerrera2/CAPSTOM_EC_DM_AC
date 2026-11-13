@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'odometro_extraction.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Botón "Fotografiar velocímetro con IA": abre la cámara, la IA lee el
 /// kilometraje total del odómetro y se lo entrega a [onKilometraje] para que
@@ -17,9 +18,6 @@ class BotonFotoVelocimetro extends StatefulWidget {
 }
 
 class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color primaryColor = Color(0xFF1E3A8A);
 
   // La IA está leyendo la foto.
   bool _leyendo = false;
@@ -79,12 +77,12 @@ class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: primaryColor,
+                      color: AppColors.primario,
                     ),
                   )
                 : const Icon(
                     Icons.photo_camera_outlined,
-                    color: primaryColor,
+                    color: AppColors.primario,
                     size: 22,
                   ),
             label: Text(
@@ -92,14 +90,14 @@ class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
                   ? 'Leyendo el velocímetro...'
                   : 'Fotografiar velocímetro con IA',
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
               ),
             ),
             style: OutlinedButton.styleFrom(
-              backgroundColor: primaryColor.withOpacity(0.10),
-              side: BorderSide(color: primaryColor.withOpacity(0.6)),
+              backgroundColor: AppColors.primario.withOpacity(0.10),
+              side: BorderSide(color: AppColors.primario.withOpacity(0.6)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -110,7 +108,7 @@ class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
         const Text(
           'Con el vehículo encendido, toma una foto donde se vea el '
           'kilometraje total (no el parcial "TRIP").',
-          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
+          style: TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.4),
         ),
       ],
     );

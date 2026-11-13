@@ -2,20 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'gasto_periodo.dart';
 import 'tarjeta_mantencion.dart';
-
-/// Colores del card "Gasto en mantenciones". La app no tiene un archivo de
-/// tema (cada pantalla define los suyos), así que viven acá, solo para el card.
-class TokensGasto {
-  static const Color fondoCard = Color(0xFFFFFFFF);
-  static const Color bordeCard = Color(0xFFCBD5E1);
-  static const Color violeta = Color(0xFF1E3A8A);
-  static const Color pildora = Color(0xFFE2E8F0);
-  static const Color textoPrincipal = Color(0xFF0F172A);
-  static const Color textoSecundario = Color(0xFF64748B);
-  static const Color acento = Color(0xFF2F5BBA);
-  static const Color flechaDeshabilitada = Color(0xFF94A3B8);
-  static const Color iconoVerde = Color(0xFF2DD4BF);
-}
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Monto en pesos chilenos con separador de miles por punto: $87.000.
 String clp(int monto) =>
@@ -45,7 +32,7 @@ class SegmentosPeriodo extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: TokensGasto.pildora,
+        color: AppColors.contenedorSuave,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -67,7 +54,7 @@ class SegmentosPeriodo extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: tipo == seleccionado
-                        ? TokensGasto.violeta
+                        ? AppColors.primario
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(9),
                   ),
@@ -76,7 +63,7 @@ class SegmentosPeriodo extends StatelessWidget {
                     style: TextStyle(
                       color: tipo == seleccionado
                           ? Colors.white
-                          : TokensGasto.textoSecundario,
+                          : AppColors.textoSecundario,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -116,7 +103,7 @@ class PildoraPeriodo extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: TokensGasto.pildora,
+            color: AppColors.contenedorSuave,
             borderRadius: BorderRadius.circular(22),
           ),
           child: Row(
@@ -127,7 +114,7 @@ class PildoraPeriodo extends StatelessWidget {
                   periodo.etiqueta,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: TokensGasto.textoPrincipal,
+                    color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -136,7 +123,7 @@ class PildoraPeriodo extends StatelessWidget {
               const SizedBox(width: 6),
               const Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: TokensGasto.acento,
+                color: AppColors.primario,
                 size: 22,
               ),
             ],
@@ -169,7 +156,7 @@ class MontoPeriodo extends StatelessWidget {
             clp(resumen.total),
             maxLines: 1,
             style: const TextStyle(
-              color: TokensGasto.textoPrincipal,
+              color: AppColors.texto,
               fontSize: 44,
               fontWeight: FontWeight.w800,
               height: 1.1,
@@ -183,7 +170,7 @@ class MontoPeriodo extends StatelessWidget {
               ? 'Sin mantenciones en este periodo'
               : textoCantidad(resumen.cantidad),
           style: const TextStyle(
-            color: TokensGasto.textoSecundario,
+            color: AppColors.textoSecundario,
             fontSize: 14,
           ),
         ),

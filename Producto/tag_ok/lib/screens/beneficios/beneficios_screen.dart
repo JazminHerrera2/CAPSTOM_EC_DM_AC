@@ -6,6 +6,7 @@ import '../dashboard/dashboard_logica.dart';
 import '../dashboard/encabezado_tag_ok.dart';
 import 'detalle_beneficio_screen.dart';
 import 'imagen_beneficio.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Catálogo de beneficios (RF-030, RF-033, RF-034): solo activos y vigentes,
 /// destacados primero, con filtros por categoría, ubicación y vigencia.
@@ -17,11 +18,6 @@ class BeneficiosScreen extends StatefulWidget {
 }
 
 class _BeneficiosScreenState extends State<BeneficiosScreen> {
-  static const Color _bgColor = Color(0xFFF1F5F9);
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _textMain = Color(0xFF0F172A);
-  static const Color _textMuted = Color(0xFF64748B);
-  static const Color _primaryColor = Color(0xFF1E3A8A);
 
   final Stream<List<BeneficioModel>> _stream = BeneficioService().streamTodos();
   final TextEditingController _ubicacion = TextEditingController();
@@ -44,7 +40,7 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.fondo,
       body: Column(
         children: [
           // Lo único fijo es el encabezado (logo, notificaciones y perfil). Los
@@ -111,7 +107,7 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                           child: Text(
                             'Beneficios',
                             style: TextStyle(
-                              color: _textMain,
+                              color: AppColors.texto,
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
                             ),
@@ -155,15 +151,15 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                 child: TextField(
                   controller: _ubicacion,
                   onChanged: (_) => setState(() {}),
-                  style: const TextStyle(color: _textMain),
+                  style: const TextStyle(color: AppColors.texto),
                   decoration: InputDecoration(
                     hintText: 'Ubicación (ciudad o región)',
-                    hintStyle: const TextStyle(color: _textMuted),
+                    hintStyle: const TextStyle(color: AppColors.textoSecundario),
                     prefixIcon:
-                        const Icon(Icons.place_outlined, color: _textMuted, size: 20),
+                        const Icon(Icons.place_outlined, color: AppColors.textoSecundario, size: 20),
                     isDense: true,
                     filled: true,
-                    fillColor: _surfaceColor,
+                    fillColor: AppColors.superficie,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -176,10 +172,10 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                 label: const Text('Por vencer'),
                 selected: _soloPorVencer,
                 onSelected: (v) => setState(() => _soloPorVencer = v),
-                selectedColor: _primaryColor.withValues(alpha: 0.35),
-                backgroundColor: _surfaceColor,
-                labelStyle: const TextStyle(color: _textMain, fontSize: 12),
-                checkmarkColor: _textMain,
+                selectedColor: AppColors.primario.withValues(alpha: 0.35),
+                backgroundColor: AppColors.superficie,
+                labelStyle: const TextStyle(color: AppColors.texto, fontSize: 12),
+                checkmarkColor: AppColors.texto,
                 side: BorderSide.none,
               ),
             ],
@@ -197,10 +193,10 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
         label: Text(texto),
         selected: seleccionada,
         onSelected: (_) => setState(() => _categoria = categoria),
-        selectedColor: _primaryColor,
-        backgroundColor: _surfaceColor,
+        selectedColor: AppColors.primario,
+        backgroundColor: AppColors.superficie,
         labelStyle: TextStyle(
-          color: _textMain,
+          color: AppColors.texto,
           fontSize: 12,
           fontWeight: seleccionada ? FontWeight.w700 : FontWeight.normal,
         ),
@@ -222,12 +218,12 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icono, color: _textMuted, size: 44),
+            Icon(icono, color: AppColors.textoSecundario, size: 44),
             const SizedBox(height: 12),
             Text(
               texto,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: _textMuted),
+              style: const TextStyle(color: AppColors.textoSecundario),
             ),
           ],
         ),
@@ -248,7 +244,7 @@ class TarjetaBeneficio extends StatelessWidget {
     final b = beneficio;
     final fin = b.fechaFin;
     return Material(
-      color: const Color(0xFFFFFFFF),
+      color: AppColors.superficie,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -277,14 +273,14 @@ class TarjetaBeneficio extends StatelessWidget {
                     Row(
                       children: [
                         if (b.destacado) ...[
-                          const Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
+                          const Icon(Icons.star, color: AppColors.advertencia, size: 16),
                           const SizedBox(width: 4),
                         ],
                         Flexible(
                           child: Text(
                             b.etiquetaCategoria,
                             style: const TextStyle(
-                              color: Color(0xFF64748B),
+                              color: AppColors.textoSecundario,
                               fontSize: 11,
                             ),
                           ),
@@ -297,7 +293,7 @@ class TarjetaBeneficio extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Color(0xFF0F172A),
+                        color: AppColors.texto,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
@@ -307,7 +303,7 @@ class TarjetaBeneficio extends StatelessWidget {
                         b.empresa!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                        style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12),
                       ),
                     if (fin != null)
                       Padding(
@@ -315,7 +311,7 @@ class TarjetaBeneficio extends StatelessWidget {
                         child: Text(
                           'Hasta ${formatearFecha(fin)}',
                           style: const TextStyle(
-                            color: Color(0xFF64748B),
+                            color: AppColors.textoSecundario,
                             fontSize: 11,
                           ),
                         ),
@@ -323,7 +319,7 @@ class TarjetaBeneficio extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: Color(0xFF64748B)),
+              const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
             ],
           ),
         ),

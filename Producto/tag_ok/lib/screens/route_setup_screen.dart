@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/services/simulated_toll_service.dart';
 import '../data/services/geocoding_service.dart';
 import '../data/services/history_service.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class RouteSetupScreen extends StatefulWidget {
   final LatLng? initialOrigin;
@@ -15,14 +16,6 @@ class RouteSetupScreen extends StatefulWidget {
 }
 
 class _RouteSetupScreenState extends State<RouteSetupScreen> {
-  // Colores del tema dark
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color textMain = const Color(0xFF0F172A);
-  final Color textMuted = const Color(0xFF64748B);
-  final Color inputBg = const Color(0xFFFFFFFF);
-  final Color surfaceBorder = const Color(0xFFCBD5E1);
-  final Color navBgColor = const Color(0xFFFFFFFF);
 
   Map<String, dynamic>? _selectedVehicleMap;
   bool _isLoading = false;
@@ -69,7 +62,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: navBgColor,
+      backgroundColor: AppColors.superficie,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         return SafeArea(
@@ -82,12 +75,12 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
               children: [
                 const Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Text('Seleccionar Vehículo', style: TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: Text('Seleccionar Vehículo', style: TextStyle(color: AppColors.texto, fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
                 if (vehicles.isEmpty)
                   const Padding(
                     padding: EdgeInsets.all(16.0),
-                    child: Text('No tienes vehículos registrados.', style: TextStyle(color: Color(0xFF64748B))),
+                    child: Text('No tienes vehículos registrados.', style: TextStyle(color: AppColors.textoSecundario)),
                   )
                 else
                   Flexible(
@@ -97,9 +90,9 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                       itemBuilder: (context, index) {
                         final v = vehicles[index];
                         return ListTile(
-                          leading: const Icon(Icons.directions_car, color: Color(0xFF64748B)),
-                          title: Text(v['patente'] ?? '', style: const TextStyle(color: Color(0xFF0F172A))),
-                          subtitle: Text(v['marca'] ?? '', style: TextStyle(color: textMuted)),
+                          leading: const Icon(Icons.directions_car, color: AppColors.textoSecundario),
+                          title: Text(v['patente'] ?? '', style: const TextStyle(color: AppColors.texto)),
+                          subtitle: Text(v['marca'] ?? '', style: TextStyle(color: AppColors.textoSecundario)),
                           onTap: () {
                             setState(() {
                               _selectedVehicleMap = v;
@@ -121,12 +114,12 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: textMuted),
+          icon: Icon(Icons.arrow_back_ios_new, color: AppColors.textoSecundario),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -142,13 +135,13 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: textMain,
+                  color: AppColors.texto,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Busca tu origen, destino y vehículo.',
-                style: TextStyle(color: textMuted, fontSize: 16),
+                style: TextStyle(color: AppColors.textoSecundario, fontSize: 16),
               ),
               const SizedBox(height: 40),
 
@@ -157,7 +150,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 controller: _originController,
                 hintText: 'Ruta Origen (Buscar dirección...)',
                 icon: Icons.my_location,
-                iconColor: primaryColor,
+                iconColor: AppColors.primario,
                 onSelected: (selection) {
                   setState(() {
                     _originLocation = selection.location;
@@ -167,14 +160,14 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
               
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20),
-                child: Icon(Icons.more_vert, color: textMuted.withValues(alpha: 0.5)),
+                child: Icon(Icons.more_vert, color: AppColors.textoSecundario.withValues(alpha: 0.5)),
               ),
 
               // 2. Buscador Destino
               _buildAutocompleteField(
                 hintText: 'Ruta Destino (Buscar dirección...)',
                 icon: Icons.location_on,
-                iconColor: const Color(0xFF10B981),
+                iconColor: AppColors.exito,
                 onSelected: (selection) {
                   setState(() {
                     _destinationLocation = selection.location;
@@ -187,21 +180,21 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
               // 3. Vehículo Principal
               Text(
                 '  Vehículo a utilizar (Principal)',
-                style: TextStyle(color: textMuted, fontSize: 14, fontWeight: FontWeight.w500),
+                style: TextStyle(color: AppColors.textoSecundario, fontSize: 14, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: _seleccionarVehiculo,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: inputBg,
+                    color: AppColors.superficie,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.transparent),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   child: Row(
                     children: [
-                      Icon(Icons.directions_car_outlined, color: primaryColor),
+                      Icon(Icons.directions_car_outlined, color: AppColors.primario),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
@@ -209,13 +202,13 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                             ? '${_selectedVehicleMap!['marca']} (${_selectedVehicleMap!['patente']})' 
                             : 'Selecciona un vehículo',
                           style: TextStyle(
-                            color: _selectedVehicleMap != null ? textMain : Colors.orange, 
+                            color: _selectedVehicleMap != null ? AppColors.texto : Colors.orange, 
                             fontSize: 16,
                             fontWeight: _selectedVehicleMap != null ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                       ),
-                      Icon(Icons.arrow_drop_down, color: textMuted),
+                      Icon(Icons.arrow_drop_down, color: AppColors.textoSecundario),
                     ],
                   ),
                 ),
@@ -230,13 +223,13 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF1E3A8A), Color(0xFF2F5BBA)],
+                    colors: [AppColors.primario, AppColors.primario],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.5),
+                      color: AppColors.primario.withValues(alpha: 0.5),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -264,13 +257,13 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                           Text(
                             'Ver ruta',
                             style: TextStyle(
-                              color: textMain,
+                              color: AppColors.texto,
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Icon(Icons.directions, color: textMain),
+                          Icon(Icons.directions, color: AppColors.texto),
                         ],
                       ),
                 ),
@@ -324,7 +317,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
         )
       );
     } finally {
@@ -357,21 +350,21 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
       fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
         return Container(
           decoration: BoxDecoration(
-            color: inputBg,
+            color: AppColors.superficie,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Colors.transparent),
           ),
           child: TextField(
             controller: textEditingController,
             focusNode: focusNode,
-            style: TextStyle(color: textMain),
+            style: TextStyle(color: AppColors.texto),
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: TextStyle(color: textMuted.withValues(alpha: 0.7)),
+              hintStyle: TextStyle(color: AppColors.textoSecundario.withValues(alpha: 0.7)),
               prefixIcon: Icon(icon, color: iconColor),
               suffixIcon: textEditingController.text.isNotEmpty 
                 ? IconButton(
-                    icon: Icon(Icons.clear, color: textMuted, size: 18),
+                    icon: Icon(Icons.clear, color: AppColors.textoSecundario, size: 18),
                     onPressed: () {
                       textEditingController.clear();
                       if (controller == _originController) {
@@ -391,7 +384,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
           alignment: Alignment.topLeft,
           child: Material(
             elevation: 4.0,
-            color: navBgColor, // Color oscuro para el desplegable
+            color: AppColors.superficie, // Color oscuro para el desplegable
             borderRadius: BorderRadius.circular(12),
             child: SizedBox(
               width: MediaQuery.of(context).size.width - 48, // Ajustar al padding
@@ -402,10 +395,10 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 itemBuilder: (BuildContext context, int index) {
                   final PlaceSuggestion option = options.elementAt(index);
                   return ListTile(
-                    leading: const Icon(Icons.location_city, color: Color(0xFF64748B)),
+                    leading: const Icon(Icons.location_city, color: AppColors.textoSecundario),
                     title: Text(
                       option.address,
-                      style: TextStyle(color: textMain, fontSize: 14),
+                      style: TextStyle(color: AppColors.texto, fontSize: 14),
                     ),
                     onTap: () {
                       onSelected(option);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/beneficio_model.dart';
 import '../../data/services/storage_service.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 IconData iconoCategoriaBeneficio(CategoriaBeneficio? categoria) {
   switch (categoria) {
@@ -77,11 +78,11 @@ class _ImagenBeneficioState extends State<ImagenBeneficio> {
 
   Widget _respaldo() {
     return Container(
-      color: const Color(0xFF1E3A8A).withValues(alpha: 0.15),
+      color: AppColors.primario.withValues(alpha: 0.15),
       alignment: Alignment.center,
       child: Icon(
         iconoCategoriaBeneficio(widget.beneficio.categoria),
-        color: const Color(0xFF1E3A8A),
+        color: AppColors.primario,
         size: 36,
       ),
     );

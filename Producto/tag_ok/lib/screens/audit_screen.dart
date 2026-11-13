@@ -17,6 +17,7 @@ import '../data/services/history_service.dart';
 import '../data/demo_data.dart';
 import '../features/registro_inteligente/openai_extraction_service.dart';
 import 'package:tag_ok/utils/file_saver.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class AuditScreen extends StatefulWidget {
   const AuditScreen({super.key});
@@ -40,12 +41,6 @@ class _AuditScreenState extends State<AuditScreen> {
       'Todos'; // 'Todos', 'Hoy', 'Últimos 7 días', 'Este Mes', 'Personalizado'
   DateTimeRange? _customDateRange;
 
-  // Colores globales premium (Dark Mode)
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color surfaceColor = const Color(0xFFFFFFFF);
-  final Color textMain = const Color(0xFF0F172A);
-  final Color textMuted = const Color(0xFF64748B);
-  final Color primaryColor = const Color(0xFF1E3A8A);
 
   // Clasificación de Autopistas de Santiago
   String _classifyHighway(String tollName) {
@@ -336,7 +331,7 @@ class _AuditScreenState extends State<AuditScreen> {
             content: Text(
               '¡Historial demo de la patente JHGK50 (${staticDemoTrips.length} viajes, $totalTollsCount peajes) cargado con éxito!',
             ),
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: AppColors.exito,
           ),
         );
       }
@@ -346,7 +341,7 @@ class _AuditScreenState extends State<AuditScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al sembrar viajes demo: $e'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -392,7 +387,7 @@ class _AuditScreenState extends State<AuditScreen> {
             text: match.group(1),
             style: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xFF0F172A),
+              color: AppColors.texto,
             ),
           ),
         );
@@ -406,7 +401,7 @@ class _AuditScreenState extends State<AuditScreen> {
       Widget lineWidget = RichText(
         text: TextSpan(
           style: TextStyle(
-            color: isHeader ? const Color(0xFF1E3A8A) : const Color(0xFFE2E8F0),
+            color: isHeader ? AppColors.primario : AppColors.contenedorSuave,
             fontSize: isHeader ? 12 : 11,
             fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
             height: 1.4,
@@ -425,7 +420,7 @@ class _AuditScreenState extends State<AuditScreen> {
               children: [
                 const Text(
                   '• ',
-                  style: TextStyle(color: Color(0xFF1E3A8A), fontSize: 12),
+                  style: TextStyle(color: AppColors.primario, fontSize: 12),
                 ),
                 Expanded(child: lineWidget),
               ],
@@ -1241,7 +1236,7 @@ Instrucciones para redactar el "aiReport":
                 content: Text(
                   'Formato no reconocido. Analizando con Inteligencia Artificial...',
                 ),
-                backgroundColor: Color(0xFF1E3A8A),
+                backgroundColor: AppColors.primario,
                 duration: Duration(seconds: 3),
               ),
             );
@@ -1424,7 +1419,7 @@ Instrucciones para redactar el "aiReport":
                   ? 'Auditoría con IA guardada con éxito'
                   : 'Auditoría clásica guardada con éxito',
             ),
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: AppColors.exito,
           ),
         );
       }
@@ -1434,23 +1429,23 @@ Instrucciones para redactar el "aiReport":
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: surfaceColor,
+            backgroundColor: AppColors.superficie,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
             title: const Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+                Icon(Icons.warning_amber_rounded, color: AppColors.error),
                 SizedBox(width: 10),
                 Text(
                   'Fallo de Lectura',
-                  style: TextStyle(color: Color(0xFF0F172A), fontSize: 17),
+                  style: TextStyle(color: AppColors.texto, fontSize: 17),
                 ),
               ],
             ),
             content: Text(
               e.toString().replaceAll('Exception:', ''),
-              style: const TextStyle(color: Color(0xFF64748B)),
+              style: const TextStyle(color: AppColors.textoSecundario),
             ),
             actions: [
               TextButton(
@@ -1458,7 +1453,7 @@ Instrucciones para redactar el "aiReport":
                 child: Text(
                   'ENTENDIDO',
                   style: TextStyle(
-                    color: primaryColor,
+                    color: AppColors.primario,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1762,7 +1757,7 @@ Instrucciones para redactar el "aiReport":
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Reporte exportado con éxito'),
-            backgroundColor: Color(0xFF10B981),
+            backgroundColor: AppColors.exito,
           ),
         );
       }
@@ -1771,7 +1766,7 @@ Instrucciones para redactar el "aiReport":
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al exportar Excel: $e'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -1781,7 +1776,7 @@ Instrucciones para redactar el "aiReport":
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       body: Column(
         children: [
           // Lo único fijo es el encabezado (logo, notificaciones y perfil). El
@@ -1807,7 +1802,7 @@ Instrucciones para redactar el "aiReport":
           child: Text(
             'Auditoría y Reportes',
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
@@ -1834,7 +1829,7 @@ Instrucciones para redactar el "aiReport":
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: surfaceColor.withValues(alpha: 0.6),
+        color: AppColors.superficie.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.transparent),
       ),
@@ -1866,18 +1861,18 @@ Instrucciones para redactar el "aiReport":
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor : Colors.transparent,
+          color: isSelected ? AppColors.primario : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isSelected ? Colors.white : textMuted, size: 16),
+            Icon(icon, color: isSelected ? Colors.white : AppColors.textoSecundario, size: 16),
             const SizedBox(width: 6),
             Text(
               title,
               style: TextStyle(
-                color: isSelected ? Colors.white : textMuted,
+                color: isSelected ? Colors.white : AppColors.textoSecundario,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
@@ -1904,7 +1899,7 @@ Instrucciones para redactar el "aiReport":
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return _conEncabezadoDePagina([
-            SizedBox(height: 360, child: _buildEmptyState(textMuted)),
+            SizedBox(height: 360, child: _buildEmptyState(AppColors.textoSecundario)),
           ]);
         }
 
@@ -1960,8 +1955,8 @@ Instrucciones para redactar el "aiReport":
                         filteredTrips.length,
                         progress,
                         monthlyLimit,
-                        textMain,
-                        textMuted,
+                        AppColors.texto,
+                        AppColors.textoSecundario,
                       ),
                       if (filteredTrips.isNotEmpty) ...[
                         _buildHighwayBreakdownCard(
@@ -1978,7 +1973,7 @@ Instrucciones para redactar el "aiReport":
                           child: Text(
                             'VIAJES COINCIDENTES (${filteredTrips.length})',
                             style: TextStyle(
-                              color: textMuted,
+                              color: AppColors.textoSecundario,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.8,
@@ -1987,7 +1982,7 @@ Instrucciones para redactar el "aiReport":
                         ),
                       ],
                       if (filteredTrips.isEmpty)
-                        _buildFilteredEmptyState(textMuted)
+                        _buildFilteredEmptyState(AppColors.textoSecundario)
                       else
                         ...filteredTrips.map(
                           (trip) => Padding(
@@ -1997,9 +1992,9 @@ Instrucciones para redactar el "aiReport":
                             child: _buildTripCard(
                               context,
                               trip,
-                              surfaceColor,
-                              textMain,
-                              textMuted,
+                              AppColors.superficie,
+                              AppColors.texto,
+                              AppColors.textoSecundario,
                             ),
                           ),
                         ),
@@ -2024,7 +2019,7 @@ Instrucciones para redactar el "aiReport":
             Text(
               'Extrayendo datos de boleta...',
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -2032,7 +2027,7 @@ Instrucciones para redactar el "aiReport":
             const SizedBox(height: 8),
             Text(
               'Conciliando registros con el GPS local...',
-              style: TextStyle(color: textMuted, fontSize: 13),
+              style: TextStyle(color: AppColors.textoSecundario, fontSize: 13),
             ),
           ],
         ),
@@ -2059,7 +2054,7 @@ Instrucciones para redactar el "aiReport":
             Text(
               'HISTORIAL DE AUDITORÍAS (${auditedInvoices.length})',
               style: TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.8,
@@ -2080,17 +2075,17 @@ Instrucciones para redactar el "aiReport":
   }
 
   Widget _buildUploadCard() {
-    final activeColor = _useAI ? const Color(0xFF1E3A8A) : primaryColor;
+    final activeColor = _useAI ? AppColors.primario : AppColors.primario;
     return GestureDetector(
       onTap: _pickAndAuditInvoice,
       child: Container(
         height: 130,
         decoration: BoxDecoration(
-          color: surfaceColor.withValues(alpha: 0.4),
+          color: AppColors.superficie.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: _useAI
-                ? const Color(0xFF1E3A8A).withValues(alpha: 0.4)
+                ? AppColors.primario.withValues(alpha: 0.4)
                 : Colors.transparent,
           ),
         ),
@@ -2113,7 +2108,7 @@ Instrucciones para redactar el "aiReport":
             Text(
               _useAI ? 'Auditar Cuenta con IA' : 'Subir Cuenta de Autopista',
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),
@@ -2123,7 +2118,7 @@ Instrucciones para redactar el "aiReport":
               _useAI
                   ? 'Análisis inteligente, semántico y detección de fraude por OpenAI'
                   : 'Soporta formato oficial mensual (PDF / CSV / XLSX)',
-              style: TextStyle(color: textMuted, fontSize: 10),
+              style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
             ),
           ],
         ),
@@ -2135,7 +2130,7 @@ Instrucciones para redactar el "aiReport":
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: surfaceColor.withValues(alpha: 0.2),
+        color: AppColors.superficie.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.transparent),
       ),
@@ -2143,14 +2138,14 @@ Instrucciones para redactar el "aiReport":
         children: [
           Icon(
             Icons.folder_open_outlined,
-            color: textMuted.withValues(alpha: 0.4),
+            color: AppColors.textoSecundario.withValues(alpha: 0.4),
             size: 48,
           ),
           const SizedBox(height: 14),
           Text(
             'Sin boletas auditadas',
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
@@ -2158,7 +2153,7 @@ Instrucciones para redactar el "aiReport":
           const SizedBox(height: 4),
           Text(
             'Sube tu primer archivo PDF, CSV o XLSX para conciliar tus gastos.',
-            style: TextStyle(color: textMuted, fontSize: 11),
+            style: TextStyle(color: AppColors.textoSecundario, fontSize: 11),
             textAlign: TextAlign.center,
           ),
         ],
@@ -2186,34 +2181,34 @@ Instrucciones para redactar el "aiReport":
     final details = (invoice['details'] as List? ?? [])
         .cast<Map<String, dynamic>>();
 
-    Color statusColor = const Color(0xFF10B981); // Verde
+    Color statusColor = AppColors.exito; // Verde
     if (status.contains('Discrepancia')) {
       statusColor = Colors.orangeAccent;
     } else if (status.contains('Sin')) {
-      statusColor = Colors.redAccent;
+      statusColor = AppColors.error;
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.transparent),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          iconColor: textMuted,
-          collapsedIconColor: textMuted,
+          iconColor: AppColors.textoSecundario,
+          collapsedIconColor: AppColors.textoSecundario,
           title: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.15),
+                  color: AppColors.primario.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.receipt_long, color: primaryColor, size: 18),
+                child: Icon(Icons.receipt_long, color: AppColors.primario, size: 18),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -2223,7 +2218,7 @@ Instrucciones para redactar el "aiReport":
                     Text(
                       invoice['concessionaire'] ?? 'Boleta',
                       style: TextStyle(
-                        color: textMain,
+                        color: AppColors.texto,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -2231,7 +2226,7 @@ Instrucciones para redactar el "aiReport":
                     const SizedBox(height: 2),
                     Text(
                       'Periodo: ${invoice['period']}',
-                      style: TextStyle(color: textMuted, fontSize: 11),
+                      style: TextStyle(color: AppColors.textoSecundario, fontSize: 11),
                     ),
                   ],
                 ),
@@ -2248,12 +2243,12 @@ Instrucciones para redactar el "aiReport":
                   children: [
                     Text(
                       'Total Boleta',
-                      style: TextStyle(color: textMuted, fontSize: 10),
+                      style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                     ),
                     Text(
                       '\$${billed.toStringAsFixed(0)} CLP',
                       style: const TextStyle(
-                        color: Color(0xFF0F172A),
+                        color: AppColors.texto,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -2265,7 +2260,7 @@ Instrucciones para redactar el "aiReport":
                   children: [
                     Text(
                       'Conciliado GPS',
-                      style: TextStyle(color: textMuted, fontSize: 10),
+                      style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                     ),
                     Text(
                       '\$${matched.toStringAsFixed(0)} CLP',
@@ -2302,7 +2297,7 @@ Instrucciones para redactar el "aiReport":
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                color: Color(0x1A000000),
+                color: AppColors.sombra,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
@@ -2316,7 +2311,7 @@ Instrucciones para redactar el "aiReport":
                     children: [
                       Text(
                         'Auditado el $formattedDate • Patente: ${invoice['patent']}',
-                        style: TextStyle(color: textMuted, fontSize: 10),
+                        style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                       ),
                       Row(
                         children: [
@@ -2325,7 +2320,7 @@ Instrucciones para redactar el "aiReport":
                             padding: const EdgeInsets.only(right: 12),
                             icon: const Icon(
                               Icons.table_view_rounded,
-                              color: Color(0xFF10B981),
+                              color: AppColors.exito,
                               size: 18,
                             ),
                             tooltip: 'Exportar a Excel',
@@ -2336,7 +2331,7 @@ Instrucciones para redactar el "aiReport":
                             padding: EdgeInsets.zero,
                             icon: const Icon(
                               Icons.delete_outline,
-                              color: Colors.redAccent,
+                              color: AppColors.error,
                               size: 18,
                             ),
                             tooltip: 'Eliminar',
@@ -2346,7 +2341,7 @@ Instrucciones para redactar el "aiReport":
                       ),
                     ],
                   ),
-                  const Divider(color: Color(0xFFE2E8F0), height: 16),
+                  const Divider(color: AppColors.contenedorSuave, height: 16),
                   if (aiReport != null && aiReport.isNotEmpty) ...[
                     Container(
                       width: double.infinity,
@@ -2355,13 +2350,13 @@ Instrucciones para redactar el "aiReport":
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            const Color(0xFF1E3A8A).withValues(alpha: 0.1),
-                            const Color(0xFF1E3A8A).withValues(alpha: 0.05),
+                            AppColors.primario.withValues(alpha: 0.1),
+                            AppColors.primario.withValues(alpha: 0.05),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: const Color(0xFF1E3A8A).withValues(alpha: 0.2),
+                          color: AppColors.primario.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Column(
@@ -2371,14 +2366,14 @@ Instrucciones para redactar el "aiReport":
                             children: [
                               Icon(
                                 Icons.auto_awesome,
-                                color: Color(0xFF1E3A8A),
+                                color: AppColors.primario,
                                 size: 16,
                               ),
                               SizedBox(width: 8),
                               Text(
                                 'REPORTE ANALÍTICO DE IA (OPENAI)',
                                 style: TextStyle(
-                                  color: Color(0xFF1E3A8A),
+                                  color: AppColors.primario,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 0.5,
@@ -2391,12 +2386,12 @@ Instrucciones para redactar el "aiReport":
                         ],
                       ),
                     ),
-                    const Divider(color: Color(0xFFE2E8F0), height: 16),
+                    const Divider(color: AppColors.contenedorSuave, height: 16),
                   ],
                   Text(
                     'DETALLE DE TRANSACCIONES AUDITADAS (AGRUPADO POR FECHA)',
                     style: TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
@@ -2431,7 +2426,7 @@ Instrucciones para redactar el "aiReport":
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE2E8F0),
+                          color: AppColors.contenedorSuave,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: Colors.transparent,
@@ -2444,19 +2439,19 @@ Instrucciones para redactar el "aiReport":
                           child: ExpansionTile(
                             dense: true,
                             visualDensity: VisualDensity.compact,
-                            iconColor: textMuted,
-                            collapsedIconColor: textMuted,
+                            iconColor: AppColors.textoSecundario,
+                            collapsedIconColor: AppColors.textoSecundario,
                             title: Text(
                               formattedDateHeader,
                               style: TextStyle(
-                                color: textMain,
+                                color: AppColors.texto,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                             subtitle: Text(
                               '${dateCrossings.length} peajes • \$${dateTotalCost.toStringAsFixed(0)} CLP',
-                              style: TextStyle(color: textMuted, fontSize: 10),
+                              style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                             ),
                             leading: Icon(
                               dateHasDiscrepancy
@@ -2464,7 +2459,7 @@ Instrucciones para redactar el "aiReport":
                                   : Icons.check_circle_outline,
                               color: dateHasDiscrepancy
                                   ? Colors.orangeAccent
-                                  : const Color(0xFF10B981),
+                                  : AppColors.exito,
                               size: 18,
                             ),
                             childrenPadding: const EdgeInsets.symmetric(
@@ -2496,7 +2491,7 @@ Instrucciones para redactar el "aiReport":
                                               Text(
                                                 tr['portico'] ?? 'Pórtico',
                                                 style: TextStyle(
-                                                  color: textMain,
+                                                  color: AppColors.texto,
                                                   fontSize: 11,
                                                   fontWeight: FontWeight.w600,
                                                 ),
@@ -2515,7 +2510,7 @@ Instrucciones para redactar el "aiReport":
                                                         ).withValues(
                                                           alpha: 0.15,
                                                         )
-                                                      : Colors.redAccent
+                                                      : AppColors.error
                                                             .withValues(
                                                               alpha: 0.15,
                                                             ),
@@ -2531,7 +2526,7 @@ Instrucciones para redactar el "aiReport":
                                                         ? const Color(
                                                             0xFF10B981,
                                                           )
-                                                        : Colors.redAccent,
+                                                        : AppColors.error,
                                                     fontSize: 7,
                                                     fontWeight: FontWeight.bold,
                                                   ),
@@ -2543,7 +2538,7 @@ Instrucciones para redactar el "aiReport":
                                           Text(
                                             'Hora: ${tr['time']}',
                                             style: TextStyle(
-                                              color: textMuted,
+                                              color: AppColors.textoSecundario,
                                               fontSize: 9,
                                             ),
                                           ),
@@ -2554,8 +2549,8 @@ Instrucciones para redactar el "aiReport":
                                       '\$${trCost.toStringAsFixed(0)}',
                                       style: TextStyle(
                                         color: isCorrect
-                                            ? textMain.withValues(alpha: 0.8)
-                                            : Colors.redAccent,
+                                            ? AppColors.texto.withValues(alpha: 0.8)
+                                            : AppColors.error,
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -2590,7 +2585,7 @@ Instrucciones para redactar el "aiReport":
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: surfaceColor.withValues(alpha: 0.5),
+        color: AppColors.superficie.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.transparent),
       ),
@@ -2603,7 +2598,7 @@ Instrucciones para redactar el "aiReport":
               Text(
                 'Filtros de Reporte',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
@@ -2617,13 +2612,13 @@ Instrucciones para redactar el "aiReport":
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.15),
+                      color: AppColors.primario.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       'Limpiar',
                       style: TextStyle(
-                        color: Color(0xFF0F172A),
+                        color: AppColors.texto,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -2682,7 +2677,7 @@ Instrucciones para redactar el "aiReport":
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? primaryColor : const Color(0xFFE2E8F0),
+          color: isActive ? AppColors.primario : AppColors.contenedorSuave,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isActive ? Colors.transparent : Colors.transparent,
@@ -2691,12 +2686,12 @@ Instrucciones para redactar el "aiReport":
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: isActive ? Colors.white : textMuted, size: 14),
+            Icon(icon, color: isActive ? Colors.white : AppColors.textoSecundario, size: 14),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: isActive ? Colors.white : textMain,
+                color: isActive ? Colors.white : AppColors.texto,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -2704,7 +2699,7 @@ Instrucciones para redactar el "aiReport":
             const SizedBox(width: 4),
             Icon(
               Icons.arrow_drop_down,
-              color: isActive ? Color(0xFF64748B) : textMuted,
+              color: isActive ? AppColors.textoSecundario : AppColors.textoSecundario,
               size: 14,
             ),
           ],
@@ -2716,7 +2711,7 @@ Instrucciones para redactar el "aiReport":
   void _showDateFilterSelector() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: surfaceColor,
+      backgroundColor: AppColors.superficie,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2730,7 +2725,7 @@ Instrucciones para redactar el "aiReport":
               Text(
                 'Filtrar por Rango de Fechas',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -2740,10 +2735,10 @@ Instrucciones para redactar el "aiReport":
                 (preset) => ListTile(
                   title: Text(
                     preset,
-                    style: TextStyle(color: textMain, fontSize: 15),
+                    style: TextStyle(color: AppColors.texto, fontSize: 15),
                   ),
                   trailing: _selectedDatePreset == preset
-                      ? Icon(Icons.check_circle, color: primaryColor)
+                      ? Icon(Icons.check_circle, color: AppColors.primario)
                       : null,
                   onTap: () {
                     setState(() {
@@ -2755,17 +2750,17 @@ Instrucciones para redactar el "aiReport":
                 ),
               ),
               ListTile(
-                leading: Icon(Icons.date_range, color: primaryColor),
+                leading: Icon(Icons.date_range, color: AppColors.primario),
                 title: Text(
                   'Rango Personalizado...',
                   style: TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 trailing: _selectedDatePreset == 'Personalizado'
-                    ? Icon(Icons.check_circle, color: primaryColor)
+                    ? Icon(Icons.check_circle, color: AppColors.primario)
                     : null,
                 onTap: () async {
                   Navigator.pop(context);
@@ -2778,18 +2773,18 @@ Instrucciones para redactar el "aiReport":
                       return Theme(
                         data: ThemeData.light().copyWith(
                           colorScheme: ColorScheme.light(
-                            primary: primaryColor,
+                            primary: AppColors.primario,
                             onPrimary: Colors.white,
-                            surface: surfaceColor,
-                            onSurface: textMain,
+                            surface: AppColors.superficie,
+                            onSurface: AppColors.texto,
                           ),
-                          scaffoldBackgroundColor: bgColor,
+                          scaffoldBackgroundColor: AppColors.fondo,
                           dialogTheme: DialogThemeData(
-                            backgroundColor: surfaceColor,
+                            backgroundColor: AppColors.superficie,
                           ),
                           appBarTheme: AppBarTheme(
-                            backgroundColor: surfaceColor,
-                            iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
+                            backgroundColor: AppColors.superficie,
+                            iconTheme: const IconThemeData(color: AppColors.texto),
                           ),
                         ),
                         child: Center(
@@ -2825,7 +2820,7 @@ Instrucciones para redactar el "aiReport":
   void _showVehicleSelector(List<String> vehicles) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: surfaceColor,
+      backgroundColor: AppColors.superficie,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2839,7 +2834,7 @@ Instrucciones para redactar el "aiReport":
               Text(
                 'Filtrar por Patente o Auto',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -2848,10 +2843,10 @@ Instrucciones para redactar el "aiReport":
               ListTile(
                 title: Text(
                   'Todos los vehículos',
-                  style: TextStyle(color: textMain, fontSize: 15),
+                  style: TextStyle(color: AppColors.texto, fontSize: 15),
                 ),
                 trailing: _selectedVehicle == 'Todos'
-                    ? Icon(Icons.check_circle, color: primaryColor)
+                    ? Icon(Icons.check_circle, color: AppColors.primario)
                     : null,
                 onTap: () {
                   setState(() {
@@ -2866,7 +2861,7 @@ Instrucciones para redactar el "aiReport":
                   child: Center(
                     child: Text(
                       'No hay vehículos detectados en tus viajes',
-                      style: TextStyle(color: textMuted, fontSize: 13),
+                      style: TextStyle(color: AppColors.textoSecundario, fontSize: 13),
                     ),
                   ),
                 )
@@ -2879,14 +2874,14 @@ Instrucciones para redactar el "aiReport":
                       return ListTile(
                         leading: const Icon(
                           Icons.directions_car,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textoSecundario,
                         ),
                         title: Text(
                           v,
-                          style: TextStyle(color: textMain, fontSize: 15),
+                          style: TextStyle(color: AppColors.texto, fontSize: 15),
                         ),
                         trailing: _selectedVehicle == v
-                            ? Icon(Icons.check_circle, color: primaryColor)
+                            ? Icon(Icons.check_circle, color: AppColors.primario)
                             : null,
                         onTap: () {
                           setState(() {
@@ -2920,7 +2915,7 @@ Instrucciones para redactar el "aiReport":
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: surfaceColor,
+      backgroundColor: AppColors.superficie,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2934,7 +2929,7 @@ Instrucciones para redactar el "aiReport":
               Text(
                 'Filtrar por Autopista Concesionada',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -2949,10 +2944,10 @@ Instrucciones para redactar el "aiReport":
                     return ListTile(
                       title: Text(
                         h == 'Todas' ? 'Todas las autopistas' : h,
-                        style: TextStyle(color: textMain, fontSize: 15),
+                        style: TextStyle(color: AppColors.texto, fontSize: 15),
                       ),
                       trailing: _selectedHighway == h
-                          ? Icon(Icons.check_circle, color: primaryColor)
+                          ? Icon(Icons.check_circle, color: AppColors.primario)
                           : null,
                       onTap: () {
                         setState(() {
@@ -2984,7 +2979,7 @@ Instrucciones para redactar el "aiReport":
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.transparent),
       ),
@@ -2997,12 +2992,12 @@ Instrucciones para redactar el "aiReport":
               Text(
                 'Consumo por Concesionaria',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Icon(Icons.pie_chart_outline, color: primaryColor, size: 20),
+              Icon(Icons.pie_chart_outline, color: AppColors.primario, size: 20),
             ],
           ),
           const SizedBox(height: 16),
@@ -3025,7 +3020,7 @@ Instrucciones para redactar el "aiReport":
                         child: Text(
                           hw,
                           style: TextStyle(
-                            color: textMain,
+                            color: AppColors.texto,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -3036,7 +3031,7 @@ Instrucciones para redactar el "aiReport":
                       Text(
                         '\$${cost.toStringAsFixed(0)} CLP ($count peajes)',
                         style: TextStyle(
-                          color: Color(0xFF64748B),
+                          color: AppColors.textoSecundario,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -3050,7 +3045,7 @@ Instrucciones para redactar el "aiReport":
                         height: 6,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE2E8F0),
+                          color: AppColors.contenedorSuave,
                           borderRadius: BorderRadius.circular(3),
                         ),
                       ),
@@ -3061,8 +3056,8 @@ Instrucciones para redactar el "aiReport":
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                primaryColor,
-                                primaryColor.withValues(alpha: 0.7),
+                                AppColors.primario,
+                                AppColors.primario.withValues(alpha: 0.7),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(3),
@@ -3088,15 +3083,15 @@ Instrucciones para redactar el "aiReport":
     Color textMain,
     Color textMuted,
   ) {
-    Color progressColor = const Color(0xFF1E3A8A);
+    Color progressColor = AppColors.primario;
     if (progress >= 1.0) {
-      progressColor = Colors.redAccent;
+      progressColor = AppColors.error;
     } else if (progress >= 0.9) {
       progressColor = Colors.orangeAccent;
     } else if (progress >= 0.75) {
       progressColor = Colors.yellowAccent;
     } else if (progress >= 0.5) {
-      progressColor = const Color(0xFF10B981);
+      progressColor = AppColors.exito;
     }
 
     return Container(
@@ -3105,7 +3100,7 @@ Instrucciones para redactar el "aiReport":
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFFFFFF), Color(0xFFF1F5F9)],
+          colors: [AppColors.superficie, AppColors.fondo],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -3121,7 +3116,7 @@ Instrucciones para redactar el "aiReport":
               Text(
                 'Gasto Total Filtrado',
                 style: TextStyle(
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -3137,7 +3132,7 @@ Instrucciones para redactar el "aiReport":
               Text(
                 '\$${total.toStringAsFixed(0)}',
                 style: const TextStyle(
-                  color: Color(0xFF0F172A),
+                  color: AppColors.texto,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
@@ -3145,7 +3140,7 @@ Instrucciones para redactar el "aiReport":
               const SizedBox(width: 8),
               Text(
                 '/ \$${limit.toStringAsFixed(0)}',
-                style: TextStyle(color: textMuted, fontSize: 16),
+                style: TextStyle(color: AppColors.textoSecundario, fontSize: 16),
               ),
             ],
           ),
@@ -3154,7 +3149,7 @@ Instrucciones para redactar el "aiReport":
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: Color(0xFFE2E8F0),
+              backgroundColor: AppColors.contenedorSuave,
               color: progressColor,
               minHeight: 8,
             ),
@@ -3181,12 +3176,12 @@ Instrucciones para redactar el "aiReport":
           Icon(
             Icons.history_outlined,
             size: 64,
-            color: textMuted.withValues(alpha: 0.3),
+            color: AppColors.textoSecundario.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'No hay viajes registrados aún',
-            style: TextStyle(color: textMuted),
+            style: TextStyle(color: AppColors.textoSecundario),
           ),
         ],
       ),
@@ -3198,7 +3193,7 @@ Instrucciones para redactar el "aiReport":
       padding: const EdgeInsets.all(40),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.transparent),
       ),
@@ -3208,13 +3203,13 @@ Instrucciones para redactar el "aiReport":
           Icon(
             Icons.filter_list_off_outlined,
             size: 64,
-            color: textMuted.withValues(alpha: 0.3),
+            color: AppColors.textoSecundario.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
             'Ningún viaje coincide con los filtros aplicados.',
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
@@ -3223,7 +3218,7 @@ Instrucciones para redactar el "aiReport":
           const SizedBox(height: 8),
           Text(
             'Intenta cambiar la fecha, auto o autopista seleccionada en el menú superior.',
-            style: TextStyle(color: textMuted, fontSize: 13),
+            style: TextStyle(color: AppColors.textoSecundario, fontSize: 13),
             textAlign: TextAlign.center,
           ),
         ],
@@ -3243,26 +3238,26 @@ Instrucciones para redactar el "aiReport":
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.transparent),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          iconColor: textMuted,
-          collapsedIconColor: textMuted,
+          iconColor: AppColors.textoSecundario,
+          collapsedIconColor: AppColors.textoSecundario,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 dateFormat.format(trip.date),
-                style: TextStyle(color: textMain, fontSize: 14),
+                style: TextStyle(color: AppColors.texto, fontSize: 14),
               ),
               Text(
                 '\$${trip.totalCost.toStringAsFixed(0)}',
                 style: const TextStyle(
-                  color: Color(0xFF10B981),
+                  color: AppColors.exito,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -3274,17 +3269,17 @@ Instrucciones para redactar el "aiReport":
             children: [
               Text(
                 '${trip.distanceKm.toStringAsFixed(1)} km • ${trip.tolls.length} pórticos',
-                style: TextStyle(color: textMuted, fontSize: 12),
+                style: TextStyle(color: AppColors.textoSecundario, fontSize: 12),
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Icon(Icons.directions_car_filled, color: textMuted, size: 12),
+                  Icon(Icons.directions_car_filled, color: AppColors.textoSecundario, size: 12),
                   const SizedBox(width: 4),
                   Text(
                     trip.vehicleName,
                     style: TextStyle(
-                      color: textMuted.withValues(alpha: 0.8),
+                      color: AppColors.textoSecundario.withValues(alpha: 0.8),
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
@@ -3297,7 +3292,7 @@ Instrucciones para redactar el "aiReport":
             Container(
               padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
-                color: Color(0x1A000000),
+                color: AppColors.sombra,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
@@ -3319,7 +3314,7 @@ Instrucciones para redactar el "aiReport":
                                 Text(
                                   toll.name,
                                   style: TextStyle(
-                                    color: textMain,
+                                    color: AppColors.texto,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -3333,7 +3328,7 @@ Instrucciones para redactar el "aiReport":
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: primaryColor.withValues(
+                                        color: AppColors.primario.withValues(
                                           alpha: 0.15,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
@@ -3341,7 +3336,7 @@ Instrucciones para redactar el "aiReport":
                                       child: Text(
                                         hw,
                                         style: TextStyle(
-                                          color: primaryColor.withValues(
+                                          color: AppColors.primario.withValues(
                                             alpha: 0.8,
                                           ),
                                           fontSize: 9,
@@ -3355,7 +3350,7 @@ Instrucciones para redactar el "aiReport":
                                         'HH:mm',
                                       ).format(toll.timestamp),
                                       style: TextStyle(
-                                        color: textMuted,
+                                        color: AppColors.textoSecundario,
                                         fontSize: 11,
                                       ),
                                     ),
@@ -3367,7 +3362,7 @@ Instrucciones para redactar el "aiReport":
                           Text(
                             '\$${toll.cost.toStringAsFixed(0)}',
                             style: TextStyle(
-                              color: textMain.withValues(alpha: 0.8),
+                              color: AppColors.texto.withValues(alpha: 0.8),
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
                             ),

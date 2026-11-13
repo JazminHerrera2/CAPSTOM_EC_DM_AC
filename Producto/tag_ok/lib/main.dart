@@ -7,6 +7,7 @@ import 'firebase_options.dart'; // El archivo que generaste recién
 import 'screens/login_screen.dart'; // Importa tu nueva pantalla
 import 'screens/home_screen.dart'; // Importa la pantalla principal
 import 'utils/app_reloader.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Importa Riverpod
 
@@ -50,29 +51,29 @@ class InitErrorApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'TagOk',
       home: Scaffold(
-        backgroundColor: const Color(0xFFF1F5F9),
+        backgroundColor: AppColors.fondo,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: Color(0xFF0F172A), size: 48),
+                const Icon(Icons.error_outline, color: AppColors.texto, size: 48),
                 const SizedBox(height: 16),
                 const Text(
                   'No se pudo iniciar TAG OK',
-                  style: TextStyle(color: Color(0xFF0F172A), fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.texto, fontSize: 20, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   error,
-                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                  style: const TextStyle(color: AppColors.textoSecundario, fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E3A8A)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primario),
                   onPressed: reloadApp,
                   child: const Text('Reintentar'),
                 ),
@@ -102,6 +103,39 @@ class MyApp extends StatelessWidget {
       ],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: ThemeData(
+        // Paleta corporativa: los widgets de Material que no reciben un color
+        // explícito (botones, campos, diálogos, selectores de fecha, insignias,
+        // indicadores de carga) toman estos colores de AppColors.
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primario,
+          primary: AppColors.primario,
+          onPrimary: AppColors.sobrePrimario,
+          primaryContainer: AppColors.contenedorSuave,
+          onPrimaryContainer: AppColors.sobreLavanda,
+          secondary: AppColors.lavanda,
+          onSecondary: AppColors.sobreLavanda,
+          surface: AppColors.superficie,
+          onSurface: AppColors.texto,
+          onSurfaceVariant: AppColors.textoSecundario,
+          outline: AppColors.borde,
+          outlineVariant: AppColors.borde,
+          error: AppColors.error,
+        ),
+        scaffoldBackgroundColor: AppColors.fondo,
+        dialogTheme: const DialogThemeData(
+          backgroundColor: AppColors.superficie,
+          surfaceTintColor: Colors.transparent,
+        ),
+        bottomSheetTheme: const BottomSheetThemeData(
+          backgroundColor: AppColors.superficie,
+          surfaceTintColor: Colors.transparent,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.fondo,
+          foregroundColor: AppColors.texto,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
         // Las tarjetas no cambian de color al pasar el mouse ni al presionarlas:
         // sin gris de hover, sin resaltado y sin ondas. Lo toman por defecto
         // todos los InkWell de la app.

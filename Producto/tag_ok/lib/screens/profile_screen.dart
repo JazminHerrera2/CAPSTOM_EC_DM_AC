@@ -4,15 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dialogo_cerrar_sesion.dart';
 import 'login_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color navBgColor = const Color(0xFFFFFFFF);
-  final Color textMuted = const Color(0xFF64748B);
-  final Color textMain = const Color(0xFF0F172A);
   final Color accentColor = const Color(
     0xFF10B981,
   ); // Verde para el presupuesto
@@ -23,10 +19,10 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
-        foregroundColor: textMain,
+        backgroundColor: AppColors.fondo,
+        foregroundColor: AppColors.texto,
         elevation: 0,
         // Se cierra con una X, no con la flecha de volver.
         leading: IconButton(
@@ -49,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
       return Center(
         child: Text(
           "No hay un usuario logueado",
-          style: TextStyle(color: textMain),
+          style: TextStyle(color: AppColors.texto),
         ),
       );
     }
@@ -70,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
           return Center(
             child: Text(
               "Error al cargar perfil",
-              style: TextStyle(color: textMain),
+              style: TextStyle(color: AppColors.texto),
             ),
           );
         }
@@ -148,17 +144,17 @@ class ProfileScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: primaryColor, width: 2),
+                      border: Border.all(color: AppColors.primario, width: 2),
                     ),
                     child: CircleAvatar(
                       radius: 45,
-                      backgroundColor: navBgColor,
+                      backgroundColor: AppColors.superficie,
                       child: Text(
                         nombre.isNotEmpty ? nombre[0].toUpperCase() : 'U',
                         style: TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
-                          color: textMain,
+                          color: AppColors.texto,
                         ),
                       ),
                     ),
@@ -176,10 +172,10 @@ class ProfileScreen extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: primaryColor,
+                          color: AppColors.primario,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: bgColor,
+                            color: AppColors.fondo,
                             width: 3,
                           ), // Borde para que resalte
                         ),
@@ -201,11 +197,11 @@ class ProfileScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: textMain,
+                  color: AppColors.texto,
                 ),
               ),
               const SizedBox(height: 4),
-              Text(email, style: TextStyle(fontSize: 14, color: textMuted)),
+              Text(email, style: TextStyle(fontSize: 14, color: AppColors.textoSecundario)),
               const SizedBox(height: 32),
 
               // 2. Panel de Resumen (Tarjetas)
@@ -237,7 +233,7 @@ class ProfileScreen extends StatelessWidget {
                   title: 'Miembro desde',
                   value: miembroDesde,
                   icon: Icons.calendar_month_outlined,
-                  color: primaryColor,
+                  color: AppColors.primario,
                 ),
               ),
               const SizedBox(height: 32),
@@ -289,7 +285,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE11D48),
+                    backgroundColor: AppColors.error,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -310,7 +306,7 @@ class ProfileScreen extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: navBgColor,
+      backgroundColor: AppColors.superficie,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -325,18 +321,18 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Notificaciones y Alertas',
-                    style: TextStyle(color: textMain, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: AppColors.texto, fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Administra qué alertas quieres recibir en tu dispositivo.',
-                    style: TextStyle(color: textMuted, fontSize: 14),
+                    style: TextStyle(color: AppColors.textoSecundario, fontSize: 14),
                   ),
                   const SizedBox(height: 24),
                   SwitchListTile(
-                    activeColor: primaryColor,
-                    title: Text('Nuevos cobros de TAG', style: TextStyle(color: textMain)),
-                    subtitle: Text('Recibe una alerta cada vez que pases por un pórtico.', style: TextStyle(color: textMuted, fontSize: 12)),
+                    activeColor: AppColors.primario,
+                    title: Text('Nuevos cobros de TAG', style: TextStyle(color: AppColors.texto)),
+                    subtitle: Text('Recibe una alerta cada vez que pases por un pórtico.', style: TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
                     value: cobros,
                     onChanged: (val) {
                       setModalState(() => cobros = val);
@@ -344,9 +340,9 @@ class ProfileScreen extends StatelessWidget {
                     },
                   ),
                   SwitchListTile(
-                    activeColor: primaryColor,
-                    title: Text('Alertas de Presupuesto', style: TextStyle(color: textMain)),
-                    subtitle: Text('Te avisaremos cuando te acerques a tu límite mensual.', style: TextStyle(color: textMuted, fontSize: 12)),
+                    activeColor: AppColors.primario,
+                    title: Text('Alertas de Presupuesto', style: TextStyle(color: AppColors.texto)),
+                    subtitle: Text('Te avisaremos cuando te acerques a tu límite mensual.', style: TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
                     value: presupuesto,
                     onChanged: (val) {
                       setModalState(() => presupuesto = val);
@@ -358,7 +354,7 @@ class ProfileScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
+                        backgroundColor: AppColors.primario,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -393,13 +389,13 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: navBgColor,
+          backgroundColor: AppColors.superficie,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           title: Text(
             'Editar Perfil',
-            style: TextStyle(color: textMain, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold),
           ),
           content: Column(
             mainAxisSize: MainAxisSize
@@ -407,35 +403,35 @@ class ProfileScreen extends StatelessWidget {
             children: [
               TextField(
                 controller: nombreController,
-                style: TextStyle(color: textMain),
+                style: TextStyle(color: AppColors.texto),
                 decoration: InputDecoration(
                   labelText: 'Nombre a mostrar',
-                  labelStyle: TextStyle(color: textMuted),
+                  labelStyle: TextStyle(color: AppColors.textoSecundario),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: textMuted.withOpacity(0.5)),
+                    borderSide: BorderSide(color: AppColors.textoSecundario.withOpacity(0.5)),
                   ),
                   focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: primaryColor),
+                    borderSide: BorderSide(color: AppColors.primario),
                   ),
-                  prefixIcon: Icon(Icons.person_outline, color: textMuted),
+                  prefixIcon: Icon(Icons.person_outline, color: AppColors.textoSecundario),
                 ),
               ),
               const SizedBox(height: 20),
               TextField(
                 controller: limiteController,
-                style: TextStyle(color: textMain),
+                style: TextStyle(color: AppColors.texto),
                 keyboardType:
                     TextInputType.number, // Muestra el teclado numérico
                 decoration: InputDecoration(
                   labelText: 'Límite Mensual (\$)',
-                  labelStyle: TextStyle(color: textMuted),
+                  labelStyle: TextStyle(color: AppColors.textoSecundario),
                   enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: textMuted.withOpacity(0.5)),
+                    borderSide: BorderSide(color: AppColors.textoSecundario.withOpacity(0.5)),
                   ),
                   focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: primaryColor),
+                    borderSide: BorderSide(color: AppColors.primario),
                   ),
-                  prefixIcon: Icon(Icons.attach_money, color: textMuted),
+                  prefixIcon: Icon(Icons.attach_money, color: AppColors.textoSecundario),
                 ),
               ),
             ],
@@ -443,11 +439,11 @@ class ProfileScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar', style: TextStyle(color: textMuted)),
+              child: Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
+                backgroundColor: AppColors.primario,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -519,19 +515,19 @@ class ProfileScreen extends StatelessWidget {
             InputDecoration campo(String etiqueta, bool visible, VoidCallback? alternar) {
               return InputDecoration(
                 labelText: etiqueta,
-                labelStyle: TextStyle(color: textMuted),
+                labelStyle: TextStyle(color: AppColors.textoSecundario),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: textMuted.withValues(alpha: 0.5)),
+                  borderSide: BorderSide(color: AppColors.textoSecundario.withValues(alpha: 0.5)),
                 ),
                 focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: primaryColor),
+                  borderSide: BorderSide(color: AppColors.primario),
                 ),
                 suffixIcon: alternar == null
                     ? null
                     : IconButton(
                         icon: Icon(
                           visible ? Icons.visibility_off : Icons.visibility,
-                          color: textMuted,
+                          color: AppColors.textoSecundario,
                           size: 20,
                         ),
                         onPressed: alternar,
@@ -572,7 +568,7 @@ class ProfileScreen extends StatelessWidget {
                 messenger.showSnackBar(
                   const SnackBar(
                     content: Text('Contraseña actualizada correctamente.'),
-                    backgroundColor: Color(0xFF10B981),
+                    backgroundColor: AppColors.exito,
                   ),
                 );
               } on FirebaseAuthException catch (e) {
@@ -603,11 +599,11 @@ class ProfileScreen extends StatelessWidget {
             }
 
             return AlertDialog(
-              backgroundColor: navBgColor,
+              backgroundColor: AppColors.superficie,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               title: Text(
                 'Cambiar contraseña',
-                style: TextStyle(color: textMain, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold),
               ),
               content: SingleChildScrollView(
                 child: Column(
@@ -617,7 +613,7 @@ class ProfileScreen extends StatelessWidget {
                       controller: actualCtrl,
                       obscureText: !verActual,
                       enabled: !guardando,
-                      style: TextStyle(color: textMain),
+                      style: TextStyle(color: AppColors.texto),
                       decoration: campo(
                         'Contraseña actual',
                         verActual,
@@ -629,7 +625,7 @@ class ProfileScreen extends StatelessWidget {
                       controller: nuevaCtrl,
                       obscureText: !verNueva,
                       enabled: !guardando,
-                      style: TextStyle(color: textMain),
+                      style: TextStyle(color: AppColors.texto),
                       decoration: campo(
                         'Nueva contraseña',
                         verNueva,
@@ -641,7 +637,7 @@ class ProfileScreen extends StatelessWidget {
                       controller: confirmarCtrl,
                       obscureText: !verNueva,
                       enabled: !guardando,
-                      style: TextStyle(color: textMain),
+                      style: TextStyle(color: AppColors.texto),
                       decoration: campo('Confirmar nueva contraseña', false, null),
                     ),
                     if (error != null) ...[
@@ -651,7 +647,7 @@ class ProfileScreen extends StatelessWidget {
                         child: Text(
                           error!,
                           style: const TextStyle(
-                            color: Colors.redAccent,
+                            color: AppColors.error,
                             fontSize: 13,
                           ),
                         ),
@@ -663,11 +659,11 @@ class ProfileScreen extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: guardando ? null : () => Navigator.pop(dialogContext),
-                  child: Text('Cancelar', style: TextStyle(color: textMuted)),
+                  child: Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
+                    backgroundColor: AppColors.primario,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -709,7 +705,7 @@ class ProfileScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: navBgColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.transparent),
       ),
@@ -723,7 +719,7 @@ class ProfileScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(color: textMuted, fontSize: 12),
+                  style: TextStyle(color: AppColors.textoSecundario, fontSize: 12),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -734,7 +730,7 @@ class ProfileScreen extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -755,7 +751,7 @@ class ProfileScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: navBgColor,
+          color: AppColors.superficie,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.transparent),
         ),
@@ -764,23 +760,23 @@ class ProfileScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: bgColor,
+                color: AppColors.fondo,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: primaryColor, size: 24),
+              child: Icon(icon, color: AppColors.primario, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: textMuted, size: 16),
+            Icon(Icons.arrow_forward_ios, color: AppColors.textoSecundario, size: 16),
           ],
         ),
       ),

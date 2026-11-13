@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/services/storage_service.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Muestra el archivo asociado a un documento vehicular.
 ///
@@ -20,10 +21,6 @@ class ArchivoDocumentoView extends StatefulWidget {
 }
 
 class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final StorageService _storage = StorageService();
   late Future<String> _urlFuture;
@@ -72,7 +69,7 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
                       const Center(child: CircularProgressIndicator()),
                   errorWidget: (_, _, _) => const Center(
                     child: Icon(Icons.broken_image_outlined,
-                        color: textMuted, size: 48),
+                        color: AppColors.textoSecundario, size: 48),
                   ),
                 ),
               ),
@@ -96,7 +93,7 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
       width: double.infinity,
       height: height,
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.transparent),
       ),
@@ -123,12 +120,12 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(Icons.cloud_off_outlined, color: textMuted),
+                  const Icon(Icons.cloud_off_outlined, color: AppColors.textoSecundario),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Text(
                       'No se pudo cargar el documento guardado.',
-                      style: TextStyle(color: textMuted),
+                      style: TextStyle(color: AppColors.textoSecundario),
                     ),
                   ),
                   TextButton(
@@ -150,13 +147,13 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
               child: Row(
                 children: [
                   const Icon(Icons.picture_as_pdf_outlined,
-                      color: primaryColor, size: 32),
+                      color: AppColors.primario, size: 32),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Text(
                       'Documento original (PDF)',
                       style: TextStyle(
-                        color: textMain,
+                        color: AppColors.texto,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

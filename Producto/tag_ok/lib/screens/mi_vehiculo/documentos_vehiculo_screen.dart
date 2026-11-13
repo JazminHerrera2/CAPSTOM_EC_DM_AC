@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/services/documento_vehicular_service.dart';
 import 'documentos_vehiculo_seccion.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class DocumentosVehiculoScreen extends StatefulWidget {
   final String vehiculoId;
@@ -21,9 +22,6 @@ class DocumentosVehiculoScreen extends StatefulWidget {
 
 class _DocumentosVehiculoScreenState
     extends State<DocumentosVehiculoScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final DocumentoVehicularService _documentoService =
       DocumentoVehicularService();
@@ -35,19 +33,19 @@ class _DocumentosVehiculoScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
 
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(
-          color: textMain,
+          color: AppColors.texto,
         ),
         title: const Text(
           'Documentos',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontSize: 21,
             fontWeight: FontWeight.w700,
           ),
@@ -64,7 +62,7 @@ class _DocumentosVehiculoScreenState
               ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
-                color: primaryColor,
+                color: AppColors.primario,
               ),
             );
           }

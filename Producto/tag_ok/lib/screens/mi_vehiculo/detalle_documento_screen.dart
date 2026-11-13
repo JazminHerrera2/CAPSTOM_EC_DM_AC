@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../data/models/documento_vehicular_model.dart';
 import '../../data/services/documento_vehicular_service.dart';
 import 'archivo_documento_view.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class DetalleDocumentoScreen extends StatelessWidget {
   final DocumentoVehicularModel documento;
@@ -15,12 +16,6 @@ class DetalleDocumentoScreen extends StatelessWidget {
     required this.patenteVehiculo,
   });
 
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color surfaceLight = Color(0xFFE2E8F0);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color primaryColor = Color(0xFF1E3A8A);
 
   // ------------------------------------------------------------
   // ESTADO
@@ -63,16 +58,16 @@ class DetalleDocumentoScreen extends StatelessWidget {
   Color _colorEstado(String estado) {
     switch (estado) {
       case 'Vencido':
-        return Colors.redAccent;
+        return AppColors.error;
 
       case 'Próximo a vencer':
-        return const Color(0xFFF97316);
+        return AppColors.alerta;
 
       case 'Vigente':
-        return const Color(0xFF10B981);
+        return AppColors.exito;
 
       default:
-        return textMuted;
+        return AppColors.textoSecundario;
     }
   }
 
@@ -157,12 +152,12 @@ class DetalleDocumentoScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.10),
+              color: AppColors.primario.withOpacity(0.10),
               borderRadius: BorderRadius.circular(11),
             ),
             child: Icon(
               icono,
-              color: primaryColor,
+              color: AppColors.primario,
               size: 19,
             ),
           ),
@@ -177,7 +172,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                 Text(
                   titulo,
                   style: const TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 11,
                   ),
                 ),
@@ -187,7 +182,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                 Text(
                   texto,
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -206,19 +201,19 @@ class DetalleDocumentoScreen extends StatelessWidget {
     final colorEstado = _colorEstado(estado);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
 
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(
-          color: textMain,
+          color: AppColors.texto,
         ),
         title: const Text(
           'Detalle del documento',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -241,7 +236,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: surfaceColor,
+              color: AppColors.superficie,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Colors.transparent,
@@ -253,12 +248,12 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   width: 68,
                   height: 68,
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.12),
+                    color: AppColors.primario.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: const Icon(
                     Icons.description_outlined,
-                    color: primaryColor,
+                    color: AppColors.primario,
                     size: 32,
                   ),
                 ),
@@ -269,7 +264,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   documento.tipoDocumento.etiqueta,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                   ),
@@ -280,7 +275,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                 Text(
                   patenteVehiculo,
                   style: const TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -333,7 +328,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
           const Text(
             'Información del documento',
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -347,7 +342,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
               vertical: 5,
             ),
             decoration: BoxDecoration(
-              color: surfaceColor,
+              color: AppColors.superficie,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: Colors.transparent,
@@ -366,7 +361,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   ),
 
                   const Divider(
-                    color: Color(0xFFCBD5E1),
+                    color: AppColors.borde,
                     height: 1,
                   ),
                 ],
@@ -380,7 +375,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                 ),
 
                 const Divider(
-                  color: Color(0xFFCBD5E1),
+                  color: AppColors.borde,
                   height: 1,
                 ),
 
@@ -397,7 +392,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                         .trim()
                         .isNotEmpty) ...[
                   const Divider(
-                    color: Color(0xFFCBD5E1),
+                    color: AppColors.borde,
                     height: 1,
                   ),
                   _dato(
@@ -412,7 +407,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                         .trim()
                         .isNotEmpty) ...[
                   const Divider(
-                    color: Color(0xFFCBD5E1),
+                    color: AppColors.borde,
                     height: 1,
                   ),
                   _dato(
@@ -434,7 +429,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
           const Text(
             'Información del registro',
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -448,7 +443,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
               vertical: 5,
             ),
             decoration: BoxDecoration(
-              color: surfaceColor,
+              color: AppColors.superficie,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: Colors.transparent,
@@ -467,7 +462,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                 ),
 
                 const Divider(
-                  color: Color(0xFFCBD5E1),
+                  color: AppColors.borde,
                   height: 1,
                 ),
 
@@ -495,7 +490,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
             const Text(
               'Archivo asociado',
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -521,7 +516,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
               icon: const Icon(Icons.delete_outline),
               label: const Text('Eliminar documento'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.redAccent,
+                foregroundColor: AppColors.error,
                 side: BorderSide(
                   color: Colors.redAccent.withOpacity(0.6),
                 ),
@@ -549,7 +544,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: surfaceColor,
+          backgroundColor: AppColors.superficie,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
@@ -557,13 +552,13 @@ class DetalleDocumentoScreen extends StatelessWidget {
             children: [
               Icon(
                 Icons.warning_amber_rounded,
-                color: Colors.redAccent,
+                color: AppColors.error,
               ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '¿Eliminar documento?',
-                  style: TextStyle(color: textMain),
+                  style: TextStyle(color: AppColors.texto),
                 ),
               ),
             ],
@@ -573,7 +568,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
             'adjunto y sus avisos de vencimiento. Esta acción no se puede '
             'deshacer.',
             style: const TextStyle(
-              color: textMuted,
+              color: AppColors.textoSecundario,
               height: 1.4,
             ),
           ),
@@ -585,7 +580,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.redAccent,
+                foregroundColor: AppColors.error,
               ),
               child: const Text('Eliminar'),
             ),
@@ -614,7 +609,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
       messenger.showSnackBar(
         const SnackBar(
           content: Text('Documento eliminado exitosamente.'),
-          backgroundColor: Color(0xFF10B981),
+          backgroundColor: AppColors.exito,
         ),
       );
     } catch (e) {
@@ -625,7 +620,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
           content: Text(
             'No se pudo eliminar el documento. Intenta nuevamente.',
           ),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
         ),
       );
     }

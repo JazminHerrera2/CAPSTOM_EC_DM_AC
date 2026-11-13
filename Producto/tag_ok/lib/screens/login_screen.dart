@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/auth_provider.dart';
 import 'home_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -12,13 +13,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  // Colores extraídos del CSS del mockup
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color textMain = const Color(0xFF0F172A);
-  final Color textMuted = const Color(0xFF64748B);
-  final Color inputBg = const Color(0xFFFFFFFF);
-  final Color surfaceBorder = const Color(0xFFCBD5E1);
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -77,7 +71,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.error,
           ),
         );
       } else if (next.isSuccess) {
@@ -91,15 +85,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authNotifierProvider);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       body: Container(
         decoration: const BoxDecoration(
           gradient: RadialGradient(
             center: Alignment.topRight,
             radius: 1.5,
             colors: [
-              Color(0xFFDBEAFE),
-              Color(0xFFF1F5F9),
+              AppColors.contenedorSuave,
+              AppColors.fondo,
             ],
             stops: [0.0, 0.4],
           ),
@@ -114,10 +108,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Icon(
                   Icons.route_outlined,
                   size: 80,
-                  color: primaryColor,
+                  color: AppColors.primario,
                   shadows: [
                     Shadow(
-                      color: primaryColor.withValues(alpha: 0.5),
+                      color: AppColors.primario.withValues(alpha: 0.5),
                       blurRadius: 20,
                     )
                   ],
@@ -130,7 +124,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
-                    color: textMain,
+                    color: AppColors.texto,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -139,7 +133,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   _isLogin ? 'Accede a tu cuenta de TAG OK' : 'Únete a TAG OK',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 15,
                   ),
                 ),
@@ -175,13 +169,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF1E3A8A), Color(0xFF2F5BBA)],
+                      colors: [AppColors.primario, AppColors.primario],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: primaryColor.withValues(alpha: 0.5),
+                        color: AppColors.primario.withValues(alpha: 0.5),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -212,13 +206,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               Text(
                                 _isLogin ? 'Continuar' : 'Registrarse',
                                 style: TextStyle(
-                                  color: textMain,
+                                  color: AppColors.texto,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Icon(Icons.arrow_forward, color: textMain),
+                              Icon(Icons.arrow_forward, color: AppColors.texto),
                             ],
                           ),
                   ),
@@ -237,7 +231,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? '¿No tienes cuenta? Regístrate aquí'
                         : '¿Ya tienes cuenta? Inicia sesión',
                     style: TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -248,7 +242,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Text(
                       '¿Olvidaste tu contraseña?',
                       style: TextStyle(
-                        color: textMuted.withValues(alpha: 0.8),
+                        color: AppColors.textoSecundario.withValues(alpha: 0.8),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -269,19 +263,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: inputBg,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.transparent),
       ),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
-        style: TextStyle(color: textMain),
+        style: TextStyle(color: AppColors.texto),
         keyboardType: obscureText ? TextInputType.text : TextInputType.emailAddress,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: textMuted.withValues(alpha: 0.7)),
-          prefixIcon: Icon(icon, color: textMuted),
+          hintStyle: TextStyle(color: AppColors.textoSecundario.withValues(alpha: 0.7)),
+          prefixIcon: Icon(icon, color: AppColors.textoSecundario),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),
@@ -295,25 +289,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFFFFFFFF),
+        backgroundColor: AppColors.superficie,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Recuperar contraseña', style: TextStyle(color: Color(0xFF0F172A))),
+        title: const Text('Recuperar contraseña', style: TextStyle(color: AppColors.texto)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
               'Ingresa tu correo electrónico y te enviaremos un enlace seguro para restablecer tu contraseña.',
-              style: TextStyle(color: Color(0xFF64748B)),
+              style: TextStyle(color: AppColors.textoSecundario),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: resetEmailController,
-              style: const TextStyle(color: Color(0xFF0F172A)),
+              style: const TextStyle(color: AppColors.texto),
               decoration: InputDecoration(
                 hintText: 'Correo electrónico',
-                hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                hintStyle: const TextStyle(color: AppColors.textoSecundario),
                 filled: true,
-                fillColor: const Color(0xFFF1F5F9),
+                fillColor: AppColors.fondo,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               ),
             ),
@@ -322,11 +316,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar', style: TextStyle(color: Color(0xFF64748B))),
+            child: const Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
+              backgroundColor: AppColors.primario,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () async {
@@ -344,14 +338,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text(mensajeNeutro), backgroundColor: Colors.green),
+                    const SnackBar(content: Text(mensajeNeutro), backgroundColor: AppColors.exito),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   if (e is FirebaseAuthException && e.code == 'user-not-found') {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text(mensajeNeutro), backgroundColor: Colors.green),
+                      const SnackBar(content: Text(mensajeNeutro), backgroundColor: AppColors.exito),
                     );
                     return;
                   }
@@ -360,7 +354,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     errorMessage = 'El correo electrónico ingresado no es válido.';
                   }
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $errorMessage'), backgroundColor: Colors.red),
+                    SnackBar(content: Text('Error: $errorMessage'), backgroundColor: AppColors.error),
                   );
                 }
               }

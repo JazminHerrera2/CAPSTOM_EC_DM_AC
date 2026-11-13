@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'gasto_periodo.dart';
-import 'widgets_gasto.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 const List<String> _mesesAbreviados = [
   'Ene',
@@ -71,13 +71,13 @@ class _DialogoPeriodo extends StatelessWidget {
           alignment: Alignment.center,
           constraints: const BoxConstraints(minHeight: 44),
           decoration: BoxDecoration(
-            color: seleccionada ? TokensGasto.violeta : TokensGasto.pildora,
+            color: seleccionada ? AppColors.primario : AppColors.contenedorSuave,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             texto,
             style: TextStyle(
-              color: seleccionada ? Colors.white : TokensGasto.textoPrincipal,
+              color: seleccionada ? Colors.white : AppColors.texto,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
@@ -103,7 +103,7 @@ class _DialogoPeriodo extends StatelessWidget {
             child: Text(
               '${entrada.key}',
               style: const TextStyle(
-                color: TokensGasto.textoSecundario,
+                color: AppColors.textoSecundario,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
@@ -154,7 +154,7 @@ class _DialogoPeriodo extends StatelessWidget {
     final hayOpciones = _esMes ? meses.isNotEmpty : anios.isNotEmpty;
 
     return Dialog(
-      backgroundColor: TokensGasto.fondoCard,
+      backgroundColor: AppColors.superficie,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: const BorderSide(color: Colors.transparent),
@@ -168,7 +168,7 @@ class _DialogoPeriodo extends StatelessWidget {
             Text(
               _esMes ? 'Elegir mes' : 'Elegir año',
               style: const TextStyle(
-                color: TokensGasto.textoPrincipal,
+                color: AppColors.texto,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -179,7 +179,7 @@ class _DialogoPeriodo extends StatelessWidget {
                   ? 'Solo aparecen los meses con mantenciones registradas.'
                   : 'Solo aparecen los años con mantenciones registradas.',
               style: const TextStyle(
-                color: TokensGasto.textoSecundario,
+                color: AppColors.textoSecundario,
                 fontSize: 12,
               ),
             ),
@@ -193,7 +193,7 @@ class _DialogoPeriodo extends StatelessWidget {
                         child: Text(
                           'Aún no tienes mantenciones registradas con costo.',
                           style: TextStyle(
-                            color: TokensGasto.textoPrincipal,
+                            color: AppColors.texto,
                             fontSize: 14,
                           ),
                         ),
@@ -206,7 +206,7 @@ class _DialogoPeriodo extends StatelessWidget {
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
                   'Cancelar',
-                  style: TextStyle(color: TokensGasto.acento),
+                  style: TextStyle(color: AppColors.primario),
                 ),
               ),
             ),

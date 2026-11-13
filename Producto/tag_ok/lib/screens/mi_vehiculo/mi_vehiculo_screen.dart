@@ -8,6 +8,7 @@ import '../dashboard/encabezado_tag_ok.dart';
 import 'detalle_vehiculo_screen.dart';
 import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 class MiVehiculoScreen extends StatefulWidget {
   const MiVehiculoScreen({super.key});
@@ -17,13 +18,6 @@ class MiVehiculoScreen extends StatefulWidget {
 }
 
 class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
-  // Colores principales de TAG OK
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color surfaceColor = const Color(0xFFFFFFFF);
-  final Color surfaceLight = const Color(0xFFE2E8F0);
-  final Color textMain = const Color(0xFF0F172A);
-  final Color textMuted = const Color(0xFF64748B);
-  final Color primaryColor = const Color(0xFF1E3A8A);
 
   final VehiculoService _vehiculoService = VehiculoService();
 
@@ -33,12 +27,12 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
 
       // El + siempre significa AGREGAR VEHíCULO.
       floatingActionButton: FloatingActionButton(
         heroTag: 'agregarVehiculo',
-        backgroundColor: primaryColor,
+        backgroundColor: AppColors.primario,
         tooltip: 'Agregar vehículo',
         onPressed: () {
           Navigator.push(
@@ -75,7 +69,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
             child: CircularProgressIndicator(
-              color: primaryColor,
+              color: AppColors.primario,
             ),
           );
         }
@@ -141,7 +135,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
               child: Text(
                 'Mi Vehículo',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
@@ -150,7 +144,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
             Text(
               'Consulta la información, documentos y estado de cada vehículo.',
               style: TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 fontSize: 13,
                 height: 1.4,
               ),
@@ -165,11 +159,11 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
                   vehiculo: vehiculo,
                   esPrincipal: vehiculo.patente == principal,
                   onMarcarPrincipal: () => _setVehiculoPrincipal(vehiculo.patente),
-                  surfaceColor: surfaceColor,
-                  surfaceLight: surfaceLight,
-                  textMain: textMain,
-                  textMuted: textMuted,
-                  primaryColor: primaryColor,
+                  surfaceColor: AppColors.superficie,
+                  surfaceLight: AppColors.contenedorSuave,
+                  textMain: AppColors.texto,
+                  textMuted: AppColors.textoSecundario,
+                  primaryColor: AppColors.primario,
                   onTap: () async {
                     await Navigator.push<void>(
                       context,
@@ -206,7 +200,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
             Text(
               'Mi Vehículo',
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
@@ -236,7 +230,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
               'Aún no tienes vehículos',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 21,
                 fontWeight: FontWeight.bold,
               ),
@@ -248,7 +242,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
               'Agrega tu primer vehículo para gestionar su información, documentos y vencimientos.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 fontSize: 14,
                 height: 1.5,
               ),
@@ -262,10 +256,10 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
                 vertical: 11,
               ),
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.10),
+                color: AppColors.primario.withOpacity(0.10),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: primaryColor.withOpacity(0.25),
+                  color: AppColors.primario.withOpacity(0.25),
                 ),
               ),
               child: Row(
@@ -273,7 +267,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
                 children: [
                   Icon(
                     Icons.add_circle_outline,
-                    color: primaryColor,
+                    color: AppColors.primario,
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -282,7 +276,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
                       'Presiona + para agregar un vehículo',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: primaryColor,
+                        color: AppColors.primario,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -303,7 +297,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         height: 75,
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: surfaceColor,
+          color: AppColors.superficie,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Image.asset(
@@ -315,7 +309,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
 
             return Icon(
               Icons.directions_car_outlined,
-              color: textMuted,
+              color: AppColors.textoSecundario,
             );
           },
         ),
@@ -427,7 +421,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
           children: [
             const Icon(
               Icons.error_outline,
-              color: Colors.redAccent,
+              color: AppColors.error,
               size: 48,
             ),
             const SizedBox(height: 14),
@@ -435,7 +429,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
               mensaje,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 fontSize: 14,
               ),
             ),
@@ -496,16 +490,16 @@ class _VehiculoCard extends StatelessWidget {
   Color _colorEstado(String estado) {
     switch (estado) {
       case 'Atención requerida':
-        return Colors.redAccent;
+        return AppColors.error;
 
       case 'Próximo vencimiento':
-        return const Color(0xFFF97316);
+        return AppColors.alerta;
 
       case 'Todo al día':
-        return const Color(0xFF10B981);
+        return AppColors.exito;
 
       default:
-        return textMuted;
+        return AppColors.textoSecundario;
     }
   }
 
@@ -547,7 +541,7 @@ class _VehiculoCard extends StatelessWidget {
           color: Colors.transparent,
           child: Container(
               decoration: BoxDecoration(
-                color: surfaceColor,
+                color: AppColors.superficie,
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
                   color: Colors.transparent,
@@ -572,7 +566,7 @@ class _VehiculoCard extends StatelessWidget {
                     height: 155,
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      color: surfaceLight,
+                      color: AppColors.contenedorSuave,
                     ),
                     child: FotoVehiculo(
                       fotoPath: vehiculo.fotoPath,
@@ -615,7 +609,7 @@ class _VehiculoCard extends StatelessWidget {
                                             ? marcaModelo
                                             : vehiculo.patente,
                                     style: TextStyle(
-                                      color: textMain,
+                                      color: AppColors.texto,
                                       fontSize: 19,
                                       fontWeight:
                                           FontWeight.bold,
@@ -627,7 +621,7 @@ class _VehiculoCard extends StatelessWidget {
                                         ? marcaModelo
                                         : 'VehÍculo registrado',
                                     style: TextStyle(
-                                      color: textMuted,
+                                      color: AppColors.textoSecundario,
                                       fontSize: 13,
                                     ),
                                   ),
@@ -639,7 +633,7 @@ class _VehiculoCard extends StatelessWidget {
 
                             Icon(
                               Icons.chevron_right_rounded,
-                              color: textMuted,
+                              color: AppColors.textoSecundario,
                               size: 27,
                             ),
                           ],
@@ -656,14 +650,14 @@ class _VehiculoCard extends StatelessWidget {
                                 icon: Icons.star_rounded,
                                 texto: 'Principal',
                                 color: Colors.amber,
-                                textMain: textMain,
+                                textMain: AppColors.texto,
                               ),
 
                             _InfoChip(
                               icon: Icons.badge_outlined,
                               texto: vehiculo.patente,
-                              color: primaryColor,
-                              textMain: textMain,
+                              color: AppColors.primario,
+                              textMain: AppColors.texto,
                             ),
 
                             if (vehiculo.anio != null)
@@ -672,8 +666,8 @@ class _VehiculoCard extends StatelessWidget {
                                     Icons.calendar_today_outlined,
                                 texto:
                                     vehiculo.anio.toString(),
-                                color: primaryColor,
-                                textMain: textMain,
+                                color: AppColors.primario,
+                                textMain: AppColors.texto,
                               ),
 
                             if (vehiculo.categoria != null &&
@@ -683,8 +677,8 @@ class _VehiculoCard extends StatelessWidget {
                                 icon:
                                     Icons.category_outlined,
                                 texto: vehiculo.categoria!,
-                                color: primaryColor,
-                                textMain: textMain,
+                                color: AppColors.primario,
+                                textMain: AppColors.texto,
                               ),
                           ],
                         ),
@@ -754,7 +748,7 @@ class _VehiculoCard extends StatelessWidget {
                                 esPrincipal
                                     ? Icons.star_rounded
                                     : Icons.star_border_rounded,
-                                color: esPrincipal ? Colors.amber : textMuted,
+                                color: esPrincipal ? Colors.amber : AppColors.textoSecundario,
                                 size: 30,
                               ),
                             ),
@@ -812,7 +806,7 @@ class _InfoChip extends StatelessWidget {
           Text(
             texto,
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
