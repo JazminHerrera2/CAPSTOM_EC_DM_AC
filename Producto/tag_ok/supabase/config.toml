@@ -5,3 +5,7 @@ project_id = "auvgnsvzcrszguerorot"
 # ella misma contra las claves públicas de Google (ver index.ts).
 [functions.secure-document-upload]
 verify_jwt = false
+
+# Mismo caso: ia-extraccion verifica el ID Token de Firebase por su cuenta.
+[functions.ia-extraccion]
+verify_jwt = false

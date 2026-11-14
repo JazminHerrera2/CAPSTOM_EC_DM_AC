@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/mantencion_model.dart';
 import '../../data/services/mantencion_service.dart';
+import '../../data/services/notificacion_service.dart'
+    show margenAvisoKilometraje;
+import '../dashboard/dashboard_logica.dart' show formatearMiles;
 import '../../utils/titulo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
 
@@ -77,8 +80,8 @@ class ProximasMantenimientosScreen extends StatelessWidget {
   }
 
   Widget _cabecera() {
-    return const Text(
-      'Programa tus próximas mantenciones por fecha, por kilometraje o por ambos. Si eliges fecha, te avisamos 7 días antes y el mismo día.',
+    return Text(
+      'Programa tus próximas mantenciones por fecha, por kilometraje o por ambos. Por fecha te avisamos 7 días antes y el mismo día; por kilometraje, cuando falten ${formatearMiles(margenAvisoKilometraje)} km y al llegar.',
       style: TextStyle(
         color: textMuted,
         fontSize: 13,
@@ -610,9 +613,21 @@ class _ProgramarMantencionSheetState
     );
   }
 
-  /// Aviso de los recordatorios: se generan solo si hay fecha.
+  /// Qué recordatorios se generarán según cómo se programe.
   Widget _avisoRecordatorios() {
-    final conFecha = _usaFecha;
+    final km = '${formatearMiles(margenAvisoKilometraje)} km';
+    final texto = switch (_modo) {
+      _ModoProgramacion.fecha =>
+        'Se generarán recordatorios 7 días antes y el mismo día de la fecha '
+            'programada.',
+      _ModoProgramacion.kilometraje =>
+        'Te avisaremos cuando falten $km y al llegar al kilometraje '
+            'programado. El kilometraje del vehículo se actualiza al registrar '
+            'cargas y mantenciones.',
+      _ModoProgramacion.ambos =>
+        'Se generarán recordatorios 7 días antes y el mismo día de la fecha, '
+            'y cuando falten $km y al llegar al kilometraje programado.',
+    };
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -623,21 +638,15 @@ class _ProgramarMantencionSheetState
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            conFecha
-                ? Icons.notifications_active_outlined
-                : Icons.notifications_off_outlined,
-            color: conFecha ? primaryColor : textMuted,
+          const Icon(
+            Icons.notifications_active_outlined,
+            color: primaryColor,
             size: 20,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              conFecha
-                  ? 'Se generarán recordatorios 7 días antes y el mismo día de '
-                      'la fecha programada.'
-                  : 'Sin una fecha no se generan recordatorios. Elige "Por '
-                      'fecha" o "Ambos" para recibirlos.',
+              texto,
               style: const TextStyle(
                 color: textMuted,
                 fontSize: 12,

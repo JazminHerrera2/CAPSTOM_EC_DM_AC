@@ -82,9 +82,28 @@ PROJECT_ID=tu_project_id
 STORAGE_BUCKET=tu_storage_bucket
 IOS_BUNDLE_ID=tu_ios_bundle_id
 MAPBOX_ACCESS_TOKEN=tu_mapbox_access_token
-GEMINI_API_KEY=tu_gemini_api_key
-OPENAI_API_KEY=tu_openai_api_key
+SUPABASE_URL=https://tu_proyecto.supabase.co
 ```
+
+> ℹ️ En `tag_ok` el `.env` **no se empaqueta como archivo**: se lee al compilar
+> con `--dart-define-from-file=.env` (ver `lib/entorno.dart`). Por eso **todos
+> los comandos `flutter run` y `flutter build` de `tag_ok` llevan
+> `--dart-define-from-file=.env`**. Si lo olvidas, la app abre la pantalla
+> "No se pudo iniciar TAG OK" indicando la variable que falta.
+>
+> ⚠️ **No pongas claves secretas en el `.env`** (OpenAI, Gemini, etc.). Las
+> variables que la app usa quedan escritas dentro de la app compilada, así que
+> solo pueden ser datos públicos. La IA funciona a través de la Edge Function
+> `ia-extraccion` de Supabase, que guarda la clave de OpenAI como secreto del
+> servidor:
+>
+> ```bash
+> cd Producto/tag_ok
+> npx supabase login
+> npx supabase link --project-ref <id del proyecto>
+> npx supabase secrets set OPENAI_API_KEY=<clave de OpenAI>
+> npx supabase functions deploy ia-extraccion
+> ```
 
 Repite lo mismo en `Producto/admin/.env` (misma estructura de variables).
 
@@ -95,7 +114,7 @@ Repite lo mismo en `Producto/admin/.env` (misma estructura de variables).
 > # luego edita ambos archivos .env y reemplaza cada TU_... por el valor real
 > ```
 
-Si no tienes las claves reales todavía, igual puedes instalar dependencias y compilar, pero la app fallará al conectarse a Firebase/Mapbox/Gemini en tiempo de ejecución.
+Si no tienes las claves reales todavía, igual puedes instalar dependencias y compilar, pero la app fallará al conectarse a Firebase/Mapbox/Supabase (archivos e IA) en tiempo de ejecución.
 
 ---
 
@@ -125,27 +144,24 @@ cd ../..
 
 ```bash
 cd Producto/tag_ok
-flutter build web --pwa-strategy=none
-flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8090
-flutter build web --release
-firebase deploy --only hosting
-flutter build web --release; firebase deploy --only hosting --project tag-ok-v2
+flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8090 --dart-define-from-file=.env
 ```
-flutter clean
-flutter pub get
-flutter build web --release --pwa-strategy=none
-firebase deploy --only hosting --project tag-ok-v2
-flutter build web --release; firebase deploy --only hosting 
 
 Luego abre en el navegador: `http://127.0.0.1:8090/`
+
+Si no tienes Chrome, usa `-d edge`. Si el navegador no llega a conectarse,
+`flutter run -d web-server --web-port 8090 --dart-define-from-file=.env` y abre
+la dirección que muestra la terminal.
 
 **Publicar en producción (Firebase Hosting):**
 
 ```bash
 cd Producto/tag_ok
-flutter build web --release --pwa-strategy=none
+flutter build web --release --pwa-strategy=none --dart-define-from-file=.env
 firebase deploy --only hosting --project tag-ok-v2
 ```
+
+Si el build quedó raro, antes de compilar: `flutter clean` y `flutter pub get`.
 
 Los clientes ven la versión nueva con solo abrir el link, sin Ctrl+Shift+R ni
 incógnito: `firebase.json` manda `Cache-Control: no-cache` (el navegador
@@ -158,7 +174,14 @@ ahí en adelante se actualiza solo.
 
 ```bash
 cd Producto/tag_ok
-flutter run -d windows
+flutter run -d windows --dart-define-from-file=.env
+```
+
+**APK de Android:**
+
+```bash
+cd Producto/tag_ok
+flutter build apk --release --dart-define-from-file=.env
 ```
 
 ---

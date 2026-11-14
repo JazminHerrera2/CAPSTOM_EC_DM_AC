@@ -6,6 +6,7 @@
             "request": "launch",
             "type": "dart",
             "args": [
+                "--dart-define-from-file=.env",
                 "--web-browser-flag=--disable-web-security",
                 "--web-browser-flag=--user-data-dir=C:\\temp_chrome_dev"
             ]

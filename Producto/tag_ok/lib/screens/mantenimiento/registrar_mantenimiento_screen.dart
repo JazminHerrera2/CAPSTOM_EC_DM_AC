@@ -57,6 +57,13 @@ class _RegistrarMantenimientoScreenState
   String get _usuarioId =>
       FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
 
+  /// Vehículos del usuario. Se crea una sola vez: si se creara dentro de
+  /// build(), cada letra escrita (setState) abriría una suscripción nueva, el
+  /// formulario mostraría un instante el indicador de carga y el campo
+  /// perdería el foco.
+  late final Stream<List<VehiculoModel>> _vehiculos =
+      _vehiculoService.streamVehiculosUsuario(_usuarioId);
+
   String? _vehiculoId;
   /// El título lo propuso la IA y el usuario aún no lo toca.
   bool _tipoSugeridoIa = false;
@@ -415,7 +422,7 @@ class _RegistrarMantenimientoScreenState
         ),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
-        stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
+        stream: _vehiculos,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(

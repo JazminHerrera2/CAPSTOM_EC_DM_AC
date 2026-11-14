@@ -207,19 +207,6 @@ String nombreDelMes(int mes) => _nombresMeses[mes - 1];
 /// "Octubre 2026".
 String nombreMes(DateTime mes) => '${_nombresMeses[mes.month - 1]} ${mes.year}';
 
-/// Cada cuántos kilómetros toca una mantención.
-const int intervaloMantencionKm = 10000;
-
-/// Kilometraje de la próxima mantención: el que tiene el vehículo (el que se
-/// pide al registrarlo) más [intervaloMantencionKm]. `null` si no tiene.
-int? kilometrajeProximaMantencion(
-  int? kilometrajeActual, {
-  int intervalo = intervaloMantencionKm,
-}) {
-  if (kilometrajeActual == null || kilometrajeActual < 0) return null;
-  return kilometrajeActual + intervalo;
-}
-
 /// Pesos chilenos con separador de miles: `$ 178.500`.
 String formatearPesos(int monto) => '\$ ${formatearMiles(monto)}';
 
@@ -281,6 +268,39 @@ MantencionModel? calcularProximaMantencion(Iterable<MantencionModel> lista) {
       programadas.where((m) => m.proximoKilometraje != null).toList()
         ..sort((a, b) => a.proximoKilometraje!.compareTo(b.proximoKilometraje!));
   return soloKm.isEmpty ? null : soloKm.first;
+}
+
+typedef TextoProximaMantencion = ({String valor, String detalle});
+
+/// Lo que muestra la fila "Próxima mantención" del Inicio (RF-045) para [m],
+/// la que devuelve [calcularProximaMantencion]:
+///  - con fecha: la fecha, y debajo el nombre, el kilometraje si también se
+///    programó por km, y "Atrasada" si la fecha ya pasó;
+///  - solo con kilometraje: los km, y debajo el nombre;
+///  - sin mantención programada: "--" e invita a programar una.
+TextoProximaMantencion textoProximaMantencion(
+  MantencionModel? m, {
+  DateTime? ahora,
+}) {
+  final fecha = m?.proximaFecha;
+  final km = m?.proximoKilometraje;
+  if (m == null || (fecha == null && km == null)) {
+    return (valor: '--', detalle: 'Sin mantenciones programadas');
+  }
+  if (fecha == null) {
+    return (valor: '${formatearMiles(km!)} km', detalle: m.nombreTipo);
+  }
+  final hoy = ahora ?? DateTime.now();
+  final atrasada = DateTime(fecha.year, fecha.month, fecha.day)
+      .isBefore(DateTime(hoy.year, hoy.month, hoy.day));
+  return (
+    valor: formatearFecha(fecha),
+    detalle: [
+      m.nombreTipo,
+      if (km != null) 'a los ${formatearMiles(km)} km',
+      if (atrasada) 'Atrasada',
+    ].join(' · '),
+  );
 }
 
 int _urgencia(String estado) {

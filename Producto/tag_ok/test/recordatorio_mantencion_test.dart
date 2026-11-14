@@ -51,10 +51,73 @@ void main() {
     });
   });
 
+  group('avisoMantencionKm (HU-11/HU-48)', () {
+    final ahora = DateTime(2026, 11, 8, 15, 30);
+    AvisoProgramado? aviso(int kmActual, {String? patente = 'PRUE01'}) =>
+        avisoMantencionKm(
+          mantencionId: 'man1',
+          nombreMantencion: 'Cambio de aceite',
+          proximoKilometraje: 75000,
+          kilometrajeActual: kmActual,
+          ahora: ahora,
+          patente: patente,
+        );
+
+    test('con más de 1.000 km por delante todavía no se avisa', () {
+      expect(margenAvisoKilometraje, 1000);
+      expect(aviso(60000), isNull);
+      expect(aviso(73999), isNull);
+    });
+
+    test('a 1.000 km o menos avisa que se acerca', () {
+      final a = aviso(74000)!;
+      expect(a.id, 'man1_km_cerca');
+      expect(a.mensaje,
+          'Faltan 1.000 km para la mantención Cambio de aceite (PRUE01) '
+          '(a los 75.000 km).');
+      expect(aviso(74900)!.mensaje, startsWith('Faltan 100 km'));
+    });
+
+    test('al llegar o pasar el km programado avisa que toca', () {
+      final a = aviso(75000)!;
+      expect(a.id, 'man1_km_alcanzado');
+      expect(a.mensaje,
+          'Tu vehículo llegó a los 75.000 km: toca la mantención '
+          'Cambio de aceite (PRUE01).');
+      expect(aviso(80500)!.id, 'man1_km_alcanzado');
+    });
+
+    test('el aviso queda para el momento en que sube el km', () {
+      expect(aviso(74500)!.fechaProgramada, ahora);
+    });
+
+    test('sin patente, el mensaje no muestra paréntesis vacíos', () {
+      expect(aviso(75000, patente: null)!.mensaje,
+          'Tu vehículo llegó a los 75.000 km: toca la mantención '
+          'Cambio de aceite.');
+    });
+
+    test('los ids coinciden con los sufijos que se borran', () {
+      expect(
+        [aviso(74500)!.id, aviso(75000)!.id],
+        sufijosAvisoMantencionKm.map((s) => 'man1_$s').toList(),
+      );
+    });
+  });
+
   test('tipos y títulos de aviso', () {
-    expect(tiposAvisoEntregables,
-        containsAll([tipoAvisoVencimientoDocumento, tipoAvisoMantencion]));
+    expect(
+        tiposAvisoEntregables,
+        containsAll([
+          tipoAvisoVencimientoDocumento,
+          tipoAvisoMantencion,
+          tipoAvisoMantencionKm,
+        ]));
     expect(tituloAviso(tipoAvisoMantencion), 'Mantención programada');
+    expect(tituloAviso(tipoAvisoMantencionKm), 'Mantención por kilometraje');
     expect(tituloAviso(tipoAvisoVencimientoDocumento), 'Documento por vencer');
+    expect(esAvisoDeMantencion(tipoAvisoMantencion), isTrue);
+    expect(esAvisoDeMantencion(tipoAvisoMantencionKm), isTrue);
+    expect(esAvisoDeMantencion(tipoAvisoVencimientoDocumento), isFalse);
   });
 }

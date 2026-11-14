@@ -1,6 +1,5 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../entorno.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -29,8 +28,7 @@ class _SeleccionarUbicacionScreenState
     extends State<SeleccionarUbicacionScreen> {
   final MapController _mapController = MapController();
   final GeocodingService _geocodingService = GeocodingService();
-  final TextEditingController _busquedaController =
-      TextEditingController();
+  final TextEditingController _busquedaController = TextEditingController();
 
   LatLng? _ubicacionSeleccionada;
   String? _direccion;
@@ -39,8 +37,7 @@ class _SeleccionarUbicacionScreenState
 
   static const Color azul = Color(0xFF1E3A8A);
 
-  String get _mapboxToken =>
-      dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
+  String get _mapboxToken => Entorno.mapboxAccessToken;
 
   Future<void> _seleccionarPunto(LatLng punto) async {
     setState(() {
@@ -65,8 +62,7 @@ class _SeleccionarUbicacionScreenState
 
   Future<void> _usarMiUbicacion() async {
     try {
-      final servicioActivo =
-          await Geolocator.isLocationServiceEnabled();
+      final servicioActivo = await Geolocator.isLocationServiceEnabled();
 
       if (!servicioActivo) {
         _mostrarMensaje('Activa la ubicación de tu dispositivo.');
@@ -95,10 +91,7 @@ class _SeleccionarUbicacionScreenState
 
       if (!mounted) return;
 
-      final punto = LatLng(
-        posicion.latitude,
-        posicion.longitude,
-      );
+      final punto = LatLng(posicion.latitude, posicion.longitude);
 
       _mapController.move(punto, 17);
       await _seleccionarPunto(punto);
@@ -116,11 +109,9 @@ class _SeleccionarUbicacionScreenState
     }
 
     final consulta = texto.trim();
-    final resultados =
-        await _geocodingService.searchPlaces(consulta);
+    final resultados = await _geocodingService.searchPlaces(consulta);
 
-    if (!mounted ||
-        _busquedaController.text.trim() != consulta) {
+    if (!mounted || _busquedaController.text.trim() != consulta) {
       return;
     }
 
@@ -144,9 +135,9 @@ class _SeleccionarUbicacionScreenState
   void _mostrarMensaje(String mensaje) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   void _confirmarUbicacion() {
@@ -159,10 +150,7 @@ class _SeleccionarUbicacionScreenState
 
     Navigator.pop(
       context,
-      UbicacionEstacionamiento(
-        coordenadas: punto,
-        direccion: _direccion ?? '',
-      ),
+      UbicacionEstacionamiento(coordenadas: punto, direccion: _direccion ?? ''),
     );
   }
 
@@ -203,9 +191,7 @@ class _SeleccionarUbicacionScreenState
                 ),
                 if (_sugerencias.isNotEmpty)
                   Container(
-                    constraints: const BoxConstraints(
-                      maxHeight: 180,
-                    ),
+                    constraints: const BoxConstraints(maxHeight: 180),
                     color: Colors.white,
                     child: ListView.builder(
                       shrinkWrap: true,
@@ -234,10 +220,7 @@ class _SeleccionarUbicacionScreenState
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    initialCenter: const LatLng(
-                      -33.4489,
-                      -70.6693,
-                    ),
+                    initialCenter: const LatLng(-33.4489, -70.6693),
                     initialZoom: 12,
                     onTap: (tapPosition, punto) {
                       _seleccionarPunto(punto);
@@ -291,10 +274,7 @@ class _SeleccionarUbicacionScreenState
               children: [
                 const Text(
                   'Ubicación seleccionada',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
                 if (_cargando)
@@ -305,16 +285,15 @@ class _SeleccionarUbicacionScreenState
                         (_ubicacionSeleccionada == null
                             ? 'Toca el mapa o usa tu ubicación.'
                             : 'Dirección no encontrada. '
-                                'Podrás ingresarla manualmente.'),
+                                  'Podrás ingresarla manualmente.'),
                   ),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed:
-                        _ubicacionSeleccionada == null || _cargando
-                            ? null
-                            : _confirmarUbicacion,
+                    onPressed: _ubicacionSeleccionada == null || _cargando
+                        ? null
+                        : _confirmarUbicacion,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: azul,
                       foregroundColor: Colors.white,

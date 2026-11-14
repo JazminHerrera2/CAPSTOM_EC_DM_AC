@@ -119,7 +119,8 @@ class NotificacionesScreen extends StatelessWidget {
                       child: Text(
                         'No tienes avisos. Te avisaremos 30, 15 y 7 días antes '
                         'del vencimiento de tus documentos, y 7 días antes y '
-                        'el mismo día de tus mantenciones programadas.',
+                        'el mismo día de tus mantenciones programadas (o '
+                        'cuando se acerque y llegue su kilometraje).',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: _textMuted),
                       ),
@@ -176,7 +177,7 @@ Future<void> _abrirAviso(
   if (referencia == null || referencia.isEmpty) return noDisponible();
 
   try {
-    if (aviso.tipo == tipoAvisoMantencion) {
+    if (esAvisoDeMantencion(aviso.tipo)) {
       final mantencion = await MantencionService().obtener(referencia);
       if (mantencion == null) return noDisponible();
       await navegador.push(MaterialPageRoute(
@@ -306,7 +307,7 @@ class _TarjetaAviso extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         leading: Icon(
-          aviso.tipo == tipoAvisoMantencion
+          esAvisoDeMantencion(aviso.tipo)
               ? Icons.build_circle_outlined
               : Icons.event_busy_outlined,
           color: noLeida

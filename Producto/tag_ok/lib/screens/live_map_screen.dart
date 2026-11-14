@@ -8,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -17,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:vibration/vibration.dart';
 import 'route_setup_screen.dart';
 import 'mi_vehiculo/registrar_editar_vehiculo_screen.dart';
+import '../entorno.dart';
 import '../data/models/route_model.dart';
 import '../data/models/trip_history.dart';
 import '../data/services/history_service.dart';
@@ -836,7 +836,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
   }
 
   Widget _buildMapBody() {
-    final mapboxToken = dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
+    const mapboxToken = Entorno.mapboxAccessToken;
 
     return Stack(
       children: [
