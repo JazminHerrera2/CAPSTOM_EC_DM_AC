@@ -40,6 +40,9 @@ class _AuditScreenState extends State<AuditScreen> {
   bool _useAI = true;
 
   // Variables de Filtro (Subpestaña 1)
+  // Si el panel de filtros (fecha y autopistas) está desplegado.
+  bool _filtrosVisibles = false;
+
   // Vehículo elegido en el filtro de patentes. Siempre hay uno elegido (no
   // existe "Todos"); null solo mientras no hay vehículos registrados.
   String? _selectedPatente;
@@ -2658,7 +2661,94 @@ Instrucciones para redactar el "aiReport":
     );
   }
 
+  /// Botón "Filtros": al presionarlo se despliegan los filtros (fecha y
+  /// autopistas) y al volver a presionarlo se ocultan. Muestra cuántos filtros
+  /// hay activos para que se note aunque estén ocultos.
   Widget _buildFiltersBar() {
+    final activos =
+        (_selectedHighway != 'Todas' ? 1 : 0) +
+        (_selectedDatePreset != 'Todos' ? 1 : 0);
+    final conFiltros = activos > 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            onTap: () => setState(() => _filtrosVisibles = !_filtrosVisibles),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: _filtrosVisibles || conFiltros
+                    ? AppColors.primario.withValues(alpha: 0.12)
+                    : AppColors.superficie,
+                borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.tune_rounded,
+                    size: 18,
+                    color: AppColors.primario,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Filtros',
+                    style: TextStyle(
+                      color: AppColors.texto,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (conFiltros) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primario,
+                        borderRadius: BorderRadius.circular(AppRadios.pildora),
+                      ),
+                      child: Text(
+                        '$activos',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: 6),
+                  Icon(
+                    _filtrosVisibles
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    size: 20,
+                    color: AppColors.textoSecundario,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          alignment: Alignment.topCenter,
+          child: _filtrosVisibles
+              ? _buildPanelFiltros()
+              : const SizedBox(width: double.infinity),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPanelFiltros() {
     final bool hasActiveFilters =
         _selectedHighway != 'Todas' ||
         _selectedDatePreset != 'Todos';
