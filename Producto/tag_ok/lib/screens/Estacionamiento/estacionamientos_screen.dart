@@ -294,6 +294,16 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           children: [
             _tarjetaGastoMes(todos),
             const SizedBox(height: 18),
+            // Título de la sección, igual que "Gastado en ..." de arriba.
+            const Text(
+              'Cronometraje',
+              style: TextStyle(
+                color: AppColors.texto,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
             enCurso == null
                 ? _botonIniciar(vehiculo)
                 : _tarjetaCronometraje(enCurso),
@@ -340,7 +350,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
-                  'Cronometraje en curso',
+                  'Tiempo transcurrido',
                   style: TextStyle(
                     color: textMain,
                     fontSize: 16,
