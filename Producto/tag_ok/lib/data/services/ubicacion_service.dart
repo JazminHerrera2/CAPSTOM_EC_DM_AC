@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -72,6 +73,20 @@ class UbicacionService {
   /// Tiempo máximo para esperar una posición.
   static const Duration tiempoMaximo = Duration(seconds: 15);
 
+  /// Última posición que el dispositivo ya tenía guardada, al instante y sin
+  /// encender el GPS. Sirve para mostrar algo en el mapa mientras llega la
+  /// posición real. Devuelve null si no hay, si todavía no hay permiso o en la
+  /// web (el navegador no la entrega).
+  Future<GeoPoint?> ultimaUbicacionConocida() async {
+    if (kIsWeb) return null;
+    try {
+      final p = await Geolocator.getLastKnownPosition();
+      return p == null ? null : GeoPoint(p.latitude, p.longitude);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Revisa que la ubicación esté activa, pide el permiso si hace falta y
   /// devuelve la posición actual. Si no se puede, lanza [ErrorUbicacion] con el
   /// motivo, para que la pantalla muestre el mensaje.
@@ -93,8 +108,12 @@ class UbicacionService {
 
     try {
       final posicion = await Geolocator.getCurrentPosition(
+        // Precisión media: se obtiene en pocos segundos (red y wifi) en vez
+        // de esperar el primer fix del GPS, que en interiores o en frío puede
+        // tardar todo el tiempo máximo. La precisión fina llega enseguida con
+        // [seguirUbicacion], que sí usa el GPS.
         locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
+          accuracy: LocationAccuracy.medium,
           timeLimit: tiempoMaximo,
         ),
       );

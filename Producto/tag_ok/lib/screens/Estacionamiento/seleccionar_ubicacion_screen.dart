@@ -3,10 +3,10 @@ import 'package:tag_ok/theme/app_estilos.dart';
 import 'package:flutter/material.dart';
 import '../../entorno.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../data/services/geocoding_service.dart';
+import '../../data/services/ubicacion_service.dart';
 
 class UbicacionEstacionamiento {
   final LatLng coordenadas;
@@ -30,6 +30,7 @@ class _SeleccionarUbicacionScreenState
     extends State<SeleccionarUbicacionScreen> {
   final MapController _mapController = MapController();
   final GeocodingService _geocodingService = GeocodingService();
+  final UbicacionService _ubicacionService = UbicacionService();
   final TextEditingController _busquedaController = TextEditingController();
 
   LatLng? _ubicacionSeleccionada;
@@ -63,40 +64,25 @@ class _SeleccionarUbicacionScreenState
   }
 
   Future<void> _usarMiUbicacion() async {
+    setState(() => _cargando = true);
     try {
-      final servicioActivo = await Geolocator.isLocationServiceEnabled();
-
-      if (!servicioActivo) {
-        _mostrarMensaje('Activa la ubicación de tu dispositivo.');
-        return;
+      // Primero se mueve el mapa a la última ubicación conocida (si hay), para
+      // no mostrar el mapa vacío mientras llega la posición real.
+      final ultima = await _ubicacionService.ultimaUbicacionConocida();
+      if (ultima != null && mounted) {
+        _mapController.move(LatLng(ultima.latitude, ultima.longitude), 17);
       }
 
-      var permiso = await Geolocator.checkPermission();
-
-      if (permiso == LocationPermission.denied) {
-        permiso = await Geolocator.requestPermission();
-      }
-
-      if (permiso == LocationPermission.denied ||
-          permiso == LocationPermission.deniedForever) {
-        _mostrarMensaje('No se concedió permiso de ubicación.');
-        return;
-      }
-
-      setState(() => _cargando = true);
-
-      final posicion = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-
+      final posicion = await _ubicacionService.obtenerUbicacionActual();
       if (!mounted) return;
 
       final punto = LatLng(posicion.latitude, posicion.longitude);
-
       _mapController.move(punto, 17);
       await _seleccionarPunto(punto);
+    } on ErrorUbicacion catch (e) {
+      if (!mounted) return;
+      setState(() => _cargando = false);
+      _mostrarMensaje(e.mensaje);
     } catch (e) {
       if (!mounted) return;
       setState(() => _cargando = false);

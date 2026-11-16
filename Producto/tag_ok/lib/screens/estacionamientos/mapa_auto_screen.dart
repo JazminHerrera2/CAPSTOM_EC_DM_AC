@@ -115,6 +115,12 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
       _buscandoMiUbicacion = true;
       _avisoUbicacion = null;
     });
+    // Mientras llega la posición real, se muestra la última conocida (si hay).
+    _ubicacion.ultimaUbicacionConocida().then((ultima) {
+      if (ultima != null && mounted && _miUbicacion == null) {
+        setState(() => _miUbicacion = ultima);
+      }
+    });
     try {
       final posicion = await _ubicacion.obtenerUbicacionActual();
       if (!mounted) return;
