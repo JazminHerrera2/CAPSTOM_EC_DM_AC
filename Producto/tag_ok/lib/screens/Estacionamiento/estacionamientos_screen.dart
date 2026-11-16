@@ -13,6 +13,7 @@ import '../../data/services/vehiculo_service.dart';
 import '../dashboard/dashboard_logica.dart';
 import '../dashboard/filtro_mes_anio.dart';
 import '../mantenimiento/widgets_gasto.dart' show clp;
+import 'detalle_estacionamiento_screen.dart';
 import 'registro_estacionamiento_screen.dart';
 import 'registro_comprobante_screen.dart';
 
@@ -431,6 +432,15 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     );
   }
 
+  void _abrirDetalle(EstacionamientoModel e) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DetalleEstacionamientoScreen(estacionamiento: e),
+      ),
+    );
+  }
+
   /// Nombre del estacionamiento; si no se le puso, su dirección.
   String _tituloDe(EstacionamientoModel e) {
     if (e.lugar.trim().isNotEmpty) return e.lugar.trim();
@@ -451,13 +461,8 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
         : pendiente
             ? AppColors.alerta
             : primaryColor;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
-        boxShadow: AppSombras.tarjeta,
-      ),
+    return TarjetaApp(
+      onTap: () => _abrirDetalle(e),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -528,8 +533,27 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
               ),
             ],
           ),
+          if (puedeVerUbicacion(e)) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => verUbicacionEnMapa(context, e),
+                icon: const Icon(Icons.map_outlined),
+                label: const Text('Ver ubicación'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: primaryColor,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  side: const BorderSide(color: primaryColor),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadios.control),
+                  ),
+                ),
+              ),
+            ),
+          ],
           if (activo || pendiente) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
