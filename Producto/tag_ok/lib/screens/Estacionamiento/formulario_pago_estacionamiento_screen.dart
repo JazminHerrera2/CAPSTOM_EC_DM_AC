@@ -4,7 +4,9 @@ import 'package:tag_ok/theme/app_colors.dart';
 import 'package:tag_ok/theme/app_estilos.dart';
 
 import '../../data/models/estacionamiento_model.dart';
+import '../../data/models/vehiculo_model.dart';
 import '../../data/services/estacionamiento_service.dart';
+import '../../data/services/vehiculo_service.dart';
 import '../../features/registro_inteligente/estacionamiento_extraction.dart';
 
 /// Formulario con los datos del pago de un estacionamiento detenido: nombre,
@@ -51,6 +53,9 @@ class _FormularioPagoEstacionamientoScreenState
   late DateTime _salida;
   bool _guardando = false;
 
+  /// Vehículo del estacionamiento (se muestra fijo, como en Combustible).
+  VehiculoModel? _vehiculo;
+
   EstacionamientoExtraido? get _ia => widget.datosIa;
 
   @override
@@ -65,6 +70,75 @@ class _FormularioPagoEstacionamientoScreenState
     if (_salida.isBefore(_entrada)) _salida = _entrada;
     _lugarController.text = (ia?.lugar ?? e.lugar).trim();
     _costoController.text = ia?.costo?.toString() ?? '';
+    _cargarVehiculo();
+  }
+
+  Future<void> _cargarVehiculo() async {
+    try {
+      final v = await VehiculoService().obtenerVehiculo(
+        widget.estacionamiento.vehiculoId,
+      );
+      if (mounted) setState(() => _vehiculo = v);
+    } catch (_) {
+      // Es solo informativo: sin el vehículo igual se puede guardar.
+    }
+  }
+
+  String _etiquetaVehiculo(VehiculoModel v) {
+    final alias = (v.alias ?? '').trim();
+    final nombre = alias.isNotEmpty
+        ? alias
+        : [
+            v.marca,
+            v.modelo,
+          ].where((e) => e != null && e.trim().isNotEmpty).join(' ');
+    return nombre.isEmpty ? v.patente : '$nombre · ${v.patente}';
+  }
+
+  Widget _vehiculoFijo(VehiculoModel vehiculo) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.control),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.directions_car_outlined,
+            color: AppColors.textoSecundario,
+            size: 21,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Vehículo',
+                  style: TextStyle(
+                    color: AppColors.textoSecundario,
+                    fontSize: 10,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _etiquetaVehiculo(vehiculo),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.texto,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -331,6 +405,21 @@ class _FormularioPagoEstacionamientoScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
+              ],
+              if (_vehiculo != null) ...[
+                const Padding(
+                  padding: EdgeInsets.only(left: 2, bottom: 10),
+                  child: Text(
+                    'Vehículo',
+                    style: TextStyle(
+                      color: AppColors.texto,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                _vehiculoFijo(_vehiculo!),
+                const SizedBox(height: 22),
               ],
               Container(
                 width: double.infinity,
