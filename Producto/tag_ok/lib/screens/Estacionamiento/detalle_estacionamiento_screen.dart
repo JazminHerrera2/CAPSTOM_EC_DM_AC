@@ -60,10 +60,8 @@ Future<void> verUbicacionEnMapa(
   final ubicacion = punto;
   await navigator.push(
     MaterialPageRoute(
-      builder: (_) => MapaAutoScreen(
-        ubicacionAuto: ubicacion,
-        lugar: _lugarParaMapa(e),
-      ),
+      builder: (_) =>
+          MapaAutoScreen(ubicacionAuto: ubicacion, lugar: _lugarParaMapa(e)),
     ),
   );
 }
@@ -74,7 +72,10 @@ Future<void> verUbicacionEnMapa(
 class DetalleEstacionamientoScreen extends StatefulWidget {
   final EstacionamientoModel estacionamiento;
 
-  const DetalleEstacionamientoScreen({super.key, required this.estacionamiento});
+  const DetalleEstacionamientoScreen({
+    super.key,
+    required this.estacionamiento,
+  });
 
   @override
   State<DetalleEstacionamientoScreen> createState() =>
@@ -108,7 +109,16 @@ class _DetalleEstacionamientoScreenState
 
   String _fecha(DateTime f) => '${_dos(f.day)}/${_dos(f.month)}/${f.year}';
 
-  String _fechaHora(DateTime f) => '${_fecha(f)}  ${_dos(f.hour)}:${_dos(f.minute)}';
+  String _fechaHora(DateTime f) =>
+      '${_fecha(f)}  ${_dos(f.hour)}:${_dos(f.minute)}';
+
+  /// "1 h 35 min" a partir de minutos.
+  String _minutos(int total) {
+    final horas = total ~/ 60;
+    final minutos = total % 60;
+    if (horas == 0) return '$minutos min';
+    return minutos == 0 ? '$horas h' : '$horas h $minutos min';
+  }
 
   String _duracion(Duration d) {
     final horas = d.inHours;
@@ -141,11 +151,31 @@ class _DetalleEstacionamientoScreenState
       (Icons.login_outlined, 'Hora de entrada', _fechaHora(e.fechaEntrada)),
       if (e.fechaSalida != null)
         (Icons.logout_outlined, 'Hora de salida', _fechaHora(e.fechaSalida!)),
-      (
-        Icons.timer_outlined,
-        e.estaActivo ? 'Tiempo transcurrido' : 'Duración',
-        _duracion(e.duracion),
-      ),
+      if (e.estaFinalizado && e.duracionAppMin != null) ...[
+        // La de la boleta (lo que se guardó al registrarla) y, debajo, lo que
+        // midió el cronómetro de la app.
+        (
+          Icons.receipt_long_outlined,
+          'Duración de la boleta',
+          _minutos(
+            e.duracionMin ??
+                duracionEnMinutos(
+                  e.fechaEntrada,
+                  e.fechaSalida ?? e.fechaEntrada,
+                ),
+          ),
+        ),
+        (
+          Icons.timer_outlined,
+          'Duración estimada en aplicación',
+          _minutos(e.duracionAppMin!),
+        ),
+      ] else
+        (
+          Icons.timer_outlined,
+          e.estaActivo ? 'Tiempo transcurrido' : 'Duración',
+          _duracion(e.duracion),
+        ),
       if (e.costo != null)
         (Icons.payments_outlined, 'Total pagado', clp(e.costo!)),
     ];
@@ -220,7 +250,9 @@ class _DetalleEstacionamientoScreenState
                         backgroundColor: AppColors.primario,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadios.control),
+                          borderRadius: BorderRadius.circular(
+                            AppRadios.control,
+                          ),
                         ),
                       ),
                     ),
@@ -298,7 +330,11 @@ class _DetalleEstacionamientoScreenState
       ),
       child: Text(
         texto,
-        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

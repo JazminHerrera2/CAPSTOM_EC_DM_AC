@@ -66,6 +66,8 @@ rules_version = '2';
 //   hora_entrada, hora_salida: timestamp|null (fecha y hora completas, para
 //   que el cronometro sobreviva al cierre de la app y cruce la medianoche)
 //   duracion_min: int|null | costo: int|null (pesos) | lugar: string 100
+//   duracion_app_min: int|null (lo que midio el cronometro de la app; al
+//   registrar la boleta, duracion_min pasa a ser la de la boleta)
 //   observacion: string 500 | ubicacion: latlng|null (GPS)
 //   fecha_captura: timestamp|null | confianza_ia: number|null
 //   direccion, nivel, sector: string|null | origen_comprobante: manual|ia
@@ -443,7 +445,8 @@ service cloud.firestore {
     // ===============================================================
     function estacionamientoValido(d) {
       return d.keys().hasOnly(['uid', 'vehiculo_id', 'fecha', 'lugar',
-          'hora_entrada', 'hora_salida', 'duracion_min', 'costo', 'ubicacion',
+          'hora_entrada', 'hora_salida', 'duracion_min', 'duracion_app_min',
+          'costo', 'ubicacion',
           'observacion', 'estado', 'origen_registro', 'fecha_captura',
           'confianza_ia', 'direccion', 'nivel', 'sector', 'origen_comprobante']) &&
         reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
@@ -462,6 +465,7 @@ service cloud.firestore {
            d.get('hora_salida', null) is timestamp &&
            d.origen_registro == 'manual')) &&
         optInt(d, 'duracion_min', 0, 43200) &&
+        optInt(d, 'duracion_app_min', 0, 43200) &&
         optInt(d, 'costo', 0, 10000000) &&
         optStr(d, 'lugar', 100) && optStr(d, 'observacion', 500) &&
         optStr(d, 'direccion', 250) && optStr(d, 'nivel', 80) &&
@@ -518,7 +522,8 @@ service cloud.firestore {
               'fecha_captura', 'confianza_ia',
               // La boleta (leida con IA o ingresada a mano) puede corregir
               // lo que se registro con el cronometro.
-              'hora_entrada', 'hora_salida', 'duracion_min', 'lugar']) &&
+              'hora_entrada', 'hora_salida', 'duracion_min', 'lugar',
+              'duracion_app_min']) &&
             request.resource.data.costo is int &&
             request.resource.data.costo >= 0 &&
             request.resource.data.get('origen_comprobante', null) in ['manual', 'ia'])

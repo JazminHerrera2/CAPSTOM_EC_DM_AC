@@ -346,7 +346,23 @@ class EstacionamientoService {
         throw ArgumentError('La salida no puede ser anterior a la entrada.');
       }
       final lugarLimpio = _limpio(lugar);
+      // Lo que midió el cronómetro antes de pasar a la boleta. Se guarda una
+      // sola vez, porque duracion_min pasa a ser la de la boleta.
+      final entradaCronometro = entradaActual is Timestamp
+          ? entradaActual.toDate()
+          : null;
+      final salidaCronometro = salidaActual is Timestamp
+          ? salidaActual.toDate()
+          : null;
+      final duracionCronometro = datos['duracion_min'] is num
+          ? (datos['duracion_min'] as num).toInt()
+          : (entradaCronometro != null && salidaCronometro != null
+                ? duracionParaGuardar(entradaCronometro, salidaCronometro)
+                : null);
+      final yaGuardada = datos['duracion_app_min'] is num;
       tx.update(ref, {
+        if (!yaGuardada && duracionCronometro != null)
+          'duracion_app_min': duracionCronometro,
         'estado': EstadoEstacionamiento.finalizado.valorFirestore,
         'costo': costo,
         'origen_comprobante': origenRegistro,

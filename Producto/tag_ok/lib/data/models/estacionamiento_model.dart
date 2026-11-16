@@ -43,6 +43,11 @@ class EstacionamientoModel {
   final DateTime? horaEntrada;
   final DateTime? horaSalida;
   final int? duracionMin;
+
+  /// Lo que midió el cronómetro de la app. Al registrar la boleta,
+  /// [duracionMin] pasa a ser la de la boleta y esta conserva la medida de
+  /// la app. Null en registros antiguos o creados sin cronómetro.
+  final int? duracionAppMin;
   final int? costo;
   final GeoPoint? ubicacion;
   final String? observacion;
@@ -67,6 +72,7 @@ class EstacionamientoModel {
     DateTime? horaEntrada,
     DateTime? horaSalida,
     this.duracionMin,
+    this.duracionAppMin,
     this.costo,
     GeoPoint? ubicacion,
     String? observacion,
@@ -152,6 +158,7 @@ class EstacionamientoModel {
       horaEntrada: entrada,
       horaSalida: salida,
       duracionMin: (json['duracion_min'] as num?)?.toInt(),
+      duracionAppMin: (json['duracion_app_min'] as num?)?.toInt(),
       costo: (json['costo'] as num?)?.toInt(),
       ubicacion: punto,
       observacion: (json['observacion'] ?? json['observaciones']) as String?,
@@ -181,6 +188,7 @@ class EstacionamientoModel {
       'hora_entrada': ts(horaEntrada),
       'hora_salida': ts(horaSalida),
       'duracion_min': duracionMin,
+      if (duracionAppMin != null) 'duracion_app_min': duracionAppMin,
       'costo': costo,
       'ubicacion': ubicacion,
       'observacion': observacion,
