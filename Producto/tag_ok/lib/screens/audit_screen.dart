@@ -40,7 +40,8 @@ class _AuditScreenState extends State<AuditScreen> {
   bool _useAI = true;
 
   // Variables de Filtro (Subpestaña 1)
-  // Vehículo elegido en el carrusel (patente); null = todos.
+  // Vehículo elegido en el filtro de patentes. Siempre hay uno elegido (no
+  // existe "Todos"); null solo mientras no hay vehículos registrados.
   String? _selectedPatente;
   String _selectedHighway = 'Todas';
   String _selectedDatePreset =
@@ -235,7 +236,6 @@ class _AuditScreenState extends State<AuditScreen> {
 
   void _clearAllFilters() {
     setState(() {
-      _selectedPatente = null;
       _selectedHighway = 'Todas';
       _selectedDatePreset = 'Todos';
       _customDateRange = null;
@@ -2058,7 +2058,7 @@ Instrucciones para redactar el "aiReport":
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
             // Selector de vehículo y, debajo, la tarjeta de carga
-            _buildSelectorVehiculo(),
+            _buildSelectorVehiculo(conMargen: false),
             const SizedBox(height: 8),
             _buildUploadCard(),
             const SizedBox(height: 24),
@@ -2601,21 +2601,57 @@ Instrucciones para redactar el "aiReport":
 
   // --- FILTROS DE CONSUMO Y DETALLES DE VIAJES ---
 
-  /// Carrusel de vehículos (como el del Inicio). Sin vehículos registrados no
-  /// se muestra y Auditoría queda como antes.
-  Widget _buildSelectorVehiculo() {
+  /// Filtro de patentes, igual al de Mantenciones, Combustible y
+  /// Estacionamientos: un botón por vehículo (el principal primero) y siempre
+  /// uno elegido. Sin vehículos registrados no se muestra y Auditoría queda
+  /// como antes. [conMargen] es falso si el contenedor ya tiene su margen.
+  Widget _buildSelectorVehiculo({bool conMargen = true}) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return const SizedBox.shrink();
     return StreamBuilder<List<VehiculoModel>>(
       stream: VehiculoService().streamVehiculosUsuario(uid),
       builder: (context, snap) {
-        final vehiculos = snap.data ?? const <VehiculoModel>[];
-        if (vehiculos.isEmpty) return const SizedBox.shrink();
-        return AuditoriaSelectorVehiculo(
-          vehiculos: vehiculos,
-          patenteElegida: _selectedPatente,
-          alElegir: (p) {
-            if (p != _selectedPatente) setState(() => _selectedPatente = p);
+        final lista = snap.data ?? const <VehiculoModel>[];
+        if (lista.isEmpty) return const SizedBox.shrink();
+        return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(uid)
+              .snapshots(),
+          builder: (context, userSnap) {
+            final principal =
+                (userSnap.data?.data()?['vehiculo_principal_id'] ?? '')
+                    .toString();
+            final vehiculos = [...lista]
+              ..sort((a, b) {
+                final esA = a.patente == principal;
+                final esB = b.patente == principal;
+                if (esA == esB) return 0;
+                return esA ? -1 : 1;
+              });
+
+            // Si no hay uno elegido (o ya no existe), se elige el primero.
+            final existe = vehiculos.any((v) => v.patente == _selectedPatente);
+            final elegida = existe ? _selectedPatente : vehiculos.first.patente;
+            if (!existe &&
+                userSnap.connectionState != ConnectionState.waiting) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted && _selectedPatente != elegida) {
+                  setState(() => _selectedPatente = elegida);
+                }
+              });
+            }
+
+            return AuditoriaSelectorVehiculo(
+              vehiculos: vehiculos,
+              patenteElegida: elegida,
+              padding: conMargen
+                  ? const EdgeInsets.fromLTRB(16, 4, 16, 8)
+                  : const EdgeInsets.fromLTRB(0, 4, 0, 8),
+              alElegir: (p) {
+                if (p != _selectedPatente) setState(() => _selectedPatente = p);
+              },
+            );
           },
         );
       },
@@ -2624,7 +2660,6 @@ Instrucciones para redactar el "aiReport":
 
   Widget _buildFiltersBar() {
     final bool hasActiveFilters =
-        _selectedPatente != null ||
         _selectedHighway != 'Todas' ||
         _selectedDatePreset != 'Todos';
 
