@@ -18,16 +18,25 @@ import 'formulario_pago_estacionamiento_screen.dart';
 /// abre el formulario del pago para revisar y guardar. Igual que Combustible
 /// y Mantenciones.
 class RegistroComprobanteScreen extends StatefulWidget {
-  final EstacionamientoModel estacionamiento;
+  /// Estacionamiento detenido que se está cerrando. Null si se registra un
+  /// documento nuevo (botón +), en cuyo caso se necesita [vehiculoId].
+  final EstacionamientoModel? estacionamiento;
+
+  /// Vehículo del documento nuevo, cuando no hay [estacionamiento].
+  final String? vehiculoId;
 
   /// Hora de salida del cronómetro, si se acaba de detener.
   final DateTime? salidaInicial;
 
   const RegistroComprobanteScreen({
     super.key,
-    required this.estacionamiento,
+    this.estacionamiento,
+    this.vehiculoId,
     this.salidaInicial,
-  });
+  }) : assert(
+         estacionamiento != null || vehiculoId != null,
+         'Se necesita el estacionamiento o el vehículo.',
+       );
 
   @override
   State<RegistroComprobanteScreen> createState() =>
@@ -133,6 +142,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
       MaterialPageRoute(
         builder: (_) => FormularioPagoEstacionamientoScreen(
           estacionamiento: widget.estacionamiento,
+          vehiculoId: widget.vehiculoId,
           salidaInicial: widget.salidaInicial,
           datosIa: datosIa,
           fechaCaptura: datosIa == null ? null : DateTime.now(),
@@ -225,7 +235,11 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
           automaticallyImplyLeading: !_procesando,
           iconTheme: const IconThemeData(color: AppColors.texto),
           title: Text(
-            _procesando ? 'Analizando boleta' : 'Registrar comprobante',
+            _procesando
+                ? 'Analizando boleta'
+                : widget.estacionamiento == null
+                ? 'Registrar documento'
+                : 'Registrar comprobante',
             style: const TextStyle(
               color: AppColors.texto,
               fontWeight: FontWeight.w700,

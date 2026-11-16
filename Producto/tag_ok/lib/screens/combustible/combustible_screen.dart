@@ -394,92 +394,89 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
   Widget _tarjetaCarga(AbastecimientoModel c) {
     final electrica = c.tipoAbastecimiento == TipoAbastecimiento.cargaElectrica;
 
+    // Igual que una mantención: título, fecha y kilometraje, y el precio
+    // debajo. El combustible, la cantidad y el precio por litro se ven en el
+    // detalle.
     final lineas = <String>[
       [
         formatoFecha(c.fecha),
         if (c.kilometraje != null) '${formatoMiles(c.kilometraje!)} km',
       ].join(' · '),
-      [
-        if ((c.tipoCombustible ?? '').isNotEmpty) c.tipoCombustible!,
-        if (c.cantidad != null) '${formatoCantidad(c.cantidad!)} ${c.unidad}',
-        if (c.precioUnitario != null)
-          '\$${formatoCantidad(c.precioUnitario!)}/${c.unidad}',
-      ].join(' · '),
+      if (c.total != null) clp(c.total!),
     ].where((l) => l.isNotEmpty).toList();
 
-    return Material(
-      color: AppColors.superficie,
-      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
-      child: InkWell(
+    return DecoratedBox(
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadios.tarjeta),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DetalleCombustibleScreen(carga: c),
-          ),
-        ),
-        child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Solo el ícono, en azul y sin recuadro de color de fondo.
-          SizedBox(
-            width: 42,
-            height: 42,
-            child: Icon(
-              electrica
-                  ? Icons.ev_station_outlined
-                  : Icons.local_gas_station_outlined,
-              color: AppColors.primario,
-              size: 28,
+        boxShadow: AppSombras.tarjeta,
+      ),
+      child: Material(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DetalleCombustibleScreen(carga: c),
             ),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  c.titulo,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.texto,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                SizedBox(
+                  width: 42,
+                  height: 42,
+                  child: Icon(
+                    electrica
+                        ? Icons.ev_station_outlined
+                        : Icons.local_gas_station_outlined,
+                    color: AppColors.primario,
+                    size: 28,
                   ),
                 ),
-                for (final linea in lineas) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    linea,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppColors.textoSecundario,
-                      fontSize: 12,
-                      height: 1.35,
-                    ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        c.titulo,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.texto,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      for (final linea in lineas) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          linea,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.textoSecundario,
+                            fontSize: 12,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                ],
+                ),
+                // La flecha para ver el detalle, igual que en Mantenciones.
+                const Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textoSecundario,
+                ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Text(
-              c.total == null ? '—' : clp(c.total!),
-              style: const TextStyle(
-                color: AppColors.texto,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
         ),
       ),
     );

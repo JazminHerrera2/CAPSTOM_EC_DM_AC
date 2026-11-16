@@ -17,7 +17,13 @@ import '../../features/registro_inteligente/estacionamiento_extraction.dart';
 /// que ya tenía el cronómetro si se ingresa a mano. El usuario revisa, corrige
 /// lo que haga falta y guarda. Al guardar, el estacionamiento queda finalizado.
 class FormularioPagoEstacionamientoScreen extends StatefulWidget {
-  final EstacionamientoModel estacionamiento;
+  /// Estacionamiento detenido que se está cerrando. Null si el documento crea
+  /// un registro nuevo (botón + de Estacionamientos): en ese caso se necesita
+  /// [vehiculoId].
+  final EstacionamientoModel? estacionamiento;
+
+  /// Vehículo del registro nuevo, cuando no hay [estacionamiento].
+  final String? vehiculoId;
 
   /// Hora de salida del cronómetro, si se acaba de detener y el modelo que se
   /// recibió todavía no la trae.
@@ -31,11 +37,15 @@ class FormularioPagoEstacionamientoScreen extends StatefulWidget {
 
   const FormularioPagoEstacionamientoScreen({
     super.key,
-    required this.estacionamiento,
+    this.estacionamiento,
+    this.vehiculoId,
     this.salidaInicial,
     this.datosIa,
     this.fechaCaptura,
-  });
+  }) : assert(
+         estacionamiento != null || vehiculoId != null,
+         'Se necesita el estacionamiento o el vehículo.',
+       );
 
   @override
   State<FormularioPagoEstacionamientoScreen> createState() =>
@@ -48,6 +58,7 @@ class _FormularioPagoEstacionamientoScreenState
   final _service = EstacionamientoService();
   final _lugarController = TextEditingController();
   final _costoController = TextEditingController();
+  final _observacionesController = TextEditingController();
 
   late DateTime _entrada;
   late DateTime _salida;
@@ -63,12 +74,13 @@ class _FormularioPagoEstacionamientoScreenState
     super.initState();
     final e = widget.estacionamiento;
     final ia = _ia;
-    _entrada = ia?.entrada ?? e.fechaEntrada;
+    _entrada = ia?.entrada ?? e?.fechaEntrada ?? DateTime.now();
     _salida =
-        ia?.salida ?? widget.salidaInicial ?? e.fechaSalida ?? DateTime.now();
+        ia?.salida ?? widget.salidaInicial ?? e?.fechaSalida ?? DateTime.now();
     // Una salida anterior a la entrada no es válida: se parte de la entrada.
     if (_salida.isBefore(_entrada)) _salida = _entrada;
-    _lugarController.text = (ia?.lugar ?? e.lugar).trim();
+    _lugarController.text = (ia?.lugar ?? e?.lugar ?? '').trim();
+    _observacionesController.text = (e?.observaciones ?? '').trim();
     _costoController.text = ia?.costo?.toString() ?? '';
     _cargarVehiculo();
   }
@@ -76,7 +88,7 @@ class _FormularioPagoEstacionamientoScreenState
   Future<void> _cargarVehiculo() async {
     try {
       final v = await VehiculoService().obtenerVehiculo(
-        widget.estacionamiento.vehiculoId,
+        widget.estacionamiento?.vehiculoId ?? widget.vehiculoId!,
       );
       if (mounted) setState(() => _vehiculo = v);
     } catch (_) {
@@ -145,6 +157,7 @@ class _FormularioPagoEstacionamientoScreenState
   void dispose() {
     _lugarController.dispose();
     _costoController.dispose();
+    _observacionesController.dispose();
     super.dispose();
   }
 
@@ -212,16 +225,35 @@ class _FormularioPagoEstacionamientoScreenState
     setState(() => _guardando = true);
     try {
       final conIa = _ia != null;
-      await _service.registrarComprobante(
-        estacionamientoId: widget.estacionamiento.id,
-        costo: int.parse(_costoController.text.trim()),
-        origenRegistro: conIa ? 'ia' : 'manual',
-        fechaCaptura: conIa ? (widget.fechaCaptura ?? DateTime.now()) : null,
-        confianzaIa: _ia?.confianza,
-        lugar: _lugarController.text,
-        horaEntrada: _entrada,
-        horaSalida: _salida,
-      );
+      final costo = int.parse(_costoController.text.trim());
+      final existente = widget.estacionamiento;
+      if (existente != null) {
+        await _service.registrarComprobante(
+          estacionamientoId: existente.id,
+          costo: costo,
+          origenRegistro: conIa ? 'ia' : 'manual',
+          fechaCaptura: conIa ? (widget.fechaCaptura ?? DateTime.now()) : null,
+          confianzaIa: _ia?.confianza,
+          lugar: _lugarController.text,
+          horaEntrada: _entrada,
+          horaSalida: _salida,
+          observacion: _observacionesController.text,
+        );
+      } else {
+        // Documento nuevo (botón +): se crea un registro ya finalizado.
+        await _service.registrarManual(
+          vehiculoId: widget.vehiculoId!,
+          fecha: _entrada,
+          lugar: _lugarController.text,
+          horaEntrada: _entrada,
+          horaSalida: _salida,
+          costo: costo,
+          observacion: _observacionesController.text,
+          origenRegistro: conIa ? 'ia' : 'manual',
+          fechaCaptura: conIa ? (widget.fechaCaptura ?? DateTime.now()) : null,
+          confianzaIa: _ia?.confianza,
+        );
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Estacionamiento registrado.')),
@@ -493,6 +525,15 @@ class _FormularioPagoEstacionamientoScreenState
                       },
                     ),
                     if (_dudoso(const [dudosoEstCosto])) _avisoDudoso(),
+                    const SizedBox(height: 18),
+                    _etiqueta('Observaciones (opcional)'),
+                    TextFormField(
+                      controller: _observacionesController,
+                      maxLines: 3,
+                      maxLength: 500,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: _decoracion(hint: 'Agrega algún detalle...'),
+                    ),
                   ],
                 ),
               ),

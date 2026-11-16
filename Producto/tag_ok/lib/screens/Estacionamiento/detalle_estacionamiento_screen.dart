@@ -9,6 +9,7 @@ import '../../data/models/estacionamiento_model.dart';
 import '../../data/services/geocoding_service.dart';
 import '../estacionamientos/mapa_auto_screen.dart';
 import '../mantenimiento/widgets_gasto.dart' show clp;
+import 'registro_comprobante_screen.dart';
 
 /// Lo que se muestra como lugar del auto en el mapa: el nombre (si lo hay),
 /// el nivel y el sector, por ejemplo "Mall Plaza · Nivel -2 · Sector B14".
@@ -103,6 +104,17 @@ class _DetalleEstacionamientoScreenState
   void dispose() {
     _reloj?.cancel();
     super.dispose();
+  }
+
+  /// Completa el pago de un estacionamiento que quedó detenido sin comprobante.
+  Future<void> _registrarComprobante() async {
+    final guardado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RegistroComprobanteScreen(estacionamiento: _e),
+      ),
+    );
+    if (guardado == true && mounted) Navigator.pop(context);
   }
 
   String _dos(int n) => n.toString().padLeft(2, '0');
@@ -230,6 +242,28 @@ class _DetalleEstacionamientoScreenState
                         color: AppColors.texto,
                         fontSize: 14,
                         height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+                if (e.pendienteDeComprobante) ...[
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: _registrarComprobante,
+                      icon: const Icon(Icons.receipt_long_outlined),
+                      label: const Text(
+                        'Registrar comprobante',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primario,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadios.control),
+                        ),
                       ),
                     ),
                   ),

@@ -92,6 +92,17 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     return '${dos(horas)}:${dos(minutos)}:${dos(segundos)}';
   }
 
+  /// Botón +: registrar un documento (boleta) con IA o a mano.
+  Future<void> _abrirDocumento(VehiculoModel vehiculo) async {
+    await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RegistroComprobanteScreen(vehiculoId: vehiculo.id),
+      ),
+    );
+  }
+
+  /// Iniciar cronometraje: pide la ubicación del auto y arranca el conteo.
   Future<void> _abrirRegistro(VehiculoModel vehiculo) async {
     await Navigator.push<bool>(
       context,
@@ -106,10 +117,10 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Finalizar tiempo'),
+        title: const Text('Cerrar cronometraje'),
         content: const Text(
-          'Se detendrá el cronómetro. A continuación podrás leer la boleta '
-          'con IA o ingresar los datos del pago manualmente.',
+          'Se detendrá el conteo. A continuación podrás leer la boleta con IA '
+          'o ingresar los datos del pago manualmente.',
         ),
         actions: [
           TextButton(
@@ -118,7 +129,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Finalizar tiempo'),
+            child: const Text('Cerrar cronometraje'),
           ),
         ],
       ),
@@ -229,8 +240,8 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           : FloatingActionButton(
               heroTag: 'registrarEstacionamiento',
               backgroundColor: primaryColor,
-              tooltip: 'Registrar estacionamiento',
-              onPressed: () => _abrirRegistro(_vehiculoVisible!),
+              tooltip: 'Registrar documento',
+              onPressed: () => _abrirDocumento(_vehiculoVisible!),
               child: const Icon(Icons.add, color: Colors.white, size: 30),
             ),
     );
@@ -275,15 +286,152 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
       stream: _streamPara(vehiculo.id),
       builder: (context, snapshot) {
         final todos = snapshot.data ?? const <EstacionamientoModel>[];
+        // Solo hay uno en curso por vehículo. Mientras corre, se ve su conteo
+        // arriba y recién al cerrarlo pasa al historial.
+        final enCurso = todos.where((e) => e.estaActivo).firstOrNull;
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 84),
           children: [
             _tarjetaGastoMes(todos),
+            const SizedBox(height: 18),
+            enCurso == null
+                ? _botonIniciar(vehiculo)
+                : _tarjetaCronometraje(enCurso),
             const SizedBox(height: 22),
             _historial(snapshot, todos),
           ],
         );
       },
+    );
+  }
+
+  Widget _botonIniciar(VehiculoModel vehiculo) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton.icon(
+        onPressed: () => _abrirRegistro(vehiculo),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadios.control),
+          ),
+        ),
+        icon: const Icon(Icons.timer_outlined),
+        label: const Text(
+          'Iniciar cronometraje',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+      ),
+    );
+  }
+
+  /// El estacionamiento en curso: el conteo, dónde quedó el auto y el botón
+  /// para cerrarlo. Aún no aparece en el historial.
+  Widget _tarjetaCronometraje(EstacionamientoModel e) {
+    return TarjetaApp(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.timer_outlined, color: primaryColor, size: 24),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Cronometraje en curso',
+                  style: TextStyle(
+                    color: textMain,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.exito.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppRadios.chip),
+                ),
+                child: const Text(
+                  'En curso',
+                  style: TextStyle(
+                    color: AppColors.exito,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Center(
+            child: Text(
+              _duracion(e.duracion),
+              style: const TextStyle(
+                color: textMain,
+                fontSize: 38,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Text(
+              'Entrada: ${_fechaHora(e.fechaEntrada)}',
+              style: const TextStyle(color: textMuted, fontSize: 12),
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (e.direccion != null && e.direccion!.isNotEmpty)
+            _detalle(Icons.place_outlined, e.direccion!),
+          if (e.nivel != null && e.nivel!.isNotEmpty)
+            _detalle(Icons.layers_outlined, 'Nivel: ${e.nivel}'),
+          if (e.sector != null && e.sector!.isNotEmpty)
+            _detalle(Icons.grid_view_outlined, 'Sector: ${e.sector}'),
+          if (puedeVerUbicacion(e)) ...[
+            const SizedBox(height: 6),
+            _botonVerUbicacion(e),
+          ],
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _finalizando ? null : () => _finalizarTiempo(e),
+              style: FilledButton.styleFrom(
+                backgroundColor: primaryColor,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadios.control),
+                ),
+              ),
+              icon: const Icon(Icons.stop_circle_outlined),
+              label: const Text('Cerrar cronometraje'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _botonVerUbicacion(EstacionamientoModel e) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => verUbicacionEnMapa(context, e),
+        icon: const Icon(Icons.map_outlined),
+        label: const Text('Ver ubicación'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryColor,
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          side: const BorderSide(color: primaryColor),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadios.control),
+          ),
+        ),
+      ),
     );
   }
 
@@ -344,19 +492,18 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
 
   List<EstacionamientoModel> _filtrar(List<EstacionamientoModel> todos) {
     return todos.where((e) {
-      // Los activos y pendientes siempre se ven para no ocultar acciones.
-      if (e.estado != EstadoEstacionamiento.finalizado) return true;
+      // El que está corriendo se ve arriba, no en el historial.
+      if (e.estaActivo) return false;
+      // Los pendientes de comprobante siempre se ven, para poder completarlos.
+      if (e.pendienteDeComprobante) return true;
       if (_anio != null && e.fechaEntrada.year != _anio) return false;
       if (_mes != null && e.fechaEntrada.month != _mes) return false;
       return true;
     }).toList()
       ..sort((a, b) {
-        int prioridad(EstacionamientoModel e) {
-          if (e.estaActivo) return 0;
-          if (e.pendienteDeComprobante) return 1;
-          return 2;
-        }
-        final diferencia = prioridad(a).compareTo(prioridad(b));
+        final pa = a.pendienteDeComprobante ? 0 : 1;
+        final pb = b.pendienteDeComprobante ? 0 : 1;
+        final diferencia = pa.compareTo(pb);
         return diferencia != 0
             ? diferencia
             : b.fechaEntrada.compareTo(a.fechaEntrada);
@@ -448,126 +595,83 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     return direccion.isNotEmpty ? direccion : 'Estacionamiento';
   }
 
+  /// "1 h 35 min" a partir de minutos.
+  String _minutos(int total) {
+    final horas = total ~/ 60;
+    final minutos = total % 60;
+    if (horas == 0) return '$minutos min';
+    return minutos == 0 ? '$horas h' : '$horas h $minutos min';
+  }
+
+  /// Tarjeta del historial: nombre, entrada, precio debajo, duración y el
+  /// botón para ver la ubicación. La flecha lleva al detalle completo.
   Widget _tarjetaEstacionamiento(EstacionamientoModel e) {
-    final activo = e.estaActivo;
     final pendiente = e.pendienteDeComprobante;
-    final etiqueta = activo
-        ? 'En curso'
-        : pendiente
-            ? 'Pendiente de comprobante'
-            : 'Finalizado';
-    final colorEstado = activo
-        ? AppColors.exito
-        : pendiente
-            ? AppColors.alerta
-            : primaryColor;
+    final minutos = e.minutosTranscurridos() ?? e.duracion.inMinutes;
+    final precio = pendiente
+        ? 'Pendiente de comprobante'
+        : (e.costo == null ? 'Sin precio' : clp(e.costo!));
+    const estiloLinea = TextStyle(
+      color: textMuted,
+      fontSize: 12,
+      height: 1.35,
+    );
     return TarjetaApp(
       onTap: () => _abrirDetalle(e),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.local_parking_outlined,
-                  color: primaryColor, size: 28),
-              const SizedBox(width: 12),
+              const SizedBox(
+                width: 42,
+                height: 42,
+                child: Icon(
+                  Icons.local_parking_outlined,
+                  color: primaryColor,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  _tituloDe(e),
-                  style: const TextStyle(
-                    color: textMain,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _tituloDe(e),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: textMain,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Entrada: ${_fechaHora(e.fechaEntrada)}',
+                      style: estiloLinea,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      precio,
+                      style: pendiente
+                          ? estiloLinea.copyWith(color: AppColors.alerta)
+                          : estiloLinea,
+                    ),
+                    const SizedBox(height: 4),
+                    Text('Duración: ${_minutos(minutos)}', style: estiloLinea),
+                  ],
                 ),
               ),
-              if (e.costo != null)
-                Text(
-                  clp(e.costo!),
-                  style: const TextStyle(
-                    color: textMain,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: colorEstado.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
-            ),
-            child: Text(
-              etiqueta,
-              style: TextStyle(
-                color: colorEstado,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          if (e.direccion != null && e.direccion!.isNotEmpty)
-            _detalle(Icons.place_outlined, e.direccion!),
-          if (e.nivel != null && e.nivel!.isNotEmpty)
-            _detalle(Icons.layers_outlined, 'Nivel: ${e.nivel}'),
-          if (e.sector != null && e.sector!.isNotEmpty)
-            _detalle(Icons.grid_view_outlined, 'Sector: ${e.sector}'),
-          _detalle(Icons.login_outlined, 'Entrada: ${_fechaHora(e.fechaEntrada)}'),
-          if (e.fechaSalida != null)
-            _detalle(Icons.logout_outlined, 'Salida: ${_fechaHora(e.fechaSalida!)}'),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              const Icon(Icons.timer_outlined, size: 19, color: primaryColor),
-              const SizedBox(width: 8),
-              Text(
-                _duracion(e.duracion),
-                style: const TextStyle(
-                  color: textMain,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              // La flecha para ver el detalle, igual que en Mantenciones.
+              const Icon(Icons.chevron_right, color: textMuted),
             ],
           ),
           if (puedeVerUbicacion(e)) ...[
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => verUbicacionEnMapa(context, e),
-                icon: const Icon(Icons.map_outlined),
-                label: const Text('Ver ubicación'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  side: const BorderSide(color: primaryColor),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadios.control),
-                  ),
-                ),
-              ),
-            ),
-          ],
-          if (activo || pendiente) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: activo
-                    ? (_finalizando ? null : () => _finalizarTiempo(e))
-                    : () => _abrirComprobante(e),
-                style: FilledButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                ),
-                icon: Icon(activo ? Icons.stop_circle_outlined : Icons.receipt_long_outlined),
-                label: Text(activo ? 'Finalizar tiempo' : 'Registrar comprobante'),
-              ),
-            ),
+            _botonVerUbicacion(e),
           ],
         ],
       ),
@@ -617,7 +721,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           ),
           SizedBox(height: 8),
           Text(
-            'Presiona + para iniciar tu primer registro.',
+            'Presiona + para registrar un estacionamiento con tu boleta.',
             textAlign: TextAlign.center,
             style: TextStyle(color: textMuted, fontSize: 12),
           ),

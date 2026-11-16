@@ -312,6 +312,7 @@ class EstacionamientoService {
     String? lugar,
     DateTime? horaEntrada,
     DateTime? horaSalida,
+    String? observacion,
   }) async {
     _validarCosto(costo);
     if (origenRegistro != 'manual' && origenRegistro != 'ia') {
@@ -346,6 +347,7 @@ class EstacionamientoService {
         throw ArgumentError('La salida no puede ser anterior a la entrada.');
       }
       final lugarLimpio = _limpio(lugar);
+      final observacionLimpia = _limpio(observacion);
       // Lo que midió el cronómetro antes de pasar a la boleta. Se guarda una
       // sola vez, porque duracion_min pasa a ser la de la boleta.
       final entradaCronometro = entradaActual is Timestamp
@@ -371,6 +373,7 @@ class EstacionamientoService {
             : Timestamp.fromDate(fechaCaptura),
         'confianza_ia': confianzaIa,
         if (lugarLimpio != null) 'lugar': lugarLimpio,
+        if (observacionLimpia != null) 'observacion': observacionLimpia,
         if (horaEntrada != null) 'hora_entrada': Timestamp.fromDate(horaEntrada),
         if (horaSalida != null) 'hora_salida': Timestamp.fromDate(horaSalida),
         if (entrada != null && salida != null)

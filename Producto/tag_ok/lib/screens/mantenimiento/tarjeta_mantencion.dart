@@ -54,11 +54,10 @@ class TarjetaMantencion extends StatelessWidget {
           if (m.fecha != null) formatoFecha(m.fecha!),
           if (m.kilometraje != null) '${formatoMiles(m.kilometraje!)} km',
         ].join(' · '),
+        // Lo básico: título, fecha, kilometraje, lugar y precio. La descripción
+        // y el comprobante se ven en el detalle.
         if ((m.taller ?? '').isNotEmpty) m.taller!,
         if (m.costo != null) '\$${formatoMiles(m.costo!)}',
-        if ((m.descripcion ?? '').isNotEmpty) m.descripcion!,
-        // Documento asociado del historial (RF-010): solo la referencia.
-        m.referenciaComprobante ?? 'Sin comprobante',
       ],
     ].where((l) => l.isNotEmpty).toList();
 
