@@ -128,7 +128,11 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
       _seguirEnVivo();
     } catch (e) {
       if (!mounted) return;
-      setState(() => _avisoUbicacion = traducirErrorUbicacion(e).mensaje);
+      final error = traducirErrorUbicacion(e);
+      setState(() => _avisoUbicacion = error.mensaje);
+      // Si solo faltó señal a tiempo, se sigue intentando en vivo (como el
+      // mapa de rutas): el punto azul aparece apenas llegue una posición.
+      if (error.motivo == MotivoErrorUbicacion.sinSenal) _seguirEnVivo();
     } finally {
       if (mounted) setState(() => _buscandoMiUbicacion = false);
     }

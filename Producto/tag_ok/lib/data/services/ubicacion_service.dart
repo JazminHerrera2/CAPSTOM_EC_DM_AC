@@ -70,8 +70,10 @@ String textoDistancia(double metros) {
 /// Obtiene la posición GPS del dispositivo (RF-019, HU-18). Funciona en web y
 /// en Android con el paquete `geolocator`, el mismo del mapa de TAG.
 class UbicacionService {
-  /// Tiempo máximo para esperar una posición.
-  static const Duration tiempoMaximo = Duration(seconds: 15);
+  /// Tiempo máximo para esperar la primera posición. Igual que el mapa de
+  /// rutas (live_map_screen): si no llega a tiempo, se sigue igual con el
+  /// seguimiento en vivo en vez de dejar al usuario esperando.
+  static const Duration tiempoMaximo = Duration(seconds: 5);
 
   /// Última posición que el dispositivo ya tenía guardada, al instante y sin
   /// encender el GPS. Sirve para mostrar algo en el mapa mientras llega la
@@ -108,12 +110,8 @@ class UbicacionService {
 
     try {
       final posicion = await Geolocator.getCurrentPosition(
-        // Precisión media: se obtiene en pocos segundos (red y wifi) en vez
-        // de esperar el primer fix del GPS, que en interiores o en frío puede
-        // tardar todo el tiempo máximo. La precisión fina llega enseguida con
-        // [seguirUbicacion], que sí usa el GPS.
         locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
+          accuracy: LocationAccuracy.high,
           timeLimit: tiempoMaximo,
         ),
       );
