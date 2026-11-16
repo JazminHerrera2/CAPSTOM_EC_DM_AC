@@ -669,6 +669,26 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
               const Icon(Icons.chevron_right, color: textMuted),
             ],
           ),
+          // Pendiente de comprobante: el botón para completarlo está a la vista,
+          // sin tener que abrir el detalle.
+          if (pendiente) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () => _abrirComprobante(e),
+                style: FilledButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadios.control),
+                  ),
+                ),
+                icon: const Icon(Icons.receipt_long_outlined),
+                label: const Text('Registrar comprobante'),
+              ),
+            ),
+          ],
           if (puedeVerUbicacion(e)) ...[
             const SizedBox(height: 12),
             _botonVerUbicacion(e),
