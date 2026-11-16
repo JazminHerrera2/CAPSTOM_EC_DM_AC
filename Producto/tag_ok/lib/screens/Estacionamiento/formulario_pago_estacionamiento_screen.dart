@@ -540,7 +540,7 @@ class _FormularioPagoEstacionamientoScreenState
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 54,
                 child: ElevatedButton.icon(
                   onPressed: _guardando ? null : _guardar,
                   style: ElevatedButton.styleFrom(
@@ -559,12 +559,12 @@ class _FormularioPagoEstacionamientoScreenState
                             color: Colors.white,
                           ),
                         )
-                      : const Icon(Icons.check_rounded),
+                      : const Icon(Icons.save_outlined, color: Colors.white),
                   label: Text(
-                    _guardando ? 'Guardando...' : 'Guardar',
+                    _guardando ? 'Guardando...' : 'Guardar estacionamiento',
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
