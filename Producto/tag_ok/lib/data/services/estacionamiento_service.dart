@@ -416,6 +416,9 @@ class EstacionamientoService {
     });
   }
 
+  /// Borra todos los estacionamientos de un vehículo y su control de
+  /// cronómetro activo. Se usa al eliminar el vehículo, para no dejar registros
+  /// huérfanos.
   Future<void> eliminarDeVehiculo(String vehiculoId) async {
     final uid = _uid();
     final docs = await _consultaVehiculo(vehiculoId).get();
@@ -430,6 +433,8 @@ class EstacionamientoService {
       }
       await batch.commit();
     }
-    await control.delete();
+    // El control solo existe si había un cronómetro en curso. Borrar un
+    // documento que no existe lo rechazan las reglas, así que se mira antes.
+    if ((await control.get()).exists) await control.delete();
   }
 }

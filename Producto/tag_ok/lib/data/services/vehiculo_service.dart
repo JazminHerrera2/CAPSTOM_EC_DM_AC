@@ -4,6 +4,7 @@ import '../models/vehiculo_model.dart';
 import 'abastecimiento_service.dart';
 import 'auditoria_service.dart';
 import 'documento_vehicular_service.dart';
+import 'estacionamiento_service.dart';
 import 'mantencion_service.dart';
 import 'storage_service.dart';
 
@@ -113,9 +114,11 @@ class VehiculoService {
     await _vehiculos.doc(vehiculoId).update(cambios);
   }
 
-  /// Elimina el vehículo junto con sus documentos (y avisos y archivos de
-  /// éstos). Primero se borran los documentos: si algo falla, el vehículo
-  /// sigue existiendo y se puede reintentar sin dejar datos huérfanos.
+  /// Elimina el vehículo junto con todo lo que depende de él: documentos (con
+  /// sus avisos y archivos), mantenciones, cargas de combustible y
+  /// estacionamientos. Primero se borra lo dependiente: si algo falla, el
+  /// vehículo sigue existiendo y se puede reintentar sin dejar datos
+  /// huérfanos.
   Future<void> eliminarVehiculo(String vehiculoId) async {
     final datos = (await _vehiculos.doc(vehiculoId).get()).data();
     final patente = datos?['patente'];
@@ -124,13 +127,8 @@ class VehiculoService {
 
     await DocumentoVehicularService().eliminarDocumentosDeVehiculo(vehiculoId);
     await MantencionService().eliminarDeVehiculo(vehiculoId);
-    // Las cargas son "best effort": si las reglas de abastecimientos aún no
-    // están publicadas, no deben impedir borrar el vehículo.
-    try {
-      await AbastecimientoService().eliminarDeVehiculo(vehiculoId);
-    } catch (e) {
-      debugPrint('No se pudieron borrar las cargas de $vehiculoId: $e');
-    }
+    await AbastecimientoService().eliminarDeVehiculo(vehiculoId);
+    await EstacionamientoService().eliminarDeVehiculo(vehiculoId);
     await _vehiculos.doc(vehiculoId).delete();
 
     // Si era el vehículo principal del usuario, ese dato deja de apuntar a él.
