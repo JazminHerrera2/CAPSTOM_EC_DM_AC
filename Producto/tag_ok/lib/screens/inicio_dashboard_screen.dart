@@ -999,8 +999,9 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
 
   // --- Beneficios --------------------------------------------------------
 
-  /// Título "Beneficios" y, debajo, un carrusel de banners (solo la imagen):
-  /// los destacados primero. Sin ninguno, un aviso corto.
+  /// Título "Beneficios" y, debajo, un carrusel de miniaturas verticales
+  /// (imagen, categoría y título): los destacados primero. Sin ninguno, un
+  /// aviso corto.
   Widget _seccionBeneficios() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1035,12 +1036,16 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
               },
             ),
             child: SizedBox(
-              height: _altoBanner,
+              // Imagen 3:4 de 140 px de ancho (~187 px) + categoría + título en
+              // dos líneas, más el espacio para la sombra.
+              height: 272,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                padding: const EdgeInsets.only(bottom: 10),
                 itemCount: _beneficios.length > 8 ? 8 : _beneficios.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 12),
-                itemBuilder: (_, i) => _bannerBeneficio(_beneficios[i]),
+                itemBuilder: (_, i) => _miniaturaBeneficio(_beneficios[i]),
               ),
             ),
           ),
@@ -1048,20 +1053,69 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
     );
   }
 
-  static const double _altoBanner = 120;
-
-  Widget _bannerBeneficio(BeneficioModel b) {
-    return Semantics(
-      label: b.titulo,
-      button: true,
-      child: GestureDetector(
-        onTap: () => _abrirBeneficio(b),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
-          child: SizedBox(
-            width: 230,
-            height: _altoBanner,
-            child: ImagenBeneficio(beneficio: b),
+  /// Miniatura vertical de un beneficio: imagen 3:4 arriba y, debajo, la
+  /// categoría (con estrella si es destacado) y el título.
+  Widget _miniaturaBeneficio(BeneficioModel b) {
+    return Container(
+      width: 140,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
+      ),
+      child: Material(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _abrirBeneficio(b),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AspectRatio(
+                aspectRatio: 3 / 4,
+                child: ImagenBeneficio(beneficio: b),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        if (b.destacado) ...[
+                          const Icon(Icons.star,
+                              color: AppColors.advertencia, size: 13),
+                          const SizedBox(width: 3),
+                        ],
+                        Flexible(
+                          child: Text(
+                            b.etiquetaCategoria,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: AppColors.textoSecundario,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      b.titulo,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.texto,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

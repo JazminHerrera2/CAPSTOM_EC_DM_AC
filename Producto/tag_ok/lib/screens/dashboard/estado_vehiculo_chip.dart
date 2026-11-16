@@ -53,6 +53,8 @@ String etiquetaCortaEstadoVehiculo(String estado) {
       return 'Por vencer';
     case 'Todo al día':
       return 'Al día';
+    case 'Sin información':
+      return 'Sin datos';
     default:
       return estado;
   }

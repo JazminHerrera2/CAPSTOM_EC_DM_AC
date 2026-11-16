@@ -156,27 +156,6 @@ class _DetalleVehiculoVista extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Editar vehículo',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      RegistrarEditarVehiculoScreen(
-                    vehiculo: vehiculo,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(
-              Icons.edit_outlined,
-              color: AppColors.texto,
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
 
       // ----------------------------------------------------------
@@ -378,6 +357,36 @@ class _DetalleVehiculoVista extends StatelessWidget {
               ),
 
               const SizedBox(height: 28),
+
+              // --------------------------------------------------
+              // EDITAR VEHÍCULO
+              // --------------------------------------------------
+
+              SizedBox(
+                height: 50,
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          RegistrarEditarVehiculoScreen(vehiculo: vehiculo),
+                    ),
+                  ),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Editar vehículo'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primario,
+                    side: BorderSide(
+                      color: AppColors.primario.withValues(alpha: 0.6),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadios.control),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
 
               // --------------------------------------------------
               // ELIMINAR VEHÍCULO
