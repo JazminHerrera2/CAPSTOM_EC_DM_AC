@@ -163,12 +163,13 @@ class _DetalleEstacionamientoScreenState
       (Icons.login_outlined, 'Hora de entrada', _fechaHora(e.fechaEntrada)),
       if (e.fechaSalida != null)
         (Icons.logout_outlined, 'Hora de salida', _fechaHora(e.fechaSalida!)),
-      if (e.estaFinalizado && e.duracionAppMin != null) ...[
-        // La de la boleta (lo que se guardó al registrarla) y, debajo, lo que
-        // midió el cronómetro de la app.
+      if (e.estaFinalizado) ...[
+        // La real, según la boleta (lo que se guardó al registrarla) y, debajo,
+        // la que midió el cronómetro de la app. Si el registro no pasó por el
+        // cronómetro (o es anterior a este dato), la de la app no existe.
         (
           Icons.receipt_long_outlined,
-          'Duración de la boleta',
+          'Duración real (según boleta)',
           _minutos(
             e.duracionMin ??
                 duracionEnMinutos(
@@ -179,15 +180,17 @@ class _DetalleEstacionamientoScreenState
         ),
         (
           Icons.timer_outlined,
-          'Duración estimada en aplicación',
-          _minutos(e.duracionAppMin!),
+          'Duración según la aplicación',
+          e.duracionAppMin == null ? 'Sin dato' : _minutos(e.duracionAppMin!),
         ),
-      ] else
+      ] else if (e.pendienteDeComprobante)
         (
           Icons.timer_outlined,
-          e.estaActivo ? 'Tiempo transcurrido' : 'Duración',
+          'Duración según la aplicación',
           _duracion(e.duracion),
-        ),
+        )
+      else
+        (Icons.timer_outlined, 'Tiempo transcurrido', _duracion(e.duracion)),
       if (e.costo != null)
         (Icons.payments_outlined, 'Total pagado', clp(e.costo!)),
     ];
