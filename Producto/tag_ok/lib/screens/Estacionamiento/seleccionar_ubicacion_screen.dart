@@ -46,6 +46,10 @@ class _SeleccionarUbicacionScreenState
   /// Si el usuario ya movió el mapa con el dedo: desde ahí no se lo vuelve a
   /// centrar solo.
   bool _usuarioMovioMapa = false;
+
+  /// Si el mapa ya se centró en el usuario (con la última ubicación conocida,
+  /// la posición actual o el primer punto del seguimiento).
+  bool _centradoInicial = false;
   String? _direccion;
   bool _cargando = false;
   List<PlaceSuggestion> _sugerencias = [];
@@ -90,9 +94,13 @@ class _SeleccionarUbicacionScreenState
       _seguirEnVivo();
     } on ErrorUbicacion catch (e) {
       if (!mounted) return;
-      _mostrarMensaje(e.mensaje);
-      // Si solo faltó señal a tiempo, el punto aparece apenas llegue una.
-      if (e.motivo == MotivoErrorUbicacion.sinSenal) _seguirEnVivo();
+      // Igual que el mapa de rutas: si solo faltó señal a tiempo no se avisa,
+      // se sigue con el seguimiento en vivo. Los demás casos sí se avisan.
+      if (e.motivo == MotivoErrorUbicacion.sinSenal) {
+        _seguirEnVivo();
+      } else {
+        _mostrarMensaje(e.mensaje);
+      }
     } catch (_) {
       // Sin ubicación el mapa igual sirve: se elige tocando o buscando.
     }
@@ -102,7 +110,10 @@ class _SeleccionarUbicacionScreenState
     final punto = LatLng(posicion.latitude, posicion.longitude);
     final centrar = !_usuarioMovioMapa && _ubicacionSeleccionada == null;
     setState(() => _miUbicacion = punto);
-    if (centrar) _mapController.move(punto, 17);
+    if (centrar) {
+      _mapController.move(punto, 17);
+      _centradoInicial = true;
+    }
   }
 
   void _seguirEnVivo() {
@@ -110,6 +121,11 @@ class _SeleccionarUbicacionScreenState
     _seguimiento = _ubicacionService.seguirUbicacion().listen(
       (posicion) {
         if (!mounted) return;
+        // Si es el primer punto que llega, se centra el mapa ahí.
+        if (!_centradoInicial) {
+          _mostrarMiPosicion(posicion);
+          return;
+        }
         setState(
           () => _miUbicacion = LatLng(posicion.latitude, posicion.longitude),
         );

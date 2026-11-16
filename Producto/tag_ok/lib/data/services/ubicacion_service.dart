@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -110,7 +111,8 @@ class UbicacionService {
 
     try {
       final posicion = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
+        // Mismos ajustes que el mapa de rutas (live_map_screen).
+        locationSettings: AndroidSettings(
           accuracy: LocationAccuracy.high,
           timeLimit: tiempoMaximo,
         ),
@@ -126,13 +128,33 @@ class UbicacionService {
   /// para que el punto azul y la distancia se actualicen mientras camina.
   /// Llamar después de [obtenerUbicacionActual], que ya pidió el permiso. El
   /// seguimiento se detiene al cancelar la suscripción (al cerrar el mapa).
-  Stream<GeoPoint> seguirUbicacion({int metrosMinimos = 3}) {
-    return Geolocator.getPositionStream(
-      locationSettings: LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: metrosMinimos,
-      ),
-    ).transform(StreamTransformer<Position, GeoPoint>.fromHandlers(
+  Stream<GeoPoint> seguirUbicacion() {
+    // Mismos ajustes que el mapa de rutas (live_map_screen) en reposo: máxima
+    // precisión y una actualización apenas el usuario se mueve.
+    final LocationSettings ajustes;
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      ajustes = AndroidSettings(
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
+        forceLocationManager: false,
+        intervalDuration: const Duration(seconds: 1),
+      );
+    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      ajustes = AppleSettings(
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
+        activityType: ActivityType.fitness,
+        pauseLocationUpdatesAutomatically: false,
+        showBackgroundLocationIndicator: false,
+      );
+    } else {
+      ajustes = const LocationSettings(
+        accuracy: LocationAccuracy.best,
+        distanceFilter: 0,
+      );
+    }
+    return Geolocator.getPositionStream(locationSettings: ajustes).transform(StreamTransformer<Position, GeoPoint>.fromHandlers(
       handleData: (p, sink) => sink.add(GeoPoint(p.latitude, p.longitude)),
       handleError: (e, _, sink) => sink.addError(traducirErrorUbicacion(e)),
     ));
