@@ -1,3 +1,5 @@
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -53,7 +55,7 @@ class MapaAutoScreen extends StatefulWidget {
 /// Estado del mapa: tu posición (seguida en vivo), avisos del GPS y la
 /// dirección escrita del auto.
 class _MapaAutoScreenState extends State<MapaAutoScreen> {
-  static const Color primaryColor = Color(0xFF1E3A8A);
+  static const Color primaryColor = AppColors.primario;
   static const double _zoomCercano = 17;
 
   final MapController _mapController = MapController();
@@ -347,7 +349,7 @@ class _TarjetaResumen extends StatelessWidget {
     final titulo = (lugar ?? '').trim().isNotEmpty ? lugar!.trim() : 'Tu auto';
     return Card(
       elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -356,7 +358,7 @@ class _TarjetaResumen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.local_parking, color: Color(0xFF1E3A8A)),
+                const Icon(Icons.local_parking, color: AppColors.primario),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -372,14 +374,14 @@ class _TarjetaResumen extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.place_outlined, size: 18, color: Colors.grey.shade700),
+                  Icon(Icons.place_outlined, size: 18, color: AppColors.textoSecundario),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       direccion == null
                           ? 'Buscando la dirección…'
                           : 'Quedó en $direccion',
-                      style: TextStyle(color: Colors.grey.shade800),
+                      style: TextStyle(color: AppColors.texto),
                     ),
                   ),
                 ],
@@ -404,11 +406,11 @@ class _TarjetaResumen extends StatelessWidget {
                 aviso ?? 'Se actualiza mientras caminas.',
                 style: TextStyle(
                   fontSize: 12,
-                  color: aviso != null ? Colors.orange.shade800 : Colors.grey.shade600,
+                  color: aviso != null ? AppColors.alerta : AppColors.textoSecundario,
                 ),
               ),
             ] else if (aviso != null) ...[
-              Text(aviso!, style: TextStyle(color: Colors.orange.shade800)),
+              Text(aviso!, style: TextStyle(color: AppColors.alerta)),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(

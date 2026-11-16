@@ -1,3 +1,4 @@
+import 'package:tag_ok/theme/app_estilos.dart';
 import 'package:tag_ok/theme/app_colors.dart';
 import 'dart:async';
 
@@ -24,11 +25,11 @@ class EstacionamientosScreen extends StatefulWidget {
 }
 
 class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Colors.white;
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
+  static const Color bgColor = AppColors.fondo;
+  static const Color surfaceColor = AppColors.superficie;
+  static const Color primaryColor = AppColors.primario;
+  static const Color textMain = AppColors.texto;
+  static const Color textMuted = AppColors.textoSecundario;
 
   final VehiculoService _vehiculoService = VehiculoService();
   final EstacionamientoService _service = EstacionamientoService();
@@ -215,12 +216,12 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
       ),
       floatingActionButton: _vehiculoVisible == null
           ? null
-          : FloatingActionButton.extended(
+          : FloatingActionButton(
+              heroTag: 'registrarEstacionamiento',
               backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
+              tooltip: 'Registrar estacionamiento',
               onPressed: () => _abrirRegistro(_vehiculoVisible!),
-              icon: const Icon(Icons.add),
-              label: const Text('Estacionamiento'),
+              child: const Icon(Icons.add, color: Colors.white, size: 30),
             ),
     );
   }
@@ -233,14 +234,14 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
         children: [
           for (final v in vehiculos) ...[
             InkWell(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               onTap: () => _elegirVehiculo(v.id),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: activo == v.id ? primaryColor : surfaceColor,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: Text(
                   v.patente,
@@ -265,7 +266,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
       builder: (context, snapshot) {
         final todos = snapshot.data ?? const <EstacionamientoModel>[];
         return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 84),
           children: [
             _tarjetaGastoMes(todos),
             const SizedBox(height: 22),
@@ -297,10 +298,11 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
         const SizedBox(height: 12),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.superficie,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,15 +431,16 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
             ? 'Pendiente de comprobante'
             : 'Finalizado';
     final colorEstado = activo
-        ? const Color(0xFF047857)
+        ? AppColors.exito
         : pendiente
-            ? const Color(0xFFB45309)
+            ? AppColors.alerta
             : primaryColor;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,7 +476,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: colorEstado.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             ),
             child: Text(
               etiqueta,
@@ -556,7 +559,8 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 38),
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: const Column(
         children: [
@@ -573,7 +577,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           ),
           SizedBox(height: 8),
           Text(
-            'Presiona + Estacionamiento para iniciar tu primer registro.',
+            'Presiona + para iniciar tu primer registro.',
             textAlign: TextAlign.center,
             style: TextStyle(color: textMuted, fontSize: 12),
           ),

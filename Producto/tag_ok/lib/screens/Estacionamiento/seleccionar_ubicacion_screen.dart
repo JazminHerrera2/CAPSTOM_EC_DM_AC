@@ -1,3 +1,5 @@
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 import 'package:flutter/material.dart';
 import '../../entorno.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -35,7 +37,7 @@ class _SeleccionarUbicacionScreenState
   bool _cargando = false;
   List<PlaceSuggestion> _sugerencias = [];
 
-  static const Color azul = Color(0xFF1E3A8A);
+  static const Color azul = AppColors.primario;
 
   String get _mapboxToken => Entorno.mapboxAccessToken;
 
@@ -164,11 +166,11 @@ class _SeleccionarUbicacionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
         title: const Text('Seleccionar ubicación'),
         backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+        foregroundColor: AppColors.texto,
       ),
       body: Column(
         children: [
@@ -185,7 +187,7 @@ class _SeleccionarUbicacionScreenState
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadios.control),
                     ),
                   ),
                 ),

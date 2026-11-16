@@ -1,3 +1,5 @@
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 import 'package:flutter/material.dart';
 
@@ -19,11 +21,11 @@ class RegistroEstacionamientoScreen extends StatefulWidget {
 }
 
 class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoScreen>  {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Colors.white;
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
+  static const Color bgColor = AppColors.fondo;
+  static const Color surfaceColor = AppColors.superficie;
+  static const Color primaryColor = AppColors.primario;
+  static const Color textMain = AppColors.texto;
+  static const Color textMuted = AppColors.textoSecundario;
 
   final _formKey = GlobalKey<FormState>();
   final _lugarController = TextEditingController();
@@ -117,16 +119,16 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
         vertical: 15,
       ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: BorderSide.none,
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red),
+        borderRadius: BorderRadius.circular(AppRadios.control),
+        borderSide: const BorderSide(color: AppColors.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.red),
+        borderRadius: BorderRadius.circular(AppRadios.control),
+        borderSide: const BorderSide(color: AppColors.error),
       ),
     );
   }
@@ -156,7 +158,7 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
         _etiqueta(titulo, obligatorio: true),
         InkWell(
           onTap: _guardando ? null : onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadios.control),
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
@@ -165,7 +167,7 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
             ),
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadios.control),
             ),
             child: Row(
               children: [
@@ -208,7 +210,7 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +437,7 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         side: const BorderSide(color: primaryColor),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadios.control),
                         ),
                       ),
                     ),
@@ -526,7 +528,7 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(AppRadios.control),
                   ),
                 ),
                 icon: _guardando

@@ -1,3 +1,5 @@
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -26,11 +28,11 @@ class RegistroComprobanteScreen extends StatefulWidget {
 }
 
 class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
-  static const _fondo = Color(0xFFF1F5F9);
-  static const _azul = Color(0xFF1E3A8A);
-  static const _texto = Color(0xFF0F172A);
-  static const _secundario = Color(0xFF64748B);
-  static const _grisIcono = Color(0xFFE2E8F0);
+  static const _fondo = AppColors.fondo;
+  static const _azul = AppColors.primario;
+  static const _texto = AppColors.texto;
+  static const _secundario = AppColors.textoSecundario;
+  static const _grisIcono = AppColors.contenedorSuave;
 
   bool _guardando = false;
   bool _procesando = false;
@@ -231,7 +233,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                       const SizedBox(height: 10),
                       const Text(
                         'La IA identificó datos dudosos. Verifica el comprobante antes de guardar.',
-                        style: TextStyle(color: Color(0xFFB45309)),
+                        style: TextStyle(color: AppColors.alerta),
                       ),
                     ],
                   ],
@@ -244,7 +246,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                       labelText: 'Monto pagado (CLP)',
                       prefixText: r'$ ',
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppRadios.control),
                       ),
                     ),
                     validator: (valor) {
@@ -296,17 +298,17 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
     bool destacada = false,
   }) {
     return Material(
-      color: destacada ? const Color(0xFFDCE2EF) : Colors.white,
-      borderRadius: BorderRadius.circular(24),
+      color: destacada ? AppColors.contenedorSuave : Colors.white,
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       child: InkWell(
         onTap: (_guardando || _procesando) ? null : onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 27),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             border: destacada
-                ? Border.all(color: const Color(0xFF5872C0), width: 1.3)
+                ? Border.all(color: AppColors.primario, width: 1.3)
                 : null,
           ),
           child: Row(
@@ -316,7 +318,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                 height: 68,
                 decoration: BoxDecoration(
                   color: destacada ? _azul : _grisIcono,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: Icon(
                   icono,
@@ -402,8 +404,8 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE5E8F2),
-                  borderRadius: BorderRadius.circular(25),
+                  color: AppColors.contenedorSuave,
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: const Icon(
                   Icons.document_scanner_outlined,
@@ -504,7 +506,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                   const SizedBox(height: 12),
                   const Text(
                     'Algunos datos son dudosos. Revisa la boleta original.',
-                    style: TextStyle(color: Color(0xFFB45309)),
+                    style: TextStyle(color: AppColors.alerta),
                   ),
                 ],
               ],
