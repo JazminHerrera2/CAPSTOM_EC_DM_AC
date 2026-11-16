@@ -6,6 +6,8 @@ import '../dashboard/dashboard_logica.dart';
 import '../dashboard/encabezado_tag_ok.dart';
 import 'detalle_beneficio_screen.dart';
 import 'imagen_beneficio.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Catálogo de beneficios (RF-030, RF-033, RF-034): solo activos y vigentes,
 /// destacados primero, con filtros por categoría, ubicación y vigencia.
@@ -17,11 +19,6 @@ class BeneficiosScreen extends StatefulWidget {
 }
 
 class _BeneficiosScreenState extends State<BeneficiosScreen> {
-  static const Color _bgColor = Color(0xFFF1F5F9);
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _textMain = Color(0xFF0F172A);
-  static const Color _textMuted = Color(0xFF64748B);
-  static const Color _primaryColor = Color(0xFF1E3A8A);
 
   final Stream<List<BeneficioModel>> _stream = BeneficioService().streamTodos();
   final TextEditingController _ubicacion = TextEditingController();
@@ -44,7 +41,7 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.fondo,
       body: Column(
         children: [
           // Lo único fijo es el encabezado (logo, notificaciones y perfil). Los
@@ -111,7 +108,7 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                           child: Text(
                             'Beneficios',
                             style: TextStyle(
-                              color: _textMain,
+                              color: AppColors.texto,
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
                             ),
@@ -157,14 +154,14 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                   child: TextField(
                     controller: _ubicacion,
                     onChanged: (_) => setState(() {}),
-                    style: const TextStyle(color: _textMain, fontSize: 13),
+                    style: const TextStyle(color: AppColors.texto, fontSize: 13),
                     textAlignVertical: TextAlignVertical.center,
                     decoration: InputDecoration(
                       hintText: 'Ubicación (ciudad o región)',
-                      hintStyle: const TextStyle(color: _textMuted, fontSize: 13),
+                      hintStyle: const TextStyle(color: AppColors.textoSecundario, fontSize: 13),
                       prefixIcon: const Icon(
                         Icons.place_outlined,
-                        color: _textMuted,
+                        color: AppColors.textoSecundario,
                         size: 18,
                       ),
                       prefixIconConstraints: const BoxConstraints(
@@ -173,7 +170,7 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                       ),
                       isDense: true,
                       filled: true,
-                      fillColor: _surfaceColor,
+                      fillColor: AppColors.superficie,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 0,
@@ -191,10 +188,10 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
                 label: const Text('Por vencer'),
                 selected: _soloPorVencer,
                 onSelected: (v) => setState(() => _soloPorVencer = v),
-                selectedColor: _primaryColor,
-                backgroundColor: _surfaceColor,
+                selectedColor: AppColors.primario,
+                backgroundColor: AppColors.superficie,
                 labelStyle: TextStyle(
-                  color: _soloPorVencer ? Colors.white : _textMain,
+                  color: _soloPorVencer ? Colors.white : AppColors.texto,
                   fontSize: 12,
                   fontWeight: _soloPorVencer ? FontWeight.w700 : FontWeight.normal,
                 ),
@@ -216,10 +213,10 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
         label: Text(texto),
         selected: seleccionada,
         onSelected: (_) => setState(() => _categoria = categoria),
-        selectedColor: _primaryColor,
-        backgroundColor: _surfaceColor,
+        selectedColor: AppColors.primario,
+        backgroundColor: AppColors.superficie,
         labelStyle: TextStyle(
-          color: seleccionada ? Colors.white : _textMain,
+          color: seleccionada ? Colors.white : AppColors.texto,
           fontSize: 12,
           fontWeight: seleccionada ? FontWeight.w700 : FontWeight.normal,
         ),
@@ -241,12 +238,12 @@ class _BeneficiosScreenState extends State<BeneficiosScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icono, color: _textMuted, size: 44),
+            Icon(icono, color: AppColors.textoSecundario, size: 44),
             const SizedBox(height: 12),
             Text(
               texto,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: _textMuted),
+              style: const TextStyle(color: AppColors.textoSecundario),
             ),
           ],
         ),
@@ -266,84 +263,90 @@ class TarjetaBeneficio extends StatelessWidget {
   Widget build(BuildContext context) {
     final b = beneficio;
     final fin = b.fechaFin;
-    return Material(
-      color: const Color(0xFFFFFFFF),
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.transparent),
-          ),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  width: 84,
-                  height: 112,
-                  child: ImagenBeneficio(beneficio: b),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
+      ),
+      child: Material(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+              border: Border.all(color: Colors.transparent),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadios.icono),
+                  child: SizedBox(
+                    width: 84,
+                    height: 112,
+                    child: ImagenBeneficio(beneficio: b),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (b.destacado) ...[
-                          const Icon(Icons.star, color: Color(0xFFF59E0B), size: 16),
-                          const SizedBox(width: 4),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          if (b.destacado) ...[
+                            const Icon(Icons.star, color: AppColors.advertencia, size: 16),
+                            const SizedBox(width: 4),
+                          ],
+                          Flexible(
+                            child: Text(
+                              b.etiquetaCategoria,
+                              style: const TextStyle(
+                                color: AppColors.textoSecundario,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
                         ],
-                        Flexible(
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        b.titulo,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.texto,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (b.empresa != null)
+                        Text(
+                          b.empresa!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12),
+                        ),
+                      if (fin != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            b.etiquetaCategoria,
+                            'Hasta ${formatearFecha(fin)}',
                             style: const TextStyle(
-                              color: Color(0xFF64748B),
+                              color: AppColors.textoSecundario,
                               fontSize: 11,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      b.titulo,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (b.empresa != null)
-                      Text(
-                        b.empresa!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
-                      ),
-                    if (fin != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          'Hasta ${formatearFecha(fin)}',
-                          style: const TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const Icon(Icons.chevron_right, color: Color(0xFF64748B)),
-            ],
+                const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
+              ],
+            ),
           ),
         ),
       ),

@@ -11,10 +11,12 @@ import '../dashboard/filtro_mes_anio.dart';
 import '../dashboard/gastos_historial.dart' show altoContenidoTarjetaGastos;
 import '../mantenimiento/tarjeta_mantencion.dart'
     show formatoFecha, formatoMiles;
-import '../mantenimiento/widgets_gasto.dart' show TokensGasto, clp;
+import '../mantenimiento/widgets_gasto.dart' show clp;
 import 'detalle_combustible_screen.dart';
 import 'gasto_combustible.dart';
 import 'registro_ia_combustible_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// "Combustible y carga": gasto del mes e historial de cargas del vehículo
 /// elegido, con el + para registrar una carga (con IA o a mano). Se abre como
@@ -27,11 +29,6 @@ class CombustibleScreen extends StatefulWidget {
 }
 
 class _CombustibleScreenState extends State<CombustibleScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
 
   final VehiculoService _vehiculoService = VehiculoService();
   final AbastecimientoService _service = AbastecimientoService();
@@ -68,15 +65,15 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         title: const Text(
           'Combustible y carga',
-          style: TextStyle(color: textMain, fontWeight: FontWeight.w700),
+          style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w700),
         ),
-        iconTheme: const IconThemeData(color: textMain),
+        iconTheme: const IconThemeData(color: AppColors.texto),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
@@ -125,7 +122,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                       bottom: 16,
                       child: FloatingActionButton(
                         heroTag: 'registrarCarga',
-                        backgroundColor: primaryColor,
+                        backgroundColor: AppColors.primario,
                         tooltip: 'Registrar carga',
                         onPressed: () {
                           Navigator.push(
@@ -164,7 +161,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
         children: [
           for (final v in vehiculos) ...[
             InkWell(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               onTap: () => _elegirVehiculo(v.id),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -173,15 +170,15 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: activo == v.id ? primaryColor : surfaceColor,
-                  borderRadius: BorderRadius.circular(20),
+                  color: activo == v.id ? AppColors.primario : AppColors.superficie,
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: Text(
                   v.patente,
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
-                    color: activo == v.id ? Colors.white : textMuted,
+                    color: activo == v.id ? Colors.white : AppColors.textoSecundario,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -235,7 +232,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
         Text(
           'Gastado en ${nombreDelMes(hoy.month).toLowerCase()}',
           style: const TextStyle(
-            color: TokensGasto.textoPrincipal,
+            color: AppColors.texto,
             fontSize: 17,
             fontWeight: FontWeight.bold,
           ),
@@ -246,8 +243,9 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: TokensGasto.fondoCard,
-            borderRadius: BorderRadius.circular(18),
+            color: AppColors.superficie,
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: SizedBox(
             height: altoContenidoTarjetaGastos,
@@ -257,7 +255,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                     child: Text(
                       'No fue posible cargar las cargas.',
                       style: TextStyle(
-                        color: TokensGasto.textoSecundario,
+                        color: AppColors.textoSecundario,
                         fontSize: 14,
                       ),
                     ),
@@ -274,7 +272,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                           clp(resumen.total),
                           maxLines: 1,
                           style: const TextStyle(
-                            color: TokensGasto.textoPrincipal,
+                            color: AppColors.texto,
                             fontSize: 28,
                             height: 1.2,
                             fontWeight: FontWeight.bold,
@@ -284,7 +282,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                       Text(
                         detalle,
                         style: const TextStyle(
-                          color: TokensGasto.textoSecundario,
+                          color: AppColors.textoSecundario,
                           fontSize: 12,
                         ),
                       ),
@@ -318,7 +316,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
         child: Center(
           child: Text(
             'No fue posible cargar el historial.',
-            style: TextStyle(color: textMuted),
+            style: TextStyle(color: AppColors.textoSecundario),
           ),
         ),
       );
@@ -326,7 +324,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
     if (!snapshot.hasData) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
-        child: Center(child: CircularProgressIndicator(color: primaryColor)),
+        child: Center(child: CircularProgressIndicator(color: AppColors.primario)),
       );
     }
 
@@ -343,7 +341,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
               child: Text(
                 'Historial de cargas',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -352,13 +350,13 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
+                color: AppColors.primario.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               ),
               child: Text(
                 lista.length == 1 ? '1 registro' : '${lista.length} registros',
                 style: const TextStyle(
-                  color: primaryColor,
+                  color: AppColors.primario,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                 ),
@@ -410,10 +408,10 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
     ].where((l) => l.isNotEmpty).toList();
 
     return Material(
-      color: surfaceColor,
-      borderRadius: BorderRadius.circular(16),
+      color: AppColors.superficie,
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -433,7 +431,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
               electrica
                   ? Icons.ev_station_outlined
                   : Icons.local_gas_station_outlined,
-              color: primaryColor,
+              color: AppColors.primario,
               size: 28,
             ),
           ),
@@ -447,7 +445,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -459,7 +457,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -474,7 +472,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
             child: Text(
               c.total == null ? '—' : clp(c.total!),
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -496,8 +494,9 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 38),
       decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         children: [
@@ -505,12 +504,12 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
             width: 68,
             height: 68,
             decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.10),
+              color: AppColors.primario.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.local_gas_station_outlined,
-              color: primaryColor,
+              color: AppColors.primario,
               size: 32,
             ),
           ),
@@ -519,7 +518,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
             'Aún no hay cargas registradas',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -530,7 +529,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                 'Toca el + para registrar una carga con la boleta de la '
                     'bencinera o a mano.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: textMuted, fontSize: 12, height: 1.5),
+            style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.5),
           ),
         ],
       ),
@@ -544,12 +543,12 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.directions_car_outlined, color: textMuted, size: 55),
+            Icon(Icons.directions_car_outlined, color: AppColors.textoSecundario, size: 55),
             SizedBox(height: 16),
             Text(
               'No tienes vehículos registrados',
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -559,7 +558,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
               'Primero registra un vehículo desde Mi Vehículo para poder '
               'registrar sus cargas.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: textMuted, height: 1.5),
+              style: TextStyle(color: AppColors.textoSecundario, height: 1.5),
             ),
           ],
         ),

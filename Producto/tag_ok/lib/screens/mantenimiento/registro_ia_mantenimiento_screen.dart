@@ -9,6 +9,8 @@ import '../../features/registro_inteligente/consejos_captura.dart';
 import '../../features/registro_inteligente/preparar_imagen.dart';
 import '../../features/registro_inteligente/mantencion_extraction.dart';
 import 'registrar_mantenimiento_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// "Registrar mantención": el usuario sube o fotografía su boleta o factura,
 /// la IA la lee en cuanto el archivo está cargado y se abre el formulario
@@ -27,12 +29,6 @@ class RegistrarMantenimientoIaScreen extends StatefulWidget {
 
 class _RegistrarMantenimientoIaScreenState
     extends State<RegistrarMantenimientoIaScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color surfaceLight = Color(0xFFE2E8F0);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
 
   bool _procesando = false;
 
@@ -158,20 +154,20 @@ class _RegistrarMantenimientoIaScreenState
     final continuar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        backgroundColor: AppColors.superficie,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
             const Icon(Icons.error_outline, color: Colors.orangeAccent),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(titulo, style: const TextStyle(color: textMain)),
+              child: Text(titulo, style: const TextStyle(color: AppColors.texto)),
             ),
           ],
         ),
         content: Text(
           mensaje,
-          style: const TextStyle(color: textMuted, height: 1.4),
+          style: const TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -202,17 +198,17 @@ class _RegistrarMantenimientoIaScreenState
       // sobre una pantalla que ya se cerró.
       canPop: !_procesando,
       child: Scaffold(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         appBar: AppBar(
-          backgroundColor: bgColor,
+          backgroundColor: AppColors.fondo,
           elevation: 0,
           scrolledUnderElevation: 0,
           automaticallyImplyLeading: !_procesando,
-          iconTheme: const IconThemeData(color: textMain),
+          iconTheme: const IconThemeData(color: AppColors.texto),
           title: Text(
             _procesando ? 'Analizando comprobante' : 'Registrar mantención',
             style: const TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -232,9 +228,9 @@ class _RegistrarMantenimientoIaScreenState
           width: double.infinity,
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            color: surfaceColor,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.transparent),
+            color: AppColors.superficie,
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
           ),
           child: Column(
             children: [
@@ -242,12 +238,12 @@ class _RegistrarMantenimientoIaScreenState
                 width: 70,
                 height: 70,
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.primario.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
                 child: const Icon(
                   Icons.document_scanner_outlined,
-                  color: primaryColor,
+                  color: AppColors.primario,
                   size: 34,
                 ),
               ),
@@ -256,7 +252,7 @@ class _RegistrarMantenimientoIaScreenState
                 'Escanea o sube tu comprobante',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 19,
                   fontWeight: FontWeight.w700,
                 ),
@@ -268,7 +264,7 @@ class _RegistrarMantenimientoIaScreenState
                 'guardar.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                   fontSize: 13,
                   height: 1.5,
                 ),
@@ -303,7 +299,7 @@ class _RegistrarMantenimientoIaScreenState
         const Text(
           '¿Qué información se detectará?',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontSize: 14,
             fontWeight: FontWeight.w700,
           ),
@@ -337,15 +333,15 @@ class _RegistrarMantenimientoIaScreenState
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: principal ? primaryColor.withOpacity(0.12) : surfaceColor,
-          borderRadius: BorderRadius.circular(18),
+          color: principal ? AppColors.primario.withOpacity(0.12) : AppColors.superficie,
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           border: Border.all(
-            color: principal ? primaryColor.withOpacity(0.65) : Colors.transparent,
+            color: principal ? AppColors.primario.withOpacity(0.65) : Colors.transparent,
           ),
         ),
         child: Row(
@@ -354,12 +350,12 @@ class _RegistrarMantenimientoIaScreenState
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                color: principal ? primaryColor : surfaceLight,
-                borderRadius: BorderRadius.circular(15),
+                color: principal ? AppColors.primario : AppColors.contenedorSuave,
+                borderRadius: BorderRadius.circular(AppRadios.control),
               ),
               child: Icon(
                 icono,
-                color: principal ? Colors.white : primaryColor,
+                color: principal ? Colors.white : AppColors.primario,
                 size: 26,
               ),
             ),
@@ -371,7 +367,7 @@ class _RegistrarMantenimientoIaScreenState
                   Text(
                     titulo,
                     style: const TextStyle(
-                      color: textMain,
+                      color: AppColors.texto,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -380,7 +376,7 @@ class _RegistrarMantenimientoIaScreenState
                   Text(
                     descripcion,
                     style: const TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -389,7 +385,7 @@ class _RegistrarMantenimientoIaScreenState
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: textMuted),
+            const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
           ],
         ),
       ),
@@ -400,14 +396,14 @@ class _RegistrarMantenimientoIaScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: surfaceLight,
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.contenedorSuave,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(color: Colors.transparent),
       ),
       child: Text(
         texto,
         style: const TextStyle(
-          color: textMuted,
+          color: AppColors.textoSecundario,
           fontSize: 11,
           fontWeight: FontWeight.w600,
         ),
@@ -426,7 +422,7 @@ class _RegistrarMantenimientoIaScreenState
               width: 110,
               height: 110,
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.10),
+                color: AppColors.primario.withOpacity(0.10),
                 shape: BoxShape.circle,
               ),
               child: const Center(
@@ -434,7 +430,7 @@ class _RegistrarMantenimientoIaScreenState
                   width: 52,
                   height: 52,
                   child: CircularProgressIndicator(
-                    color: primaryColor,
+                    color: AppColors.primario,
                     strokeWidth: 4,
                   ),
                 ),
@@ -447,7 +443,7 @@ class _RegistrarMantenimientoIaScreenState
                   : 'Analizando comprobante...',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
               ),
@@ -457,26 +453,26 @@ class _RegistrarMantenimientoIaScreenState
               'Estamos leyendo la boleta o factura y extrayendo los datos de '
               'la mantención.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: textMuted, fontSize: 13, height: 1.5),
+              style: TextStyle(color: AppColors.textoSecundario, fontSize: 13, height: 1.5),
             ),
             const SizedBox(height: 28),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: surfaceColor,
-                borderRadius: BorderRadius.circular(14),
+                color: AppColors.superficie,
+                borderRadius: BorderRadius.circular(AppRadios.control),
                 border: Border.all(color: Colors.transparent),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.auto_awesome_outlined,
-                      color: primaryColor, size: 18),
+                      color: AppColors.primario, size: 18),
                   SizedBox(width: 8),
                   Text(
                     'Procesamiento con IA',
                     style: TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),

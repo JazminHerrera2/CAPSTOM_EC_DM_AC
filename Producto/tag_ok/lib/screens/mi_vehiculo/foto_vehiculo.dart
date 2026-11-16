@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/services/storage_service.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Imagen de un vehículo: la foto que subió el usuario o, si no tiene (o no se
 /// pudo cargar), la imagen predeterminada según su tipo.
@@ -72,7 +73,7 @@ class _FotoVehiculoState extends State<FotoVehiculo> {
         errorBuilder: (context, error, stackTrace) {
           return const Icon(
             Icons.directions_car_outlined,
-            color: Color(0xFF1E3A8A),
+            color: AppColors.primario,
             size: 70,
           );
         },

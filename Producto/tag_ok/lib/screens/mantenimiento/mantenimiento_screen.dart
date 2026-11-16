@@ -16,6 +16,8 @@ import 'proximas_mantenciones_screen.dart';
 import 'registro_ia_mantenimiento_screen.dart';
 import 'resumen_gastos_mantenciones.dart';
 import 'tarjeta_mantencion.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 
 class MantenimientoScreen extends StatefulWidget {
@@ -24,22 +26,12 @@ class MantenimientoScreen extends StatefulWidget {
 
   const MantenimientoScreen({super.key, this.onIrAAuditoria});
 
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
 
   @override
   State<MantenimientoScreen> createState() => _MantenimientoScreenState();
 }
 
 class _MantenimientoScreenState extends State<MantenimientoScreen> {
-  static const Color bgColor = MantenimientoScreen.bgColor;
-  static const Color surfaceColor = MantenimientoScreen.surfaceColor;
-  static const Color primaryColor = MantenimientoScreen.primaryColor;
-  static const Color textMain = MantenimientoScreen.textMain;
-  static const Color textMuted = MantenimientoScreen.textMuted;
 
   final VehiculoService _vehiculoService = VehiculoService();
 
@@ -144,18 +136,18 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         title: const Text(
           'Mantenciones',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontWeight: FontWeight.w700,
           ),
         ),
-        iconTheme: const IconThemeData(color: textMain),
+        iconTheme: const IconThemeData(color: AppColors.texto),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
@@ -204,7 +196,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                       bottom: 16,
                       child: FloatingActionButton(
                         heroTag: 'registrarMantencion',
-                        backgroundColor: primaryColor,
+                        backgroundColor: AppColors.primario,
                         tooltip: 'Registrar mantención',
                         onPressed: () {
                           Navigator.push(
@@ -244,7 +236,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
         children: [
           for (final v in vehiculos) ...[
             InkWell(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               onTap: () => setState(() {
                 _vehiculoId = v.id;
                 _mes = null;
@@ -257,11 +249,11 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: activo == v.id ? primaryColor : surfaceColor,
-                  borderRadius: BorderRadius.circular(20),
+                  color: activo == v.id ? AppColors.primario : AppColors.superficie,
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   border: Border.all(
                     color: activo == v.id
-                        ? primaryColor
+                        ? AppColors.primario
                         : Colors.transparent,
                   ),
                 ),
@@ -270,7 +262,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
-                    color: activo == v.id ? Colors.white : textMuted,
+                    color: activo == v.id ? Colors.white : AppColors.textoSecundario,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -355,7 +347,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
         child: Center(
           child: Text(
             'No fue posible cargar el historial.',
-            style: TextStyle(color: textMuted),
+            style: TextStyle(color: AppColors.textoSecundario),
           ),
         ),
       );
@@ -363,7 +355,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
     if (!snapshot.hasData) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
-        child: Center(child: CircularProgressIndicator(color: primaryColor)),
+        child: Center(child: CircularProgressIndicator(color: AppColors.primario)),
       );
     }
 
@@ -384,7 +376,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               child: Text(
                 'Historial de mantenciones',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -393,13 +385,13 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.12),
+                color: AppColors.primario.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 lista.length == 1 ? '1 registro' : '${lista.length} registros',
                 style: const TextStyle(
-                  color: primaryColor,
+                  color: AppColors.primario,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                 ),
@@ -439,7 +431,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 38),
       decoration: BoxDecoration(
-        color: surfaceColor,
+        color: AppColors.superficie,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -448,12 +440,12 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
             width: 68,
             height: 68,
             decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.10),
+              color: AppColors.primario.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.car_repair_outlined,
-              color: primaryColor,
+              color: AppColors.primario,
               size: 32,
             ),
           ),
@@ -462,7 +454,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
             'Aún no hay mantenciones registradas',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -472,7 +464,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
             detalle ??
                 'Toca el + para registrar una mantención; aparecerá en este historial.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: textMuted, fontSize: 12, height: 1.5),
+            style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.5),
           ),
         ],
       ),
@@ -499,48 +491,54 @@ class _MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: MantenimientoScreen.surfaceColor,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Row(
-            children: [
-              _IconBox(icon: icon),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: MantenimientoScreen.textMain,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 3),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
+      ),
+      child: Material(
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              children: [
+                _IconBox(icon: icon),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        subtitle!,
+                        title,
                         style: const TextStyle(
-                          color: MantenimientoScreen.textMuted,
-                          fontSize: 11,
+                          color: AppColors.texto,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          subtitle!,
+                          style: const TextStyle(
+                            color: AppColors.textoSecundario,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: MantenimientoScreen.textMuted,
-              ),
-            ],
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textoSecundario,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -565,7 +563,7 @@ class _IconBox extends StatelessWidget {
       height: 42,
       child: Icon(
         icon,
-        color: MantenimientoScreen.primaryColor,
+        color: AppColors.primario,
         size: 28,
       ),
     );

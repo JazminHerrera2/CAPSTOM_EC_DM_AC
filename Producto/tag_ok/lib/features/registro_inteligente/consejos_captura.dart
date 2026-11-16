@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Aviso previo a abrir la cámara: una foto nítida y bien iluminada mejora
 /// bastante la lectura de la IA. Devuelve `true` si el usuario quiere seguir
 /// y tomar la foto, `false` si cancela.
 Future<bool> mostrarConsejosCaptura(BuildContext context) async {
-  const textMain = Color(0xFF0F172A);
-  const textMuted = Color(0xFF64748B);
-  const primaryColor = Color(0xFF1E3A8A);
 
   Widget consejo(IconData icono, String texto) => Padding(
         padding: const EdgeInsets.only(top: 10),
@@ -18,7 +17,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
             Expanded(
               child: Text(
                 texto,
-                style: const TextStyle(color: textMuted, height: 1.3),
+                style: const TextStyle(color: AppColors.textoSecundario, height: 1.3),
               ),
             ),
           ],
@@ -28,8 +27,8 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
   final seguir = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      backgroundColor: const Color(0xFFFFFFFF),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: AppColors.superficie,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
       title: const Row(
         children: [
           Icon(Icons.light_mode_outlined, color: Colors.amber),
@@ -37,7 +36,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
           Expanded(
             child: Text(
               'Antes de tomar la foto',
-              style: TextStyle(color: textMain, fontSize: 18),
+              style: TextStyle(color: AppColors.texto, fontSize: 18),
             ),
           ),
         ],
@@ -48,7 +47,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
         children: [
           const Text(
             'Con una buena imagen la IA lee tus datos con mayor precisión.',
-            style: TextStyle(color: textMain),
+            style: TextStyle(color: AppColors.texto),
           ),
           consejo(Icons.wb_sunny_outlined,
               'Busca un lugar con buena iluminación, de preferencia luz natural.'),
@@ -63,13 +62,13 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Cancelar', style: TextStyle(color: textMuted)),
+          child: const Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
+            backgroundColor: AppColors.primario,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppRadios.control),
             ),
           ),
           onPressed: () => Navigator.pop(dialogContext, true),

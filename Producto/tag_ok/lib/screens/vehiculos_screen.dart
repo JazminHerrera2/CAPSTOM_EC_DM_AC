@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class VehiculosScreen extends StatefulWidget {
   const VehiculosScreen({super.key});
@@ -11,12 +13,6 @@ class VehiculosScreen extends StatefulWidget {
 }
 
 class _VehiculosScreenState extends State<VehiculosScreen> {
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color navBgColor = const Color(0xFFFFFFFF);
-  final Color textMuted = const Color(0xFF64748B);
-  final Color textMain = const Color(0xFF0F172A);
-  final Color accentColor = const Color(0xFF10B981);
 
   final TextEditingController _patenteController = TextEditingController();
   final TextEditingController _marcaController = TextEditingController();
@@ -77,7 +73,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Formato inválido (ej: ABCD12)'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -164,20 +160,20 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: navBgColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Información del Vehículo', style: TextStyle(color: textMain)),
+          backgroundColor: AppColors.superficie,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
+          title: Text('Información del Vehículo', style: TextStyle(color: AppColors.texto)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Patente: ${data['patente']}', style: TextStyle(color: textMain, fontSize: 18)),
+              Text('Patente: ${data['patente']}', style: TextStyle(color: AppColors.texto, fontSize: 18)),
               const SizedBox(height: 8),
-              Text('Tipo: ${data['categoria']}', style: TextStyle(color: textMuted, fontSize: 16)),
+              Text('Tipo: ${data['categoria']}', style: TextStyle(color: AppColors.textoSecundario, fontSize: 16)),
               const SizedBox(height: 8),
-              Text('Marca: ${data['marca'] ?? 'No especificada'}', style: TextStyle(color: textMuted, fontSize: 16)),
+              Text('Marca: ${data['marca'] ?? 'No especificada'}', style: TextStyle(color: AppColors.textoSecundario, fontSize: 16)),
               const SizedBox(height: 8),
-              Text('Ingresado: ${data['fecha_ingreso'] ?? 'No registrada'}', style: TextStyle(color: textMuted, fontSize: 14)),
+              Text('Ingresado: ${data['fecha_ingreso'] ?? 'No registrada'}', style: TextStyle(color: AppColors.textoSecundario, fontSize: 14)),
             ],
           ),
           actions: [
@@ -210,9 +206,9 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return AlertDialog(
-              backgroundColor: navBgColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: Text('Editar Vehículo', style: TextStyle(color: textMain, fontWeight: FontWeight.bold)),
+              backgroundColor: AppColors.superficie,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
+              title: Text('Editar Vehículo', style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -220,7 +216,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                   children: [
                     TextField(
                       controller: patenteCtrl,
-                      style: TextStyle(color: textMain),
+                      style: TextStyle(color: AppColors.texto),
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [
                         TextInputFormatter.withFunction((oldValue, newValue) {
@@ -232,33 +228,33 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                       ],
                       decoration: InputDecoration(
                         labelText: 'Patente (ej: ABCD55)',
-                        labelStyle: TextStyle(color: textMuted),
-                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: textMuted.withOpacity(0.5))),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor)),
+                        labelStyle: TextStyle(color: AppColors.textoSecundario),
+                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.textoSecundario.withOpacity(0.5))),
+                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primario)),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: marcaCtrl,
-                      style: TextStyle(color: textMain),
+                      style: TextStyle(color: AppColors.texto),
                       textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
                         labelText: 'Marca (ej: Toyota, Kia)',
-                        labelStyle: TextStyle(color: textMuted),
-                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: textMuted.withOpacity(0.5))),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor)),
+                        labelStyle: TextStyle(color: AppColors.textoSecundario),
+                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.textoSecundario.withOpacity(0.5))),
+                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primario)),
                       ),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: categoriaSel,
-                      dropdownColor: navBgColor,
-                      style: TextStyle(color: textMain),
+                      dropdownColor: AppColors.superficie,
+                      style: TextStyle(color: AppColors.texto),
                       decoration: InputDecoration(
                         labelText: 'Tipo de Vehículo',
-                        labelStyle: TextStyle(color: textMuted),
-                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: textMuted.withOpacity(0.5))),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor)),
+                        labelStyle: TextStyle(color: AppColors.textoSecundario),
+                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.textoSecundario.withOpacity(0.5))),
+                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primario)),
                       ),
                       items: const [
                         DropdownMenuItem(value: 'AUTO', child: Text('AUTO')),
@@ -279,12 +275,12 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Cancelar', style: TextStyle(color: textMuted)),
+                  child: Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: AppColors.primario,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
                   ),
                   onPressed: () async {
                     final p = patenteCtrl.text.trim().toUpperCase();
@@ -294,7 +290,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Formato inválido (ej: ABCD12)'),
-                          backgroundColor: Colors.redAccent,
+                          backgroundColor: AppColors.error,
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -320,9 +316,9 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: navBgColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text('Seleccionar Vehículo Principal', style: TextStyle(color: textMain)),
+          backgroundColor: AppColors.superficie,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
+          title: Text('Seleccionar Vehículo Principal', style: TextStyle(color: AppColors.texto)),
           content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
@@ -331,9 +327,9 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
               itemBuilder: (context, index) {
                 final pat = patentes[index];
                 return ListTile(
-                  title: Text(pat, style: TextStyle(color: textMain)),
+                  title: Text(pat, style: TextStyle(color: AppColors.texto)),
                   trailing: _vehiculoPrincipalActual == pat
-                      ? Icon(Icons.check_circle, color: accentColor)
+                      ? Icon(Icons.check_circle, color: AppColors.exito)
                       : null,
                   onTap: () {
                     _setVehiculoPrincipal(pat);
@@ -361,9 +357,9 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return AlertDialog(
-              backgroundColor: navBgColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: Text('Agregar Nuevo Vehículo', style: TextStyle(color: textMain, fontWeight: FontWeight.bold)),
+              backgroundColor: AppColors.superficie,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
+              title: Text('Agregar Nuevo Vehículo', style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -371,7 +367,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                   children: [
                     TextField(
                       controller: _patenteController,
-                      style: TextStyle(color: textMain),
+                      style: TextStyle(color: AppColors.texto),
                       textCapitalization: TextCapitalization.characters,
                       inputFormatters: [
                         TextInputFormatter.withFunction((oldValue, newValue) {
@@ -383,33 +379,33 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                       ],
                       decoration: InputDecoration(
                         labelText: 'Patente (ej: ABCD55)',
-                        labelStyle: TextStyle(color: textMuted),
-                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: textMuted.withOpacity(0.5))),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor)),
+                        labelStyle: TextStyle(color: AppColors.textoSecundario),
+                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.textoSecundario.withOpacity(0.5))),
+                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primario)),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _marcaController,
-                      style: TextStyle(color: textMain),
+                      style: TextStyle(color: AppColors.texto),
                       textCapitalization: TextCapitalization.words,
                       decoration: InputDecoration(
                         labelText: 'Marca (ej: Toyota, Kia)',
-                        labelStyle: TextStyle(color: textMuted),
-                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: textMuted.withOpacity(0.5))),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor)),
+                        labelStyle: TextStyle(color: AppColors.textoSecundario),
+                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.textoSecundario.withOpacity(0.5))),
+                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primario)),
                       ),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       value: _categoriaSeleccionada,
-                      dropdownColor: navBgColor,
-                      style: TextStyle(color: textMain),
+                      dropdownColor: AppColors.superficie,
+                      style: TextStyle(color: AppColors.texto),
                       decoration: InputDecoration(
                         labelText: 'Tipo de Vehículo',
-                        labelStyle: TextStyle(color: textMuted),
-                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: textMuted.withOpacity(0.5))),
-                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor)),
+                        labelStyle: TextStyle(color: AppColors.textoSecundario),
+                        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.textoSecundario.withOpacity(0.5))),
+                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.primario)),
                       ),
                       items: const [
                         DropdownMenuItem(value: 'AUTO', child: Text('AUTO')),
@@ -430,12 +426,12 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Cancelar', style: TextStyle(color: textMuted)),
+                  child: Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: AppColors.primario,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
                   ),
                   onPressed: () async {
                     bool success = await _agregarVehiculo();
@@ -463,16 +459,16 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
     final userRef = FirebaseFirestore.instance.collection('usuarios').doc(user.uid);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
-        title: const Text('Mis Vehículos', style: TextStyle(color: Color(0xFF0F172A))),
-        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
+        title: const Text('Mis Vehículos', style: TextStyle(color: AppColors.texto)),
+        iconTheme: const IconThemeData(color: AppColors.texto),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _mostrarFormularioAgregarVehiculo,
-        backgroundColor: primaryColor,
+        backgroundColor: AppColors.primario,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Padding(
@@ -481,7 +477,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // --- TÍTULO LISTA ---
-            Text('Tus Autos Registrados', style: TextStyle(color: textMain, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Tus Autos Registrados', style: TextStyle(color: AppColors.texto, fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             
             // --- LISTA DE VEHÍCULOS ---
@@ -530,16 +526,16 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.directions_car_filled_outlined, size: 80, color: const Color(0xFFE2E8F0)),
+          Icon(Icons.directions_car_filled_outlined, size: 80, color: AppColors.contenedorSuave),
           const SizedBox(height: 16),
           Text(
             'Aún no hay vehículos',
-            style: TextStyle(color: textMain, fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppColors.texto, fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Presiona el botón + para agregar uno',
-            style: TextStyle(color: textMuted, fontSize: 16),
+            style: TextStyle(color: AppColors.textoSecundario, fontSize: 16),
           ),
         ],
       ),
@@ -559,14 +555,14 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
         if (patentes.isNotEmpty)
           InkWell(
             onTap: () => _mostrarSelectorVehiculoPrincipal(patentes),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadios.icono),
             child: Container(
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: primaryColor),
+                color: AppColors.primario.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(AppRadios.icono),
+                border: Border.all(color: AppColors.primario),
               ),
               child: Row(
                 children: [
@@ -576,15 +572,15 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Vehículo Principal', style: TextStyle(color: textMuted, fontSize: 12)),
+                        Text('Vehículo Principal', style: TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
                         Text(
                           _vehiculoPrincipalActual.isNotEmpty ? _vehiculoPrincipalActual : 'Seleccionar',
-                          style: TextStyle(color: textMain, fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: AppColors.texto, fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                   ),
-                  Icon(Icons.arrow_drop_down, color: textMain),
+                  Icon(Icons.arrow_drop_down, color: AppColors.texto),
                 ],
               ),
             ),
@@ -599,20 +595,20 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
               final categoria = data['categoria'] ?? 'Auto';
 
               return Card(
-                color: navBgColor,
+                color: AppColors.superficie,
                 margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
                 child: ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: bgColor,
+                      color: AppColors.fondo,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.directions_car, color: primaryColor),
+                    child: Icon(Icons.directions_car, color: AppColors.primario),
                   ),
-                  title: Text(patente, style: TextStyle(color: textMain, fontWeight: FontWeight.bold)),
-                  subtitle: Text('${data['marca'] ?? 'Sin marca'} • $categoria', style: TextStyle(color: textMuted)),
+                  title: Text(patente, style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold)),
+                  subtitle: Text('${data['marca'] ?? 'Sin marca'} • $categoria', style: TextStyle(color: AppColors.textoSecundario)),
                   trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                   onTap: () => _mostrarInfoVehiculo(docs[index]),
                 ),

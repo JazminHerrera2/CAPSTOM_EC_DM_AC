@@ -13,6 +13,8 @@ import '../../utils/titulo_mantencion.dart';
 import '../../utils/validaciones_mantencion.dart';
 import 'selector_tipo_mantencion.dart';
 import 'tarjeta_mantencion.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class RegistrarMantenimientoScreen extends StatefulWidget {
   /// Vehículo preseleccionado (el elegido en Mantenciones).
@@ -40,12 +42,6 @@ class RegistrarMantenimientoScreen extends StatefulWidget {
 
 class _RegistrarMantenimientoScreenState
     extends State<RegistrarMantenimientoScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color borderColor = Color(0xFFCBD5E1);
 
   final _formKey = GlobalKey<FormState>();
 
@@ -204,20 +200,20 @@ class _RegistrarMantenimientoScreenState
     final seguir = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        backgroundColor: AppColors.superficie,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B)),
+            const Icon(Icons.warning_amber_rounded, color: AppColors.advertencia),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(titulo, style: const TextStyle(color: textMain)),
+              child: Text(titulo, style: const TextStyle(color: AppColors.texto)),
             ),
           ],
         ),
         content: Text(
           mensaje,
-          style: const TextStyle(color: textMuted, height: 1.4),
+          style: const TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -399,19 +395,19 @@ class _RegistrarMantenimientoScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         title: const Text(
           'Registrar mantención',
           style: TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontWeight: FontWeight.w700,
           ),
         ),
         iconTheme: const IconThemeData(
-          color: textMain,
+          color: AppColors.texto,
         ),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
@@ -420,7 +416,7 @@ class _RegistrarMantenimientoScreenState
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
-                color: primaryColor,
+                color: AppColors.primario,
               ),
             );
           }
@@ -429,7 +425,7 @@ class _RegistrarMantenimientoScreenState
             return const Center(
               child: Text(
                 'No fue posible cargar tus vehículos.',
-                style: TextStyle(color: textMuted),
+                style: TextStyle(color: AppColors.textoSecundario),
               ),
             );
           }
@@ -600,7 +596,7 @@ class _RegistrarMantenimientoScreenState
                   'Anota cuándo toca la siguiente, por kilometraje y/o fecha. '
                   'Por ahora solo queda registrada, no genera avisos.',
                   style: TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -649,9 +645,9 @@ class _RegistrarMantenimientoScreenState
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
+                      backgroundColor: AppColors.primario,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(AppRadios.control),
                       ),
                     ),
                   ),
@@ -668,10 +664,10 @@ class _RegistrarMantenimientoScreenState
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.primario.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         border: Border.all(
-          color: primaryColor.withOpacity(0.25),
+          color: AppColors.primario.withOpacity(0.25),
         ),
       ),
       child: Row(
@@ -679,7 +675,7 @@ class _RegistrarMantenimientoScreenState
         children: [
           Icon(
             _desdeIa ? Icons.auto_awesome_outlined : Icons.handyman_outlined,
-            color: primaryColor,
+            color: AppColors.primario,
             size: 26,
           ),
           const SizedBox(width: 13),
@@ -690,7 +686,7 @@ class _RegistrarMantenimientoScreenState
                 Text(
                   _desdeIa ? 'Revisa los datos detectados' : 'Nueva mantención',
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -701,7 +697,7 @@ class _RegistrarMantenimientoScreenState
                       ? 'La IA leyó tu comprobante. Corrige lo que haga falta y completa los campos obligatorios antes de guardar.'
                       : 'Registra el servicio realizado a uno de tus vehículos.',
                   style: const TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -718,7 +714,7 @@ class _RegistrarMantenimientoScreenState
     return Text(
       titulo,
       style: const TextStyle(
-        color: textMain,
+        color: AppColors.texto,
         fontSize: 15,
         fontWeight: FontWeight.w700,
       ),
@@ -749,15 +745,15 @@ class _RegistrarMantenimientoScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: Row(
         children: [
           const Icon(
             Icons.directions_car_outlined,
-            color: textMuted,
+            color: AppColors.textoSecundario,
             size: 21,
           ),
           const SizedBox(width: 12),
@@ -767,7 +763,7 @@ class _RegistrarMantenimientoScreenState
               children: [
                 const Text(
                   'Vehículo',
-                  style: TextStyle(color: textMuted, fontSize: 10),
+                  style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                 ),
                 const SizedBox(height: 3),
                 Text(
@@ -775,7 +771,7 @@ class _RegistrarMantenimientoScreenState
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -854,7 +850,7 @@ class _RegistrarMantenimientoScreenState
             _tipoSugeridoIa = false;
             _dudosos.remove(dudosoTipo);
           }),
-          style: const TextStyle(color: textMain, fontSize: 14),
+          style: const TextStyle(color: AppColors.texto, fontSize: 14),
           decoration: _conDudoso(
             _decoracionCampo(
               label: 'Tipo de mantención *',
@@ -869,27 +865,26 @@ class _RegistrarMantenimientoScreenState
             padding: EdgeInsets.only(left: 4),
             child: Text(
               'Sugerido por la IA',
-              style: TextStyle(color: textMuted, fontSize: 11),
+              style: TextStyle(color: AppColors.textoSecundario, fontSize: 11),
             ),
           ),
       ],
     );
   }
 
-  static const Color _ambar = Color(0xFFF59E0B);
 
   /// Borde ámbar y aviso cuando el campo está marcado como dudoso.
   InputDecoration _conDudoso(InputDecoration base, bool dudoso) {
     if (!dudoso) return base;
     const borde = OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(14)),
-      borderSide: BorderSide(color: _ambar),
+      borderSide: BorderSide(color: AppColors.advertencia),
     );
     return base.copyWith(
       enabledBorder: borde,
       focusedBorder: borde,
       helperText: 'Revisa este dato antes de guardar.',
-      helperStyle: const TextStyle(color: _ambar, fontSize: 11),
+      helperStyle: const TextStyle(color: AppColors.advertencia, fontSize: 11),
     );
   }
 
@@ -908,12 +903,12 @@ class _RegistrarMantenimientoScreenState
       child: Padding(
         padding: const EdgeInsets.only(top: 8),
         child: ActionChip(
-          avatar: const Icon(Icons.history_rounded, size: 16, color: primaryColor),
+          avatar: const Icon(Icons.history_rounded, size: 16, color: AppColors.primario),
           label: Text(
             'Usar último km conocido: ${formatoMiles(sugerido)} km',
-            style: const TextStyle(color: textMain, fontSize: 12),
+            style: const TextStyle(color: AppColors.texto, fontSize: 12),
           ),
-          backgroundColor: surfaceColor,
+          backgroundColor: AppColors.superficie,
           side: const BorderSide(color: Colors.transparent),
           onPressed: () => setState(() {
             _kilometrajeController.text = sugerido.toString();
@@ -942,7 +937,7 @@ class _RegistrarMantenimientoScreenState
     final fecha = _proximaFecha;
     return InkWell(
       onTap: _seleccionarProximaFecha,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadios.control),
       child: InputDecorator(
         decoration: _decoracionCampo(
           label: 'Próxima fecha',
@@ -956,7 +951,7 @@ class _RegistrarMantenimientoScreenState
                     ? 'Seleccionar fecha'
                     : DateFormat('dd/MM/yyyy').format(fecha),
                 style: TextStyle(
-                  color: fecha == null ? textMuted : textMain,
+                  color: fecha == null ? AppColors.textoSecundario : AppColors.texto,
                   fontSize: 14,
                 ),
               ),
@@ -966,12 +961,12 @@ class _RegistrarMantenimientoScreenState
                 tooltip: 'Quitar fecha',
                 onPressed: () => setState(() => _proximaFecha = null),
                 icon: const Icon(Icons.close_rounded, size: 18),
-                color: textMuted,
+                color: AppColors.textoSecundario,
               )
             else
               const Icon(
                 Icons.calendar_month_outlined,
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 size: 20,
               ),
           ],
@@ -992,7 +987,7 @@ class _RegistrarMantenimientoScreenState
         errorText: 'Selecciona la fecha de la mantención.',
         errorBorder: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(14)),
-          borderSide: BorderSide(color: Colors.redAccent),
+          borderSide: BorderSide(color: AppColors.error),
         ),
       );
     } else {
@@ -1001,7 +996,7 @@ class _RegistrarMantenimientoScreenState
 
     return InkWell(
       onTap: _seleccionarFecha,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadios.control),
       child: InputDecorator(
         decoration: decoracion,
         child: Row(
@@ -1012,14 +1007,14 @@ class _RegistrarMantenimientoScreenState
                     ? 'Seleccionar fecha'
                     : DateFormat('dd/MM/yyyy').format(fecha),
                 style: TextStyle(
-                  color: fecha == null ? textMuted : textMain,
+                  color: fecha == null ? AppColors.textoSecundario : AppColors.texto,
                   fontSize: 14,
                 ),
               ),
             ),
             const Icon(
               Icons.calendar_month_outlined,
-              color: textMuted,
+              color: AppColors.textoSecundario,
               size: 20,
             ),
           ],
@@ -1052,7 +1047,7 @@ class _RegistrarMantenimientoScreenState
         if (claveDudosa != null) _dudosos.remove(claveDudosa);
       }),
       style: const TextStyle(
-        color: textMain,
+        color: AppColors.texto,
         fontSize: 14,
       ),
       decoration: _conDudoso(
@@ -1078,48 +1073,48 @@ class _RegistrarMantenimientoScreenState
       hintText: hint,
       suffixText: suffix,
       labelStyle: const TextStyle(
-        color: textMuted,
+        color: AppColors.textoSecundario,
       ),
       hintStyle: TextStyle(
-        color: textMuted.withOpacity(0.65),
+        color: AppColors.textoSecundario.withOpacity(0.65),
       ),
       suffixStyle: const TextStyle(
-        color: textMuted,
+        color: AppColors.textoSecundario,
       ),
       prefixIcon: Icon(
         icon,
-        color: textMuted,
+        color: AppColors.textoSecundario,
         size: 21,
       ),
       filled: true,
-      fillColor: surfaceColor,
+      fillColor: AppColors.superficie,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 15,
         vertical: 17,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
-          color: borderColor,
+          color: AppColors.borde,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
-          color: primaryColor,
+          color: AppColors.primario,
           width: 1.5,
         ),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
-          color: Colors.redAccent,
+          color: AppColors.error,
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: const BorderSide(
-          color: Colors.redAccent,
+          color: AppColors.error,
         ),
       ),
     );
@@ -1134,14 +1129,14 @@ class _RegistrarMantenimientoScreenState
           children: [
             const Icon(
               Icons.directions_car_outlined,
-              color: textMuted,
+              color: AppColors.textoSecundario,
               size: 55,
             ),
             const SizedBox(height: 16),
             const Text(
               'No tienes vehículos registrados',
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -1151,7 +1146,7 @@ class _RegistrarMantenimientoScreenState
               'Primero registra un vehículo desde Mi Vehículo para poder asociarle una mantención.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 height: 1.5,
               ),
             ),

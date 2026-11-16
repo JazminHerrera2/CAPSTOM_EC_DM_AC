@@ -22,6 +22,8 @@ import '../data/models/trip_history.dart';
 import '../data/services/history_service.dart';
 import '../utils/alerta_presupuesto.dart';
 import '../utils/simulacion_recorrido.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Mapa en tiempo real con seguimiento de pórticos, tracking GPS y cobro de
 /// peajes. Antes vivía en la pestaña "Inicio" de `home_screen.dart`; se
@@ -50,12 +52,6 @@ class LiveMapScreen extends StatefulWidget {
 }
 
 class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserver {
-  // Colores extraídos del diseño dark mode
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color navBgColor = const Color(0xFFFFFFFF);
-  final Color textMuted = const Color(0xFF64748B);
-  final Color textMain = const Color(0xFF0F172A);
 
   // Controladores y estado del mapa
   final MapController _mapController = MapController();
@@ -397,7 +393,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                   Expanded(child: Text('Viaje recuperado tras cierre inesperado')),
                 ],
               ),
-              backgroundColor: Color(0xFF10B981),
+              backgroundColor: AppColors.exito,
             ),
           );
         }
@@ -454,7 +450,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Para usar la app, debes permitir el acceso a la ubicación.'),
-                backgroundColor: Colors.redAccent,
+                backgroundColor: AppColors.error,
               ),
             );
           }
@@ -468,7 +464,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Permisos bloqueados en el sistema. Habilítalos en los Ajustes del celular.'),
-              backgroundColor: Colors.redAccent,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -583,7 +579,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Error de ubicación: $error'),
-                backgroundColor: Colors.redAccent,
+                backgroundColor: AppColors.error,
               ),
             );
           }
@@ -724,7 +720,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                     Expanded(child: Text('Peaje cobrado: ${toll.name} (\$${toll.cost})')),
                   ],
                 ),
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: AppColors.exito,
                 duration: const Duration(seconds: 3),
               ),
             );
@@ -813,7 +809,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       body: _buildMapBody(),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       // Se eleva y se ubica a la izquierda para no tapar la tarjeta
@@ -828,7 +824,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
               child: FloatingActionButton.extended(
                 heroTag: "configurarViajeBtn",
                 onPressed: _abrirConfigurarViaje,
-                backgroundColor: primaryColor,
+                backgroundColor: AppColors.primario,
                 icon: const Icon(Icons.map_outlined, color: Colors.white),
                 label: const Text('Configurar viaje', style: TextStyle(color: Colors.white)),
               ),
@@ -884,7 +880,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                         ..._remainingPolyline,
                       ],
                       strokeWidth: 6.0,
-                      color: const Color(0xFF3B82F6),
+                      color: AppColors.primario,
                     ),
                 ],
               ),
@@ -899,7 +895,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       point: _currentRoute!.polyline.first,
                       width: 40,
                       height: 40,
-                      child: const Icon(Icons.radio_button_checked, color: Color(0xFF10B981), size: 30),
+                      child: const Icon(Icons.radio_button_checked, color: AppColors.exito, size: 30),
                     ),
 
                   // Marcador de Fin (Rojo)
@@ -908,7 +904,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       point: _currentRoute!.polyline.last,
                       width: 40,
                       height: 40,
-                      child: const Icon(Icons.location_on, color: Color(0xFFEF4444), size: 35),
+                      child: const Icon(Icons.location_on, color: AppColors.error, size: 35),
                     ),
 
                   // Marcadores de Pórticos
@@ -918,7 +914,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                     height: 32,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: toll.isCrossed ? const Color(0xFF10B981) : Colors.white,
+                        color: toll.isCrossed ? AppColors.exito : Colors.white,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 2))
@@ -926,7 +922,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       ),
                       child: Icon(
                         toll.isCrossed ? Icons.check : Icons.monetization_on,
-                        color: toll.isCrossed ? Colors.white : const Color(0xFFF59E0B),
+                        color: toll.isCrossed ? Colors.white : AppColors.advertencia,
                         size: 20
                       ),
                     ),
@@ -964,8 +960,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
-                color: navBgColor.withValues(alpha: 0.95),
-                borderRadius: BorderRadius.circular(20),
+                color: AppColors.superficie.withValues(alpha: 0.95),
+                borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 border: Border.all(color: Colors.transparent),
                 boxShadow: [
                   BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 5)),
@@ -980,17 +976,17 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Costo Total Estimado', style: TextStyle(color: textMuted, fontSize: 12)),
+                          Text('Costo Total Estimado', style: TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Text('\$${_currentRoute!.totalCost.toStringAsFixed(0)} CLP', style: const TextStyle(color: Color(0xFF10B981), fontSize: 22, fontWeight: FontWeight.bold)),
+                          Text('\$${_currentRoute!.totalCost.toStringAsFixed(0)} CLP', style: const TextStyle(color: AppColors.exito, fontSize: 22, fontWeight: FontWeight.bold)),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('Distancia / Tiempo', style: TextStyle(color: textMuted, fontSize: 12)),
+                          Text('Distancia / Tiempo', style: TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Text('${_currentRoute!.distanceKm.toStringAsFixed(1)} km • ${_currentRoute!.durationText}', style: TextStyle(color: textMain, fontSize: 14, fontWeight: FontWeight.bold)),
+                          Text('${_currentRoute!.distanceKm.toStringAsFixed(1)} km • ${_currentRoute!.durationText}', style: TextStyle(color: AppColors.texto, fontSize: 14, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ],
@@ -1002,9 +998,9 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       if (nextToll != null) {
                         return Row(
                           children: [
-                            const Icon(Icons.sensors, color: Color(0xFF10B981), size: 16),
+                            const Icon(Icons.sensors, color: AppColors.exito, size: 16),
                             const SizedBox(width: 8),
-                            Expanded(child: Text('Próximo peaje: ${nextToll.name}', style: const TextStyle(color: Color(0xFF0F172A), fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+                            Expanded(child: Text('Próximo peaje: ${nextToll.name}', style: const TextStyle(color: AppColors.texto, fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
                           ],
                         );
                       }
@@ -1031,10 +1027,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       child: Container(
                         height: 48,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: [Color(0xFF1E3A8A), Color(0xFF2F5BBA)]),
-                          borderRadius: BorderRadius.circular(12),
+                          gradient: const LinearGradient(colors: [AppColors.primario, AppColors.primario]),
+                          borderRadius: BorderRadius.circular(AppRadios.icono),
                           boxShadow: [
-                            BoxShadow(color: primaryColor.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
+                            BoxShadow(color: AppColors.primario.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
                           ],
                         ),
                         child: Row(
@@ -1070,13 +1066,13 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                             child: Container(
                               height: 48,
                               decoration: BoxDecoration(
-                                color: primaryColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
+                                color: AppColors.primario.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(AppRadios.icono),
+                                border: Border.all(color: AppColors.primario.withValues(alpha: 0.3)),
                               ),
                               child: Icon(
                                 _isNavigating ? Icons.pause : Icons.play_arrow,
-                                color: primaryColor
+                                color: AppColors.primario
                               ),
                             ),
                           ),
@@ -1123,7 +1119,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Viaje guardado en el historial'),
-                                      backgroundColor: Color(0xFF10B981),
+                                      backgroundColor: AppColors.exito,
                                     ),
                                   );
                                 }
@@ -1149,8 +1145,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                             child: Container(
                               height: 48,
                               decoration: BoxDecoration(
-                                color: Colors.redAccent,
-                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.error,
+                                borderRadius: BorderRadius.circular(AppRadios.icono),
                                 boxShadow: [
                                   BoxShadow(color: Colors.redAccent.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
                                 ],
@@ -1179,11 +1175,11 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           child: FloatingActionButton(
             heroTag: "centerLocationBtn", // Evita conflictos de hero con el boton de configurar viaje
             mini: true,
-            backgroundColor: navBgColor,
+            backgroundColor: AppColors.superficie,
             onPressed: _centerOnUser,
             child: Icon(
               Icons.my_location,
-              color: _isFollowingUser ? primaryColor : textMuted,
+              color: _isFollowingUser ? AppColors.primario : AppColors.textoSecundario,
             ),
           ),
         ),
@@ -1202,7 +1198,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade800.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                       boxShadow: [
                         BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4, offset: const Offset(0, 2)),
                       ],
@@ -1223,10 +1219,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: _isGpsWeak ? Colors.orange.shade900.withValues(alpha: 0.9) : navBgColor.withValues(alpha: 0.9),
+                    color: _isGpsWeak ? Colors.orange.shade900.withValues(alpha: 0.9) : AppColors.superficie.withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: _isGpsWeak ? Colors.orange : primaryColor.withValues(alpha: 0.5),
+                      color: _isGpsWeak ? Colors.orange : AppColors.primario.withValues(alpha: 0.5),
                       width: 2
                     ),
                     boxShadow: [
@@ -1238,11 +1234,11 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                 children: [
                   Text(
                     _currentSpeedKmH.toStringAsFixed(0),
-                    style: const TextStyle(color: Color(0xFF0F172A), fontSize: 18, fontWeight: FontWeight.bold, height: 1.1),
+                    style: const TextStyle(color: AppColors.texto, fontSize: 18, fontWeight: FontWeight.bold, height: 1.1),
                   ),
                   const Text(
                     'km/h',
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 10, height: 1.1),
+                    style: TextStyle(color: AppColors.textoSecundario, fontSize: 10, height: 1.1),
                   ),
                 ],
                   ),
@@ -1294,26 +1290,26 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: navBgColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppColors.superficie,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
-            Icon(Icons.directions_car, color: primaryColor),
+            Icon(Icons.directions_car, color: AppColors.primario),
             const SizedBox(width: 10),
-            const Text("Confirmar Vehículo", style: TextStyle(color: Color(0xFF0F172A), fontSize: 18)),
+            const Text("Confirmar Vehículo", style: TextStyle(color: AppColors.texto, fontSize: 18)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("¿Vas en tu vehículo principal?", style: TextStyle(color: Color(0xFF64748B))),
+            const Text("¿Vas en tu vehículo principal?", style: TextStyle(color: AppColors.textoSecundario)),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFE2E8F0),
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.contenedorSuave,
+                borderRadius: BorderRadius.circular(AppRadios.icono),
               ),
               child: Row(
                 children: [
@@ -1321,7 +1317,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                   const SizedBox(width: 10),
                   Text(
                     '${principal['marca']} (${principal['patente']})',
-                    style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -1334,12 +1330,12 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
               Navigator.pop(context);
               _showVehicleSelector(context);
             },
-            child: Text("CAMBIAR", style: TextStyle(color: textMuted)),
+            child: Text("CAMBIAR", style: TextStyle(color: AppColors.textoSecundario)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              backgroundColor: AppColors.primario,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -1368,9 +1364,9 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: navBgColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Seleccionar Vehículo", style: TextStyle(color: Color(0xFF0F172A))),
+        backgroundColor: AppColors.superficie,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
+        title: const Text("Seleccionar Vehículo", style: TextStyle(color: AppColors.texto)),
         content: SizedBox(
           width: double.maxFinite,
           height: math.min(vehicles.length * 72.0, MediaQuery.of(context).size.height * 0.6),
@@ -1379,9 +1375,9 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
             itemBuilder: (context, index) {
               final v = vehicles[index];
               return ListTile(
-                leading: const Icon(Icons.directions_car, color: Color(0xFF64748B)),
-                title: Text(v['patente'], style: const TextStyle(color: Color(0xFF0F172A))),
-                subtitle: Text(v['marca'], style: TextStyle(color: textMuted)),
+                leading: const Icon(Icons.directions_car, color: AppColors.textoSecundario),
+                title: Text(v['patente'], style: const TextStyle(color: AppColors.texto)),
+                subtitle: Text(v['marca'], style: TextStyle(color: AppColors.textoSecundario)),
                 onTap: () {
                   setState(() {
                     _selectedVehicle = v;
@@ -1410,24 +1406,24 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
         context: context,
         barrierDismissible: false, // Obligatorio para que no se lo salten
         builder: (context) => AlertDialog(
-          backgroundColor: navBgColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: AppColors.superficie,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
           title: Row(
             children: [
               const Icon(Icons.info_outline, color: Colors.amber),
               const SizedBox(width: 10),
-              const Text("Configuración Inicial", style: TextStyle(color: Color(0xFF0F172A), fontSize: 18)),
+              const Text("Configuración Inicial", style: TextStyle(color: AppColors.texto, fontSize: 18)),
             ],
           ),
           content: const Text(
             "¡Bienvenido! Para poder usar Tag OK y calcular tus cobros, primero debes registrar tu vehículo.",
-            style: TextStyle(color: Color(0xFF64748B)),
+            style: TextStyle(color: AppColors.textoSecundario),
           ),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                backgroundColor: AppColors.primario,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
               ),
               onPressed: () {
                 Navigator.pop(context);
@@ -1456,7 +1452,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
 
     if (threshold == 100) {
       message = "¡Has alcanzado el 100% de tu límite mensual!";
-      alertColor = Colors.redAccent;
+      alertColor = AppColors.error;
     } else if (threshold == 90) {
       message = "Atención: Llevas el 90% de tu límite gastado.";
       alertColor = Colors.orangeAccent;
@@ -1480,20 +1476,20 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFFFFFFFF),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            backgroundColor: AppColors.superficie,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
             title: Row(
               children: [
                 Icon(Icons.warning_amber_rounded, color: alertColor),
                 const SizedBox(width: 10),
-                const Text("Alerta de Presupuesto", style: TextStyle(color: Color(0xFF0F172A), fontSize: 18)),
+                const Text("Alerta de Presupuesto", style: TextStyle(color: AppColors.texto, fontSize: 18)),
               ],
             ),
-            content: Text(message!, style: const TextStyle(color: Color(0xFF64748B))),
+            content: Text(message!, style: const TextStyle(color: AppColors.textoSecundario)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("ENTENDIDO", style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
+                child: Text("ENTENDIDO", style: TextStyle(color: AppColors.primario, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -1511,7 +1507,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: primaryColor.withValues(alpha: 0.3),
+            color: AppColors.primario.withValues(alpha: 0.3),
           ),
         ),
         Container(
@@ -1519,7 +1515,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           height: 20,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: primaryColor,
+            color: AppColors.primario,
             border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
@@ -1541,20 +1537,20 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
       left: 16,
       right: 16,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             decoration: BoxDecoration(
-              color: navBgColor.withValues(alpha: 0.7),
-              borderRadius: BorderRadius.circular(20),
+              color: AppColors.superficie.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               border: Border.all(color: Colors.transparent),
             ),
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: primaryColor,
+                  backgroundColor: AppColors.primario,
                   radius: 18,
                   child: const Icon(Icons.person, color: Colors.white, size: 20),
                 ),
@@ -1566,16 +1562,16 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                     children: [
                       Text(
                         "Hola, ${user?.email?.split('@')[0] ?? 'Usuario'}",
-                        style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const Text(
                         "Protección de TAG Activa",
-                        style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.w500),
+                        style: TextStyle(color: AppColors.exito, fontSize: 11, fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.notifications_none, color: Color(0xFF64748B), size: 22),
+                const Icon(Icons.notifications_none, color: AppColors.textoSecundario, size: 22),
               ],
             ),
           ),
@@ -1590,14 +1586,14 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
       left: 16,
       right: 16,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: navBgColor.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(16),
+              color: AppColors.superficie.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
               border: Border.all(color: Colors.transparent),
             ),
             child: Row(
@@ -1605,10 +1601,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.primario.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(AppRadios.icono),
                   ),
-                  child: const Icon(Icons.directions_car, color: Color(0xFF1E3A8A), size: 20),
+                  child: const Icon(Icons.directions_car, color: AppColors.primario, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1620,8 +1616,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text("Vehículo Principal", style: TextStyle(color: Color(0xFF64748B), fontSize: 10)),
-                          Text(patente, style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13)),
+                          const Text("Vehículo Principal", style: TextStyle(color: AppColors.textoSecundario, fontSize: 10)),
+                          Text(patente, style: const TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       );
                     },
@@ -1650,11 +1646,11 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
             final double progress = (limit > 0) ? (total / limit).clamp(0.0, 1.1) : 0.0;
 
             // Lógica de colores sincronizada
-            Color progressColor = const Color(0xFF1E3A8A); // Violeta
-            if (progress >= 1.0) progressColor = Colors.redAccent;
+            Color progressColor = AppColors.primario; // Violeta
+            if (progress >= 1.0) progressColor = AppColors.error;
             else if (progress >= 0.9) progressColor = Colors.orangeAccent;
             else if (progress >= 0.75) progressColor = Colors.yellowAccent;
-            else if (progress >= 0.5) progressColor = const Color(0xFF10B981);
+            else if (progress >= 0.5) progressColor = AppColors.exito;
 
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -1665,14 +1661,14 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                   child: CircularProgressIndicator(
                     value: progress,
                     strokeWidth: 3,
-                    backgroundColor: Color(0xFFE2E8F0),
+                    backgroundColor: AppColors.contenedorSuave,
                     valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   "${(progress * 100).round()}%",
-                  style: const TextStyle(color: Color(0xFF0F172A), fontSize: 9, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: AppColors.texto, fontSize: 9, fontWeight: FontWeight.bold),
                 ),
               ],
             );

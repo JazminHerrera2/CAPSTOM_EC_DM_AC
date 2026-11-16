@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/auth_provider.dart';
 import 'dashboard/logo_tag_ok.dart';
 import 'home_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -13,13 +15,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  // Colores extraídos del CSS del mockup
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color textMain = const Color(0xFF0F172A);
-  final Color textMuted = const Color(0xFF64748B);
-  final Color inputBg = const Color(0xFFFFFFFF);
-  final Color surfaceBorder = const Color(0xFFCBD5E1);
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -81,7 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.error,
           ),
         );
       } else if (next.isSuccess) {
@@ -95,13 +90,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authNotifierProvider);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       body: Container(
         decoration: const BoxDecoration(
           gradient: RadialGradient(
             center: Alignment.topRight,
             radius: 1.5,
-            colors: [Color(0xFFDBEAFE), Color(0xFFF1F5F9)],
+            colors: [
+              AppColors.contenedorSuave,
+              AppColors.fondo,
+            ],
             stops: [0.0, 0.4],
           ),
         ),
@@ -123,7 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: textMain,
+                        color: AppColors.texto,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -132,7 +130,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ? 'Accede a tu cuenta de TAG OK'
                           : 'Únete a TAG OK',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: textMuted, fontSize: 13),
+                      style: TextStyle(color: AppColors.textoSecundario, fontSize: 13),
                     ),
                     const SizedBox(height: 24),
 
@@ -161,7 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Text(
                             'Olvidé mi contraseña',
                             style: TextStyle(
-                              color: primaryColor,
+                              color: AppColors.primario,
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                             ),
@@ -191,8 +189,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: authState.isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
                           // Mismo azul sólido que los demás botones de la app.
-                          backgroundColor: primaryColor,
-                          disabledBackgroundColor: primaryColor.withValues(
+                          backgroundColor: AppColors.primario,
+                          disabledBackgroundColor: AppColors.primario.withValues(
                             alpha: 0.6,
                           ),
                           foregroundColor: Colors.white,
@@ -226,7 +224,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: Divider(color: surfaceBorder, height: 1),
+                          child: Divider(color: AppColors.borde, height: 1),
                         ),
                         // Un solo círculo: la letra "o" es el círculo.
                         Padding(
@@ -234,14 +232,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Text(
                             'o',
                             style: TextStyle(
-                              color: textMuted,
+                              color: AppColors.textoSecundario,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                         Expanded(
-                          child: Divider(color: surfaceBorder, height: 1),
+                          child: Divider(color: AppColors.borde, height: 1),
                         ),
                       ],
                     ),
@@ -258,7 +256,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   .signInWithGoogle(),
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          side: BorderSide(color: surfaceBorder),
+                          side: BorderSide(color: AppColors.borde),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -278,7 +276,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             Text(
                               'Continuar con Google',
                               style: TextStyle(
-                                color: textMain,
+                                color: AppColors.texto,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -298,7 +296,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       },
                       child: Text.rich(
                         TextSpan(
-                          style: TextStyle(color: textMuted, fontSize: 13),
+                          style: TextStyle(color: AppColors.textoSecundario, fontSize: 13),
                           children: [
                             TextSpan(
                               text: _isLogin
@@ -310,7 +308,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ? 'Regístrate aquí'
                                   : 'Inicia sesión',
                               style: TextStyle(
-                                color: primaryColor,
+                                color: AppColors.primario,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -339,24 +337,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: inputBg,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: TextField(
         controller: controller,
         obscureText: obscureText,
-        style: TextStyle(color: textMain, fontSize: 14),
+        style: TextStyle(color: AppColors.texto, fontSize: 14),
         keyboardType: esPassword
             ? TextInputType.text
             : TextInputType.emailAddress,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(
-            color: textMuted.withValues(alpha: 0.7),
+            color: AppColors.textoSecundario.withValues(alpha: 0.7),
             fontSize: 14,
           ),
-          prefixIcon: Icon(icon, color: textMuted),
+          prefixIcon: Icon(icon, color: AppColors.textoSecundario),
           suffixIcon: esPassword
               ? IconButton(
                   tooltip: verPassword
@@ -366,7 +364,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     verPassword
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                   ),
                   onPressed: alAlternarVer,
                 )
@@ -386,32 +384,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFFFFFFFF),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Recuperar contraseña',
-          style: TextStyle(color: Color(0xFF0F172A)),
-        ),
+        backgroundColor: AppColors.superficie,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
+        title: const Text('Recuperar contraseña', style: TextStyle(color: AppColors.texto)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
               'Ingresa tu correo electrónico y te enviaremos un enlace seguro para restablecer tu contraseña.',
-              style: TextStyle(color: Color(0xFF64748B)),
+              style: TextStyle(color: AppColors.textoSecundario),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: resetEmailController,
-              style: const TextStyle(color: Color(0xFF0F172A)),
+              style: const TextStyle(color: AppColors.texto),
               decoration: InputDecoration(
                 hintText: 'Correo electrónico',
-                hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                hintStyle: const TextStyle(color: AppColors.textoSecundario),
                 filled: true,
-                fillColor: const Color(0xFFF1F5F9),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+                fillColor: AppColors.fondo,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadios.control), borderSide: BorderSide.none),
               ),
             ),
           ],
@@ -419,17 +411,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: Color(0xFF64748B)),
-            ),
+            child: const Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              backgroundColor: AppColors.primario,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.control)),
             ),
             onPressed: () async {
               final email = resetEmailController.text.trim();
@@ -448,10 +435,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 );
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(mensajeNeutro),
-                      backgroundColor: Colors.green,
-                    ),
+                    const SnackBar(content: Text(mensajeNeutro), backgroundColor: AppColors.exito),
                   );
                 }
               } catch (e) {
@@ -459,10 +443,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   if (e is FirebaseAuthException &&
                       e.code == 'user-not-found') {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(mensajeNeutro),
-                        backgroundColor: Colors.green,
-                      ),
+                      const SnackBar(content: Text(mensajeNeutro), backgroundColor: AppColors.exito),
                     );
                     return;
                   }
@@ -473,10 +454,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         'El correo electrónico ingresado no es válido.';
                   }
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error: $errorMessage'),
-                      backgroundColor: Colors.red,
-                    ),
+                    SnackBar(content: Text('Error: $errorMessage'), backgroundColor: AppColors.error),
                   );
                 }
               }

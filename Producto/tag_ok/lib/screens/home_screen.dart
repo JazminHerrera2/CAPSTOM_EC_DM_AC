@@ -8,6 +8,7 @@ import 'inicio_dashboard_screen.dart';
 import 'live_map_screen.dart';
 import 'mi_vehiculo/mi_vehiculo_screen.dart';
 import 'mantenimiento/mantenimiento_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Contenedor de navegación principal (bottom nav + botón central).
 ///
@@ -61,10 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  final Color bgColor = const Color(0xFFF1F5F9);
-  final Color primaryColor = const Color(0xFF1E3A8A);
-  final Color navBgColor = Colors.white;
-  final Color textMuted = const Color(0xFF64748B);
 
   /// Abre Mantenciones como una pantalla aparte, sin el menú inferior (igual
   /// que Combustible y Estacionamiento). Siempre parte en su página principal.
@@ -94,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       // LiveMapScreen se mantiene siempre montado (Offstage) en vez de
       // construirse/destruirse con el resto de las pestañas: en Fase 1 el
       // GPS y la detección de cruces de peaje vivían en el estado de
@@ -116,16 +113,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Botón central: abre el mapa en tiempo real. Va en el centro de la barra,
       // dentro de un hueco curvo: la barra rodea al círculo y moldea su silueta.
+      // Lavanda con un anillo del color de la superficie, como en el diseño.
       floatingActionButton: Container(
         height: 72,
         width: 72,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
+          color: AppColors.superficie,
+          border: Border.all(color: AppColors.superficie, width: 4),
           boxShadow: [
             BoxShadow(
-              color: primaryColor.withValues(alpha: 0.5),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: AppColors.primario.withValues(alpha: 0.25),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -133,23 +133,27 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () {
             setState(() => _mostrandoMapa = true);
           },
-          backgroundColor: primaryColor,
+          backgroundColor: AppColors.lavanda,
           elevation: 0,
           shape: const CircleBorder(),
-          child: const Icon(Icons.map_outlined, size: 34, color: Colors.white),
+          child: const Icon(
+            Icons.map_outlined,
+            size: 30,
+            color: AppColors.sobreLavanda,
+          ),
         ),
       ),
       // Centrado en la barra pero más abajo que el centerDocked normal: el
       // círculo queda más metido en la barra y el hueco curvo traza su silueta.
       floatingActionButtonLocation: const _CentroDockedMasAbajo(18),
 
-      // Barra blanca con el "hueco" curvo en el medio; el contorno gris lo da la
-      // sombra, que sigue la forma del hueco. Íconos grises; el azul marca la
-      // pestaña seleccionada.
+      // Barra blanca con el "hueco" curvo en el medio; el contorno lo da la
+      // sombra, que sigue la forma del hueco. Íconos en texto secundario; el
+      // primario marca la pestaña seleccionada.
       bottomNavigationBar: BottomAppBar(
-        color: navBgColor,
+        color: AppColors.superficie,
         elevation: 10,
-        shadowColor: const Color(0xFF94A3B8),
+        shadowColor: AppColors.sombra,
         surfaceTintColor: Colors.transparent,
         shape: const CircularNotchedRectangle(),
         notchMargin: 10.0,
@@ -162,11 +166,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             children: [
               Expanded(
-                child: _buildNavIcon(Icons.dashboard_outlined, 0, 'Inicio'),
+                child: _buildNavIcon(Icons.grid_view_outlined, 0, 'Inicio'),
               ),
               Expanded(
                 child: _buildNavIcon(
-                  Icons.receipt_long_outlined,
+                  Icons.description_outlined,
                   1,
                   'Auditoría',
                 ),
@@ -207,14 +211,18 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isSelected ? primaryColor : textMuted, size: 26),
+            Icon(
+              icon,
+              color: isSelected ? AppColors.primario : AppColors.textoSecundario,
+              size: 26,
+            ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? primaryColor : textMuted,
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected ? AppColors.primario : AppColors.textoSecundario,
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

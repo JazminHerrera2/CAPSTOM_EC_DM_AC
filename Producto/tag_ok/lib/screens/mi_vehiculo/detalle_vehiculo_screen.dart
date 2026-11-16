@@ -8,6 +8,8 @@ import '../../data/services/vehiculo_service.dart';
 import 'documentos_vehiculo_seccion.dart';
 import 'foto_vehiculo.dart';
 import 'registrar_editar_vehiculo_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Detalle de un vehículo. Escucha el documento en Firestore para reflejar al
 /// instante los cambios (por ejemplo, el kilometraje tras editarlo); mientras
@@ -46,11 +48,6 @@ class _DetalleVehiculoVista extends StatelessWidget {
     required this.vehiculo,
   });
 
-  static const Color _bgColor = Color(0xFFF1F5F9);
-  static const Color _surfaceColor = Color(0xFFFFFFFF);
-  static const Color _surfaceLight = Color(0xFFE2E8F0);
-  static const Color _textMain = Color(0xFF0F172A);
-  static const Color _textMuted = Color(0xFF64748B);
 
   // ------------------------------------------------------------
   // IMAGEN SEGÚN TIPO DE VEHÍCULO
@@ -95,16 +92,16 @@ class _DetalleVehiculoVista extends StatelessWidget {
   Color _colorEstado(String estado) {
     switch (estado) {
       case 'Atención requerida':
-        return Colors.redAccent;
+        return AppColors.error;
 
       case 'Próximo vencimiento':
-        return const Color(0xFFF97316);
+        return AppColors.alerta;
 
       case 'Todo al día':
-        return const Color(0xFF10B981);
+        return AppColors.exito;
 
       default:
-        return _textMuted;
+        return AppColors.textoSecundario;
     }
   }
 
@@ -138,23 +135,23 @@ class _DetalleVehiculoVista extends StatelessWidget {
         '${vehiculo.marca ?? ''} ${vehiculo.modelo ?? ''}'.trim();
 
     return Scaffold(
-      backgroundColor: _bgColor,
+      backgroundColor: AppColors.fondo,
 
       // ----------------------------------------------------------
       // APP BAR
       // ----------------------------------------------------------
 
       appBar: AppBar(
-        backgroundColor: _bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(
-          color: _textMain,
+          color: AppColors.texto,
         ),
         title: const Text(
           'Detalle de vehículo',
           style: TextStyle(
-            color: _textMain,
+            color: AppColors.texto,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -175,7 +172,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
             },
             icon: const Icon(
               Icons.edit_outlined,
-              color: _textMain,
+              color: AppColors.texto,
             ),
           ),
           const SizedBox(width: 8),
@@ -233,11 +230,9 @@ class _DetalleVehiculoVista extends StatelessWidget {
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: _surfaceColor,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(
-                    color: Colors.transparent,
-                  ),
+                  color: AppColors.superficie,
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+                  boxShadow: AppSombras.tarjeta,
                 ),
                 child: Column(
                   children: [
@@ -246,7 +241,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                       height: 220,
                       clipBehavior: Clip.antiAlias,
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFFFFFF),
+                        color: AppColors.superficie,
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(22),
                         ),
@@ -271,7 +266,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                                   nombrePrincipal,
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
-                                    color: _textMain,
+                                    color: AppColors.texto,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -284,7 +279,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                                 onPressed: () => _mostrarInformacion(context),
                                 icon: const Icon(
                                   Icons.info_outline,
-                                  color: _textMuted,
+                                  color: AppColors.textoSecundario,
                                   size: 24,
                                 ),
                               ),
@@ -298,7 +293,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                               marcaModelo,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                color: _textMuted,
+                                color: AppColors.textoSecundario,
                                 fontSize: 14,
                               ),
                             ),
@@ -316,7 +311,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                               color: _colorEstado(estado)
                                   .withOpacity(0.10),
                               borderRadius:
-                                  BorderRadius.circular(14),
+                                  BorderRadius.circular(AppRadios.control),
                               border: Border.all(
                                 color: _colorEstado(estado)
                                     .withOpacity(0.45),
@@ -363,7 +358,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
               const Text(
                 'Documentos',
                 style: TextStyle(
-                  color: _textMain,
+                  color: AppColors.texto,
                   fontSize: 19,
                   fontWeight: FontWeight.w700,
                 ),
@@ -396,12 +391,12 @@ class _DetalleVehiculoVista extends StatelessWidget {
                   icon: const Icon(Icons.delete_outline),
                   label: const Text('Eliminar vehículo'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.redAccent,
+                    foregroundColor: AppColors.error,
                     side: BorderSide(
                       color: Colors.redAccent.withOpacity(0.6),
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadios.control),
                     ),
                   ),
                 ),
@@ -428,21 +423,21 @@ class _DetalleVehiculoVista extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: _surfaceColor,
+          backgroundColor: AppColors.superficie,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
           title: const Row(
             children: [
               Icon(
                 Icons.warning_amber_rounded,
-                color: Colors.redAccent,
+                color: AppColors.error,
               ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '¿Eliminar vehículo?',
-                  style: TextStyle(color: _textMain),
+                  style: TextStyle(color: AppColors.texto),
                 ),
               ),
             ],
@@ -451,7 +446,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
             'Se eliminará "$nombre" junto con todos sus documentos y '
             'avisos de vencimiento. Esta acción no se puede deshacer.',
             style: const TextStyle(
-              color: _textMuted,
+              color: AppColors.textoSecundario,
               height: 1.4,
             ),
           ),
@@ -463,7 +458,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               style: TextButton.styleFrom(
-                foregroundColor: Colors.redAccent,
+                foregroundColor: AppColors.error,
               ),
               child: const Text('Eliminar'),
             ),
@@ -568,10 +563,10 @@ class _DetalleVehiculoVista extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: _surfaceColor,
+          backgroundColor: AppColors.superficie,
           insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
@@ -583,13 +578,13 @@ class _DetalleVehiculoVista extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.info_outline, color: _textMuted),
+                      const Icon(Icons.info_outline, color: AppColors.textoSecundario),
                       const SizedBox(width: 10),
                       const Expanded(
                         child: Text(
                           'Información del vehículo',
                           style: TextStyle(
-                            color: _textMain,
+                            color: AppColors.texto,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
@@ -599,7 +594,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                         tooltip: 'Cerrar',
                         visualDensity: VisualDensity.compact,
                         onPressed: () => Navigator.pop(dialogContext),
-                        icon: const Icon(Icons.close, color: _textMuted),
+                        icon: const Icon(Icons.close, color: AppColors.textoSecundario),
                       ),
                     ],
                   ),
@@ -626,17 +621,17 @@ class _DetalleVehiculoVista extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: _surfaceLight,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.contenedorSuave,
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
       ),
       child: Row(
         children: [
-          Icon(icono, color: _textMuted, size: 20),
+          Icon(icono, color: AppColors.textoSecundario, size: 20),
           const SizedBox(width: 12),
           Text(
             etiqueta,
-            style: const TextStyle(color: _textMuted, fontSize: 13),
+            style: const TextStyle(color: AppColors.textoSecundario, fontSize: 13),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -644,7 +639,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
               valor,
               textAlign: TextAlign.end,
               style: const TextStyle(
-                color: _textMain,
+                color: AppColors.texto,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),

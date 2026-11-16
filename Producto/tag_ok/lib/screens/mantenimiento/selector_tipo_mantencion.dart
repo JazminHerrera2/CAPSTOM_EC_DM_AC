@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Selector (tipo de mantención, vehículo) en forma de acordeón: al tocar la cabecera
 /// se despliega la lista de opciones. Si se elige [opcionOtra], aparece debajo
@@ -43,12 +45,6 @@ class SelectorTipoMantencion extends StatefulWidget {
 }
 
 class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color borderColor = Color(0xFFCBD5E1);
 
   static const double _alturaMaxima = 220;
 
@@ -70,8 +66,8 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
     return Container(
       margin: EdgeInsets.only(top: widget.flotante ? 0 : 6),
       decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: Colors.transparent),
         boxShadow: widget.flotante
             ? [
@@ -96,7 +92,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
           shrinkWrap: true,
           itemCount: widget.opciones.length,
           separatorBuilder: (_, __) =>
-              const Divider(height: 1, color: borderColor),
+              const Divider(height: 1, color: AppColors.borde),
           itemBuilder: (context, i) {
             final opcion = widget.opciones[i];
             final seleccionada = opcion == valor;
@@ -106,7 +102,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                 _cerrar();
               },
               child: Container(
-                color: seleccionada ? primaryColor.withOpacity(0.16) : null,
+                color: seleccionada ? AppColors.primario.withOpacity(0.16) : null,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 13,
@@ -118,8 +114,8 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                         opcion,
                         style: TextStyle(
                           color: seleccionada
-                              ? const Color(0xFF1E3A8A)
-                              : textMain,
+                              ? AppColors.primario
+                              : AppColors.texto,
                           fontSize: 13,
                           fontWeight: seleccionada
                               ? FontWeight.w700
@@ -130,7 +126,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                     if (seleccionada)
                       const Icon(
                         Icons.check_rounded,
-                        color: primaryColor,
+                        color: AppColors.primario,
                         size: 18,
                       ),
                   ],
@@ -214,10 +210,10 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
           link: _link,
           child: Material(
             key: _botonKey,
-            color: surfaceColor,
-            borderRadius: BorderRadius.circular(14),
+            color: AppColors.superficie,
+            borderRadius: BorderRadius.circular(AppRadios.control),
             child: InkWell(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadios.control),
               onTap: _alternar,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -226,15 +222,15 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                   border: Border.all(
-                    color: _abierto ? primaryColor : Colors.transparent,
+                    color: _abierto ? AppColors.primario : Colors.transparent,
                     width: _abierto ? 1.5 : 1,
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(widget.icono, color: textMuted, size: 21),
+                    Icon(widget.icono, color: AppColors.textoSecundario, size: 21),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -243,7 +239,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                           Text(
                             widget.label,
                             style: const TextStyle(
-                              color: textMuted,
+                              color: AppColors.textoSecundario,
                               fontSize: 10,
                             ),
                           ),
@@ -253,7 +249,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: valor == null ? textMuted : textMain,
+                              color: valor == null ? AppColors.textoSecundario : AppColors.texto,
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                             ),
@@ -268,12 +264,12 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                         width: 30,
                         height: 30,
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.16),
+                          color: AppColors.primario.withOpacity(0.16),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.keyboard_arrow_down_rounded,
-                          color: Color(0xFF1E3A8A),
+                          color: AppColors.primario,
                         ),
                       ),
                     ),
@@ -297,25 +293,25 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
           TextField(
             controller: widget.otroController!,
             maxLength: widget.largoMaximoOtro,
-            style: const TextStyle(color: textMain, fontSize: 13),
+            style: const TextStyle(color: AppColors.texto, fontSize: 13),
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
               labelText: 'Escribe el tipo de mantención',
-              labelStyle: const TextStyle(color: textMuted),
+              labelStyle: const TextStyle(color: AppColors.textoSecundario),
               prefixIcon: const Icon(
                 Icons.edit_outlined,
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 size: 21,
               ),
               filled: true,
-              fillColor: bgColor,
+              fillColor: AppColors.fondo,
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: borderColor),
+                borderRadius: BorderRadius.circular(AppRadios.control),
+                borderSide: const BorderSide(color: AppColors.borde),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: primaryColor, width: 1.5),
+                borderRadius: BorderRadius.circular(AppRadios.control),
+                borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
               ),
             ),
           ),

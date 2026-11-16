@@ -6,6 +6,8 @@ import '../../data/services/documento_vehicular_service.dart';
 import '../../utils/orden_documentos.dart';
 import 'detalle_documento_screen.dart';
 import 'registrar_documento_ia_screen.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 /// Documentos de UN vehículo: tarjeta con la patente, y las
 /// tarjetas de sus documentos con estado y vencimiento (o el estado vacío con
@@ -15,11 +17,6 @@ import 'registrar_documento_ia_screen.dart';
 /// Documentos de Mi Vehículo (una sección por patente), para que ambas tengan
 /// exactamente la misma interfaz.
 class DocumentosVehiculoSeccion extends StatelessWidget {
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color surfaceLight = Color(0xFFE2E8F0);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color primaryColor = Color(0xFF1E3A8A);
 
   final String vehiculoId;
   final String patenteVehiculo;
@@ -78,7 +75,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
       messenger.showSnackBar(
         const SnackBar(
           content: Text('Vencimiento actualizado exitosamente.'),
-          backgroundColor: Color(0xFF10B981),
+          backgroundColor: AppColors.exito,
         ),
       );
     } catch (e) {
@@ -88,7 +85,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
           content: Text(
             'No se pudo actualizar el vencimiento. Intenta nuevamente.',
           ),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -152,16 +149,16 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
   Color _colorEstado(String estado) {
     switch (estado) {
       case 'Vencido':
-        return Colors.redAccent;
+        return AppColors.error;
 
       case 'Próximo a vencer':
-        return const Color(0xFFF97316);
+        return AppColors.alerta;
 
       case 'Vigente':
-        return const Color(0xFF10B981);
+        return AppColors.exito;
 
       default:
-        return textMuted;
+        return AppColors.textoSecundario;
     }
   }
 
@@ -193,7 +190,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
     final color = _colorEstado(estado);
 
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
       onTap: () {
         Navigator.push(
           context,
@@ -209,11 +206,9 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: surfaceColor,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: Colors.transparent,
-          ),
+          color: AppColors.superficie,
+          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+          boxShadow: AppSombras.tarjeta,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,7 +222,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   height: 40,
                   child: Icon(
                     Icons.description_outlined,
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     size: 28,
                   ),
                 ),
@@ -241,7 +236,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                       Text(
                         documento.tipoDocumento.etiqueta,
                         style: const TextStyle(
-                          color: textMain,
+                          color: AppColors.texto,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
@@ -256,7 +251,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: color.withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                           border: Border.all(
                             color: color.withOpacity(0.35),
                           ),
@@ -293,7 +288,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   },
                   icon: const Icon(
                     Icons.edit_calendar_outlined,
-                    color: primaryColor,
+                    color: AppColors.primario,
                   ),
                 ),
               ],
@@ -307,7 +302,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
 
                 const Icon(
                   Icons.event_outlined,
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                   size: 18,
                 ),
 
@@ -316,7 +311,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 const Text(
                   'Vencimiento',
                   style: TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 12,
                   ),
                 ),
@@ -331,8 +326,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                       : 'Sin configurar',
                   style: TextStyle(
                     color: documento.fechaVencimiento != null
-                        ? textMain
-                        : textMuted,
+                        ? AppColors.texto
+                        : AppColors.textoSecundario,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -351,21 +346,21 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 onPressed: () => _actualizarDocumento(context, documento),
                 icon: const Icon(
                   Icons.autorenew_rounded,
-                  color: primaryColor,
+                  color: AppColors.primario,
                   size: 19,
                 ),
                 label: const Text(
                   'Actualizar',
                   style: TextStyle(
-                    color: textMain,
+                    color: AppColors.texto,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: primaryColor.withOpacity(0.10),
-                  side: BorderSide(color: primaryColor.withOpacity(0.6)),
+                  backgroundColor: AppColors.primario.withOpacity(0.10),
+                  side: BorderSide(color: AppColors.primario.withOpacity(0.6)),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadios.control),
                   ),
                 ),
               ),
@@ -388,11 +383,9 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
         vertical: 45,
       ),
       decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.transparent,
-        ),
+        color: AppColors.superficie,
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        boxShadow: AppSombras.tarjeta,
       ),
       child: Column(
         children: [
@@ -400,12 +393,12 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.10),
-              borderRadius: BorderRadius.circular(20),
+              color: AppColors.primario.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             ),
             child: const Icon(
               Icons.description_outlined,
-              color: primaryColor,
+              color: AppColors.primario,
               size: 34,
             ),
           ),
@@ -415,7 +408,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
           const Text(
             'Aún no hay documentos',
             style: TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 17,
               fontWeight: FontWeight.w700,
             ),
@@ -427,7 +420,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
             'Agrega los documentos de tu vehículo para controlar sus vencimientos.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: textMuted,
+              color: AppColors.textoSecundario,
               fontSize: 13,
               height: 1.5,
             ),
@@ -443,7 +436,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
+              backgroundColor: AppColors.primario,
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(
@@ -451,7 +444,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 vertical: 14,
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadios.control),
               ),
             ),
           ),
@@ -479,10 +472,10 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
           decoration: BoxDecoration(
             // Más claro y con acento (violeta) para distinguir al vehículo de
             // las tarjetas de documentos, que son oscuras.
-            color: const Color(0xFF172554),
-            borderRadius: BorderRadius.circular(16),
+            color: AppColors.sobreLavanda,
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             border: Border.all(
-              color: const Color(0xFF1E3A8A).withOpacity(0.55),
+              color: AppColors.primario.withOpacity(0.55),
             ),
           ),
           child: Row(
@@ -491,8 +484,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E3A8A).withOpacity(0.28),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.primario.withOpacity(0.28),
+                  borderRadius: BorderRadius.circular(AppRadios.icono),
                 ),
                 child: const Icon(
                   Icons.directions_car_outlined,
@@ -509,7 +502,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   const Text(
                     'Vehículo',
                     style: TextStyle(
-                      color: Color(0xFFBFDBFE),
+                      color: AppColors.barraInactiva,
                       fontSize: 11,
                     ),
                   ),
@@ -544,11 +537,11 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
+                backgroundColor: AppColors.primario,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadios.control),
                 ),
               ),
             ),
@@ -567,7 +560,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                     Text(
                       'Tus documentos',
                       style: TextStyle(
-                        color: textMain,
+                        color: AppColors.texto,
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                       ),
@@ -576,7 +569,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                     Text(
                       'Revisa el estado y vencimiento de cada documento.',
                       style: TextStyle(
-                        color: textMuted,
+                        color: AppColors.textoSecundario,
                         fontSize: 12,
                       ),
                     ),

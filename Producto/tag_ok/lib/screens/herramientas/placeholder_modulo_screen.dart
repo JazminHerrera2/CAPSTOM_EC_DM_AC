@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 /// Placeholder visual sin lógica para módulos que todavía no se
 /// implementan (Combustible, Estacionamiento, Beneficios, Mantenciones).
@@ -18,32 +19,29 @@ class PlaceholderModuloScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color(0xFFF1F5F9);
-    const textMain = Color(0xFF0F172A);
-    const textMuted = Color(0xFF64748B);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
-        title: Text(titulo, style: const TextStyle(color: textMain)),
-        iconTheme: const IconThemeData(color: textMain),
+        title: Text(titulo, style: const TextStyle(color: AppColors.texto)),
+        iconTheme: const IconThemeData(color: AppColors.texto),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icono, size: 72, color: textMuted.withValues(alpha: 0.4)),
+            Icon(icono, size: 72, color: AppColors.textoSecundario.withValues(alpha: 0.4)),
             const SizedBox(height: 20),
             Text(
               titulo,
-              style: const TextStyle(color: textMain, fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(color: AppColors.texto, fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Disponible en $sprintEstimado',
-              style: const TextStyle(color: textMuted),
+              style: const TextStyle(color: AppColors.textoSecundario),
             ),
           ],
         ),

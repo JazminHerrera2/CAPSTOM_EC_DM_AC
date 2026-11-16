@@ -1,34 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
-/// Logo de TAG OK del encabezado de las pestañas principales.
+/// Logotipo de TAG OK del encabezado de las pestañas principales: "TAG" en el
+/// color de texto y "OK" en cursiva con el color primario de la marca.
 ///
-/// El archivo es `assets/imagenes/logo/logo_tagok.png`: el logo original
-/// recortado, con fondo transparente, así que se ve directo sobre el fondo de
-/// la app. Si el archivo no se puede cargar, se ve el texto "TAG OK".
+/// Se dibuja con texto (no con imagen) para que siga la paleta de
+/// [AppColors] y se vea nítido en cualquier densidad de pantalla.
 class LogoTagOk extends StatelessWidget {
-  static const String asset = 'assets/imagenes/logo/logo_tagok.png';
-
-  /// Alto del logo.
+  /// Alto aproximado del logotipo.
   final double alto;
 
   const LogoTagOk({super.key, this.alto = 36});
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      asset,
-      height: alto,
-      fit: BoxFit.contain,
-      semanticLabel: 'TAG OK',
-      errorBuilder: (_, _, _) => SizedBox(
+    final tamano = alto * 0.78;
+    return Semantics(
+      label: 'TAG OK',
+      excludeSemantics: true,
+      child: SizedBox(
         height: alto,
-        child: const Center(
-          child: Text(
-            'TAG OK',
-            style: TextStyle(
-              color: Color(0xFF0F172A),
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
+        child: Center(
+          child: Text.rich(
+            TextSpan(
+              style: TextStyle(
+                fontSize: tamano,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+                height: 1,
+              ),
+              children: const [
+                TextSpan(
+                  text: 'TAG',
+                  style: TextStyle(color: AppColors.texto),
+                ),
+                TextSpan(
+                  text: 'OK',
+                  style: TextStyle(
+                    color: AppColors.primario,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

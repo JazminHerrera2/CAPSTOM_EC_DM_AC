@@ -6,6 +6,8 @@ import 'document_type.dart';
 import 'extraction_schema_registry.dart';
 import 'smart_capture_result.dart';
 import 'validacion_campos.dart';
+import 'package:tag_ok/theme/app_colors.dart';
+import 'package:tag_ok/theme/app_estilos.dart';
 
 class SmartCaptureReviewScreen extends StatefulWidget {
   final SmartCaptureResult? resultado;
@@ -31,14 +33,6 @@ class SmartCaptureReviewScreen extends StatefulWidget {
 
 class _SmartCaptureReviewScreenState
     extends State<SmartCaptureReviewScreen> {
-  static const Color bgColor = Color(0xFFF1F5F9);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color surfaceLight = Color(0xFFE2E8F0);
-  static const Color textMain = Color(0xFF0F172A);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color primaryColor = Color(0xFF1E3A8A);
-  static const Color warningColor = Color(0xFFF59E0B);
-  static const Color infoMorado = Color(0xFF1E3A8A);
 
   DocumentType? _tipoSeleccionado;
 
@@ -244,7 +238,7 @@ class _SmartCaptureReviewScreenState
       ..showSnackBar(
         SnackBar(
           content: Text(mensaje),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppColors.error,
         ),
       );
   }
@@ -357,8 +351,8 @@ class _SmartCaptureReviewScreenState
                   campo.etiqueta,
                   style: TextStyle(
                     color: dudoso
-                        ? warningColor
-                        : textMuted,
+                        ? AppColors.advertencia
+                        : AppColors.textoSecundario,
                     fontSize: 12,
                     fontWeight:
                         FontWeight.w600,
@@ -370,7 +364,7 @@ class _SmartCaptureReviewScreenState
                 const Text(
                   'Obligatorio',
                   style: TextStyle(
-                    color: primaryColor,
+                    color: AppColors.primario,
                     fontSize: 10,
                     fontWeight:
                         FontWeight.w700,
@@ -390,7 +384,7 @@ class _SmartCaptureReviewScreenState
                     )
                 : null,
             style: const TextStyle(
-              color: textMain,
+              color: AppColors.texto,
               fontSize: 14,
             ),
             decoration: InputDecoration(
@@ -398,17 +392,17 @@ class _SmartCaptureReviewScreenState
                   ? 'Seleccionar fecha'
                   : 'Ingresa ${campo.etiqueta.toLowerCase()}',
               hintStyle: const TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 fontSize: 13,
               ),
               filled: true,
-              fillColor: surfaceColor,
+              fillColor: AppColors.superficie,
 
               prefixIcon: esFecha
                   ? const Icon(
                       Icons
                           .calendar_today_outlined,
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       size: 19,
                     )
                   : null,
@@ -420,7 +414,7 @@ class _SmartCaptureReviewScreenState
                       child: Icon(
                         Icons
                             .warning_amber_rounded,
-                        color: warningColor,
+                        color: AppColors.advertencia,
                       ),
                     )
                   : null,
@@ -428,10 +422,10 @@ class _SmartCaptureReviewScreenState
               enabledBorder:
                   OutlineInputBorder(
                 borderRadius:
-                    BorderRadius.circular(14),
+                    BorderRadius.circular(AppRadios.control),
                 borderSide: BorderSide(
                   color: dudoso
-                      ? warningColor
+                      ? AppColors.advertencia
                           .withOpacity(0.6)
                       : const Color(
                           0xFFCBD5E1,
@@ -442,11 +436,11 @@ class _SmartCaptureReviewScreenState
               focusedBorder:
                   OutlineInputBorder(
                 borderRadius:
-                    BorderRadius.circular(14),
+                    BorderRadius.circular(AppRadios.control),
                 borderSide: BorderSide(
                   color: dudoso
-                      ? warningColor
-                      : primaryColor,
+                      ? AppColors.advertencia
+                      : AppColors.primario,
                   width: 1.5,
                 ),
               ),
@@ -465,7 +459,7 @@ class _SmartCaptureReviewScreenState
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                   size: 13,
                 ),
                 SizedBox(width: 5),
@@ -473,7 +467,7 @@ class _SmartCaptureReviewScreenState
                   child: Text(
                     'Estimada: el documento solo indica el año, así que se usó la fecha de hoy. Corrígela si no es correcta.',
                     style: TextStyle(
-                      color: textMuted,
+                      color: AppColors.textoSecundario,
                       fontSize: 10,
                     ),
                   ),
@@ -488,7 +482,7 @@ class _SmartCaptureReviewScreenState
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: warningColor,
+                  color: AppColors.advertencia,
                   size: 13,
                 ),
                 SizedBox(width: 5),
@@ -496,7 +490,7 @@ class _SmartCaptureReviewScreenState
                   child: Text(
                     'Revisa este dato antes de confirmar.',
                     style: TextStyle(
-                      color: warningColor,
+                      color: AppColors.advertencia,
                       fontSize: 10,
                     ),
                   ),
@@ -515,7 +509,7 @@ class _SmartCaptureReviewScreenState
 
   /// Aviso morado que explica cómo se calcula la vigencia según lo pagado.
   Widget _avisoPermiso() {
-    const base = TextStyle(color: textMain, fontSize: 12, height: 1.45);
+    const base = TextStyle(color: AppColors.texto, fontSize: 12, height: 1.45);
     const negrita = TextStyle(fontWeight: FontWeight.w700);
 
     return Container(
@@ -523,14 +517,14 @@ class _SmartCaptureReviewScreenState
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: infoMorado.withOpacity(0.14),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: infoMorado.withOpacity(0.5)),
+        color: AppColors.primario.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(AppRadios.control),
+        border: Border.all(color: AppColors.primario.withOpacity(0.5)),
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, color: infoMorado, size: 20),
+          Icon(Icons.info_outline, color: AppColors.primario, size: 20),
           SizedBox(width: 10),
           Expanded(
             child: Text.rich(
@@ -576,7 +570,7 @@ class _SmartCaptureReviewScreenState
                 child: Text(
                   'Casilla marcada en el permiso',
                   style: TextStyle(
-                    color: textMuted,
+                    color: AppColors.textoSecundario,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -585,7 +579,7 @@ class _SmartCaptureReviewScreenState
               Text(
                 'Obligatorio',
                 style: TextStyle(
-                  color: primaryColor,
+                  color: AppColors.primario,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                 ),
@@ -600,7 +594,7 @@ class _SmartCaptureReviewScreenState
             children: [
               for (final forma in FormaPagoPermiso.values)
                 InkWell(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   onTap: () => setState(() {
                     _formaPago = forma;
                     _recalcularVencimiento();
@@ -612,11 +606,11 @@ class _SmartCaptureReviewScreenState
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: _formaPago == forma ? primaryColor : surfaceColor,
-                      borderRadius: BorderRadius.circular(20),
+                      color: _formaPago == forma ? AppColors.primario : AppColors.superficie,
+                      borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                       border: Border.all(
                         color: _formaPago == forma
-                            ? primaryColor
+                            ? AppColors.primario
                             : Colors.transparent,
                       ),
                     ),
@@ -625,7 +619,7 @@ class _SmartCaptureReviewScreenState
                       maxLines: 1,
                       softWrap: false,
                       style: TextStyle(
-                        color: _formaPago == forma ? Colors.white : textMuted,
+                        color: _formaPago == forma ? Colors.white : AppColors.textoSecundario,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -642,7 +636,7 @@ class _SmartCaptureReviewScreenState
                     ? '${propuestaPorIa ? "Propuesta por la IA. " : ""}${_formaPago == FormaPagoPermiso.cuota1 ? "Falta pagar la segunda cuota: " : "Permiso pagado: "}vence el ${formatoFechaCl(vencimiento)}.'
                     : 'Ingresa la fecha de emisión para calcular el vencimiento.',
             style: const TextStyle(
-              color: textMuted,
+              color: AppColors.textoSecundario,
               fontSize: 10,
             ),
           ),
@@ -661,21 +655,21 @@ class _SmartCaptureReviewScreenState
         widget.resultado == null;
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: AppColors.fondo,
 
       appBar: AppBar(
-        backgroundColor: bgColor,
+        backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
         iconTheme: const IconThemeData(
-          color: textMain,
+          color: AppColors.texto,
         ),
         title: Text(
           esManual
               ? 'Registrar documento'
               : 'Revisar y confirmar',
           style: const TextStyle(
-            color: textMain,
+            color: AppColors.texto,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -700,15 +694,15 @@ class _SmartCaptureReviewScreenState
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: esManual
-                    ? surfaceColor
-                    : primaryColor
+                    ? AppColors.superficie
+                    : AppColors.primario
                         .withOpacity(0.10),
                 borderRadius:
-                    BorderRadius.circular(18),
+                    BorderRadius.circular(AppRadios.tarjeta),
                 border: Border.all(
                   color: esManual
                       ? Colors.transparent
-                      : primaryColor
+                      : AppColors.primario
                           .withOpacity(0.40),
                 ),
               ),
@@ -721,11 +715,11 @@ class _SmartCaptureReviewScreenState
                     height: 48,
                     decoration: BoxDecoration(
                       color: esManual
-                          ? surfaceLight
-                          : primaryColor
+                          ? AppColors.contenedorSuave
+                          : AppColors.primario
                               .withOpacity(0.18),
                       borderRadius:
-                          BorderRadius.circular(14),
+                          BorderRadius.circular(AppRadios.control),
                     ),
                     child: Icon(
                       esManual
@@ -733,7 +727,7 @@ class _SmartCaptureReviewScreenState
                               .edit_note_outlined
                           : Icons
                               .auto_awesome_outlined,
-                      color: primaryColor,
+                      color: AppColors.primario,
                       size: 25,
                     ),
                   ),
@@ -752,7 +746,7 @@ class _SmartCaptureReviewScreenState
                               : 'Datos detectados con IA',
                           style:
                               const TextStyle(
-                            color: textMain,
+                            color: AppColors.texto,
                             fontSize: 15,
                             fontWeight:
                                 FontWeight.w700,
@@ -767,7 +761,7 @@ class _SmartCaptureReviewScreenState
                               : 'Revisa la información detectada. Puedes corregir cualquier dato antes de guardar.',
                           style:
                               const TextStyle(
-                            color: textMuted,
+                            color: AppColors.textoSecundario,
                             fontSize: 12,
                             height: 1.4,
                           ),
@@ -791,12 +785,12 @@ class _SmartCaptureReviewScreenState
                 padding:
                     const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: warningColor
+                  color: AppColors.advertencia
                       .withOpacity(0.10),
                   borderRadius:
-                      BorderRadius.circular(14),
+                      BorderRadius.circular(AppRadios.control),
                   border: Border.all(
-                    color: warningColor
+                    color: AppColors.advertencia
                         .withOpacity(0.55),
                   ),
                 ),
@@ -807,7 +801,7 @@ class _SmartCaptureReviewScreenState
                     Icon(
                       Icons
                           .warning_amber_rounded,
-                      color: warningColor,
+                      color: AppColors.advertencia,
                       size: 20,
                     ),
 
@@ -817,7 +811,7 @@ class _SmartCaptureReviewScreenState
                       child: Text(
                         'No pudimos identificar automáticamente el tipo de documento. Selecciónalo para continuar.',
                         style: TextStyle(
-                          color: textMain,
+                          color: AppColors.texto,
                           fontSize: 12,
                           height: 1.4,
                         ),
@@ -837,7 +831,7 @@ class _SmartCaptureReviewScreenState
             const Text(
               'Tipo de documento',
               style: TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -848,7 +842,7 @@ class _SmartCaptureReviewScreenState
             const Text(
               'Selecciona el documento que estás registrando.',
               style: TextStyle(
-                color: textMuted,
+                color: AppColors.textoSecundario,
                 fontSize: 11,
               ),
             ),
@@ -858,54 +852,54 @@ class _SmartCaptureReviewScreenState
             DropdownButtonFormField<
                 DocumentType>(
               value: _tipoSeleccionado,
-              dropdownColor: surfaceColor,
+              dropdownColor: AppColors.superficie,
               icon: const Icon(
                 Icons.keyboard_arrow_down,
-                color: textMuted,
+                color: AppColors.textoSecundario,
               ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: surfaceColor,
+                fillColor: AppColors.superficie,
 
                 prefixIcon: const Icon(
                   Icons
                       .description_outlined,
-                  color: primaryColor,
+                  color: AppColors.primario,
                   size: 20,
                 ),
 
                 enabledBorder:
                     OutlineInputBorder(
                   borderRadius:
-                      BorderRadius.circular(14),
+                      BorderRadius.circular(AppRadios.control),
                   borderSide:
                       const BorderSide(
                     color:
-                        Color(0xFFCBD5E1),
+                        AppColors.borde,
                   ),
                 ),
 
                 focusedBorder:
                     OutlineInputBorder(
                   borderRadius:
-                      BorderRadius.circular(14),
+                      BorderRadius.circular(AppRadios.control),
                   borderSide:
                       const BorderSide(
-                    color: primaryColor,
+                    color: AppColors.primario,
                     width: 1.5,
                   ),
                 ),
               ),
 
               style: const TextStyle(
-                color: textMain,
+                color: AppColors.texto,
                 fontSize: 14,
               ),
 
               hint: const Text(
                 'Selecciona un tipo',
                 style: TextStyle(
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                 ),
               ),
 
@@ -947,7 +941,7 @@ class _SmartCaptureReviewScreenState
               const Text(
                 'Datos del documento',
                 style: TextStyle(
-                  color: textMain,
+                  color: AppColors.texto,
                   fontSize: 15,
                   fontWeight:
                       FontWeight.w700,
@@ -959,7 +953,7 @@ class _SmartCaptureReviewScreenState
               const Text(
                 'Los campos marcados como obligatorios deben completarse.',
                 style: TextStyle(
-                  color: textMuted,
+                  color: AppColors.textoSecundario,
                   fontSize: 11,
                 ),
               ),
@@ -993,12 +987,12 @@ class _SmartCaptureReviewScreenState
                 padding:
                     const EdgeInsets.all(13),
                 decoration: BoxDecoration(
-                  color: Colors.redAccent
+                  color: AppColors.error
                       .withOpacity(0.10),
                   borderRadius:
-                      BorderRadius.circular(12),
+                      BorderRadius.circular(AppRadios.icono),
                   border: Border.all(
-                    color: Colors.redAccent
+                    color: AppColors.error
                         .withOpacity(0.40),
                   ),
                 ),
@@ -1007,7 +1001,7 @@ class _SmartCaptureReviewScreenState
                     const Icon(
                       Icons.error_outline,
                       color:
-                          Colors.redAccent,
+                          AppColors.error,
                       size: 18,
                     ),
 
@@ -1019,7 +1013,7 @@ class _SmartCaptureReviewScreenState
                         style:
                             const TextStyle(
                           color:
-                              Colors.redAccent,
+                              AppColors.error,
                           fontSize: 12,
                         ),
                       ),
@@ -1084,9 +1078,9 @@ class _SmartCaptureReviewScreenState
                   style:
                       ElevatedButton.styleFrom(
                     backgroundColor:
-                        primaryColor,
+                        AppColors.primario,
                     disabledBackgroundColor:
-                        primaryColor
+                        AppColors.primario
                             .withOpacity(0.45),
                     shape:
                         RoundedRectangleBorder(
