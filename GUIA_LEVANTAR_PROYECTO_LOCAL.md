@@ -210,13 +210,11 @@ flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8091 --dart-define-fro
 Luego abre en el navegador: `http://127.0.0.1:8091/`
 
 Actualizar web:
+cd Producto/tag_ok
 flutter clean
 flutter pub get
 flutter build web --release --pwa-strategy=none --dart-define-from-file=.env
-firebase deploy --only hosting:admin --project tag-ok-v2
-flutter build web --release; firebase deploy --only hosting 
-flutter build web --release --dart-define-from-file=.env
-firebase deploy --only hosting:admin --project tag-ok-v2
+firebase deploy --only hosting --project tag-ok-v2
 
 
 **En Windows Desktop:**
@@ -225,8 +223,16 @@ firebase deploy --only hosting:admin --project tag-ok-v2
 cd Producto/admin
 flutter run -d windows --dart-define-from-file=.env
 ```
+Actualizar web:
+cd Producto/admin
+flutter clean
+flutter pub get
+flutter build web --release --pwa-strategy=none
+firebase deploy --only hosting:admin --project tag-ok-v2
 
 ---
+
+Actualizar reglas: firebase deploy --only firestore:rules
 
 ## 8. Cómo aplicar cambios mientras la app está corriendo (Hot Reload)
 
