@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+
+import '../../entorno.dart';
 
 class StorageException implements Exception {
   final String mensaje;
@@ -29,7 +30,7 @@ class StorageService {
   /// `false` si SUPABASE_URL falta o sigue con el placeholder. En ese caso
   /// quien llama debe guardar el documento sin archivo.
   static bool get configurado {
-    final url = dotenv.env['SUPABASE_URL']?.trim() ?? '';
+    final url = Entorno.supabaseUrl.trim();
     return url.startsWith('https://') && !url.contains('tu-proyecto-id');
   }
 
@@ -117,7 +118,7 @@ class StorageService {
     if (!configurado) {
       throw StorageException('SUPABASE_URL no está configurado');
     }
-    final base = dotenv.env['SUPABASE_URL']!.trim().replaceAll(RegExp(r'/+$'), '');
+    final base = Entorno.supabaseUrl.trim().replaceAll(RegExp(r'/+$'), '');
     return Uri.parse('$base/functions/v1/$_funcion');
   }
 

@@ -1,23 +1,29 @@
 import 'dart:math' as math;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/route_model.dart';
 import '../mock/tolls_database.dart';
+import '../../entorno.dart';
 import '../../utils/polyline_decoder.dart';
 
 class SimulatedTollService {
   final String _baseUrl = 'https://api.mapbox.com/directions/v5/mapbox/driving';
 
+  /// Token de Mapbox. Por defecto el de `entorno.dart`; los tests pasan uno.
+  final String _mapboxToken;
+
+  SimulatedTollService({String? mapboxToken})
+      : _mapboxToken = mapboxToken ?? Entorno.mapboxAccessToken;
+
   Future<RouteData> calculateRouteAndTolls({
     required LatLng origin,
     required LatLng destination,
   }) async {
-    final String mapboxToken = dotenv.env['MAPBOX_ACCESS_TOKEN'] ?? '';
-    
+    final String mapboxToken = _mapboxToken;
+
     if (mapboxToken.isEmpty) {
-      throw Exception('Mapbox token no configurado en .env');
+      throw Exception('Mapbox token no configurado (MAPBOX_ACCESS_TOKEN en el .env)');
     }
 
     final String coordinates = '${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}';

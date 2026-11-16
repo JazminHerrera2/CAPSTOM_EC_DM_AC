@@ -59,6 +59,20 @@ rules_version = '2';
 //   (solo la fecha es obligatoria: se permiten registros parciales; sin
 //   archivo_path, no se guarda la boleta)
 //
+// estacionamientos/{id}   (Sprint 5: manual, cronometro e IA del ticket)
+//   uid: string (req, inmutable) = dueño | vehiculo_id: string (req, inmutable)
+//   fecha: timestamp (req, inmutable) | estado: activo|pendienteComprobante|finalizado (req)
+//   origen_registro: manual|ia (req, inmutable)
+//   hora_entrada, hora_salida: timestamp|null (fecha y hora completas, para
+//   que el cronometro sobreviva al cierre de la app y cruce la medianoche)
+//   duracion_min: int|null | costo: int|null (pesos) | lugar: string 100
+//   observacion: string 500 | ubicacion: latlng|null (GPS)
+//   fecha_captura: timestamp|null | confianza_ia: number|null
+//   direccion, nivel, sector: string|null | origen_comprobante: manual|ia
+//   (activo = cronometro corriendo: tiene hora_entrada y no hora_salida.
+//   Solo se edita mientras esta activo; finalizado ya no se modifica. Sin
+//   archivo_path: no se guarda la foto del ticket)
+//
 // componentes_mantencion/{id}   catalogo (lo escriben solo admins)
 //   nombre: string (req) | orden: int (req) | activo: bool (req)
 //
@@ -422,6 +436,142 @@ service cloud.firestore {
       allow update: if false;
 
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // estacionamientos: flujo de cronometro, comprobante y cierre directo.
+    // ===============================================================
+    function estacionamientoValido(d) {
+      return d.keys().hasOnly(['uid', 'vehiculo_id', 'fecha', 'lugar',
+          'hora_entrada', 'hora_salida', 'duracion_min', 'costo', 'ubicacion',
+          'observacion', 'estado', 'origen_registro', 'fecha_captura',
+          'confianza_ia', 'direccion', 'nivel', 'sector', 'origen_comprobante']) &&
+        reqStr(d, 'uid', 128) && reqStr(d, 'vehiculo_id', 100) &&
+        d.fecha is timestamp &&
+        d.estado in ['activo', 'pendienteComprobante', 'finalizado'] &&
+        d.origen_registro in ['manual', 'ia'] &&
+        optTs(d, 'hora_entrada') && optTs(d, 'hora_salida') &&
+        (d.get('hora_entrada', null) == null || d.get('hora_salida', null) == null ||
+          d.hora_salida >= d.hora_entrada) &&
+        (d.estado != 'activo' ||
+          (d.get('hora_entrada', null) is timestamp &&
+           d.get('hora_salida', null) == null &&
+           d.origen_registro == 'manual')) &&
+        (d.estado != 'pendienteComprobante' ||
+          (d.get('hora_entrada', null) is timestamp &&
+           d.get('hora_salida', null) is timestamp &&
+           d.origen_registro == 'manual')) &&
+        optInt(d, 'duracion_min', 0, 43200) &&
+        optInt(d, 'costo', 0, 10000000) &&
+        optStr(d, 'lugar', 100) && optStr(d, 'observacion', 500) &&
+        optStr(d, 'direccion', 250) && optStr(d, 'nivel', 80) &&
+        optStr(d, 'sector', 80) &&
+        (!('ubicacion' in d) || d.ubicacion == null || d.ubicacion is latlng) &&
+        optTs(d, 'fecha_captura') &&
+        (!('origen_comprobante' in d) ||
+          d.origen_comprobante in ['manual', 'ia']) &&
+        (!('confianza_ia' in d) || d.confianza_ia == null ||
+          (d.confianza_ia is number && d.confianza_ia >= 0 && d.confianza_ia <= 100));
+    }
+
+    match /estacionamientos/{estacionamientoId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+
+          
+    allow create: if isSignedIn() &&
+      request.resource.data.uid == request.auth.uid &&
+      // Un registro pendiente solo puede surgir del cronometro existente.
+      request.resource.data.estado != 'pendienteComprobante' &&
+      estacionamientoValido(request.resource.data) &&
+      vehiculoEsDe(request.resource.data.vehiculo_id, request.auth.uid) &&
+      (
+        // Los registros finalizados no necesitan control de cronometro.
+        request.resource.data.estado == 'finalizado'
+        ||
+        (
+          // Un cronometro activo necesita su documento de control.
+          request.resource.data.estado == 'activo' &&
+          getAfter(
+            /databases/$(database)/documents/estacionamientos_activos/$(request.auth.uid + '_' + request.resource.data.vehiculo_id)
+          ).data.estacionamiento_id == estacionamientoId
+        )
+      );
+
+
+      allow update: if isSignedIn() &&
+        resource.data.uid == request.auth.uid &&
+        estacionamientoValido(request.resource.data) &&
+        (
+          (resource.data.estado == 'activo' &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'hora_salida', 'duracion_min', 'costo', 'estado', 'lugar',
+              'observacion', 'ubicacion']) &&
+            (request.resource.data.estado == 'activo' ||
+              ((request.resource.data.estado == 'finalizado' ||
+                request.resource.data.estado == 'pendienteComprobante') &&
+               request.resource.data.get('hora_salida', null) is timestamp)))
+          ||
+          (resource.data.estado == 'pendienteComprobante' &&
+            request.resource.data.estado == 'finalizado' &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'estado', 'costo', 'origen_comprobante',
+              'fecha_captura', 'confianza_ia']) &&
+            request.resource.data.costo is int &&
+            request.resource.data.costo >= 0 &&
+            request.resource.data.get('origen_comprobante', null) in ['manual', 'ia'])
+        );
+
+      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Control de un unico estacionamiento activo por usuario y vehiculo.
+    // ID: {uid}_{vehiculo_id}. El servicio lo crea/elimina en transacciones.
+    match /estacionamientos_activos/{controlId} {
+      // El servicio consulta tambien cuando el control aun no existe.
+      
+      
+      allow get: if isSignedIn() &&
+        (
+          (
+            !exists(/databases/$(database)/documents/estacionamientos_activos/$(controlId)) &&
+            controlId.matches('^' + request.auth.uid + '_.+')
+          ) ||
+          (
+            exists(/databases/$(database)/documents/estacionamientos_activos/$(controlId)) &&
+            resource.data.uid == request.auth.uid &&
+            controlId == request.auth.uid + '_' + resource.data.vehiculo_id
+          )
+        );
+
+
+      allow list: if false;
+
+      allow create: if isSignedIn() &&
+        request.resource.data.keys().hasOnly([
+          'uid', 'vehiculo_id', 'estacionamiento_id']) &&
+        request.resource.data.uid == request.auth.uid &&
+        reqStr(request.resource.data, 'vehiculo_id', 100) &&
+        reqStr(request.resource.data, 'estacionamiento_id', 128) &&
+        controlId == request.auth.uid + '_' + request.resource.data.vehiculo_id &&
+        vehiculoEsDe(request.resource.data.vehiculo_id, request.auth.uid) &&
+        getAfter(/databases/$(database)/documents/estacionamientos/$(request.resource.data.estacionamiento_id)).data.uid == request.auth.uid &&
+        getAfter(/databases/$(database)/documents/estacionamientos/$(request.resource.data.estacionamiento_id)).data.vehiculo_id == request.resource.data.vehiculo_id &&
+        getAfter(/databases/$(database)/documents/estacionamientos/$(request.resource.data.estacionamiento_id)).data.estado == 'activo';
+
+      allow update: if false;
+      
+      allow delete: if isSignedIn() &&
+        resource.data.uid == request.auth.uid &&
+        controlId == request.auth.uid + '_' + resource.data.vehiculo_id &&
+        (
+          !existsAfter(
+            /databases/$(database)/documents/estacionamientos/$(resource.data.estacionamiento_id)
+          ) ||
+          getAfter(
+            /databases/$(database)/documents/estacionamientos/$(resource.data.estacionamiento_id)
+          ).data.estado != 'activo'
+        );
+
     }
 
     // ===============================================================

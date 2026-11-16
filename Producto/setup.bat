@@ -49,8 +49,9 @@ echo.
 echo =======================================================
 echo    Instalacion y configuracion completadas con exito!
 echo =======================================================
-echo (Nota: Las claves de Firebase y Gemini se cargan en 
-echo  memoria automaticamente. ¡No necesitas archivos .env!)
+echo (Nota: tag_ok lee su configuracion del .env al compilar, con
+echo  --dart-define-from-file=.env. Completa tag_ok\.env con los valores
+echo  reales; ver GUIA_LEVANTAR_PROYECTO_LOCAL.md)
 echo.
 
 rem 2. Menu de ejecucion
@@ -67,14 +68,14 @@ set /p opcion="Introduce el numero de tu opcion (1-5): "
 if "%opcion%"=="1" (
     echo Ejecutando App Principal (tag_ok) en Windows...
     cd tag_ok
-    flutter run -d windows
+    flutter run -d windows --dart-define-from-file=.env
     cd ..
     goto menu
 )
 if "%opcion%"=="2" (
     echo Ejecutando App Principal (tag_ok) en Chrome...
     cd tag_ok
-    flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8090 --no-web-experimental-hot-reload
+    flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8090 --no-web-experimental-hot-reload --dart-define-from-file=.env
     cd ..
     goto menu
 )

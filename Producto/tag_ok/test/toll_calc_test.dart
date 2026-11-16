@@ -2,8 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:tag_ok/data/mock/tolls_database.dart';
 import 'package:tag_ok/data/services/simulated_toll_service.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+
+/// Token de Mapbox sacado de las variables de prueba de abajo; se le pasa al
+/// servicio porque la app lee su configuración al compilar (entorno.dart).
+String mapboxToken = '';
+
+SimulatedTollService servicioDePrueba() =>
+    SimulatedTollService(mapboxToken: mapboxToken);
 
 void main() {
   setUpAll(() {
@@ -13,7 +19,11 @@ void main() {
       // llame a la API real de Mapbox).
       const b64Env = "V0VCX0FQSV9LRVk9QUl6YVN5Qm1YVnZZejNsalpXRjROQ2tfMndGQ01Cc0VmTEJkZzF3CldFQl9BUFBfSUQ9MToxNTkxNTA2NDM2Mzp3ZWI6YWZmZWU0ODg0NTRhNjJkNWZiZGU2ZQpBTkRST0lEX0FQUF9JRD0xOjE1OTE1MDY0MzYzOmFuZHJvaWQ6MjZkNTU4ZmU4MmY1OTE2Y2ZiZGU2ZQpJT1NfQVBJX0tFWT1BSXphU3lEcS02cGRBY0g4Z0FrT0VZT3A0SHpjWDVBQzF5cUl6eWsKSU9TX0FQUF9JRD0xOjE1OTE1MDY0MzYzOmlvczphODZkNGM0YTk1NjRkODEzZmJkZTZlCk1FU1NBR0lOR19TRU5ERVJfSUQ9MTU5MTUwNjQzNjMKUFJPSkVDVF9JRD10YWctb2sKU1RPUkFHRV9CVUNLRVQ9dGFnLW9rLmZpcmViYXNlc3RvcmFnZS5hcHAKSU9TX0JVTkRMRV9JRD1jb20uZXhhbXBsZS50YWdPawpNQVBCT1hfQUNDRVNTX1RPS0VOPXBrLmV5SjFJam9pYW1WemRYTmhjbUZ1WjNWcGVqSTVJaXdpWVNJNkltTnRiM0p3YlRkcU5UQTNZWGN5YzI5bGRXZDBiVGhyY1c0aWZRLkR6LTdHUFEwRlI0aGRKRjJYWHI4N0EKR0VNSU5JX0FQSV9LRVk9RkFLRS1URVNULUtFWS1OT1QtQS1SRUFMLUNSRURFTlRJQUwK";
       final envText = utf8.decode(base64Decode(b64Env));
-      dotenv.testLoad(fileInput: envText);
+      for (final linea in const LineSplitter().convert(envText)) {
+        if (linea.startsWith('MAPBOX_ACCESS_TOKEN=')) {
+          mapboxToken = linea.substring('MAPBOX_ACCESS_TOKEN='.length).trim();
+        }
+      }
     } catch (e) {
       print("Error loading safe test env variables: $e");
     }
@@ -33,7 +43,7 @@ void main() {
 
   test('Simular Ruta y Detección de Peajes', () async {
     
-    final service = SimulatedTollService();
+    final service = servicioDePrueba();
     final origin = LatLng(-33.280, -70.690);      // Chicureo
     final destination = LatLng(-33.560, -70.680); // San Bernardo
     
@@ -55,7 +65,7 @@ void main() {
 
   test('Simular Ruta y Detección de Peajes - Lampa a Maipú', () async {
     
-    final service = SimulatedTollService();
+    final service = servicioDePrueba();
     final origin = LatLng(-33.282, -70.879);      // Lampa
     final destination = LatLng(-33.517, -70.767); // Maipú
     
@@ -77,7 +87,7 @@ void main() {
 
   test('Simular Ruta Usuario - Maipu a Huechuraba', () async {
     
-    final service = SimulatedTollService();
+    final service = servicioDePrueba();
     final origin = LatLng(-33.5132, -70.7587); // Av. 5 de Abril 313, Maipú
     final destination = LatLng(-33.3852, -70.6225); // Palacio Riesco 4515, Huechuraba
     

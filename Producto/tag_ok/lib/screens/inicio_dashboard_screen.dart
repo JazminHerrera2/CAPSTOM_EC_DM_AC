@@ -19,7 +19,7 @@ import 'dashboard/encabezado_tag_ok.dart';
 import 'dashboard/estado_vehiculo_chip.dart';
 import 'dashboard/gastos_historial.dart';
 import 'dashboard/historial_gastos_screen.dart';
-import 'herramientas/placeholder_modulo_screen.dart';
+import 'Estacionamiento/estacionamientos_screen.dart';
 import 'mi_vehiculo/detalle_vehiculo_screen.dart';
 import 'mi_vehiculo/foto_vehiculo.dart';
 import 'package:tag_ok/theme/app_colors.dart';
@@ -265,8 +265,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
       case CategoriaGasto.combustible:
         _abrirCombustible();
       case CategoriaGasto.estacionamientos:
-        _abrirPlaceholder(
-            'Estacionamiento', Icons.local_parking_outlined, 'Sprint 4');
+        _abrirEstacionamientos();
     }
   }
 
@@ -286,18 +285,10 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         MaterialPageRoute(builder: (_) => const CombustibleScreen()),
       );
 
-  void _abrirPlaceholder(String titulo, IconData icono, String sprint) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PlaceholderModuloScreen(
-          titulo: titulo,
-          icono: icono,
-          sprintEstimado: sprint,
-        ),
-      ),
-    );
-  }
+  void _abrirEstacionamientos() => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const EstacionamientosScreen()),
+      );
 
   void _abrirDetalleVehiculo(VehiculoModel? v) {
     if (v == null) {
@@ -808,8 +799,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
       (
         titulo: 'Estacionamiento',
         icono: Icons.local_parking_outlined,
-        onTap: () => _abrirPlaceholder(
-            'Estacionamiento', Icons.local_parking_outlined, 'Sprint 4'),
+        onTap: _abrirEstacionamientos,
       ),
     ];
 
