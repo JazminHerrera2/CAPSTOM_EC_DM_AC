@@ -515,7 +515,10 @@ service cloud.firestore {
             request.resource.data.estado == 'finalizado' &&
             request.resource.data.diff(resource.data).affectedKeys().hasOnly([
               'estado', 'costo', 'origen_comprobante',
-              'fecha_captura', 'confianza_ia']) &&
+              'fecha_captura', 'confianza_ia',
+              // La boleta (leida con IA o ingresada a mano) puede corregir
+              // lo que se registro con el cronometro.
+              'hora_entrada', 'hora_salida', 'duracion_min', 'lugar']) &&
             request.resource.data.costo is int &&
             request.resource.data.costo >= 0 &&
             request.resource.data.get('origen_comprobante', null) in ['manual', 'ia'])

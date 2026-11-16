@@ -300,16 +300,27 @@ class EstacionamientoService {
     });
   }
 
+  /// Cierra un estacionamiento pendiente con los datos de la boleta (leída con
+  /// IA o ingresada a mano). Además del costo, puede corregir el lugar y las
+  /// horas de entrada y salida que se habían registrado con el cronómetro.
   Future<void> registrarComprobante({
     required String estacionamientoId,
     required int costo,
     required String origenRegistro,
     DateTime? fechaCaptura,
     double? confianzaIa,
+    String? lugar,
+    DateTime? horaEntrada,
+    DateTime? horaSalida,
   }) async {
     _validarCosto(costo);
     if (origenRegistro != 'manual' && origenRegistro != 'ia') {
       throw ArgumentError('El origen del comprobante debe ser manual o ia.');
+    }
+    if (horaEntrada != null &&
+        horaSalida != null &&
+        horaSalida.isBefore(horaEntrada)) {
+      throw ArgumentError('La salida no puede ser anterior a la entrada.');
     }
     final uid = _uid();
     final ref = _registros.doc(estacionamientoId);
@@ -323,6 +334,18 @@ class EstacionamientoService {
           EstadoEstacionamiento.pendienteComprobante.valorFirestore) {
         throw StateError('Primero debes detener el temporizador.');
       }
+      final entradaActual = datos['hora_entrada'];
+      final salidaActual = datos['hora_salida'];
+      final entrada =
+          horaEntrada ??
+          (entradaActual is Timestamp ? entradaActual.toDate() : null);
+      final salida =
+          horaSalida ??
+          (salidaActual is Timestamp ? salidaActual.toDate() : null);
+      if (entrada != null && salida != null && salida.isBefore(entrada)) {
+        throw ArgumentError('La salida no puede ser anterior a la entrada.');
+      }
+      final lugarLimpio = _limpio(lugar);
       tx.update(ref, {
         'estado': EstadoEstacionamiento.finalizado.valorFirestore,
         'costo': costo,
@@ -331,6 +354,11 @@ class EstacionamientoService {
             ? null
             : Timestamp.fromDate(fechaCaptura),
         'confianza_ia': confianzaIa,
+        if (lugarLimpio != null) 'lugar': lugarLimpio,
+        if (horaEntrada != null) 'hora_entrada': Timestamp.fromDate(horaEntrada),
+        if (horaSalida != null) 'hora_salida': Timestamp.fromDate(horaSalida),
+        if (entrada != null && salida != null)
+          'duracion_min': duracionParaGuardar(entrada, salida),
       });
     });
   }

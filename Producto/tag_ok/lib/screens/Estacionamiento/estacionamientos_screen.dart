@@ -107,8 +107,8 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Finalizar tiempo'),
         content: const Text(
-          'Se detendrá el cronómetro y el estacionamiento quedará '
-          'pendiente de registrar su comprobante de pago.',
+          'Se detendrá el cronómetro. A continuación podrás leer la boleta '
+          'con IA o ingresar los datos del pago manualmente.',
         ),
         actions: [
           TextButton(
@@ -124,15 +124,18 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     );
     if (confirmar != true || !mounted) return;
     setState(() => _finalizando = true);
+    final salida = DateTime.now();
     try {
       await _service.finalizar(
         estacionamientoId: e.id,
-        fechaSalida: DateTime.now(),
+        fechaSalida: salida,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tiempo detenido. Comprobante pendiente.')),
-      );
+      // Al detener el tiempo se abre de inmediato el registro del comprobante
+      // (con IA o manual). Si el usuario sale sin guardar, el estacionamiento
+      // queda pendiente y puede completarlo desde su tarjeta.
+      setState(() => _finalizando = false);
+      await _abrirComprobante(e, salida: salida);
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -143,11 +146,17 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     }
   }
 
-  Future<void> _abrirComprobante(EstacionamientoModel estacionamiento) async {
+  Future<void> _abrirComprobante(
+    EstacionamientoModel estacionamiento, {
+    DateTime? salida,
+  }) async {
     await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) => RegistroComprobanteScreen(estacionamiento: estacionamiento),
+        builder: (_) => RegistroComprobanteScreen(
+          estacionamiento: estacionamiento,
+          salidaInicial: salida,
+        ),
       ),
     );
   }
@@ -422,6 +431,13 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     );
   }
 
+  /// Nombre del estacionamiento; si no se le puso, su dirección.
+  String _tituloDe(EstacionamientoModel e) {
+    if (e.lugar.trim().isNotEmpty) return e.lugar.trim();
+    final direccion = e.direccion?.trim() ?? '';
+    return direccion.isNotEmpty ? direccion : 'Estacionamiento';
+  }
+
   Widget _tarjetaEstacionamiento(EstacionamientoModel e) {
     final activo = e.estaActivo;
     final pendiente = e.pendienteDeComprobante;
@@ -452,7 +468,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  e.lugar,
+                  _tituloDe(e),
                   style: const TextStyle(
                     color: textMain,
                     fontSize: 15,
