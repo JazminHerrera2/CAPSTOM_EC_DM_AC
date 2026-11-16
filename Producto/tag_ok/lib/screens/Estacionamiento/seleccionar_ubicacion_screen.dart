@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart' show GeoPoint;
 import 'package:tag_ok/theme/app_colors.dart';
 import 'package:tag_ok/theme/app_estilos.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +37,15 @@ class _SeleccionarUbicacionScreenState
   final TextEditingController _busquedaController = TextEditingController();
 
   LatLng? _ubicacionSeleccionada;
+
+  /// Tu posición actual, que se actualiza en vivo (punto azul). Es distinta de
+  /// [_ubicacionSeleccionada], que es el lugar donde dejaste el auto.
+  LatLng? _miUbicacion;
+  StreamSubscription<GeoPoint>? _seguimiento;
+
+  /// Si el usuario ya movió el mapa con el dedo: desde ahí no se lo vuelve a
+  /// centrar solo.
+  bool _usuarioMovioMapa = false;
   String? _direccion;
   bool _cargando = false;
   List<PlaceSuggestion> _sugerencias = [];
@@ -63,7 +75,57 @@ class _SeleccionarUbicacionScreenState
     });
   }
 
+  /// Igual que el mapa de rutas: apenas abre el mapa se centra en ti, primero
+  /// con la última ubicación conocida (al instante) y luego con la posición
+  /// real, y queda el punto azul en vivo. No pone el pin: eso lo decide el
+  /// usuario tocando el mapa o con el botón de mi ubicación.
+  Future<void> _iniciarUbicacion() async {
+    final ultima = await _ubicacionService.ultimaUbicacionConocida();
+    if (ultima != null && mounted) _mostrarMiPosicion(ultima);
+
+    try {
+      final posicion = await _ubicacionService.obtenerUbicacionActual();
+      if (!mounted) return;
+      _mostrarMiPosicion(posicion);
+      _seguirEnVivo();
+    } on ErrorUbicacion catch (e) {
+      if (!mounted) return;
+      _mostrarMensaje(e.mensaje);
+      // Si solo faltó señal a tiempo, el punto aparece apenas llegue una.
+      if (e.motivo == MotivoErrorUbicacion.sinSenal) _seguirEnVivo();
+    } catch (_) {
+      // Sin ubicación el mapa igual sirve: se elige tocando o buscando.
+    }
+  }
+
+  void _mostrarMiPosicion(GeoPoint posicion) {
+    final punto = LatLng(posicion.latitude, posicion.longitude);
+    final centrar = !_usuarioMovioMapa && _ubicacionSeleccionada == null;
+    setState(() => _miUbicacion = punto);
+    if (centrar) _mapController.move(punto, 17);
+  }
+
+  void _seguirEnVivo() {
+    _seguimiento?.cancel();
+    _seguimiento = _ubicacionService.seguirUbicacion().listen(
+      (posicion) {
+        if (!mounted) return;
+        setState(
+          () => _miUbicacion = LatLng(posicion.latitude, posicion.longitude),
+        );
+      },
+      onError: (Object _) {},
+    );
+  }
+
   Future<void> _usarMiUbicacion() async {
+    // Si ya se sabe dónde está el usuario, se usa de inmediato.
+    final mia = _miUbicacion;
+    if (mia != null) {
+      _mapController.move(mia, 17);
+      await _seleccionarPunto(mia);
+      return;
+    }
     setState(() => _cargando = true);
     try {
       // Primero se mueve el mapa a la última ubicación conocida (si hay), para
@@ -144,6 +206,7 @@ class _SeleccionarUbicacionScreenState
 
   @override
   void dispose() {
+    _seguimiento?.cancel();
     _busquedaController.dispose();
     _mapController.dispose();
     super.dispose();
@@ -210,6 +273,10 @@ class _SeleccionarUbicacionScreenState
                   options: MapOptions(
                     initialCenter: const LatLng(-33.4489, -70.6693),
                     initialZoom: 12,
+                    onMapReady: _iniciarUbicacion,
+                    onPositionChanged: (camara, hayGesto) {
+                      if (hayGesto) _usuarioMovioMapa = true;
+                    },
                     onTap: (tapPosition, punto) {
                       _seleccionarPunto(punto);
                     },
@@ -222,6 +289,24 @@ class _SeleccionarUbicacionScreenState
                       zoomOffset: -1,
                       userAgentPackageName: 'com.tagok.app',
                     ),
+                    if (_miUbicacion != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: _miUbicacion!,
+                            width: 22,
+                            height: 22,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: azul,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 3),
+                                boxShadow: AppSombras.tarjeta,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     if (_ubicacionSeleccionada != null)
                       MarkerLayer(
                         markers: [
