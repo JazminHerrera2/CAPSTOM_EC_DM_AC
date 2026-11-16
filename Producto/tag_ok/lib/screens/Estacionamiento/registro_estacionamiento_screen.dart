@@ -10,23 +10,22 @@ import 'seleccionar_ubicacion_screen.dart';
 class RegistroEstacionamientoScreen extends StatefulWidget {
   final VehiculoModel vehiculo;
 
-  const RegistroEstacionamientoScreen({
-    super.key,
-    required this.vehiculo,
-  });
+  const RegistroEstacionamientoScreen({super.key, required this.vehiculo});
 
   @override
   State<RegistroEstacionamientoScreen> createState() =>
       _RegistroEstacionamientoScreenState();
 }
 
-class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoScreen>  {
+class _RegistroEstacionamientoScreenState
+    extends State<RegistroEstacionamientoScreen> {
   static const Color bgColor = AppColors.fondo;
   static const Color surfaceColor = AppColors.superficie;
   static const Color primaryColor = AppColors.primario;
   static const Color textMain = AppColors.texto;
   static const Color textMuted = AppColors.textoSecundario;
 
+  final _formKey = GlobalKey<FormState>();
   final _direccionController = TextEditingController();
   final _nivelController = TextEditingController();
   final _sectorController = TextEditingController();
@@ -45,25 +44,16 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
     super.dispose();
   }
 
-  InputDecoration _decoracion({
-    required String hint,
-    IconData? icono,
-  }) {
+  InputDecoration _decoracion({required String hint, IconData? icono}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(
-        color: textMuted,
-        fontSize: 14,
-      ),
+      hintStyle: const TextStyle(color: textMuted, fontSize: 14),
       prefixIcon: icono == null
           ? null
           : Icon(icono, color: primaryColor, size: 21),
       filled: true,
       fillColor: bgColor,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 15,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
         borderSide: BorderSide.none,
@@ -137,9 +127,7 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
 
     final resultado = await Navigator.push<UbicacionEstacionamiento>(
       context,
-      MaterialPageRoute(
-        builder: (_) => const SeleccionarUbicacionScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const SeleccionarUbicacionScreen()),
     );
 
     if (!mounted || resultado == null) return;
@@ -155,6 +143,7 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
 
   Future<void> _guardar() async {
     if (_guardando) return;
+    if (!_formKey.currentState!.validate()) return;
 
     final confirmar = await showDialog<bool>(
       context: context,
@@ -208,7 +197,10 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
 
       _mostrarMensaje(
         error is StateError || error is ArgumentError
-            ? error.toString().replaceFirst(RegExp(r'^(Bad state|Invalid argument\(s\)?):\s*'), '')
+            ? error.toString().replaceFirst(
+                RegExp(r'^(Bad state|Invalid argument\(s\)?):\s*'),
+                '',
+              )
             : 'No fue posible iniciar el cronómetro. Comprueba la conexión y los permisos de Firebase.',
       );
     } finally {
@@ -219,9 +211,9 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
   }
 
   void _mostrarMensaje(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   @override
@@ -233,108 +225,119 @@ class _RegistroEstacionamientoScreenState extends State<RegistroEstacionamientoS
         foregroundColor: textMain,
         elevation: 0,
         title: const Text(
-          'Iniciar estacionamiento',
+          'Ubicación del auto',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 30),
-        children: [
-          _tarjeta(
-            titulo: 'Ubicación del auto',
-            icono: Icons.location_on_outlined,
-            contenido: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _etiqueta('Nivel o piso (opcional)'),
-                TextFormField(
-                  controller: _nivelController,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: _decoracion(
-                    hint: 'Ej. -2',
-                    icono: Icons.layers_outlined,
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 30),
+          children: [
+            _tarjeta(
+              titulo: 'Ubicación del auto',
+              icono: Icons.location_on_outlined,
+              contenido: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _etiqueta('Nivel o piso (opcional)'),
+                  TextFormField(
+                    controller: _nivelController,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: _decoracion(
+                      hint: 'Ej. -2',
+                      icono: Icons.layers_outlined,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 18),
-                _etiqueta('Sector (opcional)'),
-                TextFormField(
-                  controller: _sectorController,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: _decoracion(
-                    hint: 'Ej. B14',
-                    icono: Icons.grid_view_outlined,
+                  const SizedBox(height: 18),
+                  _etiqueta('Sector (opcional)'),
+                  TextFormField(
+                    controller: _sectorController,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: _decoracion(
+                      hint: 'Ej. B14',
+                      icono: Icons.grid_view_outlined,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 18),
-                _etiqueta('Dirección (opcional)'),
-                TextFormField(
-                  controller: _direccionController,
-                  textCapitalization: TextCapitalization.sentences,
-                  decoration: _decoracion(
-                    hint: 'Ej. Av. Américo Vespucio',
-                    icono: Icons.map_outlined,
+                  const SizedBox(height: 18),
+                  _etiqueta('Dirección (obligatoria)'),
+                  TextFormField(
+                    controller: _direccionController,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: _decoracion(
+                      hint: 'Ej. Av. Américo Vespucio',
+                      icono: Icons.map_outlined,
+                    ),
+                    validator: (valor) {
+                      if (valor == null || valor.trim().isEmpty) {
+                        return 'Ingresa la dirección o elígela en el mapa.';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _guardando ? null : _abrirMapa,
-                    icon: const Icon(Icons.location_on_outlined),
-                    label: const Text('Seleccionar ubicación en el mapa'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: primaryColor),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadios.control),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _guardando ? null : _abrirMapa,
+                      icon: const Icon(Icons.location_on_outlined),
+                      label: const Text('Seleccionar ubicación en el mapa'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: primaryColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppRadios.control,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                if (_latitud != null && _longitud != null) ...[
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Ubicación del mapa seleccionada',
-                    style: TextStyle(color: textMuted, fontSize: 12),
-                  ),
+                  if (_latitud != null && _longitud != null) ...[
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Ubicación del mapa seleccionada',
+                      style: TextStyle(color: textMuted, fontSize: 12),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: _guardando ? null : _guardar,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadios.control),
-                ),
-              ),
-              icon: _guardando
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.timer_outlined),
-              label: Text(
-                _guardando ? 'Iniciando...' : 'Iniciar cronómetro',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: _guardando ? null : _guardar,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadios.control),
+                  ),
+                ),
+                icon: _guardando
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.timer_outlined),
+                label: Text(
+                  _guardando ? 'Iniciando...' : 'Iniciar cronómetro',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
