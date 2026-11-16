@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart'
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'posicion_compartida.dart';
+
 /// Por qué no se pudo obtener la ubicación (excepciones E1 y E2 del CU18).
 enum MotivoErrorUbicacion {
   /// El GPS o la ubicación del dispositivo están apagados (E1).
@@ -81,6 +83,9 @@ class UbicacionService {
   /// posición real. Devuelve null si no hay, si todavía no hay permiso o en la
   /// web (el navegador no la entrega).
   Future<GeoPoint?> ultimaUbicacionConocida() async {
+    // La que ya obtuvo el mapa de rutas (también sirve en la web).
+    final compartida = PosicionCompartida.reciente();
+    if (compartida != null) return compartida;
     if (kIsWeb) return null;
     try {
       final p = await Geolocator.getLastKnownPosition();
@@ -94,6 +99,11 @@ class UbicacionService {
   /// devuelve la posición actual. Si no se puede, lanza [ErrorUbicacion] con el
   /// motivo, para que la pantalla muestre el mensaje.
   Future<GeoPoint> obtenerUbicacionActual() async {
+    // Si el mapa de rutas ya tiene tu posición (su GPS está activo desde que
+    // abriste la app), se usa al instante en vez de esperar un GPS en frío.
+    final compartida = PosicionCompartida.reciente();
+    if (compartida != null) return compartida;
+
     if (!await Geolocator.isLocationServiceEnabled()) {
       throw const ErrorUbicacion(MotivoErrorUbicacion.gpsDesactivado);
     }

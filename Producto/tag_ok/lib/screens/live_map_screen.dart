@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:vibration/vibration.dart';
 import 'route_setup_screen.dart';
 import 'mi_vehiculo/registrar_editar_vehiculo_screen.dart';
+import '../data/services/posicion_compartida.dart';
 import '../entorno.dart';
 import '../data/models/route_model.dart';
 import '../data/models/trip_history.dart';
@@ -477,6 +478,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
         if (lastPos != null && mounted && _currentPosition == null) {
           setState(() {
             _currentPosition = LatLng(lastPos.latitude, lastPos.longitude);
+            PosicionCompartida.actualizar(_currentPosition!);
           });
           _centerOnUser();
         }
@@ -495,6 +497,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
         if (mounted) {
           setState(() {
             _currentPosition = LatLng(initialPos.latitude, initialPos.longitude);
+            PosicionCompartida.actualizar(_currentPosition!);
             _lastGpsUpdateTime = DateTime.now();
           });
           _centerOnUser();
@@ -553,6 +556,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           if (kDebugMode && _isSimulating) return; // la simulación manda sobre el GPS real
           setState(() {
             _currentPosition = LatLng(position.latitude, position.longitude);
+            PosicionCompartida.actualizar(_currentPosition!);
             _currentSpeedKmH = position.speed > 0 ? position.speed * 3.6 : 0.0;
             _lastGpsUpdateTime = DateTime.now();
             if (_isGpsWeak) _isGpsWeak = false;
