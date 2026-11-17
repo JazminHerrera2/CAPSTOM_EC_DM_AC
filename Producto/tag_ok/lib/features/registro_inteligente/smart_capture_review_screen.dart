@@ -361,7 +361,7 @@ class _SmartCaptureReviewScreenState
               ),
 
               if (campo.requerido)
-                const Text(
+                Text(
                   'Obligatorio',
                   style: TextStyle(
                     color: AppColors.primario,
@@ -383,7 +383,7 @@ class _SmartCaptureReviewScreenState
                       campo.clave,
                     )
                 : null,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.texto,
               fontSize: 14,
             ),
@@ -391,7 +391,7 @@ class _SmartCaptureReviewScreenState
               hintText: esFecha
                   ? 'Seleccionar fecha'
                   : 'Ingresa ${campo.etiqueta.toLowerCase()}',
-              hintStyle: const TextStyle(
+              hintStyle: TextStyle(
                 color: AppColors.textoSecundario,
                 fontSize: 13,
               ),
@@ -399,7 +399,7 @@ class _SmartCaptureReviewScreenState
               fillColor: AppColors.superficie,
 
               prefixIcon: esFecha
-                  ? const Icon(
+                  ? Icon(
                       Icons
                           .calendar_today_outlined,
                       color: AppColors.textoSecundario,
@@ -408,7 +408,7 @@ class _SmartCaptureReviewScreenState
                   : null,
 
               suffixIcon: dudoso
-                  ? const Tooltip(
+                  ? Tooltip(
                       message:
                           'La IA no está completamente segura de este dato',
                       child: Icon(
@@ -455,7 +455,7 @@ class _SmartCaptureReviewScreenState
 
           if (_fechaEstimadaVigente(campo.clave)) ...[
             const SizedBox(height: 6),
-            const Row(
+            Row(
               children: [
                 Icon(
                   Icons.info_outline,
@@ -478,7 +478,7 @@ class _SmartCaptureReviewScreenState
 
           if (dudoso) ...[
             const SizedBox(height: 6),
-            const Row(
+            Row(
               children: [
                 Icon(
                   Icons.info_outline,
@@ -509,7 +509,7 @@ class _SmartCaptureReviewScreenState
 
   /// Aviso morado que explica cómo se calcula la vigencia según lo pagado.
   Widget _avisoPermiso() {
-    const base = TextStyle(color: AppColors.texto, fontSize: 12, height: 1.45);
+    final base = TextStyle(color: AppColors.texto, fontSize: 12, height: 1.45);
     const negrita = TextStyle(fontWeight: FontWeight.w700);
 
     return Container(
@@ -521,7 +521,7 @@ class _SmartCaptureReviewScreenState
         borderRadius: BorderRadius.circular(AppRadios.control),
         border: Border.all(color: AppColors.primario.withOpacity(0.5)),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.info_outline, color: AppColors.primario, size: 20),
@@ -564,7 +564,7 @@ class _SmartCaptureReviewScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: Text(
@@ -619,7 +619,7 @@ class _SmartCaptureReviewScreenState
                       maxLines: 1,
                       softWrap: false,
                       style: TextStyle(
-                        color: _formaPago == forma ? Colors.white : AppColors.textoSecundario,
+                        color: _formaPago == forma ? AppColors.sobrePrimario : AppColors.textoSecundario,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -635,7 +635,7 @@ class _SmartCaptureReviewScreenState
                 : vencimiento != null
                     ? '${propuestaPorIa ? "Propuesta por la IA. " : ""}${_formaPago == FormaPagoPermiso.cuota1 ? "Falta pagar la segunda cuota: " : "Permiso pagado: "}vence el ${formatoFechaCl(vencimiento)}.'
                     : 'Ingresa la fecha de emisión para calcular el vencimiento.',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textoSecundario,
               fontSize: 10,
             ),
@@ -661,14 +661,14 @@ class _SmartCaptureReviewScreenState
         backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: AppColors.texto,
         ),
         title: Text(
           esManual
               ? 'Registrar documento'
               : 'Revisar y confirmar',
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.texto,
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -745,7 +745,7 @@ class _SmartCaptureReviewScreenState
                               ? 'Ingreso manual'
                               : 'Datos detectados con IA',
                           style:
-                              const TextStyle(
+                              TextStyle(
                             color: AppColors.texto,
                             fontSize: 15,
                             fontWeight:
@@ -760,7 +760,7 @@ class _SmartCaptureReviewScreenState
                               ? 'Completa los datos del documento antes de guardarlo.'
                               : 'Revisa la información detectada. Puedes corregir cualquier dato antes de guardar.',
                           style:
-                              const TextStyle(
+                              TextStyle(
                             color: AppColors.textoSecundario,
                             fontSize: 12,
                             height: 1.4,
@@ -794,7 +794,7 @@ class _SmartCaptureReviewScreenState
                         .withOpacity(0.55),
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   crossAxisAlignment:
                       CrossAxisAlignment.start,
                   children: [
@@ -828,7 +828,7 @@ class _SmartCaptureReviewScreenState
             // TIPO DOCUMENTO
             // ----------------------------------------------------
 
-            const Text(
+            Text(
               'Tipo de documento',
               style: TextStyle(
                 color: AppColors.texto,
@@ -839,7 +839,7 @@ class _SmartCaptureReviewScreenState
 
             const SizedBox(height: 5),
 
-            const Text(
+            Text(
               'Selecciona el documento que estás registrando.',
               style: TextStyle(
                 color: AppColors.textoSecundario,
@@ -853,7 +853,7 @@ class _SmartCaptureReviewScreenState
                 DocumentType>(
               value: _tipoSeleccionado,
               dropdownColor: AppColors.superficie,
-              icon: const Icon(
+              icon: Icon(
                 Icons.keyboard_arrow_down,
                 color: AppColors.textoSecundario,
               ),
@@ -861,7 +861,7 @@ class _SmartCaptureReviewScreenState
                 filled: true,
                 fillColor: AppColors.superficie,
 
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons
                       .description_outlined,
                   color: AppColors.primario,
@@ -873,7 +873,7 @@ class _SmartCaptureReviewScreenState
                   borderRadius:
                       BorderRadius.circular(AppRadios.control),
                   borderSide:
-                      const BorderSide(
+                      BorderSide(
                     color:
                         AppColors.borde,
                   ),
@@ -884,19 +884,19 @@ class _SmartCaptureReviewScreenState
                   borderRadius:
                       BorderRadius.circular(AppRadios.control),
                   borderSide:
-                      const BorderSide(
+                      BorderSide(
                     color: AppColors.primario,
                     width: 1.5,
                   ),
                 ),
               ),
 
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.texto,
                 fontSize: 14,
               ),
 
-              hint: const Text(
+              hint: Text(
                 'Selecciona un tipo',
                 style: TextStyle(
                   color: AppColors.textoSecundario,
@@ -938,7 +938,7 @@ class _SmartCaptureReviewScreenState
                 null) ...[
               const SizedBox(height: 28),
 
-              const Text(
+              Text(
                 'Datos del documento',
                 style: TextStyle(
                   color: AppColors.texto,
@@ -950,7 +950,7 @@ class _SmartCaptureReviewScreenState
 
               const SizedBox(height: 5),
 
-              const Text(
+              Text(
                 'Los campos marcados como obligatorios deben completarse.',
                 style: TextStyle(
                   color: AppColors.textoSecundario,
@@ -998,7 +998,7 @@ class _SmartCaptureReviewScreenState
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
                       color:
                           AppColors.error,
@@ -1011,7 +1011,7 @@ class _SmartCaptureReviewScreenState
                       child: Text(
                         _errorValidacion!,
                         style:
-                            const TextStyle(
+                            TextStyle(
                           color:
                               AppColors.error,
                           fontSize: 12,
@@ -1040,14 +1040,14 @@ class _SmartCaptureReviewScreenState
                           : _confirmar,
 
                   icon: _guardando
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 19,
                           height: 19,
                           child:
                               CircularProgressIndicator(
                             strokeWidth: 2,
                             color:
-                                Colors.white,
+                                AppColors.sobrePrimario,
                           ),
                         )
                       : Icon(
@@ -1057,7 +1057,7 @@ class _SmartCaptureReviewScreenState
                               : Icons
                                   .check_circle_outline,
                           color:
-                              Colors.white,
+                              AppColors.sobrePrimario,
                         ),
 
                   label: Text(
@@ -1067,8 +1067,8 @@ class _SmartCaptureReviewScreenState
                             ? 'Guardar documento'
                             : 'Confirmar y guardar',
                     style:
-                        const TextStyle(
-                      color: Colors.white,
+                        TextStyle(
+                      color: AppColors.sobrePrimario,
                       fontSize: 14,
                       fontWeight:
                           FontWeight.w700,

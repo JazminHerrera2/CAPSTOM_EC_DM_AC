@@ -63,7 +63,7 @@ class SegmentosPeriodo extends StatelessWidget {
                     _etiquetas[tipo]!,
                     style: TextStyle(
                       color: tipo == seleccionado
-                          ? Colors.white
+                          ? AppColors.sobrePrimario
                           : AppColors.textoSecundario,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -114,7 +114,7 @@ class PildoraPeriodo extends StatelessWidget {
                 child: Text(
                   periodo.etiqueta,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -122,7 +122,7 @@ class PildoraPeriodo extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down_rounded,
                 color: AppColors.primario,
                 size: 22,
@@ -156,7 +156,7 @@ class MontoPeriodo extends StatelessWidget {
           child: Text(
             clp(resumen.total),
             maxLines: 1,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.texto,
               fontSize: 44,
               fontWeight: FontWeight.w800,
@@ -170,7 +170,7 @@ class MontoPeriodo extends StatelessWidget {
           vacio
               ? 'Sin mantenciones en este periodo'
               : textoCantidad(resumen.cantidad),
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textoSecundario,
             fontSize: 14,
           ),

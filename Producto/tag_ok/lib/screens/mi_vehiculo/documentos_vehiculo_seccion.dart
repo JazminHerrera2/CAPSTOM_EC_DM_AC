@@ -73,7 +73,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
       );
 
       messenger.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Vencimiento actualizado exitosamente.'),
           backgroundColor: AppColors.exito,
         ),
@@ -81,7 +81,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
     } catch (e) {
       debugPrint('No se pudo actualizar el vencimiento: $e');
       messenger.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
             'No se pudo actualizar el vencimiento. Intenta nuevamente.',
           ),
@@ -217,7 +217,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
             // con el ícono en azul y sin recuadro de color detrás.
             Row(
               children: [
-                const SizedBox(
+                SizedBox(
                   width: 40,
                   height: 40,
                   child: Icon(
@@ -235,7 +235,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                     children: [
                       Text(
                         documento.tipoDocumento.etiqueta,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.texto,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -286,7 +286,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   onPressed: () {
                     _configurarVencimiento(context, documento);
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.edit_calendar_outlined,
                     color: AppColors.primario,
                   ),
@@ -300,7 +300,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
               children: [
                 const SizedBox(width: 4),
 
-                const Icon(
+                Icon(
                   Icons.event_outlined,
                   color: AppColors.textoSecundario,
                   size: 18,
@@ -308,7 +308,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
 
                 const SizedBox(width: 8),
 
-                const Text(
+                Text(
                   'Vencimiento',
                   style: TextStyle(
                     color: AppColors.textoSecundario,
@@ -344,12 +344,12 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
               height: 38,
               child: OutlinedButton.icon(
                 onPressed: () => _actualizarDocumento(context, documento),
-                icon: const Icon(
+                icon: Icon(
                   Icons.autorenew_rounded,
                   color: AppColors.primario,
                   size: 19,
                 ),
-                label: const Text(
+                label: Text(
                   'Actualizar',
                   style: TextStyle(
                     color: AppColors.texto,
@@ -396,7 +396,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
               color: AppColors.primario.withOpacity(0.10),
               borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.description_outlined,
               color: AppColors.primario,
               size: 34,
@@ -405,7 +405,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
 
           const SizedBox(height: 18),
 
-          const Text(
+          Text(
             'Aún no hay documentos',
             style: TextStyle(
               color: AppColors.texto,
@@ -416,7 +416,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
 
           const SizedBox(height: 7),
 
-          const Text(
+          Text(
             'Agrega los documentos de tu vehículo para controlar sus vencimientos.',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -437,7 +437,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primario,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.sobrePrimario,
               elevation: 0,
               padding: const EdgeInsets.symmetric(
                 horizontal: 18,
@@ -487,9 +487,9 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   color: AppColors.primario.withOpacity(0.28),
                   borderRadius: BorderRadius.circular(AppRadios.icono),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.directions_car_outlined,
-                  color: Colors.white,
+                  color: AppColors.sobrePrimario,
                   size: 22,
                 ),
               ),
@@ -499,7 +499,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Vehículo',
                     style: TextStyle(
                       color: AppColors.barraInactiva,
@@ -509,8 +509,8 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     patenteVehiculo,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: AppColors.sobrePrimario,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),
@@ -538,7 +538,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primario,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.sobrePrimario,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadios.control),
@@ -553,7 +553,7 @@ class DocumentosVehiculoSeccion extends StatelessWidget {
 
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

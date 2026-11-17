@@ -87,14 +87,14 @@ class FiltroMesAnio extends StatelessWidget {
       enableFilter: false,
       enableSearch: false,
       menuHeight: 300,
-      textStyle: const TextStyle(color: AppColors.texto, fontSize: 14),
-      trailingIcon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textoSecundario),
-      selectedTrailingIcon: const Icon(Icons.keyboard_arrow_up, color: AppColors.textoSecundario),
+      textStyle: TextStyle(color: AppColors.texto, fontSize: 14),
+      trailingIcon: Icon(Icons.keyboard_arrow_down, color: AppColors.textoSecundario),
+      selectedTrailingIcon: Icon(Icons.keyboard_arrow_up, color: AppColors.textoSecundario),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.superficie,
         isDense: true,
-        labelStyle: const TextStyle(color: AppColors.textoSecundario),
+        labelStyle: TextStyle(color: AppColors.textoSecundario),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadios.control),
@@ -102,7 +102,7 @@ class FiltroMesAnio extends StatelessWidget {
         ),
       ),
       menuStyle: MenuStyle(
-        backgroundColor: const WidgetStatePropertyAll(AppColors.superficie),
+        backgroundColor: WidgetStatePropertyAll(AppColors.superficie),
         surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
         elevation: const WidgetStatePropertyAll(6),
         shape: WidgetStatePropertyAll(

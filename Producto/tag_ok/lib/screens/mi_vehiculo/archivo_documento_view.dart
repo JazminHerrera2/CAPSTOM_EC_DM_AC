@@ -68,7 +68,7 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
                   fit: BoxFit.contain,
                   placeholder: (_, _) =>
                       const Center(child: CircularProgressIndicator()),
-                  errorWidget: (_, _, _) => const Center(
+                  errorWidget: (_, _, _) => Center(
                     child: Icon(Icons.broken_image_outlined,
                         color: AppColors.textoSecundario, size: 48),
                   ),
@@ -121,9 +121,9 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(Icons.cloud_off_outlined, color: AppColors.textoSecundario),
+                  Icon(Icons.cloud_off_outlined, color: AppColors.textoSecundario),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'No se pudo cargar el documento guardado.',
                       style: TextStyle(color: AppColors.textoSecundario),
@@ -147,10 +147,10 @@ class _ArchivoDocumentoViewState extends State<ArchivoDocumentoView> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(Icons.picture_as_pdf_outlined,
+                  Icon(Icons.picture_as_pdf_outlined,
                       color: AppColors.primario, size: 32),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Documento original (PDF)',
                       style: TextStyle(

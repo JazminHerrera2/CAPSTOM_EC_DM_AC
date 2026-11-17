@@ -210,8 +210,8 @@ class _DetalleEstacionamientoScreenState
         backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.texto),
-        title: const Text(
+        iconTheme: IconThemeData(color: AppColors.texto),
+        title: Text(
           'Detalle del estacionamiento',
           style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w700),
         ),
@@ -241,7 +241,7 @@ class _DetalleEstacionamientoScreenState
                   _tarjeta(
                     Text(
                       observacion,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.texto,
                         fontSize: 14,
                         height: 1.4,
@@ -263,7 +263,7 @@ class _DetalleEstacionamientoScreenState
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primario,
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppColors.sobrePrimario,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadios.control),
                         ),
@@ -285,7 +285,7 @@ class _DetalleEstacionamientoScreenState
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primario,
-                        foregroundColor: Colors.white,
+                        foregroundColor: AppColors.sobrePrimario,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             AppRadios.control,
@@ -307,7 +307,7 @@ class _DetalleEstacionamientoScreenState
     return Column(
       children: [
         for (var i = 0; i < filas.length; i++) ...[
-          if (i > 0) const Divider(height: 18, color: AppColors.fondo),
+          if (i > 0) Divider(height: 18, color: AppColors.fondo),
           _fila(filas[i].$1, filas[i].$2, filas[i].$3),
         ],
       ],
@@ -318,7 +318,7 @@ class _DetalleEstacionamientoScreenState
     return _tarjeta(
       Row(
         children: [
-          const SizedBox(
+          SizedBox(
             width: 50,
             height: 50,
             child: Icon(
@@ -334,7 +334,7 @@ class _DetalleEstacionamientoScreenState
               children: [
                 Text(
                   _titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -379,7 +379,7 @@ class _DetalleEstacionamientoScreenState
   Widget _tituloSeccion(String texto) {
     return Text(
       texto,
-      style: const TextStyle(
+      style: TextStyle(
         color: AppColors.texto,
         fontSize: 15,
         fontWeight: FontWeight.w700,
@@ -408,7 +408,7 @@ class _DetalleEstacionamientoScreenState
         const SizedBox(width: 10),
         Text(
           etiqueta,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.textoSecundario,
             fontSize: 13,
           ),
@@ -418,7 +418,7 @@ class _DetalleEstacionamientoScreenState
           child: Text(
             valor,
             textAlign: TextAlign.end,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.texto,
               fontSize: 14,
               fontWeight: FontWeight.w600,

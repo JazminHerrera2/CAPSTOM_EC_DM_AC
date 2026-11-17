@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: AppColors.lavanda,
           elevation: 0,
           shape: const CircleBorder(),
-          child: const Icon(
+          child: Icon(
             Icons.map_outlined,
             size: 30,
             color: AppColors.sobreLavanda,

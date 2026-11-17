@@ -386,7 +386,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Row(
                 children: [
                   Icon(Icons.restore, color: Colors.white),
@@ -449,7 +449,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           debugPrint('Permisos de ubicación denegados.');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Para usar la app, debes permitir el acceso a la ubicación.'),
                 backgroundColor: AppColors.error,
               ),
@@ -463,7 +463,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
         debugPrint('Permisos de ubicación denegados permanentemente.');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('Permisos bloqueados en el sistema. Habilítalos en los Ajustes del celular.'),
               backgroundColor: AppColors.error,
             ),
@@ -899,7 +899,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       point: _currentRoute!.polyline.first,
                       width: 40,
                       height: 40,
-                      child: const Icon(Icons.radio_button_checked, color: AppColors.exito, size: 30),
+                      child: Icon(Icons.radio_button_checked, color: AppColors.exito, size: 30),
                     ),
 
                   // Marcador de Fin (Rojo)
@@ -908,7 +908,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       point: _currentRoute!.polyline.last,
                       width: 40,
                       height: 40,
-                      child: const Icon(Icons.location_on, color: AppColors.error, size: 35),
+                      child: Icon(Icons.location_on, color: AppColors.error, size: 35),
                     ),
 
                   // Marcadores de Pórticos
@@ -982,7 +982,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                         children: [
                           Text('Costo Total Estimado', style: TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
                           const SizedBox(height: 4),
-                          Text('\$${_currentRoute!.totalCost.toStringAsFixed(0)} CLP', style: const TextStyle(color: AppColors.exito, fontSize: 22, fontWeight: FontWeight.bold)),
+                          Text('\$${_currentRoute!.totalCost.toStringAsFixed(0)} CLP', style: TextStyle(color: AppColors.exito, fontSize: 22, fontWeight: FontWeight.bold)),
                         ],
                       ),
                       Column(
@@ -1002,9 +1002,9 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       if (nextToll != null) {
                         return Row(
                           children: [
-                            const Icon(Icons.sensors, color: AppColors.exito, size: 16),
+                            Icon(Icons.sensors, color: AppColors.exito, size: 16),
                             const SizedBox(width: 8),
-                            Expanded(child: Text('Próximo peaje: ${nextToll.name}', style: const TextStyle(color: AppColors.texto, fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+                            Expanded(child: Text('Próximo peaje: ${nextToll.name}', style: TextStyle(color: AppColors.texto, fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
                           ],
                         );
                       }
@@ -1031,7 +1031,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                       child: Container(
                         height: 48,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: [AppColors.primario, AppColors.primario]),
+                          gradient: LinearGradient(colors: [AppColors.primario, AppColors.primario]),
                           borderRadius: BorderRadius.circular(AppRadios.icono),
                           boxShadow: [
                             BoxShadow(color: AppColors.primario.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
@@ -1121,7 +1121,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                                   _checkAndShowLimitAlert(context, newTotal, limit);
 
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content: Text('Viaje guardado en el historial'),
                                       backgroundColor: AppColors.exito,
                                     ),
@@ -1238,9 +1238,9 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                 children: [
                   Text(
                     _currentSpeedKmH.toStringAsFixed(0),
-                    style: const TextStyle(color: AppColors.texto, fontSize: 18, fontWeight: FontWeight.bold, height: 1.1),
+                    style: TextStyle(color: AppColors.texto, fontSize: 18, fontWeight: FontWeight.bold, height: 1.1),
                   ),
-                  const Text(
+                  Text(
                     'km/h',
                     style: TextStyle(color: AppColors.textoSecundario, fontSize: 10, height: 1.1),
                   ),
@@ -1300,14 +1300,14 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
           children: [
             Icon(Icons.directions_car, color: AppColors.primario),
             const SizedBox(width: 10),
-            const Text("Confirmar Vehículo", style: TextStyle(color: AppColors.texto, fontSize: 18)),
+            Text("Confirmar Vehículo", style: TextStyle(color: AppColors.texto, fontSize: 18)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("¿Vas en tu vehículo principal?", style: TextStyle(color: AppColors.textoSecundario)),
+            Text("¿Vas en tu vehículo principal?", style: TextStyle(color: AppColors.textoSecundario)),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -1321,7 +1321,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                   const SizedBox(width: 10),
                   Text(
                     '${principal['marca']} (${principal['patente']})',
-                    style: const TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -1370,7 +1370,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.superficie,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
-        title: const Text("Seleccionar Vehículo", style: TextStyle(color: AppColors.texto)),
+        title: Text("Seleccionar Vehículo", style: TextStyle(color: AppColors.texto)),
         content: SizedBox(
           width: double.maxFinite,
           height: math.min(vehicles.length * 72.0, MediaQuery.of(context).size.height * 0.6),
@@ -1379,8 +1379,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
             itemBuilder: (context, index) {
               final v = vehicles[index];
               return ListTile(
-                leading: const Icon(Icons.directions_car, color: AppColors.textoSecundario),
-                title: Text(v['patente'], style: const TextStyle(color: AppColors.texto)),
+                leading: Icon(Icons.directions_car, color: AppColors.textoSecundario),
+                title: Text(v['patente'], style: TextStyle(color: AppColors.texto)),
                 subtitle: Text(v['marca'], style: TextStyle(color: AppColors.textoSecundario)),
                 onTap: () {
                   setState(() {
@@ -1416,10 +1416,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
             children: [
               const Icon(Icons.info_outline, color: Colors.amber),
               const SizedBox(width: 10),
-              const Text("Configuración Inicial", style: TextStyle(color: AppColors.texto, fontSize: 18)),
+              Text("Configuración Inicial", style: TextStyle(color: AppColors.texto, fontSize: 18)),
             ],
           ),
-          content: const Text(
+          content: Text(
             "¡Bienvenido! Para poder usar Tag OK y calcular tus cobros, primero debes registrar tu vehículo.",
             style: TextStyle(color: AppColors.textoSecundario),
           ),
@@ -1486,10 +1486,10 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
               children: [
                 Icon(Icons.warning_amber_rounded, color: alertColor),
                 const SizedBox(width: 10),
-                const Text("Alerta de Presupuesto", style: TextStyle(color: AppColors.texto, fontSize: 18)),
+                Text("Alerta de Presupuesto", style: TextStyle(color: AppColors.texto, fontSize: 18)),
               ],
             ),
-            content: Text(message!, style: const TextStyle(color: AppColors.textoSecundario)),
+            content: Text(message!, style: TextStyle(color: AppColors.textoSecundario)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -1566,16 +1566,16 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                     children: [
                       Text(
                         "Hola, ${user?.email?.split('@')[0] ?? 'Usuario'}",
-                        style: const TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold, fontSize: 14),
                       ),
-                      const Text(
+                      Text(
                         "Protección de TAG Activa",
                         style: TextStyle(color: AppColors.exito, fontSize: 11, fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.notifications_none, color: AppColors.textoSecundario, size: 22),
+                Icon(Icons.notifications_none, color: AppColors.textoSecundario, size: 22),
               ],
             ),
           ),
@@ -1608,7 +1608,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                     color: AppColors.primario.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppRadios.icono),
                   ),
-                  child: const Icon(Icons.directions_car, color: AppColors.primario, size: 20),
+                  child: Icon(Icons.directions_car, color: AppColors.primario, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1620,8 +1620,8 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text("Vehículo Principal", style: TextStyle(color: AppColors.textoSecundario, fontSize: 10)),
-                          Text(patente, style: const TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text("Vehículo Principal", style: TextStyle(color: AppColors.textoSecundario, fontSize: 10)),
+                          Text(patente, style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.bold, fontSize: 13)),
                         ],
                       );
                     },
@@ -1672,7 +1672,7 @@ class _LiveMapScreenState extends State<LiveMapScreen> with WidgetsBindingObserv
                 const SizedBox(height: 4),
                 Text(
                   "${(progress * 100).round()}%",
-                  style: const TextStyle(color: AppColors.texto, fontSize: 9, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: AppColors.texto, fontSize: 9, fontWeight: FontWeight.bold),
                 ),
               ],
             );

@@ -48,7 +48,7 @@ class CampanaNotificaciones extends StatelessWidget {
           icon: Badge(
             isLabelVisible: sinLeer > 0,
             label: Text(sinLeer > 9 ? '9+' : '$sinLeer'),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_outlined,
               color: AppColors.texto,
               size: 28,
@@ -80,7 +80,7 @@ class NotificacionesScreen extends StatelessWidget {
         title: const Text('Notificaciones'),
       ),
       body: uid == null
-          ? const Center(
+          ? Center(
               child: Text(
                 'Inicia sesión para ver tus notificaciones.',
                 style: TextStyle(color: AppColors.textoSecundario),
@@ -90,7 +90,7 @@ class NotificacionesScreen extends StatelessWidget {
               stream: servicio.escucharDelUsuario(uid),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       'No se pudieron cargar las notificaciones.',
                       style: TextStyle(color: AppColors.textoSecundario),
@@ -110,7 +110,7 @@ class NotificacionesScreen extends StatelessWidget {
                 final sinLeer = recientes.where((n) => !n.leida).toList();
 
                 if (recientes.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Padding(
                       padding: EdgeInsets.all(32),
                       child: Text(
@@ -235,13 +235,13 @@ class _BannerPermisoNavegadorState extends State<_BannerPermisoNavegador> {
       color: AppColors.superficie,
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        leading: const Icon(Icons.notifications_active_outlined,
+        leading: Icon(Icons.notifications_active_outlined,
             color: AppColors.advertencia),
-        title: const Text(
+        title: Text(
           'Activa los avisos del navegador',
           style: TextStyle(color: AppColors.texto),
         ),
-        subtitle: const Text(
+        subtitle: Text(
           'Te avisaremos de documentos por vencer y mantenciones programadas '
           'mientras tengas la app abierta.',
           style: TextStyle(color: AppColors.textoSecundario),
@@ -262,7 +262,7 @@ class _Titulo extends StatelessWidget {
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.textoSecundario,
           fontSize: 13,
           fontWeight: FontWeight.w600,
@@ -319,11 +319,11 @@ class _TarjetaAviso extends StatelessWidget {
         ),
         subtitle: Text(
           cuando,
-          style: const TextStyle(color: AppColors.textoSecundario),
+          style: TextStyle(color: AppColors.textoSecundario),
         ),
         trailing: noLeida
-            ? const Icon(Icons.circle, size: 10, color: AppColors.primario)
-            : const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
+            ? Icon(Icons.circle, size: 10, color: AppColors.primario)
+            : Icon(Icons.chevron_right, color: AppColors.textoSecundario),
       ),
     );
   }

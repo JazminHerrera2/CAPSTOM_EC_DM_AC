@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:tag_ok/theme/app_colors.dart';
 
 import '../../data/services/geocoding_service.dart';
 
@@ -74,7 +75,10 @@ class DireccionDeUbicacion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final estiloBase = estilo ??
-        TextStyle(color: Colors.grey.shade800, fontSize: 13);
+        TextStyle(
+          color: AppColors.oscuro ? AppColors.textoSecundario : Colors.grey.shade800,
+          fontSize: 13,
+        );
     return FutureBuilder<String?>(
       future: direccionConMemoria(ubicacion, buscar: buscar),
       builder: (context, snap) {

@@ -59,8 +59,8 @@ class DetalleCombustibleScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.texto),
-        title: const Text(
+        iconTheme: IconThemeData(color: AppColors.texto),
+        title: Text(
           'Detalle de carga',
           style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w700),
         ),
@@ -80,7 +80,7 @@ class DetalleCombustibleScreen extends StatelessWidget {
                   Column(
                     children: [
                       for (var i = 0; i < filas.length; i++) ...[
-                        if (i > 0) const Divider(height: 18, color: AppColors.fondo),
+                        if (i > 0) Divider(height: 18, color: AppColors.fondo),
                         _fila(filas[i].$1, filas[i].$2, filas[i].$3),
                       ],
                     ],
@@ -116,7 +116,7 @@ class DetalleCombustibleScreen extends StatelessWidget {
               children: [
                 Text(
                   carga.titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -157,7 +157,7 @@ class DetalleCombustibleScreen extends StatelessWidget {
   Widget _titulo(String texto) {
     return Text(
       texto,
-      style: const TextStyle(
+      style: TextStyle(
         color: AppColors.texto,
         fontSize: 15,
         fontWeight: FontWeight.w700,
@@ -184,13 +184,13 @@ class DetalleCombustibleScreen extends StatelessWidget {
       children: [
         Icon(icono, color: AppColors.primario, size: 19),
         const SizedBox(width: 10),
-        Text(etiqueta, style: const TextStyle(color: AppColors.textoSecundario, fontSize: 13)),
+        Text(etiqueta, style: TextStyle(color: AppColors.textoSecundario, fontSize: 13)),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             valor,
             textAlign: TextAlign.end,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.texto,
               fontSize: 14,
               fontWeight: FontWeight.w600,

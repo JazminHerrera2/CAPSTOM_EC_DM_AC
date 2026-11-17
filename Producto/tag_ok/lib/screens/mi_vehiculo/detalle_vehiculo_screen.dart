@@ -145,10 +145,10 @@ class _DetalleVehiculoVista extends StatelessWidget {
         backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: AppColors.texto,
         ),
-        title: const Text(
+        title: Text(
           'Detalle de vehículo',
           style: TextStyle(
             color: AppColors.texto,
@@ -156,27 +156,6 @@ class _DetalleVehiculoVista extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Editar vehículo',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      RegistrarEditarVehiculoScreen(
-                    vehiculo: vehiculo,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(
-              Icons.edit_outlined,
-              color: AppColors.texto,
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
 
       // ----------------------------------------------------------
@@ -240,7 +219,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                       width: double.infinity,
                       height: 220,
                       clipBehavior: Clip.antiAlias,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.superficie,
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(22),
@@ -265,7 +244,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                                 child: Text(
                                   nombrePrincipal,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: AppColors.texto,
                                     fontSize: 24,
                                     fontWeight: FontWeight.w800,
@@ -277,7 +256,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                                 tooltip: 'Información del vehículo',
                                 visualDensity: VisualDensity.compact,
                                 onPressed: () => _mostrarInformacion(context),
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.info_outline,
                                   color: AppColors.textoSecundario,
                                   size: 24,
@@ -292,7 +271,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                             Text(
                               marcaModelo,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textoSecundario,
                                 fontSize: 14,
                               ),
@@ -355,7 +334,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
               // DOCUMENTOS
               // --------------------------------------------------
 
-              const Text(
+              Text(
                 'Documentos',
                 style: TextStyle(
                   color: AppColors.texto,
@@ -378,6 +357,36 @@ class _DetalleVehiculoVista extends StatelessWidget {
               ),
 
               const SizedBox(height: 28),
+
+              // --------------------------------------------------
+              // EDITAR VEHÍCULO
+              // --------------------------------------------------
+
+              SizedBox(
+                height: 50,
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          RegistrarEditarVehiculoScreen(vehiculo: vehiculo),
+                    ),
+                  ),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Editar vehículo'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primario,
+                    side: BorderSide(
+                      color: AppColors.primario.withValues(alpha: 0.6),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadios.control),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
 
               // --------------------------------------------------
               // ELIMINAR VEHÍCULO
@@ -427,7 +436,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
-          title: const Row(
+          title: Row(
             children: [
               Icon(
                 Icons.warning_amber_rounded,
@@ -445,7 +454,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
           content: Text(
             'Se eliminará "$nombre" junto con todos sus documentos y '
             'avisos de vencimiento. Esta acción no se puede deshacer.',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textoSecundario,
               height: 1.4,
             ),
@@ -578,9 +587,9 @@ class _DetalleVehiculoVista extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.info_outline, color: AppColors.textoSecundario),
+                      Icon(Icons.info_outline, color: AppColors.textoSecundario),
                       const SizedBox(width: 10),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Información del vehículo',
                           style: TextStyle(
@@ -594,7 +603,7 @@ class _DetalleVehiculoVista extends StatelessWidget {
                         tooltip: 'Cerrar',
                         visualDensity: VisualDensity.compact,
                         onPressed: () => Navigator.pop(dialogContext),
-                        icon: const Icon(Icons.close, color: AppColors.textoSecundario),
+                        icon: Icon(Icons.close, color: AppColors.textoSecundario),
                       ),
                     ],
                   ),
@@ -631,14 +640,14 @@ class _DetalleVehiculoVista extends StatelessWidget {
           const SizedBox(width: 12),
           Text(
             etiqueta,
-            style: const TextStyle(color: AppColors.textoSecundario, fontSize: 13),
+            style: TextStyle(color: AppColors.textoSecundario, fontSize: 13),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               valor,
               textAlign: TextAlign.end,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.texto,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

@@ -140,14 +140,14 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Mantenciones',
           style: TextStyle(
             color: AppColors.texto,
             fontWeight: FontWeight.w700,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppColors.texto),
+        iconTheme: IconThemeData(color: AppColors.texto),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
@@ -209,9 +209,9 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                             ),
                           );
                         },
-                        child: const Icon(
+                        child: Icon(
                           Icons.add,
-                          color: Colors.white,
+                          color: AppColors.sobrePrimario,
                           size: 30,
                         ),
                       ),
@@ -262,7 +262,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
-                    color: activo == v.id ? Colors.white : AppColors.textoSecundario,
+                    color: activo == v.id ? AppColors.sobrePrimario : AppColors.textoSecundario,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -342,7 +342,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
 
   Widget _seccionHistorial(AsyncSnapshot<List<MantencionModel>> snapshot) {
     if (snapshot.hasError) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(
           child: Text(
@@ -353,7 +353,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
       );
     }
     if (!snapshot.hasData) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(child: CircularProgressIndicator(color: AppColors.primario)),
       );
@@ -372,7 +372,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Historial de mantenciones',
                 style: TextStyle(
@@ -390,7 +390,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               ),
               child: Text(
                 lista.length == 1 ? '1 registro' : '${lista.length} registros',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primario,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -443,14 +443,14 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
               color: AppColors.primario.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.car_repair_outlined,
               color: AppColors.primario,
               size: 32,
             ),
           ),
           const SizedBox(height: 17),
-          const Text(
+          Text(
             'Aún no hay mantenciones registradas',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -464,7 +464,7 @@ class _MantenimientoScreenState extends State<MantenimientoScreen> {
             detalle ??
                 'Toca el + para registrar una mantención; aparecerá en este historial.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.5),
+            style: TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.5),
           ),
         ],
       ),
@@ -514,7 +514,7 @@ class _MenuCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.texto,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -524,7 +524,7 @@ class _MenuCard extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(
                           subtitle!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textoSecundario,
                             fontSize: 11,
                           ),
@@ -533,7 +533,7 @@ class _MenuCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
                   color: AppColors.textoSecundario,
                 ),

@@ -24,14 +24,14 @@ abstract final class AppRadios {
 /// Sombras estándar de la app.
 abstract final class AppSombras {
   /// Sombra suave de las tarjetas blancas sobre el fondo lavanda.
-  static const List<BoxShadow> tarjeta = [
-    BoxShadow(color: AppColors.sombra, blurRadius: 16, offset: Offset(0, 4)),
+  static List<BoxShadow> get tarjeta => [
+    BoxShadow(color: AppColors.sombra, blurRadius: 16, offset: const Offset(0, 4)),
   ];
 
-  /// Resplandor de una tarjeta de color primario (p. ej. la de gastos).
-  static final List<BoxShadow> primaria = [
+  /// Resplandor de la tarjeta violeta de gastos.
+  static List<BoxShadow> get primaria => [
     BoxShadow(
-      color: AppColors.primario.withValues(alpha: 0.35),
+      color: AppColors.violeta.withValues(alpha: AppColors.oscuro ? 0.25 : 0.35),
       blurRadius: 20,
       offset: const Offset(0, 8),
     ),
@@ -44,7 +44,10 @@ class TarjetaApp extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
-  final Color color;
+  /// Fondo; por defecto [AppColors.superficie].
+  final Color? color;
+
+  /// Sombra; por defecto [AppSombras.tarjeta].
   final List<BoxShadow>? sombra;
 
   const TarjetaApp({
@@ -52,8 +55,8 @@ class TarjetaApp extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.onTap,
-    this.color = AppColors.superficie,
-    this.sombra = AppSombras.tarjeta,
+    this.color,
+    this.sombra,
   });
 
   @override
@@ -61,9 +64,9 @@ class TarjetaApp extends StatelessWidget {
     final radio = BorderRadius.circular(AppRadios.tarjeta);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? AppColors.superficie,
         borderRadius: radio,
-        boxShadow: sombra,
+        boxShadow: sombra ?? AppSombras.tarjeta,
       ),
       child: Material(
         type: MaterialType.transparency,

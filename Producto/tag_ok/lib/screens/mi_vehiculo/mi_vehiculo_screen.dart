@@ -43,9 +43,9 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
             ),
           );
         },
-        child: const Icon(
+        child: Icon(
           Icons.add,
-          color: Colors.white,
+          color: AppColors.sobrePrimario,
           size: 30,
         ),
       ),
@@ -421,7 +421,7 @@ class _MiVehiculoScreenState extends State<MiVehiculoScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               color: AppColors.error,
               size: 48,

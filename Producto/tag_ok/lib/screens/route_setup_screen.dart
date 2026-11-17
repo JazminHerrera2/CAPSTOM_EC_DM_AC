@@ -74,12 +74,12 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Padding(
+                Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Text('Seleccionar Vehículo', style: TextStyle(color: AppColors.texto, fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
                 if (vehicles.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.all(16.0),
                     child: Text('No tienes vehículos registrados.', style: TextStyle(color: AppColors.textoSecundario)),
                   )
@@ -91,8 +91,8 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                       itemBuilder: (context, index) {
                         final v = vehicles[index];
                         return ListTile(
-                          leading: const Icon(Icons.directions_car, color: AppColors.textoSecundario),
-                          title: Text(v['patente'] ?? '', style: const TextStyle(color: AppColors.texto)),
+                          leading: Icon(Icons.directions_car, color: AppColors.textoSecundario),
+                          title: Text(v['patente'] ?? '', style: TextStyle(color: AppColors.texto)),
                           subtitle: Text(v['marca'] ?? '', style: TextStyle(color: AppColors.textoSecundario)),
                           onTap: () {
                             setState(() {
@@ -223,7 +223,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 height: 56,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppRadios.tarjeta),
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [AppColors.primario, AppColors.primario],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -247,10 +247,10 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                     disabledBackgroundColor: Colors.transparent,
                   ),
                   child: _isLoading 
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(color: AppColors.sobrePrimario, strokeWidth: 2),
                       )
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -396,7 +396,7 @@ class _RouteSetupScreenState extends State<RouteSetupScreen> {
                 itemBuilder: (BuildContext context, int index) {
                   final PlaceSuggestion option = options.elementAt(index);
                   return ListTile(
-                    leading: const Icon(Icons.location_city, color: AppColors.textoSecundario),
+                    leading: Icon(Icons.location_city, color: AppColors.textoSecundario),
                     title: Text(
                       option.address,
                       style: TextStyle(color: AppColors.texto, fontSize: 14),

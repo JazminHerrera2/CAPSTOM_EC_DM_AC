@@ -26,11 +26,11 @@ class EstacionamientosScreen extends StatefulWidget {
 }
 
 class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
-  static const Color bgColor = AppColors.fondo;
-  static const Color surfaceColor = AppColors.superficie;
-  static const Color primaryColor = AppColors.primario;
-  static const Color textMain = AppColors.texto;
-  static const Color textMuted = AppColors.textoSecundario;
+  static Color get bgColor => AppColors.fondo;
+  static Color get surfaceColor => AppColors.superficie;
+  static Color get primaryColor => AppColors.primario;
+  static Color get textMain => AppColors.texto;
+  static Color get textMuted => AppColors.textoSecundario;
 
   final VehiculoService _vehiculoService = VehiculoService();
   final EstacionamientoService _service = EstacionamientoService();
@@ -180,11 +180,11 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
       appBar: AppBar(
         backgroundColor: bgColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Estacionamientos',
           style: TextStyle(color: textMain, fontWeight: FontWeight.w700),
         ),
-        iconTheme: const IconThemeData(color: textMain),
+        iconTheme: IconThemeData(color: textMain),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
@@ -242,7 +242,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
               backgroundColor: primaryColor,
               tooltip: 'Registrar documento',
               onPressed: () => _abrirDocumento(_vehiculoVisible!),
-              child: const Icon(Icons.add, color: Colors.white, size: 30),
+              child: Icon(Icons.add, color: AppColors.sobrePrimario, size: 30),
             ),
     );
   }
@@ -267,7 +267,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
                 child: Text(
                   v.patente,
                   style: TextStyle(
-                    color: activo == v.id ? Colors.white : textMuted,
+                    color: activo == v.id ? AppColors.sobrePrimario : textMuted,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -295,7 +295,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
             _tarjetaGastoMes(todos),
             const SizedBox(height: 18),
             // Título de la sección, igual que "Gastado en ..." de arriba.
-            const Text(
+            Text(
               'Cronometraje',
               style: TextStyle(
                 color: AppColors.texto,
@@ -323,7 +323,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
         onPressed: () => _abrirRegistro(vehiculo),
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.sobrePrimario,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadios.control),
           ),
@@ -346,9 +346,9 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.timer_outlined, color: primaryColor, size: 24),
+              Icon(Icons.timer_outlined, color: primaryColor, size: 24),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Tiempo transcurrido',
                   style: TextStyle(
@@ -364,7 +364,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
                   color: AppColors.exito.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppRadios.chip),
                 ),
-                child: const Text(
+                child: Text(
                   'En curso',
                   style: TextStyle(
                     color: AppColors.exito,
@@ -379,7 +379,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           Center(
             child: Text(
               _duracion(e.duracion),
-              style: const TextStyle(
+              style: TextStyle(
                 color: textMain,
                 fontSize: 38,
                 fontWeight: FontWeight.bold,
@@ -391,7 +391,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           Center(
             child: Text(
               'Entrada: ${_fechaHora(e.fechaEntrada)}',
-              style: const TextStyle(color: textMuted, fontSize: 12),
+              style: TextStyle(color: textMuted, fontSize: 12),
             ),
           ),
           const SizedBox(height: 14),
@@ -436,7 +436,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
         style: OutlinedButton.styleFrom(
           foregroundColor: primaryColor,
           padding: const EdgeInsets.symmetric(vertical: 13),
-          side: const BorderSide(color: primaryColor),
+          side: BorderSide(color: primaryColor),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadios.control),
           ),
@@ -457,7 +457,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
       children: [
         Text(
           'Gastado en ${nombreDelMes(hoy.month).toLowerCase()}',
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.texto,
             fontSize: 17,
             fontWeight: FontWeight.bold,
@@ -477,7 +477,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
             children: [
               Text(
                 clp(total),
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.texto,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -488,7 +488,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
                 delMes.length == 1
                     ? '1 estacionamiento pagado'
                     : '${delMes.length} estacionamientos pagados',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textoSecundario,
                   fontSize: 12,
                 ),
@@ -525,13 +525,13 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     List<EstacionamientoModel> todos,
   ) {
     if (snapshot.hasError) {
-      return const Text(
+      return Text(
         'No fue posible cargar el historial. Revisa la conexión y los permisos.',
         style: TextStyle(color: textMuted),
       );
     }
     if (!snapshot.hasData) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(24),
           child: CircularProgressIndicator(color: primaryColor),
@@ -546,7 +546,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Historial de estacionamientos',
                 style: TextStyle(
@@ -558,7 +558,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
             ),
             Text(
               '${lista.length} registros',
-              style: const TextStyle(
+              style: TextStyle(
                 color: primaryColor,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -621,7 +621,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     final precio = pendiente
         ? 'Pendiente de comprobante'
         : (e.costo == null ? 'Sin precio' : clp(e.costo!));
-    const estiloLinea = TextStyle(
+    final estiloLinea = TextStyle(
       color: textMuted,
       fontSize: 12,
       height: 1.35,
@@ -634,7 +634,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 42,
                 height: 42,
                 child: Icon(
@@ -652,7 +652,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
                       _tituloDe(e),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: textMain,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -676,7 +676,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
                 ),
               ),
               // La flecha para ver el detalle, igual que en Mantenciones.
-              const Icon(Icons.chevron_right, color: textMuted),
+              Icon(Icons.chevron_right, color: textMuted),
             ],
           ),
           // Pendiente de comprobante: el botón para completarlo está a la vista,
@@ -715,7 +715,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
           Expanded(
             child: Text(
               texto,
-              style: const TextStyle(color: textMuted, fontSize: 12),
+              style: TextStyle(color: textMuted, fontSize: 12),
             ),
           ),
         ],
@@ -732,7 +732,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
         borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         boxShadow: AppSombras.tarjeta,
       ),
-      child: const Column(
+      child: Column(
         children: [
           Icon(Icons.local_parking_outlined, color: primaryColor, size: 48),
           SizedBox(height: 16),
@@ -757,7 +757,7 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
   }
 
   Widget _sinVehiculos() {
-    return const Center(
+    return Center(
       child: Padding(
         padding: EdgeInsets.all(30),
         child: Text(

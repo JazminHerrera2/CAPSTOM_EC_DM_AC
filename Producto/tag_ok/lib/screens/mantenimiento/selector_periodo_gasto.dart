@@ -78,7 +78,7 @@ class _DialogoPeriodo extends StatelessWidget {
           child: Text(
             texto,
             style: TextStyle(
-              color: seleccionada ? Colors.white : AppColors.texto,
+              color: seleccionada ? AppColors.sobrePrimario : AppColors.texto,
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),
@@ -103,7 +103,7 @@ class _DialogoPeriodo extends StatelessWidget {
             padding: const EdgeInsets.only(top: 6, bottom: 8),
             child: Text(
               '${entrada.key}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textoSecundario,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -168,7 +168,7 @@ class _DialogoPeriodo extends StatelessWidget {
           children: [
             Text(
               _esMes ? 'Elegir mes' : 'Elegir año',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.texto,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -179,7 +179,7 @@ class _DialogoPeriodo extends StatelessWidget {
               _esMes
                   ? 'Solo aparecen los meses con mantenciones registradas.'
                   : 'Solo aparecen los años con mantenciones registradas.',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textoSecundario,
                 fontSize: 12,
               ),
@@ -189,7 +189,7 @@ class _DialogoPeriodo extends StatelessWidget {
               child: SingleChildScrollView(
                 child: hayOpciones
                     ? (_esMes ? _listaMeses(context) : _listaAnios(context))
-                    : const Padding(
+                    : Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         child: Text(
                           'Aún no tienes mantenciones registradas con costo.',
@@ -205,7 +205,7 @@ class _DialogoPeriodo extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
+                child: Text(
                   'Cancelar',
                   style: TextStyle(color: AppColors.primario),
                 ),

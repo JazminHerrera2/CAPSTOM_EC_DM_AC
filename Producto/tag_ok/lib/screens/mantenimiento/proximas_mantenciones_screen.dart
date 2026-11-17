@@ -28,8 +28,8 @@ class ProximasMantenimientosScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.texto),
-        title: const Text(
+        iconTheme: IconThemeData(color: AppColors.texto),
+        title: Text(
           'Próximas mantenciones',
           style: TextStyle(
             color: AppColors.texto,
@@ -42,7 +42,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
         backgroundColor: AppColors.primario,
         tooltip: 'Programar mantención',
         onPressed: () => _mostrarProgramarMantencion(context),
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
+        child: Icon(Icons.add, color: AppColors.sobrePrimario, size: 30),
       ),
       body: SafeArea(
         child: ListView(
@@ -52,7 +52,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            const Text(
+            Text(
               'Mantenciones programadas',
               style: TextStyle(
                 color: AppColors.texto,
@@ -74,7 +74,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
   }
 
   Widget _cabecera() {
-    return const Text(
+    return Text(
       'Programa tus próximas mantenciones por fecha, por kilometraje o por ambos. Si eliges fecha, te avisamos 7 días antes y el mismo día.',
       style: TextStyle(
         color: AppColors.textoSecundario,
@@ -105,7 +105,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
               color: AppColors.advertencia.withOpacity(0.10),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.event_available_outlined,
               color: AppColors.advertencia,
               size: 32,
@@ -114,7 +114,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
 
           const SizedBox(height: 17),
 
-          const Text(
+          Text(
             'No tienes mantenciones programadas',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -126,7 +126,7 @@ class ProximasMantenimientosScreen extends StatelessWidget {
 
           const SizedBox(height: 7),
 
-          const Text(
+          Text(
             'Programa tu próxima mantención para llevar un mejor control del cuidado de tu vehículo.',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -144,15 +144,15 @@ class ProximasMantenimientosScreen extends StatelessWidget {
               onPressed: () {
                 _mostrarProgramarMantencion(context);
               },
-              icon: const Icon(
+              icon: Icon(
                 Icons.add_rounded,
-                color: Colors.white,
+                color: AppColors.sobrePrimario,
                 size: 20,
               ),
-              label: const Text(
+              label: Text(
                 'Programar mantención',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.sobrePrimario,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -285,7 +285,7 @@ class _ListaProgramadasState extends State<_ListaProgramadas> {
       stream: stream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return const Padding(
+          return Padding(
             padding: EdgeInsets.symmetric(vertical: 30),
             child: Center(
               child: Text(
@@ -296,7 +296,7 @@ class _ListaProgramadasState extends State<_ListaProgramadas> {
           );
         }
         if (!snapshot.hasData) {
-          return const Padding(
+          return Padding(
             padding: EdgeInsets.symmetric(vertical: 30),
             child: Center(
               child: CircularProgressIndicator(color: AppColors.primario),
@@ -450,7 +450,7 @@ class _ProgramarMantencionSheetState
         20,
         24 + MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.superficie,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(26),
@@ -474,7 +474,7 @@ class _ProgramarMantencionSheetState
 
             const SizedBox(height: 20),
 
-            const Text(
+            Text(
               'Programar mantención',
               style: TextStyle(
                 color: AppColors.texto,
@@ -485,7 +485,7 @@ class _ProgramarMantencionSheetState
 
             const SizedBox(height: 5),
 
-            const Text(
+            Text(
               'Programa la próxima mantención por fecha, por kilometraje o por '
               'ambos.',
               style: TextStyle(
@@ -520,7 +520,7 @@ class _ProgramarMantencionSheetState
               const SizedBox(height: 14),
               Text(
                 _error!,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.error,
                   fontSize: 12,
                 ),
@@ -534,14 +534,14 @@ class _ProgramarMantencionSheetState
               height: 50,
               child: ElevatedButton.icon(
                 onPressed: _guardando ? null : _programar,
-                icon: const Icon(
+                icon: Icon(
                   Icons.notifications_active_outlined,
-                  color: Colors.white,
+                  color: AppColors.sobrePrimario,
                 ),
-                label: const Text(
+                label: Text(
                   'Programar mantención',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.sobrePrimario,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -585,7 +585,7 @@ class _ProgramarMantencionSheetState
                   child: Text(
                     modo.etiqueta,
                     style: TextStyle(
-                      color: _modo == modo ? Colors.white : AppColors.textoSecundario,
+                      color: _modo == modo ? AppColors.sobrePrimario : AppColors.textoSecundario,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -627,7 +627,7 @@ class _ProgramarMantencionSheetState
                       'la fecha programada.'
                   : 'Sin una fecha no se generan recordatorios. Elige "Por '
                       'fecha" o "Ambos" para recibirlos.',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textoSecundario,
                 fontSize: 12,
                 height: 1.4,
@@ -653,7 +653,7 @@ class _ProgramarMantencionSheetState
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.calendar_today_outlined,
               color: AppColors.textoSecundario,
               size: 21,
@@ -663,7 +663,7 @@ class _ProgramarMantencionSheetState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Fecha de la próxima mantención',
                     style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                   ),
@@ -692,23 +692,23 @@ class _ProgramarMantencionSheetState
       controller: _tipoController,
       maxLength: largoMaximoTituloMantencion,
       textCapitalization: TextCapitalization.sentences,
-      style: const TextStyle(color: AppColors.texto, fontSize: 13),
+      style: TextStyle(color: AppColors.texto, fontSize: 13),
       decoration: InputDecoration(
         labelText: 'Tipo de mantención',
         hintText: 'Ej: Cambio de aceite',
-        labelStyle: const TextStyle(color: AppColors.textoSecundario),
-        hintStyle: const TextStyle(color: AppColors.textoSecundario),
-        counterStyle: const TextStyle(color: AppColors.textoSecundario),
-        prefixIcon: const Icon(Icons.build_outlined, color: AppColors.textoSecundario, size: 21),
+        labelStyle: TextStyle(color: AppColors.textoSecundario),
+        hintStyle: TextStyle(color: AppColors.textoSecundario),
+        counterStyle: TextStyle(color: AppColors.textoSecundario),
+        prefixIcon: Icon(Icons.build_outlined, color: AppColors.textoSecundario, size: 21),
         filled: true,
         fillColor: AppColors.fondo,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadios.control),
-          borderSide: const BorderSide(color: AppColors.borde),
+          borderSide: BorderSide(color: AppColors.borde),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadios.control),
-          borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
+          borderSide: BorderSide(color: AppColors.primario, width: 1.5),
         ),
       ),
     );
@@ -718,23 +718,23 @@ class _ProgramarMantencionSheetState
     return TextField(
       controller: _kmController,
       keyboardType: TextInputType.number,
-      style: const TextStyle(color: AppColors.texto, fontSize: 13),
+      style: TextStyle(color: AppColors.texto, fontSize: 13),
       decoration: InputDecoration(
         labelText: 'Kilometraje de la próxima mantención',
         hintText: 'Ej: 80000',
         suffixText: 'km',
-        labelStyle: const TextStyle(color: AppColors.textoSecundario),
-        hintStyle: const TextStyle(color: AppColors.textoSecundario),
-        prefixIcon: const Icon(Icons.speed_outlined, color: AppColors.textoSecundario, size: 21),
+        labelStyle: TextStyle(color: AppColors.textoSecundario),
+        hintStyle: TextStyle(color: AppColors.textoSecundario),
+        prefixIcon: Icon(Icons.speed_outlined, color: AppColors.textoSecundario, size: 21),
         filled: true,
         fillColor: AppColors.fondo,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadios.control),
-          borderSide: const BorderSide(color: AppColors.borde),
+          borderSide: BorderSide(color: AppColors.borde),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadios.control),
-          borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
+          borderSide: BorderSide(color: AppColors.primario, width: 1.5),
         ),
       ),
     );

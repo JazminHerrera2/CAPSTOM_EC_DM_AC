@@ -117,7 +117,7 @@ class _FormularioPagoEstacionamientoScreenState
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.directions_car_outlined,
             color: AppColors.textoSecundario,
             size: 21,
@@ -127,7 +127,7 @@ class _FormularioPagoEstacionamientoScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Vehículo',
                   style: TextStyle(
                     color: AppColors.textoSecundario,
@@ -139,7 +139,7 @@ class _FormularioPagoEstacionamientoScreenState
                   _etiquetaVehiculo(vehiculo),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -282,7 +282,7 @@ class _FormularioPagoEstacionamientoScreenState
   InputDecoration _decoracion({required String hint, IconData? icono}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: AppColors.textoSecundario, fontSize: 14),
+      hintStyle: TextStyle(color: AppColors.textoSecundario, fontSize: 14),
       prefixIcon: icono == null
           ? null
           : Icon(icono, color: AppColors.primario, size: 21),
@@ -295,11 +295,11 @@ class _FormularioPagoEstacionamientoScreenState
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
-        borderSide: const BorderSide(color: AppColors.error),
+        borderSide: BorderSide(color: AppColors.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
-        borderSide: const BorderSide(color: AppColors.error),
+        borderSide: BorderSide(color: AppColors.error),
       ),
     );
   }
@@ -308,7 +308,7 @@ class _FormularioPagoEstacionamientoScreenState
     padding: const EdgeInsets.only(bottom: 8),
     child: Text(
       texto,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w600,
         color: AppColors.texto,
@@ -316,7 +316,7 @@ class _FormularioPagoEstacionamientoScreenState
     ),
   );
 
-  Widget _avisoDudoso() => const Padding(
+  Widget _avisoDudoso() => Padding(
     padding: EdgeInsets.only(top: 6),
     child: Text(
       'La IA no estaba segura de este dato. Revísalo con la boleta.',
@@ -347,7 +347,7 @@ class _FormularioPagoEstacionamientoScreenState
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.calendar_month_outlined,
                   color: AppColors.primario,
                   size: 21,
@@ -356,14 +356,14 @@ class _FormularioPagoEstacionamientoScreenState
                 Expanded(
                   child: Text(
                     _fechaHora(fecha),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       color: AppColors.texto,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.edit_outlined,
                   color: AppColors.textoSecundario,
                   size: 18,
@@ -388,10 +388,10 @@ class _FormularioPagoEstacionamientoScreenState
           backgroundColor: AppColors.fondo,
           elevation: 0,
           scrolledUnderElevation: 0,
-          iconTheme: const IconThemeData(color: AppColors.texto),
+          iconTheme: IconThemeData(color: AppColors.texto),
           title: Text(
             ia == null ? 'Datos del pago' : 'Revisa los datos',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.texto,
               fontWeight: FontWeight.w700,
             ),
@@ -412,7 +412,7 @@ class _FormularioPagoEstacionamientoScreenState
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.auto_awesome_outlined,
                         color: AppColors.primario,
                         size: 20,
@@ -426,7 +426,7 @@ class _FormularioPagoEstacionamientoScreenState
                               : 'La IA leyó la boleta, pero algunos datos son '
                                     'dudosos y están marcados. Revísalos antes '
                                     'de guardar.',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.texto,
                             fontSize: 13,
                             height: 1.4,
@@ -439,7 +439,7 @@ class _FormularioPagoEstacionamientoScreenState
                 const SizedBox(height: 14),
               ],
               if (_vehiculo != null) ...[
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(left: 2, bottom: 10),
                   child: Text(
                     'Vehículo',
@@ -491,7 +491,7 @@ class _FormularioPagoEstacionamientoScreenState
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.timer_outlined,
                           size: 18,
                           color: AppColors.primario,
@@ -499,7 +499,7 @@ class _FormularioPagoEstacionamientoScreenState
                         const SizedBox(width: 8),
                         Text(
                           'Duración: ${_duracion()}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textoSecundario,
                             fontSize: 13,
                           ),
@@ -545,25 +545,25 @@ class _FormularioPagoEstacionamientoScreenState
                   onPressed: _guardando ? null : _guardar,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primario,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.sobrePrimario,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadios.control),
                     ),
                   ),
                   icon: _guardando
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: AppColors.sobrePrimario,
                           ),
                         )
-                      : const Icon(Icons.save_outlined, color: Colors.white),
+                      : Icon(Icons.save_outlined, color: AppColors.sobrePrimario),
                   label: Text(
                     _guardando ? 'Guardando...' : 'Guardar estacionamiento',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: AppColors.sobrePrimario,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

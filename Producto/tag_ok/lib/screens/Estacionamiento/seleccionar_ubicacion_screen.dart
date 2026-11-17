@@ -54,7 +54,7 @@ class _SeleccionarUbicacionScreenState
   bool _cargando = false;
   List<PlaceSuggestion> _sugerencias = [];
 
-  static const Color azul = AppColors.primario;
+  static Color get azul => AppColors.primario;
 
   String get _mapboxToken => Entorno.mapboxAccessToken;
 
@@ -330,7 +330,7 @@ class _SeleccionarUbicacionScreenState
                             point: _ubicacionSeleccionada!,
                             width: 55,
                             height: 55,
-                            child: const Icon(
+                            child: Icon(
                               Icons.location_on,
                               color: azul,
                               size: 48,

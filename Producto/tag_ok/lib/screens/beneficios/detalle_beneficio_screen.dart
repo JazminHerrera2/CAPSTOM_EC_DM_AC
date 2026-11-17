@@ -49,8 +49,8 @@ class DetalleBeneficioScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.texto),
-        title: const Text('Beneficio', style: TextStyle(color: AppColors.texto)),
+        iconTheme: IconThemeData(color: AppColors.texto),
+        title: Text('Beneficio', style: TextStyle(color: AppColors.texto)),
       ),
       body: SafeArea(
         child: Center(
@@ -76,7 +76,7 @@ class DetalleBeneficioScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   b.titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -84,13 +84,13 @@ class DetalleBeneficioScreen extends StatelessWidget {
                 ),
                 if (b.empresa != null) ...[
                   const SizedBox(height: 4),
-                  Text(b.empresa!, style: const TextStyle(color: AppColors.textoSecundario, fontSize: 15)),
+                  Text(b.empresa!, style: TextStyle(color: AppColors.textoSecundario, fontSize: 15)),
                 ],
                 if (b.descripcion != null) ...[
                   const SizedBox(height: 16),
                   Text(
                     b.descripcion!,
-                    style: const TextStyle(color: AppColors.texto, fontSize: 14, height: 1.5),
+                    style: TextStyle(color: AppColors.texto, fontSize: 14, height: 1.5),
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -105,10 +105,10 @@ class DetalleBeneficioScreen extends StatelessWidget {
                     height: 50,
                     child: ElevatedButton.icon(
                       onPressed: () => _abrirEnlace(context),
-                      icon: const Icon(Icons.open_in_new, color: Colors.white),
-                      label: const Text(
+                      icon: Icon(Icons.open_in_new, color: AppColors.sobrePrimario),
+                      label: Text(
                         'Ir al beneficio',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: AppColors.sobrePrimario, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primario,
@@ -158,9 +158,9 @@ class DetalleBeneficioScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(titulo, style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
+                Text(titulo, style: TextStyle(color: AppColors.textoSecundario, fontSize: 12)),
                 const SizedBox(height: 2),
-                Text(valor, style: const TextStyle(color: AppColors.texto, fontSize: 14, height: 1.4)),
+                Text(valor, style: TextStyle(color: AppColors.texto, fontSize: 14, height: 1.4)),
               ],
             ),
           ),

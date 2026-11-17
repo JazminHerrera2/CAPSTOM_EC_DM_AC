@@ -127,10 +127,10 @@ class _HistorialMantenimientosScreenState
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: AppColors.texto,
         ),
-        title: const Text(
+        title: Text(
           'Historial de mantenciones',
           style: TextStyle(
             color: AppColors.texto,
@@ -210,7 +210,7 @@ class _HistorialMantenimientosScreenState
             children: [
               Icon(
                 Icons.tune_rounded,
-                color: activo ? Colors.white : AppColors.primario,
+                color: activo ? AppColors.sobrePrimario : AppColors.primario,
                 size: 22,
               ),
               if (_hayFiltros && !_mostrarFiltros)
@@ -274,7 +274,7 @@ class _HistorialMantenimientosScreenState
   Widget _encabezadoLista(int cantidad) {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
             'Mantenciones realizadas',
             style: TextStyle(
@@ -292,7 +292,7 @@ class _HistorialMantenimientosScreenState
           ),
           child: Text(
             cantidad == 1 ? '1 registro' : '$cantidad registros',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.primario,
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -314,7 +314,7 @@ class _HistorialMantenimientosScreenState
       );
     }
     if (snapshot.hasError) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(
           child: Text(
@@ -325,7 +325,7 @@ class _HistorialMantenimientosScreenState
       );
     }
     if (!snapshot.hasData) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(
           child: CircularProgressIndicator(color: AppColors.primario),
@@ -373,7 +373,7 @@ class _HistorialMantenimientosScreenState
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.directions_car_outlined,
             color: AppColors.primario,
             size: 21,
@@ -383,7 +383,7 @@ class _HistorialMantenimientosScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Vehículo',
                   style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                 ),
@@ -392,7 +392,7 @@ class _HistorialMantenimientosScreenState
                   _vehiculoSeleccionado,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -414,11 +414,11 @@ class _HistorialMantenimientosScreenState
     return TextField(
       controller: _busquedaController,
       textInputAction: TextInputAction.search,
-      style: const TextStyle(color: AppColors.texto, fontSize: 14),
+      style: TextStyle(color: AppColors.texto, fontSize: 14),
       decoration: InputDecoration(
         hintText: 'Buscar por tipo, taller, descripción...',
-        hintStyle: const TextStyle(color: AppColors.textoSecundario),
-        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primario, size: 21),
+        hintStyle: TextStyle(color: AppColors.textoSecundario),
+        prefixIcon: Icon(Icons.search_rounded, color: AppColors.primario, size: 21),
         suffixIcon: _busquedaController.text.isEmpty
             ? null
             : IconButton(
@@ -431,11 +431,11 @@ class _HistorialMantenimientosScreenState
         fillColor: AppColors.superficie,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadios.control),
-          borderSide: const BorderSide(color: AppColors.borde),
+          borderSide: BorderSide(color: AppColors.borde),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadios.control),
-          borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
+          borderSide: BorderSide(color: AppColors.primario, width: 1.5),
         ),
       ),
     );
@@ -466,7 +466,7 @@ class _HistorialMantenimientosScreenState
               color: AppColors.primario.withOpacity(0.10),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.car_repair_outlined,
               color: AppColors.primario,
               size: 32,
@@ -475,7 +475,7 @@ class _HistorialMantenimientosScreenState
 
           const SizedBox(height: 17),
 
-          const Text(
+          Text(
             'Aún no hay mantenciones registradas',
             textAlign: TextAlign.center,
             style: TextStyle(

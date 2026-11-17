@@ -92,7 +92,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
           shrinkWrap: true,
           itemCount: widget.opciones.length,
           separatorBuilder: (_, __) =>
-              const Divider(height: 1, color: AppColors.borde),
+              Divider(height: 1, color: AppColors.borde),
           itemBuilder: (context, i) {
             final opcion = widget.opciones[i];
             final seleccionada = opcion == valor;
@@ -124,7 +124,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                       ),
                     ),
                     if (seleccionada)
-                      const Icon(
+                      Icon(
                         Icons.check_rounded,
                         color: AppColors.primario,
                         size: 18,
@@ -238,7 +238,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                         children: [
                           Text(
                             widget.label,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textoSecundario,
                               fontSize: 10,
                             ),
@@ -267,7 +267,7 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
                           color: AppColors.primario.withOpacity(0.16),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.keyboard_arrow_down_rounded,
                           color: AppColors.primario,
                         ),
@@ -293,12 +293,12 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
           TextField(
             controller: widget.otroController!,
             maxLength: widget.largoMaximoOtro,
-            style: const TextStyle(color: AppColors.texto, fontSize: 13),
+            style: TextStyle(color: AppColors.texto, fontSize: 13),
             textCapitalization: TextCapitalization.sentences,
             decoration: InputDecoration(
               labelText: 'Escribe el tipo de mantención',
-              labelStyle: const TextStyle(color: AppColors.textoSecundario),
-              prefixIcon: const Icon(
+              labelStyle: TextStyle(color: AppColors.textoSecundario),
+              prefixIcon: Icon(
                 Icons.edit_outlined,
                 color: AppColors.textoSecundario,
                 size: 21,
@@ -307,11 +307,11 @@ class _SelectorTipoMantencionState extends State<SelectorTipoMantencion> {
               fillColor: AppColors.fondo,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadios.control),
-                borderSide: const BorderSide(color: AppColors.borde),
+                borderSide: BorderSide(color: AppColors.borde),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadios.control),
-                borderSide: const BorderSide(color: AppColors.primario, width: 1.5),
+                borderSide: BorderSide(color: AppColors.primario, width: 1.5),
               ),
             ),
           ),
