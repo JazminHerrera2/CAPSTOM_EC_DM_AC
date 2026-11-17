@@ -408,7 +408,7 @@ class _AuditScreenState extends State<AuditScreen> {
       Widget lineWidget = RichText(
         text: TextSpan(
           style: TextStyle(
-            color: isHeader ? AppColors.primario : AppColors.contenedorSuave,
+            color: isHeader ? AppColors.primario : AppColors.textoSecundario,
             fontSize: isHeader ? 12 : 11,
             fontWeight: isHeader ? FontWeight.bold : FontWeight.normal,
             height: 1.4,
@@ -2039,14 +2039,8 @@ Instrucciones para redactar el "aiReport":
       stream: _getAuditedInvoices(),
       builder: (context, snapshot) {
         final todasLasBoletas = snapshot.data ?? [];
-        // Mismo selector de vehículo que en Consumo e Historial: muestra solo
-        // las boletas cuya patente es la del vehículo elegido.
-        final auditedInvoices = _selectedPatente == null
-            ? todasLasBoletas
-            : todasLasBoletas
-                .where((b) => boletaEsDeVehiculo(
-                    b['patent']?.toString(), _selectedPatente!))
-                .toList();
+        // Las boletas auditadas no se filtran por patente: se ven todas.
+        final auditedInvoices = todasLasBoletas;
 
         return ListView(
           padding: const EdgeInsets.only(bottom: 24),
