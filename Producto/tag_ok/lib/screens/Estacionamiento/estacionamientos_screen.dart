@@ -613,8 +613,8 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
     return minutos == 0 ? '$horas h' : '$horas h $minutos min';
   }
 
-  /// Tarjeta del historial: nombre, entrada, precio debajo, duración y el
-  /// botón para ver la ubicación. La flecha lleva al detalle completo.
+  /// Tarjeta del historial: nombre, entrada, precio debajo y duración. La flecha
+  /// lleva al detalle completo, que es donde está "Ver ubicación".
   Widget _tarjetaEstacionamiento(EstacionamientoModel e) {
     final pendiente = e.pendienteDeComprobante;
     final minutos = e.minutosTranscurridos() ?? e.duracion.inMinutes;
@@ -698,10 +698,6 @@ class _EstacionamientosScreenState extends State<EstacionamientosScreen> {
                 label: const Text('Registrar comprobante'),
               ),
             ),
-          ],
-          if (puedeVerUbicacion(e)) ...[
-            const SizedBox(height: 12),
-            _botonVerUbicacion(e),
           ],
         ],
       ),
