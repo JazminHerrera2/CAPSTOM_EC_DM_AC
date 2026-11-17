@@ -7,6 +7,7 @@ import 'dialogo_cerrar_sesion.dart';
 import 'login_screen.dart';
 import 'package:tag_ok/theme/app_colors.dart';
 import 'package:tag_ok/theme/app_estilos.dart';
+import 'package:tag_ok/theme/modo_tema.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -252,6 +253,8 @@ class ProfileScreen extends StatelessWidget {
                 title: 'Seguridad y Contraseña',
                 onTap: () => _mostrarCambioContrasena(context, user),
               ),
+              const SizedBox(height: 16),
+              _buildOpcionModoOscuro(),
               const SizedBox(height: 32),
 
               // 4. Botón de Cerrar Sesión
@@ -546,6 +549,72 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Opción "Modo oscuro": activa o desactiva el modo oscuro de toda la app. La
+  /// elección se guarda en el dispositivo (ver `ModoTema`).
+  Widget _buildOpcionModoOscuro() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: ModoTema.oscuro,
+      builder: (context, oscuro, _) => InkWell(
+        onTap: () => ModoTema.cambiar(!oscuro),
+        borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.superficie,
+            borderRadius: BorderRadius.circular(AppRadios.tarjeta),
+            boxShadow: AppSombras.tarjeta,
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.fondo,
+                  borderRadius: BorderRadius.circular(AppRadios.icono),
+                ),
+                child: Icon(
+                  oscuro ? Icons.dark_mode : Icons.dark_mode_outlined,
+                  color: AppColors.primario,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Modo oscuro',
+                  style: TextStyle(
+                    color: AppColors.texto,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Switch(
+                value: oscuro,
+                onChanged: ModoTema.cambiar,
+                thumbColor: WidgetStateProperty.resolveWith(
+                  (s) => s.contains(WidgetState.selected)
+                      ? AppColors.sobrePrimario
+                      : AppColors.textoSecundario,
+                ),
+                trackColor: WidgetStateProperty.resolveWith(
+                  (s) => s.contains(WidgetState.selected)
+                      ? AppColors.primario
+                      : AppColors.contenedorSuave,
+                ),
+                trackOutlineColor: WidgetStateProperty.resolveWith(
+                  (s) => s.contains(WidgetState.selected)
+                      ? Colors.transparent
+                      : AppColors.borde,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

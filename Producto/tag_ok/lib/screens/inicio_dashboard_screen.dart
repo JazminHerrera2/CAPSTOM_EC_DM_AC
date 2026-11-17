@@ -321,7 +321,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         // El encabezado queda fuera de la lista: no se mueve al hacer scroll.
         child: Column(
           children: [
-            const EncabezadoTagOk(conSwitchModoOscuro: true),
+            const EncabezadoTagOk(),
             Expanded(
               child: Center(
                 child: ConstrainedBox(
