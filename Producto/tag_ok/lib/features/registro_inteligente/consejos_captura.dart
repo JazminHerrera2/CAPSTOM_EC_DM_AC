@@ -17,7 +17,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
             Expanded(
               child: Text(
                 texto,
-                style: const TextStyle(color: AppColors.textoSecundario, height: 1.3),
+                style: TextStyle(color: AppColors.textoSecundario, height: 1.3),
               ),
             ),
           ],
@@ -29,7 +29,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
     builder: (dialogContext) => AlertDialog(
       backgroundColor: AppColors.superficie,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
-      title: const Row(
+      title: Row(
         children: [
           Icon(Icons.light_mode_outlined, color: Colors.amber),
           SizedBox(width: 10),
@@ -45,7 +45,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Con una buena imagen la IA lee tus datos con mayor precisión.',
             style: TextStyle(color: AppColors.texto),
           ),
@@ -62,7 +62,7 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
+          child: Text('Cancelar', style: TextStyle(color: AppColors.textoSecundario)),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -72,9 +72,9 @@ Future<bool> mostrarConsejosCaptura(BuildContext context) async {
             ),
           ),
           onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text(
+          child: Text(
             'Entendido, tomar foto',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: AppColors.sobrePrimario),
           ),
         ),
       ],

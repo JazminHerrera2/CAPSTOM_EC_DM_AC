@@ -161,13 +161,13 @@ class _RegistrarMantenimientoIaScreenState
             const Icon(Icons.error_outline, color: Colors.orangeAccent),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(titulo, style: const TextStyle(color: AppColors.texto)),
+              child: Text(titulo, style: TextStyle(color: AppColors.texto)),
             ),
           ],
         ),
         content: Text(
           mensaje,
-          style: const TextStyle(color: AppColors.textoSecundario, height: 1.4),
+          style: TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -204,10 +204,10 @@ class _RegistrarMantenimientoIaScreenState
           elevation: 0,
           scrolledUnderElevation: 0,
           automaticallyImplyLeading: !_procesando,
-          iconTheme: const IconThemeData(color: AppColors.texto),
+          iconTheme: IconThemeData(color: AppColors.texto),
           title: Text(
             _procesando ? 'Analizando comprobante' : 'Registrar mantención',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.texto,
               fontWeight: FontWeight.w700,
             ),
@@ -241,14 +241,14 @@ class _RegistrarMantenimientoIaScreenState
                   color: AppColors.primario.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.document_scanner_outlined,
                   color: AppColors.primario,
                   size: 34,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Escanea o sube tu comprobante',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -258,7 +258,7 @@ class _RegistrarMantenimientoIaScreenState
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'La IA leerá la boleta o factura del taller y extraerá los '
                 'datos de la mantención para que puedas revisarlos antes de '
                 'guardar.',
@@ -296,7 +296,7 @@ class _RegistrarMantenimientoIaScreenState
           onTap: () => _abrirFormulario(),
         ),
         const SizedBox(height: 26),
-        const Text(
+        Text(
           '¿Qué información se detectará?',
           style: TextStyle(
             color: AppColors.texto,
@@ -355,7 +355,7 @@ class _RegistrarMantenimientoIaScreenState
               ),
               child: Icon(
                 icono,
-                color: principal ? Colors.white : AppColors.primario,
+                color: principal ? AppColors.sobrePrimario : AppColors.primario,
                 size: 26,
               ),
             ),
@@ -366,7 +366,7 @@ class _RegistrarMantenimientoIaScreenState
                 children: [
                   Text(
                     titulo,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.texto,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -375,7 +375,7 @@ class _RegistrarMantenimientoIaScreenState
                   const SizedBox(height: 4),
                   Text(
                     descripcion,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textoSecundario,
                       fontSize: 12,
                       height: 1.35,
@@ -385,7 +385,7 @@ class _RegistrarMantenimientoIaScreenState
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
+            Icon(Icons.chevron_right, color: AppColors.textoSecundario),
           ],
         ),
       ),
@@ -402,7 +402,7 @@ class _RegistrarMantenimientoIaScreenState
       ),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.textoSecundario,
           fontSize: 11,
           fontWeight: FontWeight.w600,
@@ -425,7 +425,7 @@ class _RegistrarMantenimientoIaScreenState
                 color: AppColors.primario.withOpacity(0.10),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
+              child: Center(
                 child: SizedBox(
                   width: 52,
                   height: 52,
@@ -449,7 +449,7 @@ class _RegistrarMantenimientoIaScreenState
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Estamos leyendo la boleta o factura y extrayendo los datos de '
               'la mantención.',
               textAlign: TextAlign.center,
@@ -463,7 +463,7 @@ class _RegistrarMantenimientoIaScreenState
                 borderRadius: BorderRadius.circular(AppRadios.control),
                 border: Border.all(color: Colors.transparent),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.auto_awesome_outlined,

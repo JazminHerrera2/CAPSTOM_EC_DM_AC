@@ -181,19 +181,19 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
         ),
         title: Row(
           children: [
-            const Icon(Icons.error_outline, color: AppColors.alerta),
+            Icon(Icons.error_outline, color: AppColors.alerta),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 titulo,
-                style: const TextStyle(color: AppColors.texto),
+                style: TextStyle(color: AppColors.texto),
               ),
             ),
           ],
         ),
         content: Text(
           mensaje,
-          style: const TextStyle(color: AppColors.textoSecundario, height: 1.4),
+          style: TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -233,14 +233,14 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
           elevation: 0,
           scrolledUnderElevation: 0,
           automaticallyImplyLeading: !_procesando,
-          iconTheme: const IconThemeData(color: AppColors.texto),
+          iconTheme: IconThemeData(color: AppColors.texto),
           title: Text(
             _procesando
                 ? 'Analizando boleta'
                 : widget.estacionamiento == null
                 ? 'Registrar documento'
                 : 'Registrar comprobante',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.texto,
               fontWeight: FontWeight.w700,
             ),
@@ -274,14 +274,14 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                   color: AppColors.primario.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.document_scanner_outlined,
                   color: AppColors.primario,
                   size: 34,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Escanea o sube tu boleta',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -291,7 +291,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'La IA leerá la boleta del estacionamiento y completará los '
                 'datos del pago para que puedas revisarlos antes de guardar.',
                 textAlign: TextAlign.center,
@@ -327,7 +327,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
           onTap: () => _abrirFormulario(),
         ),
         const SizedBox(height: 26),
-        const Text(
+        Text(
           '¿Qué información se detectará?',
           style: TextStyle(
             color: AppColors.texto,
@@ -388,7 +388,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
               ),
               child: Icon(
                 icono,
-                color: principal ? Colors.white : AppColors.primario,
+                color: principal ? AppColors.sobrePrimario : AppColors.primario,
                 size: 26,
               ),
             ),
@@ -399,7 +399,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                 children: [
                   Text(
                     titulo,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.texto,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -408,7 +408,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                   const SizedBox(height: 4),
                   Text(
                     descripcion,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textoSecundario,
                       fontSize: 12,
                       height: 1.35,
@@ -418,7 +418,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
+            Icon(Icons.chevron_right, color: AppColors.textoSecundario),
           ],
         ),
       ),
@@ -434,7 +434,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
       ),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.textoSecundario,
           fontSize: 11,
           fontWeight: FontWeight.w600,
@@ -457,7 +457,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                 color: AppColors.primario.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
+              child: Center(
                 child: SizedBox(
                   width: 52,
                   height: 52,
@@ -474,14 +474,14 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                   ? 'Preparando imagen...'
                   : 'Analizando boleta...',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.texto,
                 fontSize: 21,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Estamos leyendo la boleta y extrayendo los datos del pago.',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -497,7 +497,7 @@ class _RegistroComprobanteScreenState extends State<RegistroComprobanteScreen> {
                 color: AppColors.superficie,
                 borderRadius: BorderRadius.circular(AppRadios.control),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(

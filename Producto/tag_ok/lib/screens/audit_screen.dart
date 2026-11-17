@@ -392,7 +392,7 @@ class _AuditScreenState extends State<AuditScreen> {
         spans.add(
           TextSpan(
             text: match.group(1),
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               color: AppColors.texto,
             ),
@@ -425,7 +425,7 @@ class _AuditScreenState extends State<AuditScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '• ',
                   style: TextStyle(color: AppColors.primario, fontSize: 12),
                 ),
@@ -1239,7 +1239,7 @@ Instrucciones para redactar el "aiReport":
           // ==========================================
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text(
                   'Formato no reconocido. Analizando con Inteligencia Artificial...',
                 ),
@@ -1440,7 +1440,7 @@ Instrucciones para redactar el "aiReport":
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadios.tarjeta),
             ),
-            title: const Row(
+            title: Row(
               children: [
                 Icon(Icons.warning_amber_rounded, color: AppColors.error),
                 SizedBox(width: 10),
@@ -1452,7 +1452,7 @@ Instrucciones para redactar el "aiReport":
             ),
             content: Text(
               e.toString().replaceAll('Exception:', ''),
-              style: const TextStyle(color: AppColors.textoSecundario),
+              style: TextStyle(color: AppColors.textoSecundario),
             ),
             actions: [
               TextButton(
@@ -1762,7 +1762,7 @@ Instrucciones para redactar el "aiReport":
       await saveFileBytes(bytes: Uint8List.fromList(bytes), fileName: fileName);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Reporte exportado con éxito'),
             backgroundColor: AppColors.exito,
           ),
@@ -1874,12 +1874,12 @@ Instrucciones para redactar el "aiReport":
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: isSelected ? Colors.white : AppColors.textoSecundario, size: 16),
+            Icon(icon, color: isSelected ? AppColors.sobrePrimario : AppColors.textoSecundario, size: 16),
             const SizedBox(width: 6),
             Text(
               title,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textoSecundario,
+                color: isSelected ? AppColors.sobrePrimario : AppColors.textoSecundario,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
@@ -2273,7 +2273,7 @@ Instrucciones para redactar el "aiReport":
                     ),
                     Text(
                       '\$${billed.toStringAsFixed(0)} CLP',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.texto,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -2322,7 +2322,7 @@ Instrucciones para redactar el "aiReport":
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.sombra,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(20),
@@ -2344,7 +2344,7 @@ Instrucciones para redactar el "aiReport":
                           IconButton(
                             constraints: const BoxConstraints(),
                             padding: const EdgeInsets.only(right: 12),
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.table_view_rounded,
                               color: AppColors.exito,
                               size: 18,
@@ -2355,7 +2355,7 @@ Instrucciones para redactar el "aiReport":
                           IconButton(
                             constraints: const BoxConstraints(),
                             padding: EdgeInsets.zero,
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.delete_outline,
                               color: AppColors.error,
                               size: 18,
@@ -2367,7 +2367,7 @@ Instrucciones para redactar el "aiReport":
                       ),
                     ],
                   ),
-                  const Divider(color: AppColors.contenedorSuave, height: 16),
+                  Divider(color: AppColors.contenedorSuave, height: 16),
                   if (aiReport != null && aiReport.isNotEmpty) ...[
                     Container(
                       width: double.infinity,
@@ -2388,7 +2388,7 @@ Instrucciones para redactar el "aiReport":
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
                               Icon(
                                 Icons.auto_awesome,
@@ -2412,7 +2412,7 @@ Instrucciones para redactar el "aiReport":
                         ],
                       ),
                     ),
-                    const Divider(color: AppColors.contenedorSuave, height: 16),
+                    Divider(color: AppColors.contenedorSuave, height: 16),
                   ],
                   Text(
                     'DETALLE DE TRANSACCIONES AUDITADAS (AGRUPADO POR FECHA)',
@@ -2760,12 +2760,12 @@ Instrucciones para redactar el "aiReport":
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: isActive ? Colors.white : AppColors.textoSecundario, size: 14),
+            Icon(icon, color: isActive ? AppColors.sobrePrimario : AppColors.textoSecundario, size: 14),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: isActive ? Colors.white : AppColors.texto,
+                color: isActive ? AppColors.sobrePrimario : AppColors.texto,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -2848,7 +2848,7 @@ Instrucciones para redactar el "aiReport":
                         data: ThemeData.light().copyWith(
                           colorScheme: ColorScheme.light(
                             primary: AppColors.primario,
-                            onPrimary: Colors.white,
+                            onPrimary: AppColors.sobrePrimario,
                             surface: AppColors.superficie,
                             onSurface: AppColors.texto,
                           ),
@@ -2858,7 +2858,7 @@ Instrucciones para redactar el "aiReport":
                           ),
                           appBarTheme: AppBarTheme(
                             backgroundColor: AppColors.superficie,
-                            iconTheme: const IconThemeData(color: AppColors.texto),
+                            iconTheme: IconThemeData(color: AppColors.texto),
                           ),
                         ),
                         child: Center(
@@ -3090,7 +3090,7 @@ Instrucciones para redactar el "aiReport":
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [AppColors.superficie, AppColors.fondo],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -3122,7 +3122,7 @@ Instrucciones para redactar el "aiReport":
             children: [
               Text(
                 '\$${total.toStringAsFixed(0)}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.texto,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -3247,7 +3247,7 @@ Instrucciones para redactar el "aiReport":
               ),
               Text(
                 '\$${trip.totalCost.toStringAsFixed(0)}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.exito,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
@@ -3282,7 +3282,7 @@ Instrucciones para redactar el "aiReport":
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.sombra,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(20),

@@ -67,7 +67,7 @@ class AuditoriaSelectorVehiculo extends StatelessWidget {
           maxLines: 1,
           softWrap: false,
           style: TextStyle(
-            color: activo ? Colors.white : AppColors.textoSecundario,
+            color: activo ? AppColors.sobrePrimario : AppColors.textoSecundario,
             fontSize: 13,
             fontWeight: FontWeight.w700,
           ),

@@ -321,7 +321,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         // El encabezado queda fuera de la lista: no se mueve al hacer scroll.
         child: Column(
           children: [
-            const EncabezadoTagOk(),
+            const EncabezadoTagOk(conSwitchModoOscuro: true),
             Expanded(
               child: Center(
                 child: ConstrainedBox(
@@ -332,7 +332,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                     children: [
                       Text(
                         '¡Hola, $primerNombre!',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.texto,
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -367,7 +367,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         Expanded(
           child: Text(
             titulo,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.texto,
               fontSize: 19,
               fontWeight: FontWeight.bold,
@@ -377,7 +377,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         if (verTodo != null)
           GestureDetector(
             onTap: verTodo,
-            child: const Text(
+            child: Text(
               'Ver todo',
               style: TextStyle(
                 color: AppColors.primario,
@@ -404,12 +404,12 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   }
 
   /// Botón circular pequeño con una flecha ">" (tarjetas presionables).
-  Widget _botonFlecha({Color fondo = AppColors.fondo, Color color = AppColors.textoSecundario}) {
+  Widget _botonFlecha({Color? fondo, Color? color}) {
     return Container(
       width: 32,
       height: 32,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: fondo),
-      child: Icon(Icons.chevron_right, color: color, size: 20),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: fondo ?? AppColors.fondoFlecha),
+      child: Icon(Icons.chevron_right, color: color ?? AppColors.textoSecundario, size: 20),
     );
   }
 
@@ -424,7 +424,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
           children: [
             _iconoMarca(Icons.directions_car_outlined, tamano: 56),
             const SizedBox(width: 14),
-            const Expanded(
+            Expanded(
               child: Text(
                 'Aún no tienes vehículos. Toca para registrar el primero.',
                 style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w600),
@@ -568,7 +568,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Mi vehículo',
                       style: TextStyle(
                         color: AppColors.textoSecundario,
@@ -579,7 +579,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                     Text(
                       titulo,
                       maxLines: 1,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.texto,
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
@@ -590,7 +590,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                     Text(
                       detalle,
                       maxLines: 1,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textoSecundario,
                         fontSize: 13.5,
                       ),
@@ -638,10 +638,10 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
       subtitulo =
           '${variacion >= 0 ? '+' : ''}${variacion.round()}% vs. $anterior';
     }
-    const blanco = AppColors.sobrePrimario;
+    final blanco = AppColors.sobreVioleta;
 
     return TarjetaApp(
-      color: AppColors.primario,
+      color: AppColors.violeta,
       sombra: AppSombras.primaria,
       padding: const EdgeInsets.fromLTRB(20, 16, 16, 18),
       onTap: () => _abrirHistorialGastos(v),
@@ -659,7 +659,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
               Expanded(
                 child: Text(
                   'Gastos de $mes',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: blanco,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -687,7 +687,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                       child: Text(
                         formatearPesos(r.totalMes),
                         maxLines: 1,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: blanco,
                           fontSize: 38,
                           height: 1.1,
@@ -729,7 +729,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
   Widget _barras(ResumenGastos r) {
     final alturas = alturasPorPosicion(r.totales);
     final ultimo = r.totales.length - 1;
-    const blanco = AppColors.sobrePrimario;
+    final blanco = AppColors.sobreVioleta;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -823,7 +823,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
           Container(
             width: 64,
             height: 64,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: AppColors.superficie,
               boxShadow: AppSombras.tarjeta,
@@ -837,7 +837,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
             child: Text(
               titulo,
               maxLines: 1,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.texto,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -905,7 +905,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                 urgente: vencido,
                 onTap: () => _abrirDetalleVehiculo(v),
               ),
-              const Divider(
+              Divider(
                 height: 1,
                 thickness: 1,
                 indent: 16,
@@ -954,7 +954,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                     titulo,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.texto,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -963,7 +963,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                   const SizedBox(height: 2),
                   Text(
                     detalle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textoSecundario,
                       fontSize: 13,
                     ),
@@ -990,7 +990,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
               ),
             ],
             const SizedBox(width: 6),
-            const Icon(Icons.chevron_right, color: AppColors.textoSecundario, size: 22),
+            Icon(Icons.chevron_right, color: AppColors.textoSecundario, size: 22),
           ],
         ),
       ),
@@ -1009,7 +1009,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
         _tituloSeccion('Beneficios', verTodo: widget.onIrABeneficios),
         const SizedBox(height: 12),
         if (_beneficios.isEmpty)
-          const TarjetaApp(
+          TarjetaApp(
             child: Row(
               children: [
                 Icon(Icons.card_giftcard_outlined, color: AppColors.textoSecundario),
@@ -1083,7 +1083,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                     Row(
                       children: [
                         if (b.destacado) ...[
-                          const Icon(Icons.star,
+                          Icon(Icons.star,
                               color: AppColors.advertencia, size: 13),
                           const SizedBox(width: 3),
                         ],
@@ -1092,7 +1092,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                             b.etiquetaCategoria,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textoSecundario,
                               fontSize: 10,
                             ),
@@ -1105,7 +1105,7 @@ class _InicioDashboardScreenState extends State<InicioDashboardScreen> {
                       b.titulo,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.texto,
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,

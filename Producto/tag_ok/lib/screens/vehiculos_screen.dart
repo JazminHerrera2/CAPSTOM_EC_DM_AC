@@ -71,7 +71,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
     if (!patenteRegex.hasMatch(patente)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Formato inválido (ej: ABCD12)'),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
@@ -288,7 +288,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                     final patenteRegex = RegExp(r'^[A-Z]{4}\d{2}$');
                     if (!patenteRegex.hasMatch(p)) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text('Formato inválido (ej: ABCD12)'),
                           backgroundColor: AppColors.error,
                           behavior: SnackBarBehavior.floating,
@@ -301,7 +301,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text('Guardar', style: TextStyle(color: Colors.white)),
+                  child: Text('Guardar', style: TextStyle(color: AppColors.sobrePrimario)),
                 ),
               ],
             );
@@ -439,7 +439,7 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text('Agregar', style: TextStyle(color: Colors.white)),
+                  child: Text('Agregar', style: TextStyle(color: AppColors.sobrePrimario)),
                 ),
               ],
             );
@@ -463,13 +463,13 @@ class _VehiculosScreenState extends State<VehiculosScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        title: const Text('Mis Vehículos', style: TextStyle(color: AppColors.texto)),
-        iconTheme: const IconThemeData(color: AppColors.texto),
+        title: Text('Mis Vehículos', style: TextStyle(color: AppColors.texto)),
+        iconTheme: IconThemeData(color: AppColors.texto),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _mostrarFormularioAgregarVehiculo,
         backgroundColor: AppColors.primario,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: AppColors.sobrePrimario),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

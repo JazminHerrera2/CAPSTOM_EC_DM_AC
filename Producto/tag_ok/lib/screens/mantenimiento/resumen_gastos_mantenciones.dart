@@ -75,7 +75,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                 Expanded(
                   child: Text(
                     'Gastado en $mes',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.texto,
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
@@ -85,7 +85,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                 if (widget.onVerTodo != null)
                   GestureDetector(
                     onTap: widget.onVerTodo,
-                    child: const Text(
+                    child: Text(
                       'Ver todo',
                       style: TextStyle(
                         color: AppColors.primario,
@@ -108,7 +108,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
               child: SizedBox(
                 height: altoContenidoTarjetaGastos,
                 child: snapshot.hasError
-                    ? const Align(
+                    ? Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'No fue posible cargar los gastos.',
@@ -129,7 +129,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                             child: Text(
                               formatearPesos(resumen.total),
                               maxLines: 1,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.texto,
                                 fontSize: 28,
                                 height: 1.2,
@@ -141,7 +141,7 @@ class _ResumenGastosMantencionesState extends State<ResumenGastosMantenciones> {
                             resumen.cantidad == 0
                                 ? 'Sin mantenciones este mes'
                                 : textoCantidad(resumen.cantidad),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textoSecundario,
                               fontSize: 12,
                             ),

@@ -19,11 +19,11 @@ class RegistroEstacionamientoScreen extends StatefulWidget {
 
 class _RegistroEstacionamientoScreenState
     extends State<RegistroEstacionamientoScreen> {
-  static const Color bgColor = AppColors.fondo;
-  static const Color surfaceColor = AppColors.superficie;
-  static const Color primaryColor = AppColors.primario;
-  static const Color textMain = AppColors.texto;
-  static const Color textMuted = AppColors.textoSecundario;
+  static Color get bgColor => AppColors.fondo;
+  static Color get surfaceColor => AppColors.superficie;
+  static Color get primaryColor => AppColors.primario;
+  static Color get textMain => AppColors.texto;
+  static Color get textMuted => AppColors.textoSecundario;
 
   final _formKey = GlobalKey<FormState>();
   final _direccionController = TextEditingController();
@@ -47,7 +47,7 @@ class _RegistroEstacionamientoScreenState
   InputDecoration _decoracion({required String hint, IconData? icono}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: textMuted, fontSize: 14),
+      hintStyle: TextStyle(color: textMuted, fontSize: 14),
       prefixIcon: icono == null
           ? null
           : Icon(icono, color: primaryColor, size: 21),
@@ -60,11 +60,11 @@ class _RegistroEstacionamientoScreenState
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
-        borderSide: const BorderSide(color: AppColors.error),
+        borderSide: BorderSide(color: AppColors.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
-        borderSide: const BorderSide(color: AppColors.error),
+        borderSide: BorderSide(color: AppColors.error),
       ),
     );
   }
@@ -74,7 +74,7 @@ class _RegistroEstacionamientoScreenState
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
           color: textMain,
@@ -106,7 +106,7 @@ class _RegistroEstacionamientoScreenState
               Expanded(
                 child: Text(
                   titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: textMain,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -285,7 +285,7 @@ class _RegistroEstacionamientoScreenState
                       style: OutlinedButton.styleFrom(
                         foregroundColor: primaryColor,
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: primaryColor),
+                        side: BorderSide(color: primaryColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
                             AppRadios.control,
@@ -296,7 +296,7 @@ class _RegistroEstacionamientoScreenState
                   ),
                   if (_latitud != null && _longitud != null) ...[
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Ubicación del mapa seleccionada',
                       style: TextStyle(color: textMuted, fontSize: 12),
                     ),
@@ -312,18 +312,18 @@ class _RegistroEstacionamientoScreenState
                 onPressed: _guardando ? null : _guardar,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.sobrePrimario,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadios.control),
                   ),
                 ),
                 icon: _guardando
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.sobrePrimario,
                         ),
                       )
                     : const Icon(Icons.timer_outlined),

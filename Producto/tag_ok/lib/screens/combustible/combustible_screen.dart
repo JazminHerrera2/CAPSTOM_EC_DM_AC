@@ -69,11 +69,11 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Combustible y carga',
           style: TextStyle(color: AppColors.texto, fontWeight: FontWeight.w700),
         ),
-        iconTheme: const IconThemeData(color: AppColors.texto),
+        iconTheme: IconThemeData(color: AppColors.texto),
       ),
       body: StreamBuilder<List<VehiculoModel>>(
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
@@ -134,9 +134,9 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                             ),
                           );
                         },
-                        child: const Icon(
+                        child: Icon(
                           Icons.add,
-                          color: Colors.white,
+                          color: AppColors.sobrePrimario,
                           size: 30,
                         ),
                       ),
@@ -178,7 +178,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
-                    color: activo == v.id ? Colors.white : AppColors.textoSecundario,
+                    color: activo == v.id ? AppColors.sobrePrimario : AppColors.textoSecundario,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -231,7 +231,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       children: [
         Text(
           'Gastado en ${nombreDelMes(hoy.month).toLowerCase()}',
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.texto,
             fontSize: 17,
             fontWeight: FontWeight.bold,
@@ -250,7 +250,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
           child: SizedBox(
             height: altoContenidoTarjetaGastos,
             child: error
-                ? const Align(
+                ? Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'No fue posible cargar las cargas.',
@@ -271,7 +271,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                         child: Text(
                           clp(resumen.total),
                           maxLines: 1,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.texto,
                             fontSize: 28,
                             height: 1.2,
@@ -281,7 +281,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                       ),
                       Text(
                         detalle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textoSecundario,
                           fontSize: 12,
                         ),
@@ -311,7 +311,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
     List<AbastecimientoModel> todas,
   ) {
     if (snapshot.hasError) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(
           child: Text(
@@ -322,7 +322,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       );
     }
     if (!snapshot.hasData) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 30),
         child: Center(child: CircularProgressIndicator(color: AppColors.primario)),
       );
@@ -337,7 +337,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
       children: [
         Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
                 'Historial de cargas',
                 style: TextStyle(
@@ -355,7 +355,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
               ),
               child: Text(
                 lista.length == 1 ? '1 registro' : '${lista.length} registros',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.primario,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -447,7 +447,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                         c.titulo,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.texto,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -459,7 +459,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                           linea,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textoSecundario,
                             fontSize: 12,
                             height: 1.35,
@@ -470,7 +470,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                   ),
                 ),
                 // La flecha para ver el detalle, igual que en Mantenciones.
-                const Icon(
+                Icon(
                   Icons.chevron_right,
                   color: AppColors.textoSecundario,
                 ),
@@ -504,14 +504,14 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
               color: AppColors.primario.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.local_gas_station_outlined,
               color: AppColors.primario,
               size: 32,
             ),
           ),
           const SizedBox(height: 17),
-          const Text(
+          Text(
             'Aún no hay cargas registradas',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -526,7 +526,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
                 'Toca el + para registrar una carga con la boleta de la '
                     'bencinera o a mano.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.5),
+            style: TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.5),
           ),
         ],
       ),
@@ -534,7 +534,7 @@ class _CombustibleScreenState extends State<CombustibleScreen> {
   }
 
   Widget _sinVehiculos() {
-    return const Center(
+    return Center(
       child: Padding(
         padding: EdgeInsets.all(30),
         child: Column(

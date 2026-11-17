@@ -71,7 +71,7 @@ class _FotoVehiculoState extends State<FotoVehiculo> {
         widget.assetPredeterminado,
         fit: widget.fit,
         errorBuilder: (context, error, stackTrace) {
-          return const Icon(
+          return Icon(
             Icons.directions_car_outlined,
             color: AppColors.primario,
             size: 70,

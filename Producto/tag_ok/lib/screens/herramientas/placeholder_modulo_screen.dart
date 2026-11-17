@@ -25,8 +25,8 @@ class PlaceholderModuloScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        title: Text(titulo, style: const TextStyle(color: AppColors.texto)),
-        iconTheme: const IconThemeData(color: AppColors.texto),
+        title: Text(titulo, style: TextStyle(color: AppColors.texto)),
+        iconTheme: IconThemeData(color: AppColors.texto),
       ),
       body: Center(
         child: Column(
@@ -36,12 +36,12 @@ class PlaceholderModuloScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               titulo,
-              style: const TextStyle(color: AppColors.texto, fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppColors.texto, fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Disponible en $sprintEstimado',
-              style: const TextStyle(color: AppColors.textoSecundario),
+              style: TextStyle(color: AppColors.textoSecundario),
             ),
           ],
         ),

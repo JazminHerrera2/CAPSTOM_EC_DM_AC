@@ -73,7 +73,7 @@ class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
           child: OutlinedButton.icon(
             onPressed: _leyendo ? null : _fotografiar,
             icon: _leyendo
-                ? const SizedBox(
+                ? SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
@@ -81,7 +81,7 @@ class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
                       color: AppColors.primario,
                     ),
                   )
-                : const Icon(
+                : Icon(
                     Icons.photo_camera_outlined,
                     color: AppColors.primario,
                     size: 22,
@@ -90,7 +90,7 @@ class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
               _leyendo
                   ? 'Leyendo el velocímetro...'
                   : 'Fotografiar velocímetro con IA',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.texto,
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
@@ -106,7 +106,7 @@ class _BotonFotoVelocimetroState extends State<BotonFotoVelocimetro> {
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Con el vehículo encendido, toma una foto donde se vea el '
           'kilometraje total (no el parcial "TRIP").',
           style: TextStyle(color: AppColors.textoSecundario, fontSize: 12, height: 1.4),

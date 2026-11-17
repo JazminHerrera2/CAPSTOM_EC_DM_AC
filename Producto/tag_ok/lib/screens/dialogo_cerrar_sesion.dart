@@ -13,7 +13,7 @@ Future<bool> confirmarCerrarSesion(BuildContext context) async {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadios.tarjeta),
         ),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.logout, color: AppColors.error),
             SizedBox(width: 10),
@@ -25,7 +25,7 @@ Future<bool> confirmarCerrarSesion(BuildContext context) async {
             ),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Tendrás que volver a iniciar sesión para usar la aplicación.',
           style: TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),

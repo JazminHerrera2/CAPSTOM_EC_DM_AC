@@ -55,7 +55,7 @@ class MapaAutoScreen extends StatefulWidget {
 /// Estado del mapa: tu posición (seguida en vivo), avisos del GPS y la
 /// dirección escrita del auto.
 class _MapaAutoScreenState extends State<MapaAutoScreen> {
-  static const Color primaryColor = AppColors.primario;
+  static Color get primaryColor => AppColors.primario;
   static const double _zoomCercano = 17;
 
   final MapController _mapController = MapController();
@@ -205,14 +205,14 @@ class _MapaAutoScreenState extends State<MapaAutoScreen> {
                       point: LatLng(mia.latitude, mia.longitude),
                       width: 40,
                       height: 40,
-                      child: const _PuntoUsuario(color: primaryColor),
+                      child: _PuntoUsuario(color: primaryColor),
                     ),
                   Marker(
                     point: _puntoAuto,
                     width: 52,
                     height: 52,
                     alignment: Alignment.topCenter,
-                    child: const _PinAuto(color: primaryColor),
+                    child: _PinAuto(color: primaryColor),
                   ),
                 ],
               ),
@@ -368,7 +368,7 @@ class _TarjetaResumen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.local_parking, color: AppColors.primario),
+                Icon(Icons.local_parking, color: AppColors.primario),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

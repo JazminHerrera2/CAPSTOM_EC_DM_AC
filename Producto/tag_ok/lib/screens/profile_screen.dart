@@ -181,10 +181,10 @@ class ProfileScreen extends StatelessWidget {
                             width: 3,
                           ), // Borde para que resalte
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.edit,
                           size: 18,
-                          color: Colors.white,
+                          color: AppColors.sobrePrimario,
                         ),
                       ),
                     ),
@@ -277,13 +277,13 @@ class ProfileScreen extends StatelessWidget {
                       );
                     }
                   },
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  label: const Text(
+                  icon: Icon(Icons.logout, color: AppColors.sobrePrimario),
+                  label: Text(
                     'Cerrar Sesión',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.sobrePrimario,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -361,7 +361,7 @@ class ProfileScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Listo', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      child: Text('Listo', style: TextStyle(color: AppColors.sobrePrimario, fontSize: 16)),
                     ),
                   )
                 ],
@@ -468,9 +468,9 @@ class ProfileScreen extends StatelessWidget {
                   Navigator.pop(context); // Cerrar el diálogo cuando termine
                 }
               },
-              child: const Text(
+              child: Text(
                 'Guardar',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: AppColors.sobrePrimario),
               ),
             ),
           ],

@@ -39,10 +39,10 @@ class _DocumentosVehiculoScreenState
         backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: AppColors.texto,
         ),
-        title: const Text(
+        title: Text(
           'Documentos',
           style: TextStyle(
             color: AppColors.texto,
@@ -60,7 +60,7 @@ class _DocumentosVehiculoScreenState
         builder: (context, snapshot) {
           if (snapshot.connectionState ==
               ConnectionState.waiting) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(
                 color: AppColors.primario,
               ),

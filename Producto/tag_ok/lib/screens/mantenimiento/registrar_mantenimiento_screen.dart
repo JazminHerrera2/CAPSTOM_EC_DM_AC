@@ -204,16 +204,16 @@ class _RegistrarMantenimientoScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadios.tarjeta)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: AppColors.advertencia),
+            Icon(Icons.warning_amber_rounded, color: AppColors.advertencia),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(titulo, style: const TextStyle(color: AppColors.texto)),
+              child: Text(titulo, style: TextStyle(color: AppColors.texto)),
             ),
           ],
         ),
         content: Text(
           mensaje,
-          style: const TextStyle(color: AppColors.textoSecundario, height: 1.4),
+          style: TextStyle(color: AppColors.textoSecundario, height: 1.4),
         ),
         actions: [
           TextButton(
@@ -399,14 +399,14 @@ class _RegistrarMantenimientoScreenState
       appBar: AppBar(
         backgroundColor: AppColors.fondo,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Registrar mantención',
           style: TextStyle(
             color: AppColors.texto,
             fontWeight: FontWeight.w700,
           ),
         ),
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: AppColors.texto,
         ),
       ),
@@ -414,7 +414,7 @@ class _RegistrarMantenimientoScreenState
         stream: _vehiculoService.streamVehiculosUsuario(_usuarioId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
+            return Center(
               child: CircularProgressIndicator(
                 color: AppColors.primario,
               ),
@@ -422,7 +422,7 @@ class _RegistrarMantenimientoScreenState
           }
 
           if (snapshot.hasError) {
-            return const Center(
+            return Center(
               child: Text(
                 'No fue posible cargar tus vehículos.',
                 style: TextStyle(color: AppColors.textoSecundario),
@@ -592,7 +592,7 @@ class _RegistrarMantenimientoScreenState
 
                 const SizedBox(height: 4),
 
-                const Text(
+                Text(
                   'Anota cuándo toca la siguiente, por kilometraje y/o fecha. '
                   'Por ahora solo queda registrada, no genera avisos.',
                   style: TextStyle(
@@ -633,14 +633,14 @@ class _RegistrarMantenimientoScreenState
                   height: 54,
                   child: ElevatedButton.icon(
                     onPressed: _guardando ? null : _guardar,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.save_outlined,
-                      color: Colors.white,
+                      color: AppColors.sobrePrimario,
                     ),
-                    label: const Text(
+                    label: Text(
                       'Guardar mantención',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.sobrePrimario,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -685,7 +685,7 @@ class _RegistrarMantenimientoScreenState
               children: [
                 Text(
                   _desdeIa ? 'Revisa los datos detectados' : 'Nueva mantención',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -696,7 +696,7 @@ class _RegistrarMantenimientoScreenState
                   _desdeIa
                       ? 'La IA leyó tu comprobante. Corrige lo que haga falta y completa los campos obligatorios antes de guardar.'
                       : 'Registra el servicio realizado a uno de tus vehículos.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textoSecundario,
                     fontSize: 12,
                     height: 1.4,
@@ -713,7 +713,7 @@ class _RegistrarMantenimientoScreenState
   Widget _tituloSeccion(String titulo) {
     return Text(
       titulo,
-      style: const TextStyle(
+      style: TextStyle(
         color: AppColors.texto,
         fontSize: 15,
         fontWeight: FontWeight.w700,
@@ -751,7 +751,7 @@ class _RegistrarMantenimientoScreenState
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.directions_car_outlined,
             color: AppColors.textoSecundario,
             size: 21,
@@ -761,7 +761,7 @@ class _RegistrarMantenimientoScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Vehículo',
                   style: TextStyle(color: AppColors.textoSecundario, fontSize: 10),
                 ),
@@ -770,7 +770,7 @@ class _RegistrarMantenimientoScreenState
                   _etiquetaVehiculo(vehiculo),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -850,7 +850,7 @@ class _RegistrarMantenimientoScreenState
             _tipoSugeridoIa = false;
             _dudosos.remove(dudosoTipo);
           }),
-          style: const TextStyle(color: AppColors.texto, fontSize: 14),
+          style: TextStyle(color: AppColors.texto, fontSize: 14),
           decoration: _conDudoso(
             _decoracionCampo(
               label: 'Tipo de mantención *',
@@ -861,7 +861,7 @@ class _RegistrarMantenimientoScreenState
           ),
         ),
         if (_tipoSugeridoIa)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(left: 4),
             child: Text(
               'Sugerido por la IA',
@@ -876,7 +876,7 @@ class _RegistrarMantenimientoScreenState
   /// Borde ámbar y aviso cuando el campo está marcado como dudoso.
   InputDecoration _conDudoso(InputDecoration base, bool dudoso) {
     if (!dudoso) return base;
-    const borde = OutlineInputBorder(
+    final borde = OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(14)),
       borderSide: BorderSide(color: AppColors.advertencia),
     );
@@ -884,7 +884,7 @@ class _RegistrarMantenimientoScreenState
       enabledBorder: borde,
       focusedBorder: borde,
       helperText: 'Revisa este dato antes de guardar.',
-      helperStyle: const TextStyle(color: AppColors.advertencia, fontSize: 11),
+      helperStyle: TextStyle(color: AppColors.advertencia, fontSize: 11),
     );
   }
 
@@ -903,10 +903,10 @@ class _RegistrarMantenimientoScreenState
       child: Padding(
         padding: const EdgeInsets.only(top: 8),
         child: ActionChip(
-          avatar: const Icon(Icons.history_rounded, size: 16, color: AppColors.primario),
+          avatar: Icon(Icons.history_rounded, size: 16, color: AppColors.primario),
           label: Text(
             'Usar último km conocido: ${formatoMiles(sugerido)} km',
-            style: const TextStyle(color: AppColors.texto, fontSize: 12),
+            style: TextStyle(color: AppColors.texto, fontSize: 12),
           ),
           backgroundColor: AppColors.superficie,
           side: const BorderSide(color: Colors.transparent),
@@ -964,7 +964,7 @@ class _RegistrarMantenimientoScreenState
                 color: AppColors.textoSecundario,
               )
             else
-              const Icon(
+              Icon(
                 Icons.calendar_month_outlined,
                 color: AppColors.textoSecundario,
                 size: 20,
@@ -985,7 +985,7 @@ class _RegistrarMantenimientoScreenState
     if (_errorFecha) {
       decoracion = decoracion.copyWith(
         errorText: 'Selecciona la fecha de la mantención.',
-        errorBorder: const OutlineInputBorder(
+        errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(14)),
           borderSide: BorderSide(color: AppColors.error),
         ),
@@ -1012,7 +1012,7 @@ class _RegistrarMantenimientoScreenState
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.calendar_month_outlined,
               color: AppColors.textoSecundario,
               size: 20,
@@ -1046,7 +1046,7 @@ class _RegistrarMantenimientoScreenState
       onChanged: (_) => setState(() {
         if (claveDudosa != null) _dudosos.remove(claveDudosa);
       }),
-      style: const TextStyle(
+      style: TextStyle(
         color: AppColors.texto,
         fontSize: 14,
       ),
@@ -1072,13 +1072,13 @@ class _RegistrarMantenimientoScreenState
       labelText: label,
       hintText: hint,
       suffixText: suffix,
-      labelStyle: const TextStyle(
+      labelStyle: TextStyle(
         color: AppColors.textoSecundario,
       ),
       hintStyle: TextStyle(
         color: AppColors.textoSecundario.withOpacity(0.65),
       ),
-      suffixStyle: const TextStyle(
+      suffixStyle: TextStyle(
         color: AppColors.textoSecundario,
       ),
       prefixIcon: Icon(
@@ -1094,26 +1094,26 @@ class _RegistrarMantenimientoScreenState
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
-        borderSide: const BorderSide(
+        borderSide: BorderSide(
           color: AppColors.borde,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
-        borderSide: const BorderSide(
+        borderSide: BorderSide(
           color: AppColors.primario,
           width: 1.5,
         ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
-        borderSide: const BorderSide(
+        borderSide: BorderSide(
           color: AppColors.error,
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadios.control),
-        borderSide: const BorderSide(
+        borderSide: BorderSide(
           color: AppColors.error,
         ),
       ),
@@ -1127,13 +1127,13 @@ class _RegistrarMantenimientoScreenState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.directions_car_outlined,
               color: AppColors.textoSecundario,
               size: 55,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No tienes vehículos registrados',
               style: TextStyle(
                 color: AppColors.texto,
@@ -1142,7 +1142,7 @@ class _RegistrarMantenimientoScreenState
               ),
             ),
             const SizedBox(height: 7),
-            const Text(
+            Text(
               'Primero registra un vehículo desde Mi Vehículo para poder asociarle una mantención.',
               textAlign: TextAlign.center,
               style: TextStyle(

@@ -111,7 +111,7 @@ class TarjetaMantencion extends StatelessWidget {
                     m.nombreTipo,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.texto,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -123,7 +123,7 @@ class TarjetaMantencion extends StatelessWidget {
                       linea,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textoSecundario,
                         fontSize: 12,
                         height: 1.35,
@@ -138,10 +138,10 @@ class TarjetaMantencion extends StatelessWidget {
                 tooltip: 'Eliminar programación',
                 visualDensity: VisualDensity.compact,
                 onPressed: onEliminar,
-                icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                icon: Icon(Icons.delete_outline, color: AppColors.error),
               )
             else if (!programada)
-              const Icon(Icons.chevron_right, color: AppColors.textoSecundario),
+              Icon(Icons.chevron_right, color: AppColors.textoSecundario),
           ],
         ),
       ),

@@ -218,7 +218,7 @@ class _RegistrarDocumentoIaScreenState
               borderRadius:
                   BorderRadius.circular(AppRadios.tarjeta),
             ),
-            title: const Row(
+            title: Row(
               children: [
                 Icon(
                   Icons.error_outline,
@@ -235,7 +235,7 @@ class _RegistrarDocumentoIaScreenState
                 ),
               ],
             ),
-            content: const Text(
+            content: Text(
               'No pudimos extraer automáticamente '
               'los datos del documento. Puedes '
               'continuar ingresándolos manualmente.',
@@ -560,7 +560,7 @@ class _RegistrarDocumentoIaScreenState
               child: Icon(
                 icono,
                 color: principal
-                    ? Colors.white
+                    ? AppColors.sobrePrimario
                     : AppColors.primario,
                 size: 26,
               ),
@@ -573,7 +573,7 @@ class _RegistrarDocumentoIaScreenState
                 children: [
                   Text(
                     titulo,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.texto,
                       fontSize: 15,
                       fontWeight:
@@ -583,7 +583,7 @@ class _RegistrarDocumentoIaScreenState
                   const SizedBox(height: 4),
                   Text(
                     descripcion,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textoSecundario,
                       fontSize: 12,
                       height: 1.35,
@@ -593,7 +593,7 @@ class _RegistrarDocumentoIaScreenState
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(
+            Icon(
               Icons.chevron_right,
               color: AppColors.textoSecundario,
             ),
@@ -621,7 +621,7 @@ class _RegistrarDocumentoIaScreenState
       ),
       child: Text(
         texto,
-        style: const TextStyle(
+        style: TextStyle(
           color: AppColors.textoSecundario,
           fontSize: 11,
           fontWeight: FontWeight.w600,
@@ -642,14 +642,14 @@ class _RegistrarDocumentoIaScreenState
         backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: AppColors.texto,
         ),
         title: Text(
           _procesando
               ? 'Procesando documento'
               : 'Agregar documento',
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.texto,
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -697,14 +697,14 @@ class _RegistrarDocumentoIaScreenState
                   borderRadius:
                       BorderRadius.circular(AppRadios.tarjeta),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.document_scanner_outlined,
                   color: AppColors.primario,
                   size: 34,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Escanea o sube un documento',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -714,7 +714,7 @@ class _RegistrarDocumentoIaScreenState
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'La IA identificará el documento '
                 'y extraerá sus datos para que '
                 'puedas revisarlos antes de guardar.',
@@ -766,7 +766,7 @@ class _RegistrarDocumentoIaScreenState
 
         const SizedBox(height: 26),
 
-        const Text(
+        Text(
           'Documentos compatibles',
           style: TextStyle(
             color: AppColors.texto,
@@ -816,7 +816,7 @@ class _RegistrarDocumentoIaScreenState
                     AppColors.primario.withOpacity(0.10),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
+              child: Center(
                 child: SizedBox(
                   width: 52,
                   height: 52,
@@ -845,7 +845,7 @@ class _RegistrarDocumentoIaScreenState
 
             const SizedBox(height: 10),
 
-            const Text(
+            Text(
               'Estamos identificando el tipo de '
               'documento y extrayendo la información.',
               textAlign: TextAlign.center,
@@ -872,7 +872,7 @@ class _RegistrarDocumentoIaScreenState
                       Colors.transparent,
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(

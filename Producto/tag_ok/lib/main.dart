@@ -8,6 +8,7 @@ import 'screens/home_screen.dart'; // Importa la pantalla principal
 import 'utils/app_reloader.dart';
 import 'package:tag_ok/theme/app_colors.dart';
 import 'package:tag_ok/theme/app_estilos.dart';
+import 'package:tag_ok/theme/modo_tema.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Importa Riverpod
 
@@ -33,6 +34,9 @@ void main() async {
     return;
   }
 
+  // 3. Modo claro u oscuro guardado (por defecto, claro).
+  await ModoTema.cargar();
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -54,9 +58,9 @@ class InitErrorApp extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: AppColors.texto, size: 48),
+                Icon(Icons.error_outline, color: AppColors.texto, size: 48),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'No se pudo iniciar TAG OK',
                   style: TextStyle(color: AppColors.texto, fontSize: 20, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
@@ -64,7 +68,7 @@ class InitErrorApp extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   error,
-                  style: const TextStyle(color: AppColors.textoSecundario, fontSize: 13),
+                  style: TextStyle(color: AppColors.textoSecundario, fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -85,8 +89,17 @@ class InitErrorApp extends StatelessWidget {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  // El tema se arma con AppColors, que cambia con el modo oscuro: se vuelve a
+  // construir cada vez que el switch del Inicio cambia de modo.
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: ModoTema.oscuro,
+      builder: (context, _, _) => _app(),
+    );
+  }
+
+  Widget _app() {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'TagOk',
@@ -103,11 +116,13 @@ class MyApp extends StatelessWidget {
         // explícito (botones, campos, diálogos, selectores de fecha, insignias,
         // indicadores de carga) toman estos colores de AppColors.
         colorScheme: ColorScheme.fromSeed(
+          brightness: AppColors.oscuro ? Brightness.dark : Brightness.light,
           seedColor: AppColors.primario,
           primary: AppColors.primario,
           onPrimary: AppColors.sobrePrimario,
           primaryContainer: AppColors.contenedorSuave,
-          onPrimaryContainer: AppColors.sobreLavanda,
+          onPrimaryContainer:
+              AppColors.oscuro ? AppColors.texto : AppColors.sobreLavanda,
           secondary: AppColors.lavanda,
           onSecondary: AppColors.sobreLavanda,
           surface: AppColors.superficie,
@@ -136,11 +151,11 @@ class MyApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
         ),
-        bottomSheetTheme: const BottomSheetThemeData(
+        bottomSheetTheme: BottomSheetThemeData(
           backgroundColor: AppColors.superficie,
           surfaceTintColor: Colors.transparent,
         ),
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
           backgroundColor: AppColors.fondo,
           foregroundColor: AppColors.texto,
           surfaceTintColor: Colors.transparent,

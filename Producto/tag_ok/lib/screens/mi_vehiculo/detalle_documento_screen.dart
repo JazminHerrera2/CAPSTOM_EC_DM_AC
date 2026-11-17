@@ -172,7 +172,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
               children: [
                 Text(
                   titulo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textoSecundario,
                     fontSize: 11,
                   ),
@@ -182,7 +182,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
 
                 Text(
                   texto,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -208,10 +208,10 @@ class DetalleDocumentoScreen extends StatelessWidget {
         backgroundColor: AppColors.fondo,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: AppColors.texto,
         ),
-        title: const Text(
+        title: Text(
           'Detalle del documento',
           style: TextStyle(
             color: AppColors.texto,
@@ -250,7 +250,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                     color: AppColors.primario.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(AppRadios.tarjeta),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.description_outlined,
                     color: AppColors.primario,
                     size: 32,
@@ -262,7 +262,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                 Text(
                   documento.tipoDocumento.etiqueta,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.texto,
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -273,7 +273,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
 
                 Text(
                   patenteVehiculo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textoSecundario,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -324,7 +324,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
           // INFORMACIÓN
           // ------------------------------------------------------
 
-          const Text(
+          Text(
             'Información del documento',
             style: TextStyle(
               color: AppColors.texto,
@@ -357,7 +357,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                     valor: documento.numero,
                   ),
 
-                  const Divider(
+                  Divider(
                     color: AppColors.borde,
                     height: 1,
                   ),
@@ -371,7 +371,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   ),
                 ),
 
-                const Divider(
+                Divider(
                   color: AppColors.borde,
                   height: 1,
                 ),
@@ -388,7 +388,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                     documento.compania!
                         .trim()
                         .isNotEmpty) ...[
-                  const Divider(
+                  Divider(
                     color: AppColors.borde,
                     height: 1,
                   ),
@@ -403,7 +403,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                     documento.numeroPoliza!
                         .trim()
                         .isNotEmpty) ...[
-                  const Divider(
+                  Divider(
                     color: AppColors.borde,
                     height: 1,
                   ),
@@ -423,7 +423,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
           // REGISTRO
           // ------------------------------------------------------
 
-          const Text(
+          Text(
             'Información del registro',
             style: TextStyle(
               color: AppColors.texto,
@@ -456,7 +456,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                       : 'Procesado con IA',
                 ),
 
-                const Divider(
+                Divider(
                   color: AppColors.borde,
                   height: 1,
                 ),
@@ -482,7 +482,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
                   .isNotEmpty) ...[
             const SizedBox(height: 26),
 
-            const Text(
+            Text(
               'Archivo asociado',
               style: TextStyle(
                 color: AppColors.texto,
@@ -543,7 +543,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadios.tarjeta),
           ),
-          title: const Row(
+          title: Row(
             children: [
               Icon(
                 Icons.warning_amber_rounded,
@@ -562,7 +562,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
             'Se eliminará "$nombre" de $patenteVehiculo junto con su archivo '
             'adjunto y sus avisos de vencimiento. Esta acción no se puede '
             'deshacer.',
-            style: const TextStyle(
+            style: TextStyle(
               color: AppColors.textoSecundario,
               height: 1.4,
             ),
@@ -602,7 +602,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
       navigator.pop(); // cierra el indicador de carga
       navigator.pop(); // vuelve a la lista de documentos
       messenger.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Documento eliminado exitosamente.'),
           backgroundColor: AppColors.exito,
         ),
@@ -611,7 +611,7 @@ class DetalleDocumentoScreen extends StatelessWidget {
       debugPrint('No se pudo eliminar el documento ${documento.id}: $e');
       navigator.pop(); // cierra el indicador de carga
       messenger.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
             'No se pudo eliminar el documento. Intenta nuevamente.',
           ),
