@@ -8,8 +8,8 @@
 [![Dart](https://img.shields.io/badge/Dart-3.11.5-blue.svg)](https://dart.dev/)
 [![Firebase](https://img.shields.io/badge/Firebase-Cloud%20Firestore-orange.svg)](https://firebase.google.com/)
 [![Mapbox](https://img.shields.io/badge/Mapbox-GL%20Maps-000000.svg)](https://www.mapbox.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Storage%20%2B%20Edge%20Functions-3ECF8E.svg)](https://supabase.com/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-API-412991.svg)](https://platform.openai.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
@@ -24,7 +24,7 @@
 - [Dashboard & Visualización](#dashboard-visualizacion)
 - [Auditoría Inteligente & IA](#auditoria-inteligente)
 - [Panel de Administración (Admin)](#panel-admin)
-- [Instalación y Ejecución Rápida](#instalacion-ejecucion)
+- [Instalación y Ejecución](#instalacion-ejecucion)
 - [Stack Tecnológico](#stack-tecnologico)
 - [Estructura del Proyecto](#estructura-proyecto)
 
@@ -37,7 +37,7 @@
 
 Con **TAG OK 2.0 (Fase 2)**, la aplicación evoluciona de un simple controlador de gastos de peaje a un **asistente integral de gestión vehicular**: además de TAG, ahora permite administrar los documentos del vehículo, programar mantenciones, registrar estacionamientos y cargas de combustible, y acceder a un catálogo de beneficios para conductores — todo esto asistido por un componente transversal de **Inteligencia Artificial** que identifica y extrae datos automáticamente desde fotografías de documentos, boletas y tickets.
 
-La suite también incluye un **Panel de Administración Web** para gestionar tarifas, pórticos y el nuevo catálogo de beneficios, y un motor de **Auditoría con IA (OpenAI)** que analiza boletas reales (PDF/CSV) para detectar cobros fantasmas o sobreprecios.
+La suite también incluye un **Panel de Administración Web** para gestionar tarifas, pórticos, concesionarias, usuarios y el catálogo de beneficios, y un motor de **Auditoría con IA (OpenAI)** que analiza boletas reales (PDF, CSV o Excel) para detectar cobros fantasmas o sobreprecios. La app cuenta además con **modo oscuro**, que se activa desde la página de Perfil.
 
 ---
 
@@ -80,32 +80,34 @@ TAG OK 2.0 se organiza en tres capas, ampliando la arquitectura ya existente de 
 graph TD
     subgraph Cliente ["Capa Cliente (Flutter/Dart)"]
         App["App Móvil Conductor<br/>TAG + 4 módulos nuevos"]
-        Admin["Backoffice Admin (Web)<br/>Tarifas + Beneficios"]
+        Admin["Backoffice Admin (Web)<br/>Tarifas, pórticos y beneficios"]
     end
     subgraph Integracion ["Capa de Integración y IA"]
         Mapbox["Mapbox API<br/>Rutas y peajes"]
         Auth["Firebase Auth<br/>Sesión de usuario"]
+        Edge["Supabase Edge Functions<br/>ia-extraccion + secure-document-upload"]
         OpenAI["OpenAI API<br/>Auditoría + Registro Inteligente"]
     end
     subgraph Datos ["Capa de Datos"]
         Firestore["Firestore<br/>Colecciones Fase 1 + Fase 2"]
-        Storage["Firebase Storage<br/>Fotos y documentos"]
+        Storage["Supabase Storage<br/>Fotos y documentos (bucket privado)"]
     end
 
     App --> Mapbox
     App --> Auth
-    App --> OpenAI
+    App --> Edge
+    Edge --> OpenAI
+    Edge --> Storage
     Admin --> Auth
     Mapbox --> Firestore
     Auth --> Firestore
-    OpenAI --> Firestore
-    OpenAI --> Storage
+    App --> Firestore
     Admin --> Firestore
 ```
 
 - **Capa Cliente**: la App Móvil conserva sus funcionalidades de TAG (navegación, simulación de tarifas, alertas de presupuesto) y suma los módulos de Mi Vehículo, Mantenciones, Estacionamientos y Combustible, Beneficios, y el Dashboard "Mi Auto". El Backoffice Admin se amplía con la gestión del catálogo de beneficios.
-- **Capa de Integración**: Mapbox se mantiene sin cambios respecto a la Fase 1. OpenAI impulsa la auditoría de boletas y el componente transversal de **Registro Inteligente con IA** (captura → identifica tipo de documento → extrae datos → el usuario valida → se guarda en el módulo correspondiente).
-- **Capa de Datos**: Firestore incorpora seis colecciones nuevas (`documentos_vehiculares`, `mantenciones`, `estacionamientos`, `abastecimientos`, `beneficios`, `notificaciones`) junto a las heredadas de la Fase 1 (`usuarios`, `vehiculos`, `viajes_tag`, `porticos`, `tarifas_tag`, `auditoria`). Firebase Storage se incorpora en esta capa para almacenar las imágenes de documentos y boletas capturadas por el usuario.
+- **Capa de Integración**: Mapbox se mantiene sin cambios respecto a la Fase 1. OpenAI, a través de la Edge Function `ia-extraccion` (la clave de OpenAI vive como secreto en Supabase y nunca dentro de la app), impulsa la auditoría de boletas y el componente transversal de **Registro Inteligente con IA** (captura → identifica tipo de documento → extrae datos → el usuario valida → se guarda en el módulo correspondiente).
+- **Capa de Datos**: Firestore incorpora seis colecciones nuevas (`documentos_vehiculares`, `mantenciones`, `estacionamientos`, `abastecimientos`, `beneficios`, `notificaciones`) junto a las heredadas de la Fase 1 (`usuarios`, `vehiculos`, `viajes_tag`, `porticos`, `tarifas_tag`, `auditoria`). Las imágenes de documentos y boletas se guardan en un bucket privado de **Supabase Storage**, siempre a través de la Edge Function `secure-document-upload`, que valida la sesión de Firebase antes de subir o leer un archivo.
 - El cálculo de tarifas TAG continúa apoyándose en un **motor de tarifas local** (`simulated_toll_service.dart`), 100% offline, sin depender de servicios externos de peaje.
 
 ---
@@ -126,17 +128,19 @@ graph TD
 ### 📄 Mi Vehículo *(nuevo — Fase 2)*
 - Registro y edición de la ficha del vehículo, con foto y datos generales.
 - Gestión de documentos (Permiso de Circulación, Revisión Técnica, SOAP, Seguro) con fecha de vencimiento.
+- Avisos de vencimiento de documentos a los 30, 15 y 7 días antes, como notificaciones en la app y en el dispositivo.
 - Configuración de vencimientos y visualización del estado general del vehículo.
 
 ### 🔧 Mantenciones *(nuevo — Fase 2)*
 - Registro de mantenciones con costo, kilometraje y taller.
-- Programación de la próxima mantención con recordatorios automáticos.
+- Programación de la próxima mantención con recordatorios 7 días antes y el mismo día.
 - Historial completo de mantenciones realizadas.
 
 ### 🅿️⛽ Estacionamientos y Combustible *(nuevo — Fase 2)*
-- Registro manual o con cronómetro de estacionamientos.
-- Registro de abastecimientos de combustible, incluyendo cargas parciales.
-- Historial y visualización de gastos mensuales por categoría.
+- **Estacionamientos:** cronómetro con ubicación del auto (nivel o piso, sector y dirección), con botón para ver la ubicación en el mapa. Al cerrar el cronómetro se registra la boleta con IA, con foto o de forma manual (nombre, entrada, salida, precio y observaciones). El detalle muestra la duración según la boleta y según la aplicación.
+- **Combustible:** registro de abastecimientos, incluyendo cargas parciales.
+- Historial simplificado con acceso al detalle de cada registro, y gasto del mes por categoría.
+- Al eliminar un vehículo se borran también sus documentos, mantenciones, cargas de combustible y estacionamientos.
 
 ### 🎁 Beneficios *(nuevo — Fase 2)*
 - Catálogo de convenios y beneficios para conductores, administrable desde el Backoffice.
@@ -158,8 +162,9 @@ graph TD
 
 Olvídate de revisar boletas a mano. El sistema cruza automáticamente los datos que te cobran las autopistas versus tus viajes reales almacenados en el historial de tu GPS.
 - **Motor Multi-Formato NATIVO**:
-  - Lee planillas Excel (`.csv`) de Autopista Central de manera nativa.
+  - Lee planillas `.csv` (Autopista Central) y `.xlsx` (Vespucio Norte) de manera nativa.
   - Posee un analizador de texto avanzado (`PdfTextExtractor`) capaz de **leer directamente** los PDFs oficiales de Costanera Norte, Vespucio Sur y Vespucio Norte sin depender de servidores externos, de forma **100% offline y gratuita**.
+- **Selector de patente**: el filtro de vehículos usa el mismo estilo que Mantenciones, Combustible y Estacionamientos. El historial de boletas auditadas muestra todas las boletas, sin filtrar por patente.
 - **Análisis con OpenAI**: En su modo avanzado, procesa grandes volúmenes de datos utilizando la IA de OpenAI para cruzar transacciones y emitir juicios claros sobre la legitimidad de las boletas.
 - **Modo Contingencia**: Si la IA no está disponible, el sistema cambia instantáneamente a un motor algorítmico local ultra rápido para mostrar las discrepancias matemáticas.
 
@@ -169,32 +174,61 @@ Olvídate de revisar boletas a mano. El sistema cruza automáticamente los datos
 ## ⚙️ Panel de Administración Web (Admin)
 
 Junto a la aplicación móvil, el repositorio incluye un **Backoffice de gestión** para operar el negocio:
-- Dashboard de estadísticas generales en vivo.
-- ABM (Alta/Baja/Modificación) en tiempo real de Tarifas Base, Punta y Saturación, pórticos y vehículos.
-- Gestión de Usuarios (Restablecimiento de contraseñas, edición de presupuestos y eliminación).
+- Dashboard de estadísticas generales en vivo y módulo de Reportes.
+- ABM (Alta/Baja/Modificación) en tiempo real de Tarifas Base, Punta y Saturación, pórticos, concesionarias y vehículos, con carga masiva desde archivos.
+- Gestión de Usuarios y administradores (restablecimiento de contraseñas, edición de presupuestos y eliminación).
+- Registro de auditoría de los cambios hechos en el panel y mapa de pórticos.
 - Gestión del catálogo de Beneficios *(nuevo — Fase 2)*.
 - Se conecta en tiempo real a la misma base de datos `Firestore` que los clientes, reflejando cambios instantáneamente en las rutas.
 
 ---
 
 <a id="instalacion-ejecucion" name="instalacion-ejecucion"></a>
-## 🚀 Instalación y Ejecución Rápida (Zero Config)
+## 🚀 Instalación y Ejecución
 
-Gracias a nuestro sistema de encriptación **Base64 en Memoria**, ya no necesitas configurar engorrosos archivos `.env`. Las claves (Mapbox, Firebase y OpenAI) viajan protegidas y se inyectan en RAM automáticamente. ¡Solo descarga y corre!
+La guía completa, paso a paso, está en [`MANUAL_INSTALACION.md`](MANUAL_INSTALACION.md). Este es el resumen.
 
-1. **Clonar o descargar el repositorio:**
+**Requisitos:** Git, Flutter **3.41.9** (Dart 3.11.5) y Google Chrome. Para desplegar: Node.js y Firebase CLI. Para el APK: Android Studio.
+
+1. **Clonar el repositorio** y cambiar a la rama `develop`:
    ```bash
-   git clone https://github.com/leo-onate/TAG-OK.git
+   git clone https://github.com/JazminHerrera2/CAPSTOM_EC_DM_AC.git
+   cd CAPSTOM_EC_DM_AC
+   git checkout develop
    ```
 
-2. **Ejecutar el instalador interactivo (`setup.bat`):**
-   Abre la carpeta `Producto` y haz doble clic en el archivo `setup.bat`. 
-   Este asistente inteligente:
-   - Descargará todas las dependencias necesarias de Flutter (tanto para `tag_ok` como para `admin`).
-   - Te desplegará un **Menú Interactivo**.
-   - Te permitirá elegir qué aplicación quieres encender (App Móvil o Backoffice Admin) y en qué plataforma (Windows Desktop o Chrome).
-   
-   ¡Simplemente escribe un número del 1 al 5 y la magia sucederá sola!
+2. **Crear los archivos `.env`** (no están en el repositorio porque contienen claves; pídelas al equipo):
+   ```bash
+   cp Producto/tag_ok/env_ejemplo.txt Producto/tag_ok/.env
+   cp Producto/tag_ok/.env Producto/admin/.env
+   ```
+   Edita ambos archivos y reemplaza los valores. No pongas claves secretas (OpenAI, Gemini, etc.) en el `.env`: la de OpenAI se guarda como secreto en Supabase.
+
+3. **Instalar dependencias:**
+   ```bash
+   cd Producto/tag_ok && flutter pub get
+   cd ../admin && flutter pub get
+   ```
+
+4. **Ejecutar la app principal** (lee el `.env` al compilar, por eso lleva `--dart-define-from-file`):
+   ```bash
+   cd Producto/tag_ok
+   flutter run -d chrome --web-hostname localhost --web-port 8090 --dart-define-from-file=.env
+   ```
+
+5. **Ejecutar el panel de administración:**
+   ```bash
+   cd Producto/admin
+   flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8091
+   ```
+
+6. **Generar el APK de Android:**
+   ```bash
+   cd Producto/tag_ok
+   flutter build apk --release --dart-define-from-file=.env
+   ```
+
+También existe `Producto/setup.bat`, un asistente para Windows que instala las dependencias y ofrece un menú para ejecutar cada aplicación.
 
 ---
 
@@ -205,12 +239,14 @@ Gracias a nuestro sistema de encriptación **Base64 en Memoria**, ya no necesita
 | :--- | :--- |
 | **Framework Base** | Flutter (Multiplataforma) |
 | **Base de Datos** | Firebase Cloud Firestore |
-| **Almacenamiento de Archivos** | Firebase Storage *(nuevo — Fase 2, fotos de documentos y boletas)* |
+| **Almacenamiento de Archivos** | Supabase Storage (bucket privado) mediante la Edge Function `secure-document-upload` *(nuevo — Fase 2)* |
 | **Autenticación** | Firebase Auth (Persistencia Nativa) |
 | **Mapas** | Flutter Map + Mapbox API |
 | **Cálculo de Tarifas TAG** | Motor de tarifas local (`simulated_toll_service.dart`), 100% offline |
-| **Inteligencia Artificial**| OpenAI API (Chat Completions, `http`) — auditoría de boletas y Registro Inteligente con IA |
-| **Procesamiento de Archivos**| `file_picker`, `syncfusion_flutter_pdf`, `csv` |
+| **Backend de IA** | Supabase Edge Functions (`ia-extraccion`), que guardan la clave de OpenAI como secreto |
+| **Inteligencia Artificial**| OpenAI API (Chat Completions) — auditoría de boletas y Registro Inteligente con IA |
+| **Procesamiento de Archivos**| `file_picker`, `syncfusion_flutter_pdf`, `excel`, `google_mlkit_text_recognition` |
+| **Hosting** | Firebase Hosting (app y panel de administración) |
 
 ---
 
@@ -218,13 +254,15 @@ Gracias a nuestro sistema de encriptación **Base64 en Memoria**, ya no necesita
 ## 📂 Estructura del Repositorio
 
 ```bash
-TAG-OK/
+CAPSTOM_EC_DM_AC/
+├── MANUAL_INSTALACION.md # Manual de instalación y ejecución
 ├── Producto/
-│   ├── setup.bat         # 🚀 ASISTENTE DE EJECUCIÓN (Ejecutar este archivo)
-│   ├── tag_ok/           # Código fuente de la Aplicación Móvil
-│   ├── admin/            # Código fuente del Panel de Administración
+│   ├── setup.bat         # Asistente de ejecución para Windows
+│   ├── tag_ok/           # App principal (Flutter), reglas de Firestore y Edge Functions de Supabase
+│   ├── admin/            # Panel de Administración (Flutter web)
 │   └── Base de datos/    # Modelo Relacional, Documentación del proyecto
-└── FASE 1/        # Individuales, Grupales
+├── FASE 1/               # Evidencias individuales y grupales
+└── FASE 2/               # Evidencias de la Fase 2 y documentación
 ```
 
 ---
