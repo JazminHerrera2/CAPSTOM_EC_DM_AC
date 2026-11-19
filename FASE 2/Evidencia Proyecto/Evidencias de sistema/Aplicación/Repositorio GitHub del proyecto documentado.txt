@@ -1,0 +1,70 @@
+TAG OK 2.0 - REPOSITORIO GITHUB DEL PROYECTO DOCUMENTADO
+========================================================
+
+Proyecto  : TAG OK 2.0 (Fase 2) - Asistente integral de gestión vehicular y control de gastos de TAG
+Cliente   : Grupo Sentte
+Asignatura: Capstone (PTY4614) - Ingeniería en Informática
+Docente   : Arturo Vargas
+Equipo    : Danae Muñoz (Líder de Proyecto)
+            Almendra Cifuentes "Jazmín" (UX/UI y Aseguramiento de Calidad)
+            Estephany Cárdenas (Arquitecta de Software y Base de Datos)
+
+1. ENLACES
+----------
+Repositorio GitHub (rama develop): https://github.com/JazminHerrera2/CAPSTOM_EC_DM_AC
+Aplicación (web)                 : https://tag-ok-v2.web.app/
+Panel de administración (web)    : https://tag-ok-v2-admin.web.app
+
+2. DESCRIPCIÓN
+--------------
+TAG OK 2.0 evoluciona de un controlador de gastos de peaje a un asistente integral de gestión
+vehicular. Permite administrar documentos del vehículo con avisos de vencimiento (30, 15 y 7
+días), programar mantenciones, registrar estacionamientos y cargas de combustible, consultar
+un catálogo de beneficios, auditar boletas de autopistas con IA y gestionar el perfil con modo
+oscuro. Un Registro Inteligente con IA lee fotos de documentos y boletas, y el usuario siempre
+confirma los datos antes de guardar.
+Incluye un panel web de administración para gestionar tarifas, pórticos, concesionarias,
+usuarios y administradores, beneficios, reportes y el registro de auditoría de cambios.
+
+3. TECNOLOGÍAS
+--------------
+- Flutter / Dart (Flutter 3.41.9, Dart 3.11.5): app del conductor y panel de administración
+- Firebase: Authentication, Cloud Firestore y Hosting
+- Supabase: Storage (bucket privado) y Edge Functions (ia-extraccion, secure-document-upload)
+- OpenAI API (clave guardada como secreto en Supabase): auditoría de boletas y Registro Inteligente
+- Mapbox: mapas y rutas
+- Procesamiento de archivos: file_picker, syncfusion_flutter_pdf, excel, google_mlkit_text_recognition
+
+4. ESTRUCTURA DEL REPOSITORIO
+-----------------------------
+CAPSTOM_EC_DM_AC/
+  MANUAL_INSTALACION.md   Manual de instalación y ejecución
+  Producto/
+    setup.bat             Asistente de ejecución para Windows
+    tag_ok/               App principal (Flutter), reglas de Firestore y Edge Functions de Supabase
+    admin/                Panel de administración (Flutter web)
+    Base de datos/        Modelo relacional y documentación del proyecto
+  FASE 1/                 Evidencias individuales y grupales
+  FASE 2/                 Evidencias de la Fase 2 y documentación
+
+5. DOCUMENTACIÓN
+----------------
+- README.md (descripción general, arquitectura, características y resumen de ejecución)
+- MANUAL_INSTALACION.md y Manual de Instalación en PDF (implementación del ambiente de desarrollo)
+- Manual de Usuario - Conductor y Manual de Usuario - Administrador Web
+- Informe del Plan de Pruebas y Casos de Prueba (126 casos, todos en OK)
+
+6. CÓMO EJECUTAR (RESUMEN)
+--------------------------
+Requisitos: Git, Flutter 3.41.9 y Google Chrome. Guía completa en MANUAL_INSTALACION.md.
+1. git clone https://github.com/JazminHerrera2/CAPSTOM_EC_DM_AC.git
+   cd CAPSTOM_EC_DM_AC
+   git checkout develop
+2. Crear los archivos .env desde Producto/tag_ok/env_ejemplo.txt. Las claves no están en el
+   repositorio y se piden al equipo.
+3. flutter pub get   (en Producto/tag_ok y en Producto/admin)
+4. App:   cd Producto/tag_ok && flutter run -d chrome --web-hostname localhost --web-port 8090 --dart-define-from-file=.env
+5. Panel: cd Producto/admin  && flutter run -d chrome --web-hostname 127.0.0.1 --web-port 8091
+6. APK:   cd Producto/tag_ok && flutter build apk --release --dart-define-from-file=.env
+
+Nota: este archivo no incluye claves ni contraseñas.
