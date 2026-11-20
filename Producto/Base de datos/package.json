@@ -1,0 +1,16 @@
+{
+  "name": "tagok-poblar-firestore",
+  "version": "1.0.0",
+  "description": "TAG OK Fase 2 - Script de sistema para poblar las colecciones de Cloud Firestore",
+  "main": "poblar_firestore.js",
+  "scripts": {
+    "validar": "node poblar_firestore.js --dry-run",
+    "poblar": "node poblar_firestore.js",
+    "limpiar": "node poblar_firestore.js --limpiar"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}
